@@ -68,10 +68,16 @@ export class ChatService {
 
   async handleMessage(message, meta = {}, history = null, tone = null) {
     const trimmed = String(message ?? "").trim();
+    // #region agent log
+    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:entry",message:"incoming message",data:{trimmed,tone,hasHistory:Array.isArray(history)&&history.length>0},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     // Direct answer fast-path: name questions must be answered directly.
     if (ChatService.isNameQuestion(trimmed)) {
-      const replies = ["Teto."];
+      const replies = ["Sou a Teto. E você?"];
+      // #region agent log
+      fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:nameFastPath",message:"name fast-path used",data:{trimmed,replies},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (this.responseProcessor) {
         this.responseProcessor.remember(replies.join(" "));
       }
@@ -81,6 +87,9 @@ export class ChatService {
     // Direct identity answer: keep short and natural.
     if (ChatService.isWhoAreYouQuestion(trimmed)) {
       const reply = "Sou a Teto.";
+      // #region agent log
+      fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:identityFastPath",message:"identity fast-path used",data:{trimmed,reply},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (this.responseProcessor) {
         this.responseProcessor.remember(reply);
       }
@@ -89,6 +98,9 @@ export class ChatService {
 
     if (ChatService.isSimpleGreeting(trimmed)) {
       const reply = ChatService.greetingReply(trimmed);
+      // #region agent log
+      fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:greetingFastPath",message:"greeting fast-path used",data:{trimmed,reply},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (this.responseProcessor) {
         this.responseProcessor.remember(reply);
       }
@@ -109,6 +121,9 @@ export class ChatService {
     }
 
     const raw = await this.agent.respond(message, meta, history, tone);
+    // #region agent log
+    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H1",location:"chatService.js:handleMessage:rawReply",message:"raw reply from agent",data:{trimmed,rawPreview:String(raw).slice(0,180)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     const parts = this.responseProcessor
       ? this.responseProcessor.process(raw, {
         tone,
@@ -141,6 +156,9 @@ export class ChatService {
         resultParts[0] = `Ufa! ${first}`.trim();
       }
     }
+    // #region agent log
+    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:finalReplies",message:"final replies ready",data:{count:resultParts.length,repliesPreview:resultParts.map((r)=>String(r).slice(0,120))},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     return resultParts;
   }
 }

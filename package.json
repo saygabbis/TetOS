@@ -4,10 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node src/infra/api/server.js"
+    "start": "node src/infra/api/server.js",
+    "start:api": "node src/infra/api/server.js",
+    "start:wa": "node src/integrations/whatsapp/runner.js"
   },
   "dependencies": {
+    "baileys": "^6.7.18",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "qrcode-terminal": "^0.12.0"
   }
 }

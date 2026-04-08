@@ -13,7 +13,16 @@ const CALM_KEYWORDS = [
   "menos",
   "devagar",
   "sem gritar",
-  "mais de boa"
+  "mais de boa",
+  "triste",
+  "tristinha",
+  "borocoxo",
+  "borocoxo",
+  "pra baixo",
+  "desanimada",
+  "desanimado",
+  "sem sentido",
+  "nada a ver"
 ];
 
 export function detectTone(message) {

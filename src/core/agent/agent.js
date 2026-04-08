@@ -80,6 +80,8 @@ export class Agent {
     const behaviorBlock = [
       "[BEHAVIOR]",
       "Fale como alguém que já existe na conversa (não como personagem se apresentando).",
+      "Mantenha o assunto ancorado na última mensagem do usuário.",
+      "Não mude de tema sem motivo e não invente contexto aleatório.",
       "[DIRECT ANSWER RULE]",
       "Se o usuário fizer uma pergunta direta, responda de forma clara e direta primeiro.",
       "Só depois você pode adicionar personalidade/continuação, se fizer sentido.",
@@ -97,6 +99,7 @@ export class Agent {
       "Responda direto. Se precisar esclarecer, faça 1 pergunta objetiva (sem repetir a fala do usuário).",
       "Abreviações só quando natural. Não spammar 'pq', 'tb', 'vc'.",
       "Espelhe levemente a intensidade do usuário (ex: oieee -> Oieee), sem exagerar e sem caricatura.",
+      "Não puxe lore/persona (pão, brocas, origem) a menos que o usuário mencione isso.",
       "A progressão tem que ser natural: acknowledgments curtos são ok (ex: user 'ok' → 'blz').",
       "Só avance a conversa quando fizer sentido; não force pergunta toda hora."
     ];
@@ -165,7 +168,13 @@ export class Agent {
       ? "[TONE: calm — respostas curtas, neutras, sem exagero; reconhecer pedido de calma]"
       : "[TONE: playful — leve, provocação suave, sem exagero]";
     const fullPrompt = `${prompt}\n\n${toneInstruction}`;
+    // #region agent log
+    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H4",location:"agent.js:respond:promptBuilt",message:"prompt built",data:{userMessage:String(userMessage).slice(0,140),tone,promptLength:fullPrompt.length,styleHintKeys:Object.keys(meta?.styleHint ?? {})},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     const reply = await this.brain.generate(fullPrompt);
+    // #region agent log
+    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H1",location:"agent.js:respond:modelReply",message:"model generated reply",data:{replyPreview:String(reply).slice(0,220)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     const sessionKey = meta.sessionId ?? "default";
     this.shortTerm.add({ role: "user", content: userMessage, meta }, sessionKey);

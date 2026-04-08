@@ -249,6 +249,9 @@ export class ResponseProcessor {
 
   process(rawText, { tone = null, userMessage = "", styleHint = null } = {}) {
     const cleaned = sanitize(rawText);
+    // #region agent log
+    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H2",location:"responseProcessor.js:process:cleaned",message:"raw vs cleaned",data:{rawPreview:String(rawText).slice(0,180),cleanedPreview:String(cleaned).slice(0,180),tone,userMessagePreview:String(userMessage).slice(0,120)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     let sentences = splitSentences(cleaned);
 
     if (sentences.length === 1 && Math.random() < 0.1) {
@@ -299,6 +302,9 @@ export class ResponseProcessor {
       .filter(Boolean);
     // Keep intensity mirroring very subtle to avoid caricature.
     finalParts = finalParts.map((part) => applyGreetingIntensity(part, userMessage, styleHint));
+    // #region agent log
+    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H2",location:"responseProcessor.js:process:finalParts",message:"post-processor output",data:{partsCount:finalParts.length,partsPreview:finalParts.map((p)=>String(p).slice(0,120))},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     return finalParts.length ? finalParts : [capitalize(stripStandaloneLaughter(cleaned))].filter(Boolean);
   }

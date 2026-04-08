@@ -11,5 +11,14 @@ export const DEFAULTS = {
   maxTags: Number(process.env.TETOS_MAX_TAGS ?? 10),
   responseHistoryLimit: Number(process.env.TETOS_RESPONSE_HISTORY ?? 5),
   responseSimilarity: Number(process.env.TETOS_RESPONSE_SIMILARITY ?? 0.75),
-  responseMaxParts: Number(process.env.TETOS_RESPONSE_MAX_PARTS ?? 4)
+  responseMaxParts: Number(process.env.TETOS_RESPONSE_MAX_PARTS ?? 4),
+  whatsappEnabled: String(process.env.WHATSAPP_ENABLED ?? "false").toLowerCase() === "true",
+  whatsappSessionPath: process.env.WHATSAPP_SESSION_PATH ?? "./data/session",
+  whatsappAutoConnect: String(process.env.WHATSAPP_AUTO_CONNECT ?? "true").toLowerCase() === "true",
+  presenceEnabled: String(process.env.PRESENCE_ENABLED ?? "true").toLowerCase() === "true",
+  presenceCheckMs: Number(process.env.PRESENCE_CHECK_MS ?? 60000),
+  presenceMinCooldownMs: Number(process.env.PRESENCE_MIN_COOLDOWN_MS ?? 1800000),
+  presenceMaxCooldownMs: Number(process.env.PRESENCE_MAX_COOLDOWN_MS ?? 7200000),
+  presenceMaxDailyPerUser: Number(process.env.PRESENCE_MAX_DAILY_PER_USER ?? 3),
+  presenceInactiveMs: Number(process.env.PRESENCE_INACTIVE_MS ?? 600000)
 };

@@ -82,6 +82,26 @@
       "type": "user_identity",
       "value": "a Gabbis, e vocÃª",
       "timestamp": "2026-04-08T03:22:46.234Z"
+    },
+    {
+      "id": "7e72cffd-be21-4e9f-9629-fbee45e710c6",
+      "tags": [
+        "user_name"
+      ],
+      "type": "user_name",
+      "value": "gabbis",
+      "userId": "5516988137617",
+      "timestamp": "2026-04-08T03:50:36.839Z"
+    },
+    {
+      "id": "2f7ca8f8-c6a4-4013-8a33-a15a7d9c91ac",
+      "tags": [
+        "user_name"
+      ],
+      "type": "user_name",
+      "value": "Gabbis",
+      "userId": "5516988137617",
+      "timestamp": "2026-04-08T03:54:25.690Z"
     }
   ],
   "profiles": {
@@ -97,9 +117,9 @@
         "abbrev": 0,
         "laughter": 0,
         "emoji": 0,
-        "total": 3
+        "total": 6
       },
-      "lastUpdated": "2026-04-08T02:40:47.305Z"
+      "lastUpdated": "2026-04-08T03:34:37.061Z"
     },
     "local": {
       "facts": {},
@@ -116,6 +136,24 @@
         "total": 99
       },
       "lastUpdated": "2026-04-08T03:23:52.152Z"
+    },
+    "5516988137617": {
+      "facts": {
+        "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+      },
+      "style": {
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 1,
+        "laughter": 3,
+        "emoji": 0,
+        "total": 26
+      },
+      "lastUpdated": "2026-04-08T03:55:19.346Z"
     }
   },
   "mediumTerm": {
@@ -199,6 +237,64 @@
       {
         "summary": "to com soninho teto",
         "timestamp": "2026-04-08T03:23:52.152Z"
+      }
+    ],
+    "5516988137617": [
+      {
+        "summary": "Quem é você?",
+        "timestamp": "2026-04-08T03:47:55.327Z"
+      },
+      {
+        "summary": "tu é rápida",
+        "timestamp": "2026-04-08T03:48:02.253Z"
+      },
+      {
+        "summary": "pq vc fala coisas muito aleatórias e sem sentido ou haver com a conversa?",
+        "timestamp": "2026-04-08T03:48:19.007Z"
+      },
+      {
+        "summary": "qual seu nome",
+        "timestamp": "2026-04-08T03:50:28.435Z"
+      },
+      {
+        "summary": "Meu nome é gabbis",
+        "timestamp": "2026-04-08T03:50:36.840Z"
+      },
+      {
+        "summary": "eu to meio tristinha",
+        "timestamp": "2026-04-08T03:50:48.449Z"
+      },
+      {
+        "summary": "to borocoxô",
+        "timestamp": "2026-04-08T03:50:59.164Z"
+      },
+      {
+        "summary": "q q isso tem haver",
+        "timestamp": "2026-04-08T03:51:10.118Z"
+      },
+      {
+        "summary": "sou a gabibs",
+        "timestamp": "2026-04-08T03:54:15.117Z"
+      },
+      {
+        "summary": "naaao meu nome é Gabbis",
+        "timestamp": "2026-04-08T03:54:25.690Z"
+      },
+      {
+        "summary": "ta me zoando teto sua safada",
+        "timestamp": "2026-04-08T03:54:34.431Z"
+      },
+      {
+        "summary": "me da dinheiro",
+        "timestamp": "2026-04-08T03:54:47.035Z"
+      },
+      {
+        "summary": "quero te dar beijinhos",
+        "timestamp": "2026-04-08T03:54:58.383Z"
+      },
+      {
+        "summary": "eu gosto muito de você teto",
+        "timestamp": "2026-04-08T03:55:12.384Z"
       }
     ]
   }
