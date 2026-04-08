@@ -8,48 +8,99 @@ const rl = readline.createInterface({
 
 const sessionId = `cli-${Date.now()}`;
 let serverProc = null;
+let apiBaseUrl = null;
+const REPL_PORT = Number(process.env.TETOS_REPL_PORT ?? 3010);
+const FALLBACK_PORTS = [3000, 3001, 3002, 3003, 3004, 3005];
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function pingStatus(timeoutMs = 800) {
+async function pingStatus(baseUrl, timeoutMs = 800) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch("http://localhost:3000/status", { signal: controller.signal });
+    const res = await fetch(`${baseUrl}/status`, { signal: controller.signal });
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H15",location:"chat-repl.js:pingStatus",message:"status probe result",data:{baseUrl,ok:res.ok,status:res.status,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     return res.ok;
   } catch {
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H15",location:"chat-repl.js:pingStatus",message:"status probe failed",data:{baseUrl,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     return false;
   } finally {
     clearTimeout(timer);
   }
 }
 
-function startServer() {
+function startServer(env = process.env) {
+  const safeEnv = Object.fromEntries(
+    Object.entries(env).filter(([key, value]) => {
+      if (!key || key.includes("=")) return false;
+      return typeof value === "string";
+    })
+  );
   const cmd = process.platform === "win32" ? "npm.cmd" : "npm";
   serverProc = spawn(cmd, ["start"], {
     stdio: "inherit",
     shell: false,
-    windowsHide: true
+    windowsHide: true,
+    env: safeEnv
   });
   return serverProc;
 }
 
 async function ensureServer() {
-  if (await pingStatus()) return;
+  const preferred = `http://localhost:${REPL_PORT}`;
+  if (await pingStatus(preferred)) {
+    apiBaseUrl = preferred;
+    return;
+  }
+
+  for (const port of FALLBACK_PORTS) {
+    const candidate = `http://localhost:${port}`;
+    if (candidate === preferred) continue;
+    if (await pingStatus(candidate)) {
+      apiBaseUrl = candidate;
+      return;
+    }
+  }
+
   console.log("Servidor não está rodando. Iniciando `npm start`...");
-  startServer();
+  try {
+    startServer({
+      ...process.env,
+      TETOS_PORT: String(REPL_PORT)
+    });
+  } catch (error) {
+    throw new Error(`falha ao iniciar servidor local (${error.message})`);
+  }
   for (let i = 0; i < 30; i++) {
     await wait(500);
-    if (await pingStatus(1200)) return;
+    if (await pingStatus(preferred, 1200)) {
+      apiBaseUrl = preferred;
+      return;
+    }
+    for (const port of FALLBACK_PORTS) {
+      const candidate = `http://localhost:${port}`;
+      if (candidate === preferred) continue;
+      if (await pingStatus(candidate, 1200)) {
+        apiBaseUrl = candidate;
+        return;
+      }
+    }
   }
-  throw new Error("Não consegui iniciar a API em http://localhost:3000");
+  throw new Error(`Não consegui iniciar a API do chat-repl em http://localhost:${REPL_PORT}`);
 }
 
 async function send(message) {
   await ensureServer();
-  const response = await fetch("http://localhost:3000/chat", {
+  // #region agent log
+  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H15",location:"chat-repl.js:send",message:"sending chat request",data:{apiBaseUrl,messagePreview:String(message).slice(0,120),sessionId,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
+  const response = await fetch(`${apiBaseUrl}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, sessionId, userId: "local" })

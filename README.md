@@ -1,16 +1,46 @@
 # TetOS
 
-## Quick start
+## Como iniciar (rápido)
 ```bash
 cd "C:\Users\jonas\OneDrive\Documentos\GABBIS\BOTS\TetOS"
 npm install
+```
+
+## Pré-requisitos
+- Node.js 18+
+- Ollama instalado: [https://ollama.com/download](https://ollama.com/download)
+
+## Configuração
+1. Copie `.env.example` para `.env`.
+2. Verifique os campos principais:
+   - `TETOS_MODEL=llama3`
+   - `TETOS_OLLAMA_URL=http://localhost:11434`
+   - `WHATSAPP_ENABLED=true` (para testar no WhatsApp)
+
+## Subir serviços
+### 1) Inicie o Ollama e baixe o modelo
+```bash
+ollama serve
+ollama pull llama3
+```
+
+### 2) Inicie a API (HTTP)
+```bash
 npm start
 ```
 
-## Test
+### 3) Inicie o bot do WhatsApp (em outro terminal)
 ```bash
-node scripts/test-chat.js
+npm run start:wa
+```
+
+No primeiro start do WhatsApp, escaneie o QR no terminal.
+
+## Testes rápidos
+Em outro terminal, com a API rodando:
+```bash
 node scripts/test-status.js
+node scripts/test-chat.js
 node scripts/test-session-clear.js
 node scripts/test-memory-search.js
 node scripts/test-memory-save.js
@@ -18,6 +48,10 @@ node scripts/test-memory-delete.js <id>
 node scripts/test-memory-search-post.js
 node scripts/chat-repl.js
 ```
+
+## Problemas comuns
+- `fetch failed` no `/chat`: Ollama não está rodando ou modelo ausente.
+- Sem resposta no WhatsApp: confira `WHATSAPP_ENABLED=true` e se o QR foi autenticado.
 
 ## Config
 Copy `.env.example` to `.env` and adjust if needed:

@@ -10,9 +10,13 @@ export class LongTermMemory {
   }
 
   save(entry) {
+    const normalizedUserId = String(entry?.userId ?? "default");
+    const normalizedContent = String(entry?.content ?? entry?.value ?? "").trim();
     const payload = {
       id: crypto.randomUUID(),
       ...entry,
+      userId: normalizedUserId,
+      content: normalizedContent,
       timestamp: new Date().toISOString()
     };
 
@@ -23,6 +27,13 @@ export class LongTermMemory {
 
   all() {
     return this.data.entries;
+  }
+
+  byUser(userId = "default") {
+    const normalizedUserId = String(userId ?? "default");
+    return this.data.entries.filter(
+      (entry) => String(entry?.userId ?? "default") === normalizedUserId
+    );
   }
 
   search({ tag, query }) {

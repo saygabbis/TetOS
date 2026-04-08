@@ -102,6 +102,36 @@
       "value": "Gabbis",
       "userId": "5516988137617",
       "timestamp": "2026-04-08T03:54:25.690Z"
+    },
+    {
+      "id": "b18bd2f2-63c0-417c-8d0b-c6b007a320bc",
+      "tags": [
+        "bread",
+        "teto",
+        "favorite"
+      ],
+      "content": "Gosta de baguete e pão.",
+      "timestamp": "2026-04-08T19:53:32.887Z"
+    },
+    {
+      "id": "af0b9cee-00a5-4aaf-89b9-68becba82543",
+      "tags": [
+        "user_name"
+      ],
+      "type": "user_name",
+      "value": "Gabbis",
+      "userId": "local",
+      "timestamp": "2026-04-08T20:09:28.094Z"
+    },
+    {
+      "id": "8fb4eb32-ca86-4139-ad54-514232758e75",
+      "tags": [
+        "user_identity"
+      ],
+      "type": "user_identity",
+      "value": "a Gabbis",
+      "userId": "local",
+      "timestamp": "2026-04-08T20:09:51.300Z"
     }
   ],
   "profiles": {
@@ -117,12 +147,14 @@
         "abbrev": 0,
         "laughter": 0,
         "emoji": 0,
-        "total": 6
+        "total": 9
       },
-      "lastUpdated": "2026-04-08T03:34:37.061Z"
+      "lastUpdated": "2026-04-08T19:53:14.679Z"
     },
     "local": {
-      "facts": {},
+      "facts": {
+        "name": "Gabbis"
+      },
       "style": {
         "prefersAbbrev": false,
         "prefersLaughter": false,
@@ -130,12 +162,12 @@
         "brevity": "short"
       },
       "counts": {
-        "abbrev": 26,
-        "laughter": 4,
+        "abbrev": 30,
+        "laughter": 8,
         "emoji": 0,
-        "total": 99
+        "total": 138
       },
-      "lastUpdated": "2026-04-08T03:23:52.152Z"
+      "lastUpdated": "2026-04-08T20:19:28.387Z"
     },
     "5516988137617": {
       "facts": {
@@ -159,62 +191,6 @@
   "mediumTerm": {
     "local": [
       {
-        "summary": "Me ajuda: eu quero que vocÃª explique bem direitinho por que minha conversa tava em loop e o que eu posso testar agora. DÃ¡ um passo a passo curto, mas com clareza.",
-        "timestamp": "2026-04-08T03:07:45.776Z"
-      },
-      {
-        "summary": "quem é você?",
-        "timestamp": "2026-04-08T03:09:14.190Z"
-      },
-      {
-        "summary": "porque você não consegue falar seu nome?",
-        "timestamp": "2026-04-08T03:09:26.122Z"
-      },
-      {
-        "summary": "qual seu nome?",
-        "timestamp": "2026-04-08T03:09:33.289Z"
-      },
-      {
-        "summary": "porque você pareceu responder de forma automática",
-        "timestamp": "2026-04-08T03:09:46.939Z"
-      },
-      {
-        "summary": "te amo kkkk",
-        "timestamp": "2026-04-08T03:19:19.788Z"
-      },
-      {
-        "summary": "me explica em detalhes por que estava em loop, como corrigir no cÃ³digo e quais testes devo rodar agora pra validar de ponta a ponta sem ficar quebrado",
-        "timestamp": "2026-04-08T03:19:21.738Z"
-      },
-      {
-        "summary": "Eu sou a Gabbis, e você?",
-        "timestamp": "2026-04-08T03:20:44.891Z"
-      },
-      {
-        "summary": "quem é você?",
-        "timestamp": "2026-04-08T03:20:52.559Z"
-      },
-      {
-        "summary": "Eu sou a Gabbis, e vocÃª?",
-        "timestamp": "2026-04-08T03:21:50.755Z"
-      },
-      {
-        "summary": "quem Ã© vocÃª?",
-        "timestamp": "2026-04-08T03:21:51.226Z"
-      },
-      {
-        "summary": "Eu sou a Gabbis, e vocÃª?",
-        "timestamp": "2026-04-08T03:22:24.717Z"
-      },
-      {
-        "summary": "quem Ã© vocÃª?",
-        "timestamp": "2026-04-08T03:22:25.313Z"
-      },
-      {
-        "summary": "Eu sou a Gabbis, e vocÃª?",
-        "timestamp": "2026-04-08T03:22:46.234Z"
-      },
-      {
         "summary": "quem Ã© vocÃª?",
         "timestamp": "2026-04-08T03:22:46.236Z"
       },
@@ -237,6 +213,62 @@
       {
         "summary": "to com soninho teto",
         "timestamp": "2026-04-08T03:23:52.152Z"
+      },
+      {
+        "summary": "como assim:",
+        "timestamp": "2026-04-08T19:54:09.409Z"
+      },
+      {
+        "summary": "ah só queria conversar, como vai?",
+        "timestamp": "2026-04-08T20:01:15.217Z"
+      },
+      {
+        "summary": "você tá se perdendo um pouco na conversa",
+        "timestamp": "2026-04-08T20:01:39.815Z"
+      },
+      {
+        "summary": "não, eu to falando de mim",
+        "timestamp": "2026-04-08T20:08:39.036Z"
+      },
+      {
+        "summary": "você é estranha",
+        "timestamp": "2026-04-08T20:09:00.231Z"
+      },
+      {
+        "summary": "qual meu nome",
+        "timestamp": "2026-04-08T20:09:12.867Z"
+      },
+      {
+        "summary": "meu nome é Gabbis",
+        "timestamp": "2026-04-08T20:09:28.095Z"
+      },
+      {
+        "summary": "sim é seu nome",
+        "timestamp": "2026-04-08T20:09:44.156Z"
+      },
+      {
+        "summary": "eu sou a Gabbis",
+        "timestamp": "2026-04-08T20:09:51.301Z"
+      },
+      {
+        "summary": "como você é linda",
+        "timestamp": "2026-04-08T20:18:08.444Z"
+      },
+      {
+        "summary": "você se lembra de alguma coisa?",
+        "timestamp": "2026-04-08T20:18:24.815Z"
+      },
+      {
+        "summary": "qual o meu nome:",
+        "timestamp": "2026-04-08T20:18:35.499Z"
+      },
+      {
+        "summary": "ISSOOOO oieee tetoooo",
+        "timestamp": "2026-04-08T20:18:49.307Z"
+      },
+      {
+        "summary": "to dando risada",
+        "timestamp": "2026-04-08T20:19:10.757Z"
       }
     ],
     "5516988137617": [

@@ -63,8 +63,17 @@ export class Agent {
       ? ["[USER STYLE HINTS]", Object.entries(styleHint).map(([k, v]) => `${k}: ${v}`).join("\n")]
       : [];
 
-    const systemBlock = [
-      "[SYSTEM]",
+    const hardRulesBlock = [
+      "[HARD RULES]",
+      "Responda sempre em português do Brasil.",
+      "Não diga que é IA/assistente/modelo e não fale sobre treinamento.",
+      "Não use ações entre asteriscos e não quebre personagem.",
+      "Não entre em meta-conversa sobre a própria resposta.",
+      "Priorize clareza e compreensão acima de performance de personagem."
+    ];
+
+    const personaBlock = [
+      "[PERSONA]",
       `Identity (internal): ${this.personality.identity?.join(" ") ?? ""}`,
       `Tone: ${this.personality.tone}.`,
       `Style: ${this.personality.style?.join("; ") ?? ""}.`,
@@ -101,7 +110,8 @@ export class Agent {
       "Espelhe levemente a intensidade do usuário (ex: oieee -> Oieee), sem exagerar e sem caricatura.",
       "Não puxe lore/persona (pão, brocas, origem) a menos que o usuário mencione isso.",
       "A progressão tem que ser natural: acknowledgments curtos são ok (ex: user 'ok' → 'blz').",
-      "Só avance a conversa quando fizer sentido; não force pergunta toda hora."
+      "Só avance a conversa quando fizer sentido; não force pergunta toda hora.",
+      "Varia levemente a estrutura frasal entre respostas para evitar padrão repetitivo."
     ];
 
     const intentBlock = [
@@ -120,9 +130,7 @@ export class Agent {
     ];
 
     const factsBlock = userName ? ["[FACTS]", `User name: ${userName}`] : [];
-    const reinforceBlock = reinforce.length && Math.random() < 0.1
-      ? ["[MEMORY NOTE]", ...reinforce]
-      : [];
+    const reinforceBlock = reinforce.length ? ["[MEMORY NOTE]", ...reinforce] : [];
 
 
     const profileBlock = profile?.facts && Object.keys(profile.facts).length
@@ -138,7 +146,8 @@ export class Agent {
       : [];
 
     return [
-      ...systemBlock,
+      ...hardRulesBlock,
+      ...personaBlock,
       ...behaviorBlock,
       ...intentBlock,
       ...antiNonsenseBlock,

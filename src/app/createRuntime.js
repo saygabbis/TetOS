@@ -101,12 +101,14 @@ export async function handleIncomingMessage(runtime, payload = {}) {
   const existingProfile = runtime.longTerm.getProfile(safeUserId ?? "default");
   const style = extractStyle(input);
   const repeatedChars = (input.match(/([aeiou])\1{1,}/gi) ?? []).length;
+  const burstMessages = input.split("\n").filter(Boolean).length;
   const styleHint = {
     ...(existingProfile?.style ?? {}),
     userIsShort: style.isShort,
     userIsLong: style.isLong,
     repeatedVowels: repeatedChars,
-    userGreetingIntensity: /^(oi+|oie+|eae+|hey+)/i.test(input.trim()) ? repeatedChars : 0
+    userGreetingIntensity: /^(oi+|oie+|eae+|hey+)/i.test(input.trim()) ? repeatedChars : 0,
+    userBurst: burstMessages > 1
   };
 
   const replies = await runtime.chatService.handleMessage(

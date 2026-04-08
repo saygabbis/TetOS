@@ -98,6 +98,11 @@ function splitByComma(sentence) {
   return parts.filter((part) => part.length > 3);
 }
 
+function isSensitiveMessage(text) {
+  const t = String(text ?? "").toLowerCase();
+  return /\b(ansiedade|depress|luto|morte|suic|trauma|abuso|doen[çc]a|hospital|urgente|socorro)\b/.test(t);
+}
+
 function dropMetaQuestions(text) {
   const sentences = splitSentences(String(text));
   const filtered = sentences.filter((s) => {
@@ -196,6 +201,9 @@ export class ResponseProcessor {
     this.history = [];
     this.lastHadLaughter = false;
     this.laughterCooldown = 0;
+    this.imperfectionEvents = [];
+    this.maxImperfectionsPerWindow = 1;
+    this.imperfectionWindowMs = 10 * 60 * 1000;
   }
 
   buildNaturalParts(sentences) {
@@ -254,7 +262,7 @@ export class ResponseProcessor {
     // #endregion
     let sentences = splitSentences(cleaned);
 
-    if (sentences.length === 1 && Math.random() < 0.1) {
+    if (sentences.length === 1) {
       const split = splitByComma(sentences[0]);
       if (split.length > 1) {
         sentences = split;
@@ -262,6 +270,9 @@ export class ResponseProcessor {
     }
 
     const parts = this.buildNaturalParts(sentences);
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H12",location:"responseProcessor.js:process:split",message:"split decision",data:{rawLen:String(rawText??"").length,cleanedLen:cleaned.length,sentences:sentences.length,partsBeforeMerge:parts.length,firstSentencePreview:String(sentences[0]??"").slice(0,120),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     let finalParts = mergeShortParts(parts)
       .map(capitalize)
       .filter((part) => part.length > 1);
@@ -302,11 +313,39 @@ export class ResponseProcessor {
       .filter(Boolean);
     // Keep intensity mirroring very subtle to avoid caricature.
     finalParts = finalParts.map((part) => applyGreetingIntensity(part, userMessage, styleHint));
+    finalParts = this.applyCalibratedImperfection(finalParts, { tone, userMessage });
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H13",location:"responseProcessor.js:process:final",message:"final parts after post-process",data:{finalParts:finalParts.length,finalPreview:finalParts.map((p)=>String(p).slice(0,100)),tone,userMessagePreview:String(userMessage).slice(0,80),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     // #region agent log
     fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H2",location:"responseProcessor.js:process:finalParts",message:"post-processor output",data:{partsCount:finalParts.length,partsPreview:finalParts.map((p)=>String(p).slice(0,120))},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
 
     return finalParts.length ? finalParts : [capitalize(stripStandaloneLaughter(cleaned))].filter(Boolean);
+  }
+
+  canInjectImperfection({ tone, userMessage }) {
+    if (tone === "calm") return false;
+    if (isSensitiveMessage(userMessage)) return false;
+    const now = Date.now();
+    this.imperfectionEvents = this.imperfectionEvents.filter(
+      (timestamp) => now - timestamp < this.imperfectionWindowMs
+    );
+    return this.imperfectionEvents.length < this.maxImperfectionsPerWindow;
+  }
+
+  applyCalibratedImperfection(parts, context = {}) {
+    const safeParts = Array.isArray(parts) ? [...parts] : [];
+    if (!safeParts.length || !this.canInjectImperfection(context)) return safeParts;
+    const first = String(safeParts[0] ?? "");
+    if (!first || first.length > 70 || /[*]/.test(first)) return safeParts;
+    if (!/\b(oi|sim|entendi|boa|fechou|blz|tá|ta|vamos|certo)\b/i.test(first)) return safeParts;
+
+    const typo = first.replace(/\b(entendi)\b/i, "entnedi");
+    if (typo === first) return safeParts;
+    safeParts[0] = `${typo}\n*entendi`;
+    this.imperfectionEvents.push(Date.now());
+    return safeParts;
   }
 
   isRepetitive(text) {
