@@ -7,7 +7,15 @@ export class Agent {
     this.contextBuilder = contextBuilder;
   }
 
-  buildPrompt(userMessage, longTermEntries, meta = {}, history = null) {
+  static containsIdentityLoop(text) {
+    if (!text) return false;
+    return /\b(eu sou (a )?kasane teto|eu sou a própria kasane teto|sou kasane teto)\b/i.test(
+      String(text)
+    );
+  }
+
+  buildPrompt(userMessage, memoryBundle, meta = {}, history = null) {
+    const longTermEntries = memoryBundle?.longTerm ?? memoryBundle ?? [];
     const memoryText = longTermEntries
       .map((entry) => {
         const tags = Array.isArray(entry.tags)
@@ -17,10 +25,25 @@ export class Agent {
       })
       .join("\n");
 
+    const profile = memoryBundle?.profile ?? this.longTerm.getProfile?.(meta.userId ?? "default") ?? {};
+    const userName = profile?.facts?.name ?? null;
+
+    const reinforce = longTermEntries
+      .filter((entry) => entry.type && entry.value)
+      .slice(-1)
+      .map((entry) => `Lembrete: ${entry.type.replace("user_", "")} = ${entry.value}`);
+
+    const mediumTerm = memoryBundle?.mediumTerm ?? [];
+    const mediumText = mediumTerm
+      .map((entry) => `- ${entry.summary}`)
+      .join("\n");
+
     const sessionKey = meta.sessionId ?? "default";
     const historySource = Array.isArray(history)
       ? history
       : this.shortTerm.getAll(sessionKey);
+    const lastAssistant = [...historySource].reverse().find((m) => m?.role === "assistant");
+    const assistantJustStatedIdentity = Agent.containsIdentityLoop(lastAssistant?.content);
     const conversationText = historySource
       .map((msg) => {
         const metaText = msg.meta
@@ -35,10 +58,14 @@ export class Agent {
     const metaBlock = Object.keys(meta).length
       ? ["[META]", Object.entries(meta).map(([k, v]) => `${k}: ${v}`).join("\n")]
       : [];
+    const styleHint = meta?.styleHint ?? null;
+    const styleHintBlock = styleHint && typeof styleHint === "object"
+      ? ["[USER STYLE HINTS]", Object.entries(styleHint).map(([k, v]) => `${k}: ${v}`).join("\n")]
+      : [];
 
     const systemBlock = [
       "[SYSTEM]",
-      `Identity: ${this.personality.identity?.join(" ") ?? ""}`,
+      `Identity (internal): ${this.personality.identity?.join(" ") ?? ""}`,
       `Tone: ${this.personality.tone}.`,
       `Style: ${this.personality.style?.join("; ") ?? ""}.`,
       `Traits: ${this.personality.traits?.join("; ") ?? ""}.`,
@@ -46,9 +73,59 @@ export class Agent {
       `Social: ${this.personality.social?.join("; ") ?? ""}.`,
       `Communication: ${this.personality.communication?.join("; ") ?? ""}.`,
       `Intelligence: ${this.personality.intelligence?.join("; ") ?? ""}.`,
+      `Rules: ${this.personality.rules?.join("; ") ?? ""}.`,
       `Restrictions: ${this.personality.restrictions?.join(" ") ?? ""}.`
     ].filter(Boolean);
 
+    const behaviorBlock = [
+      "[BEHAVIOR]",
+      "Fale como alguém que já existe na conversa (não como personagem se apresentando).",
+      "[DIRECT ANSWER RULE]",
+      "Se o usuário fizer uma pergunta direta, responda de forma clara e direta primeiro.",
+      "Só depois você pode adicionar personalidade/continuação, se fizer sentido.",
+      "A resposta correta vem antes da personalidade.",
+      "Não repita sua identidade a menos que o usuário pergunte explicitamente.",
+      "Nunca use lembretes de identidade como filler.",
+      ...(assistantJustStatedIdentity
+        ? ["Regra extra (próxima resposta): não mencione identidade de jeito nenhum (evite qualquer 'eu sou...')."]
+        : []),
+      "Não diga 'lembra?!' ou qualquer lembrete desse tipo.",
+      "Evite títulos/autoproclamações (ex: 'rainha', 'princesa').",
+      "Evite meta-conversa. Não fale coisas tipo: 'você disse', 'você perguntou', 'sua mensagem'.",
+      "Não ecoe a mensagem do usuário (não repita a frase dele).",
+      "Evite espelhos retóricos do tipo: 'você acha que eu não entendi?' / 'você tá perguntando se...'.",
+      "Responda direto. Se precisar esclarecer, faça 1 pergunta objetiva (sem repetir a fala do usuário).",
+      "Abreviações só quando natural. Não spammar 'pq', 'tb', 'vc'.",
+      "Espelhe levemente a intensidade do usuário (ex: oieee -> Oieee), sem exagerar e sem caricatura.",
+      "A progressão tem que ser natural: acknowledgments curtos são ok (ex: user 'ok' → 'blz').",
+      "Só avance a conversa quando fizer sentido; não force pergunta toda hora."
+    ];
+
+    const intentBlock = [
+      "[RESPONSE INTENT]",
+      "Antes de responder, decida internamente qual é o objetivo dessa resposta.",
+      "Intenções possíveis: responder, esclarecer, reconhecer, ajudar, reagir.",
+      "Não responda sem intenção.",
+      "Se o usuário sinalizar que tá estranho/ruim: reconheça, ajuste o tom e responda direto (sem defensiva)."
+    ];
+
+    const antiNonsenseBlock = [
+      "[ANTI-NONSENSE]",
+      "Evite respostas sem sentido, frases aleatórias, ou fillers vazios.",
+      "Se o usuário vier neutro (ex: 'oi', 'oie'), responda simples e humano (cumprimento curto).",
+      "Não tente ser espirituosa de propósito quando a entrada for simples."
+    ];
+
+    const factsBlock = userName ? ["[FACTS]", `User name: ${userName}`] : [];
+    const reinforceBlock = reinforce.length && Math.random() < 0.1
+      ? ["[MEMORY NOTE]", ...reinforce]
+      : [];
+
+
+    const profileBlock = profile?.facts && Object.keys(profile.facts).length
+      ? ["[USER PROFILE]", Object.entries(profile.facts).map(([k, v]) => `${k}: ${v}`).join("\n")]
+      : [];
+    const mediumBlock = mediumText ? ["[MEDIUM MEMORY]", mediumText] : [];
     const memoryBlock = memoryText
       ? ["[MEMORY]", memoryText]
       : [];
@@ -59,9 +136,17 @@ export class Agent {
 
     return [
       ...systemBlock,
+      ...behaviorBlock,
+      ...intentBlock,
+      ...antiNonsenseBlock,
+      ...styleHintBlock,
+      ...profileBlock,
+      ...mediumBlock,
       ...memoryBlock,
       ...conversationBlock,
       ...metaBlock,
+      ...factsBlock,
+      ...reinforceBlock,
       "[INPUT]",
       `User: ${userMessage}`,
       "[OUTPUT]",
@@ -71,12 +156,16 @@ export class Agent {
       .join("\n\n");
   }
 
-  async respond(userMessage, meta = {}, history = null) {
+  async respond(userMessage, meta = {}, history = null, tone = null) {
     const relevant = this.contextBuilder
-      ? this.contextBuilder.build(userMessage)
-      : this.longTerm.all().slice(-5);
+      ? this.contextBuilder.build(userMessage, 5, meta.userId ?? "default")
+      : { longTerm: this.longTerm.all().slice(-5), mediumTerm: [], profile: {} };
     const prompt = this.buildPrompt(userMessage, relevant, meta, history);
-    const reply = await this.brain.generate(prompt);
+    const toneInstruction = tone === "calm"
+      ? "[TONE: calm — respostas curtas, neutras, sem exagero; reconhecer pedido de calma]"
+      : "[TONE: playful — leve, provocação suave, sem exagero]";
+    const fullPrompt = `${prompt}\n\n${toneInstruction}`;
+    const reply = await this.brain.generate(fullPrompt);
 
     const sessionKey = meta.sessionId ?? "default";
     this.shortTerm.add({ role: "user", content: userMessage, meta }, sessionKey);

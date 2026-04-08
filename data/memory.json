@@ -1,3 +1,205 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "id": "7a4c4b29-f3ff-4716-8f81-636dd34ee567",
+      "tags": [
+        "bread",
+        "teto",
+        "favorite"
+      ],
+      "content": "Gosta de baguete e pão.",
+      "timestamp": "2026-04-07T23:21:47.264Z"
+    },
+    {
+      "id": "3f53939e-9ce6-4261-96d2-d7bae0313e8c",
+      "tags": [
+        "user_name"
+      ],
+      "type": "user_name",
+      "value": "Gabbis",
+      "timestamp": "2026-04-08T00:07:25.731Z"
+    },
+    {
+      "id": "2db01b98-be19-460c-8d0e-d434d821b5ef",
+      "tags": [
+        "user_like"
+      ],
+      "type": "user_like",
+      "value": "você",
+      "timestamp": "2026-04-08T01:23:07.434Z"
+    },
+    {
+      "id": "e76d35a6-08be-45b2-a261-00df4a2544b1",
+      "tags": [
+        "user_name"
+      ],
+      "type": "user_name",
+      "value": "Gabbis",
+      "timestamp": "2026-04-08T01:43:07.973Z"
+    },
+    {
+      "id": "84274230-33a3-4227-b8f3-c68af3133a15",
+      "tags": [
+        "bread",
+        "teto",
+        "favorite"
+      ],
+      "content": "Gosta de baguete e pão.",
+      "timestamp": "2026-04-08T02:16:35.105Z"
+    },
+    {
+      "id": "385bf9aa-7560-451f-9ff7-2d5c4c4c343a",
+      "tags": [
+        "user_identity"
+      ],
+      "type": "user_identity",
+      "value": "a Gabbis, e você",
+      "timestamp": "2026-04-08T03:20:44.890Z"
+    },
+    {
+      "id": "d4241b4e-188b-491c-8f92-cef27bfd332a",
+      "tags": [
+        "user_identity"
+      ],
+      "type": "user_identity",
+      "value": "a Gabbis, e vocÃª",
+      "timestamp": "2026-04-08T03:21:50.754Z"
+    },
+    {
+      "id": "3e06d227-2370-4fbc-985b-d465e009245e",
+      "tags": [
+        "user_identity"
+      ],
+      "type": "user_identity",
+      "value": "a Gabbis, e vocÃª",
+      "timestamp": "2026-04-08T03:22:24.716Z"
+    },
+    {
+      "id": "e0c7a935-0d02-4be1-98cf-eaf7cd602ddd",
+      "tags": [
+        "user_identity"
+      ],
+      "type": "user_identity",
+      "value": "a Gabbis, e vocÃª",
+      "timestamp": "2026-04-08T03:22:46.234Z"
+    }
+  ],
+  "profiles": {
+    "default": {
+      "facts": {},
+      "style": {
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 0,
+        "laughter": 0,
+        "emoji": 0,
+        "total": 3
+      },
+      "lastUpdated": "2026-04-08T02:40:47.305Z"
+    },
+    "local": {
+      "facts": {},
+      "style": {
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 26,
+        "laughter": 4,
+        "emoji": 0,
+        "total": 99
+      },
+      "lastUpdated": "2026-04-08T03:23:52.152Z"
+    }
+  },
+  "mediumTerm": {
+    "local": [
+      {
+        "summary": "Me ajuda: eu quero que vocÃª explique bem direitinho por que minha conversa tava em loop e o que eu posso testar agora. DÃ¡ um passo a passo curto, mas com clareza.",
+        "timestamp": "2026-04-08T03:07:45.776Z"
+      },
+      {
+        "summary": "quem é você?",
+        "timestamp": "2026-04-08T03:09:14.190Z"
+      },
+      {
+        "summary": "porque você não consegue falar seu nome?",
+        "timestamp": "2026-04-08T03:09:26.122Z"
+      },
+      {
+        "summary": "qual seu nome?",
+        "timestamp": "2026-04-08T03:09:33.289Z"
+      },
+      {
+        "summary": "porque você pareceu responder de forma automática",
+        "timestamp": "2026-04-08T03:09:46.939Z"
+      },
+      {
+        "summary": "te amo kkkk",
+        "timestamp": "2026-04-08T03:19:19.788Z"
+      },
+      {
+        "summary": "me explica em detalhes por que estava em loop, como corrigir no cÃ³digo e quais testes devo rodar agora pra validar de ponta a ponta sem ficar quebrado",
+        "timestamp": "2026-04-08T03:19:21.738Z"
+      },
+      {
+        "summary": "Eu sou a Gabbis, e você?",
+        "timestamp": "2026-04-08T03:20:44.891Z"
+      },
+      {
+        "summary": "quem é você?",
+        "timestamp": "2026-04-08T03:20:52.559Z"
+      },
+      {
+        "summary": "Eu sou a Gabbis, e vocÃª?",
+        "timestamp": "2026-04-08T03:21:50.755Z"
+      },
+      {
+        "summary": "quem Ã© vocÃª?",
+        "timestamp": "2026-04-08T03:21:51.226Z"
+      },
+      {
+        "summary": "Eu sou a Gabbis, e vocÃª?",
+        "timestamp": "2026-04-08T03:22:24.717Z"
+      },
+      {
+        "summary": "quem Ã© vocÃª?",
+        "timestamp": "2026-04-08T03:22:25.313Z"
+      },
+      {
+        "summary": "Eu sou a Gabbis, e vocÃª?",
+        "timestamp": "2026-04-08T03:22:46.234Z"
+      },
+      {
+        "summary": "quem Ã© vocÃª?",
+        "timestamp": "2026-04-08T03:22:46.236Z"
+      },
+      {
+        "summary": "te amo kkk",
+        "timestamp": "2026-04-08T03:22:46.921Z"
+      },
+      {
+        "summary": "tudooo quem é você?",
+        "timestamp": "2026-04-08T03:23:31.914Z"
+      },
+      {
+        "summary": "caramba que seca kkk",
+        "timestamp": "2026-04-08T03:23:38.452Z"
+      },
+      {
+        "summary": "tá calor mesmo",
+        "timestamp": "2026-04-08T03:23:45.899Z"
+      },
+      {
+        "summary": "to com soninho teto",
+        "timestamp": "2026-04-08T03:23:52.152Z"
+      }
+    ]
+  }
 }

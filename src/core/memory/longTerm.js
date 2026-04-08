@@ -4,7 +4,9 @@ import crypto from "node:crypto";
 export class LongTermMemory {
   constructor(path) {
     this.path = path;
-    this.data = readJson(this.path, { entries: [] });
+    this.data = readJson(this.path, { entries: [], profiles: {}, mediumTerm: {} });
+    this.data.profiles ??= {};
+    this.data.mediumTerm ??= {};
   }
 
   save(entry) {
@@ -57,5 +59,45 @@ export class LongTermMemory {
       writeJson(this.path, this.data);
     }
     return removed;
+  }
+
+  getProfile(userId = "default") {
+    return this.data.profiles[userId] ?? { facts: {}, style: {}, counts: {} };
+  }
+
+  updateProfile(userId = "default", patch = {}) {
+    const current = this.getProfile(userId);
+    const next = {
+      ...current,
+      ...patch,
+      facts: { ...current.facts, ...(patch.facts ?? {}) },
+      style: { ...current.style, ...(patch.style ?? {}) },
+      counts: { ...current.counts, ...(patch.counts ?? {}) },
+      lastUpdated: new Date().toISOString()
+    };
+    this.data.profiles[userId] = next;
+    writeJson(this.path, this.data);
+    return next;
+  }
+
+  getMediumTerm(userId = "default") {
+    return this.data.mediumTerm[userId] ?? [];
+  }
+
+  addMediumTerm(userId = "default", entry, limit = 20) {
+    const list = this.getMediumTerm(userId);
+    const next = [...list, entry].slice(-limit);
+    this.data.mediumTerm[userId] = next;
+    writeJson(this.path, this.data);
+    return next;
+  }
+
+  pruneMediumTerm(userId = "default", limit = 20) {
+    const list = this.getMediumTerm(userId);
+    if (list.length <= limit) return list;
+    const next = list.slice(-limit);
+    this.data.mediumTerm[userId] = next;
+    writeJson(this.path, this.data);
+    return next;
   }
 }

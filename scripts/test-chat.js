@@ -12,3 +12,6 @@ if (!response.ok) {
 
 const data = await response.json();
 console.log(data);
+if (Array.isArray(data.replies)) {
+  console.log("Teto:", data.replies.join(" "));
+}

@@ -5,9 +5,13 @@ import { ShortTermMemory } from "../../core/memory/shortTerm.js";
 import { LongTermMemory } from "../../core/memory/longTerm.js";
 import { ContextBuilder } from "../../core/memory/contextBuilder.js";
 import { autoTag } from "../../core/memory/tagger.js";
+import { extractFacts, extractStyle, isMeaningful } from "../../core/memory/extractor.js";
+import { detectTone } from "../../core/memory/toneDetector.js";
 import { OllamaClient } from "../../core/brain/ollamaClient.js";
 import { Agent } from "../../core/agent/agent.js";
 import { ChatService } from "../../modules/chat/chatService.js";
+import { ResponseProcessor } from "../../modules/chat/responseProcessor.js";
+import { BasicLoop } from "../../modules/scheduler/basicLoop.js";
 import { loadPersonality } from "../../core/personality/index.js";
 
 const app = express();
@@ -28,7 +32,13 @@ const agent = new Agent({
   brain,
   contextBuilder
 });
-const chatService = new ChatService(agent);
+const responseProcessor = new ResponseProcessor({
+  maxParts: DEFAULTS.responseMaxParts,
+  similarityThreshold: DEFAULTS.responseSimilarity,
+  historyLimit: DEFAULTS.responseHistoryLimit
+});
+const basicLoop = new BasicLoop();
+const chatService = new ChatService(agent, responseProcessor);
 
 app.post("/chat", async (req, res) => {
   const { message, messages, userId, sessionId } = req.body ?? {};
@@ -75,12 +85,65 @@ app.post("/chat", async (req, res) => {
   }
 
   try {
-    const reply = await chatService.handleMessage(
+    const tone = detectTone(input);
+    const existingProfile = longTerm.getProfile(safeUserId ?? "default");
+    const style = extractStyle(input);
+    const repeatedChars = (input.match(/([aeiou])\1{1,}/gi) ?? []).length;
+    const styleHint = {
+      ...(existingProfile?.style ?? {}),
+      userIsShort: style.isShort,
+      userIsLong: style.isLong,
+      repeatedVowels: repeatedChars,
+      userGreetingIntensity: /^(oi+|oie+|eae+|hey+)/i.test(input.trim()) ? repeatedChars : 0
+    };
+    const replies = await chatService.handleMessage(
       input,
-      { userId: safeUserId, sessionId: safeSessionId },
-      normalizedHistory
+      { userId: safeUserId, sessionId: safeSessionId, styleHint },
+      normalizedHistory,
+      tone
     );
-    return res.json({ reply });
+
+    basicLoop.touch();
+
+    const facts = extractFacts(input);
+    for (const fact of facts) {
+      longTerm.save({ tags: [fact.type], type: fact.type, value: fact.value });
+    }
+
+    const profile = existingProfile;
+    const counts = profile.counts ?? {};
+    const nextCounts = {
+      abbrev: (counts.abbrev ?? 0) + (style.usesAbbrev ? 1 : 0),
+      laughter: (counts.laughter ?? 0) + (style.usesLaughter ? 1 : 0),
+      emoji: (counts.emoji ?? 0) + (style.usesEmojis ? 1 : 0)
+    };
+    const total = Math.max(1, (counts.total ?? 0) + 1);
+    const nextStyle = {
+      prefersAbbrev: nextCounts.abbrev / total > 0.4,
+      prefersLaughter: nextCounts.laughter / total > 0.4,
+      prefersEmoji: nextCounts.emoji / total > 0.3,
+      brevity: style.isShort ? "short" : style.isLong ? "long" : "medium"
+    };
+
+    longTerm.updateProfile(safeUserId ?? "default", {
+      facts: {
+        ...(facts.find((f) => f.type === "user_name")
+          ? { name: facts.find((f) => f.type === "user_name").value }
+          : {})
+      },
+      style: nextStyle,
+      counts: { ...nextCounts, total }
+    });
+
+    if (isMeaningful(input)) {
+      longTerm.addMediumTerm(safeUserId ?? "default", {
+        summary: input,
+        timestamp: new Date().toISOString()
+      });
+      longTerm.pruneMediumTerm(safeUserId ?? "default", 20);
+    }
+
+    return res.json({ replies });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -113,7 +176,7 @@ app.post("/memory/delete", (req, res) => {
 });
 
 app.get("/memory", (req, res) => {
-  return res.json({ entries: longTerm.all() });
+  return res.json({ entries: longTerm.all(), profiles: longTerm.data?.profiles, mediumTerm: longTerm.data?.mediumTerm });
 });
 
 app.get("/memory/search", (req, res) => {
@@ -126,6 +189,11 @@ app.post("/memory/search", (req, res) => {
   const { tag, q } = req.body ?? {};
   const results = longTerm.search({ tag, query: q });
   return res.json({ entries: results });
+});
+
+app.post("/nudge", (req, res) => {
+  const message = basicLoop.maybeNudge();
+  return res.json({ message });
 });
 
 app.post("/session/clear", (req, res) => {
@@ -147,7 +215,10 @@ app.get("/status", (req, res) => {
       maxHistory: DEFAULTS.maxHistory,
       maxContentLength: DEFAULTS.maxContentLength,
       maxIdLength: DEFAULTS.maxIdLength,
-      maxTags: DEFAULTS.maxTags
+      maxTags: DEFAULTS.maxTags,
+      responseHistory: DEFAULTS.responseHistoryLimit,
+      responseSimilarity: DEFAULTS.responseSimilarity,
+      responseMaxParts: DEFAULTS.responseMaxParts
     }
   });
 });

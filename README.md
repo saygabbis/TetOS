@@ -16,6 +16,7 @@ node scripts/test-memory-search.js
 node scripts/test-memory-save.js
 node scripts/test-memory-delete.js <id>
 node scripts/test-memory-search-post.js
+node scripts/chat-repl.js
 ```
 
 ## Config
@@ -30,9 +31,12 @@ Copy `.env.example` to `.env` and adjust if needed:
 - `TETOS_MAX_CONTENT`
 - `TETOS_MAX_ID`
 - `TETOS_MAX_TAGS`
+- `TETOS_RESPONSE_HISTORY`
+- `TETOS_RESPONSE_SIMILARITY`
+- `TETOS_RESPONSE_MAX_PARTS`
 
 ## API
-- `POST /chat` (accepts `message` or `messages[]`, optional `userId`, `sessionId`; roles allowed: user/assistant/system; missing role defaults to user; last TETOS_MAX_HISTORY kept; short-term separated by sessionId; userId/sessionId max TETOS_MAX_ID chars; message content max TETOS_MAX_CONTENT chars)
+- `POST /chat` (accepts `message` or `messages[]`, optional `userId`, `sessionId`; roles allowed: user/assistant/system; missing role defaults to user; last TETOS_MAX_HISTORY kept; short-term separated by sessionId; userId/sessionId max TETOS_MAX_ID chars; message content max TETOS_MAX_CONTENT chars; tone detection + response processing; returns `replies[]`)
 - `POST /memory/save` (accepts `tag` or `tags[]`, capped by TETOS_MAX_TAGS)
 - `POST /memory/delete`
 - `GET /memory`

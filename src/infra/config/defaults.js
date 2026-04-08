@@ -8,5 +8,8 @@ export const DEFAULTS = {
   maxHistory: Number(process.env.TETOS_MAX_HISTORY ?? 12),
   maxContentLength: Number(process.env.TETOS_MAX_CONTENT ?? 2000),
   maxIdLength: Number(process.env.TETOS_MAX_ID ?? 64),
-  maxTags: Number(process.env.TETOS_MAX_TAGS ?? 10)
+  maxTags: Number(process.env.TETOS_MAX_TAGS ?? 10),
+  responseHistoryLimit: Number(process.env.TETOS_RESPONSE_HISTORY ?? 5),
+  responseSimilarity: Number(process.env.TETOS_RESPONSE_SIMILARITY ?? 0.75),
+  responseMaxParts: Number(process.env.TETOS_RESPONSE_MAX_PARTS ?? 4)
 };
