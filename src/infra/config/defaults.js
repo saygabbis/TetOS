@@ -1,6 +1,23 @@
+const ollamaModeRaw = (process.env.TETOS_OLLAMA_MODE ?? "local").toLowerCase();
+const ollamaMode = ollamaModeRaw === "cloud" ? "cloud" : "local";
+
+const ollamaBaseUrl =
+  ollamaMode === "cloud"
+    ? (process.env.TETOS_OLLAMA_CLOUD_URL ?? "https://ollama.com")
+    : (process.env.TETOS_OLLAMA_URL ?? "http://localhost:11434");
+
+const model =
+  process.env.TETOS_MODEL ??
+  (ollamaMode === "cloud" ? "minimax-m2.7:cloud" : "llama3");
+
+const ollamaApiKey =
+  process.env.TETOS_OLLAMA_API_KEY ?? process.env.OLLAMA_API_KEY ?? "";
+
 export const DEFAULTS = {
-  model: process.env.TETOS_MODEL ?? "llama3",
-  ollamaBaseUrl: process.env.TETOS_OLLAMA_URL ?? "http://localhost:11434",
+  ollamaMode,
+  model,
+  ollamaBaseUrl,
+  ollamaApiKey,
   memoryPath: process.env.TETOS_MEMORY_PATH ?? "./data/memory.json",
   maxShortTerm: Number(process.env.TETOS_MAX_SHORT ?? 8),
   port: Number(process.env.TETOS_PORT ?? 3000),

@@ -8,17 +8,31 @@ npm install
 
 ## Pré-requisitos
 - Node.js 18+
-- Ollama instalado: [https://ollama.com/download](https://ollama.com/download)
+- **Ollama local** *ou* **Ollama Cloud** (conta em [ollama.com](https://ollama.com) e chave em [ollama.com/settings/keys](https://ollama.com/settings/keys))
 
 ## Configuração
 1. Copie `.env.example` para `.env`.
-2. Verifique os campos principais:
-   - `TETOS_MODEL=llama3`
-   - `TETOS_OLLAMA_URL=http://localhost:11434`
-   - `WHATSAPP_ENABLED=true` (para testar no WhatsApp)
+2. Escolha **local** ou **cloud** (veja abaixo) e ajuste os campos principais.
+3. Para WhatsApp: `WHATSAPP_ENABLED=true`.
+
+### Opção A — Ollama local (padrão)
+- `TETOS_OLLAMA_MODE=local` (ou omita; o padrão é local)
+- `TETOS_MODEL=llama3` (ou outro modelo que você tiver puxado)
+- `TETOS_OLLAMA_URL=http://localhost:11434`
+
+### Opção B — Ollama Cloud
+O TetOS usa o mesmo cliente HTTP (`/api/generate`); em cloud a API fica em `https://ollama.com` e exige autenticação por Bearer.
+
+No `.env`:
+- `TETOS_OLLAMA_MODE=cloud`
+- `TETOS_OLLAMA_API_KEY=<sua chave>` (alternativa: `OLLAMA_API_KEY`, como na documentação da Ollama)
+- Modelo padrão em cloud: **`minimax-m2.7:cloud`** (sobrescreva com `TETOS_MODEL` se quiser outro modelo cloud)
+- Opcional: `TETOS_OLLAMA_CLOUD_URL` se precisar apontar para outro host (padrão `https://ollama.com`)
 
 ## Subir serviços
-### 1) Inicie o Ollama e baixe o modelo
+### 1) Ollama local: subir o daemon e o modelo
+Ignore este passo se estiver só em **cloud**.
+
 ```bash
 ollama serve
 ollama pull llama3
@@ -50,13 +64,17 @@ node scripts/chat-repl.js
 ```
 
 ## Problemas comuns
-- `fetch failed` no `/chat`: Ollama não está rodando ou modelo ausente.
+- `fetch failed` no `/chat` (modo **local**): Ollama não está rodando ou modelo ausente.
+- Erro 401 no `/chat` (modo **cloud**): `TETOS_OLLAMA_API_KEY` / `OLLAMA_API_KEY` ausente ou inválida.
 - Sem resposta no WhatsApp: confira `WHATSAPP_ENABLED=true` e se o QR foi autenticado.
 
 ## Config
-Copy `.env.example` to `.env` and adjust if needed:
+Copie `.env.example` para `.env` e ajuste:
+- `TETOS_OLLAMA_MODE` (`local` | `cloud`)
 - `TETOS_MODEL`
-- `TETOS_OLLAMA_URL`
+- `TETOS_OLLAMA_URL` (local)
+- `TETOS_OLLAMA_API_KEY` ou `OLLAMA_API_KEY` (cloud)
+- `TETOS_OLLAMA_CLOUD_URL` (cloud, opcional)
 - `TETOS_MEMORY_PATH`
 - `TETOS_MAX_SHORT`
 - `TETOS_PORT`
@@ -77,7 +95,7 @@ Copy `.env.example` to `.env` and adjust if needed:
 - `GET /memory/search` (tag accepts CSV: `tag=bread,teto`)
 - `POST /memory/search` (body: `{ tag, q }`)
 - `POST /session/clear`
-- `GET /status` (optional `sessionId` query; returns active limits)
+- `GET /status` (optional `sessionId` query; inclui `ollamaMode`, `ollamaBaseUrl`, `model`, limites ativos)
 
 ### /chat payload example
 ```json

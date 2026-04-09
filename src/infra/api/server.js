@@ -86,6 +86,8 @@ app.get("/status", (req, res) => {
   const { sessionId } = req.query;
   return res.json({
     status: "ok",
+    ollamaMode: DEFAULTS.ollamaMode,
+    ollamaBaseUrl: DEFAULTS.ollamaBaseUrl,
     model: DEFAULTS.model,
     personalityPath: DEFAULTS.personalityPath,
     memoryCount: longTerm.all().length,

@@ -12,12 +12,19 @@ import { BasicLoop } from "../modules/scheduler/basicLoop.js";
 import { loadPersonality } from "../core/personality/index.js";
 
 export function createRuntime() {
+  if (DEFAULTS.ollamaMode === "cloud" && !DEFAULTS.ollamaApiKey) {
+    throw new Error(
+      "TETOS_OLLAMA_MODE=cloud requer TETOS_OLLAMA_API_KEY (ou OLLAMA_API_KEY). Crie uma chave em https://ollama.com/settings/keys"
+    );
+  }
+
   const shortTerm = new ShortTermMemory(DEFAULTS.maxShortTerm);
   const longTerm = new LongTermMemory(DEFAULTS.memoryPath);
   const contextBuilder = new ContextBuilder(longTerm);
   const brain = new OllamaClient({
     baseUrl: DEFAULTS.ollamaBaseUrl,
-    model: DEFAULTS.model
+    model: DEFAULTS.model,
+    apiKey: DEFAULTS.ollamaApiKey || undefined
   });
   const personality = loadPersonality(DEFAULTS.personalityPath);
   const agent = new Agent({

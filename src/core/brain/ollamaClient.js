@@ -1,13 +1,22 @@
 export class OllamaClient {
-  constructor({ baseUrl, model }) {
-    this.baseUrl = baseUrl;
+  constructor({ baseUrl, model, apiKey }) {
+    this.baseUrl = String(baseUrl ?? "").replace(/\/$/, "");
     this.model = model;
+    this.apiKey = apiKey;
+  }
+
+  _headers() {
+    const headers = { "Content-Type": "application/json" };
+    if (this.apiKey) {
+      headers.Authorization = `Bearer ${this.apiKey}`;
+    }
+    return headers;
   }
 
   async generate(prompt) {
     const response = await fetch(`${this.baseUrl}/api/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: this._headers(),
       body: JSON.stringify({ model: this.model, prompt, stream: false })
     });
 
