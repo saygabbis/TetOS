@@ -11,6 +11,7 @@ let serverProc = null;
 let apiBaseUrl = null;
 const REPL_PORT = Number(process.env.TETOS_REPL_PORT ?? 3010);
 const FALLBACK_PORTS = [3000, 3001, 3002, 3003, 3004, 3005];
+const INPUT_DEBOUNCE_MS = 420;
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -112,12 +113,18 @@ async function send(message) {
   }
 
   const data = await response.json();
-  return Array.isArray(data.replies) ? data.replies : [data.reply ?? ""];
+  const replies = Array.isArray(data.replies) ? data.replies : [data.reply ?? ""];
+  return replies.map((reply) => String(reply ?? "").trim()).filter(Boolean);
 }
 
 function prompt() {
   rl.question("Você: ", async (text) => {
-    if (text.trim().toLowerCase() === "/sair") {
+    const trimmed = String(text ?? "").trim();
+    if (!trimmed) {
+      prompt();
+      return;
+    }
+    if (trimmed.toLowerCase() === "/sair") {
       if (serverProc) {
         serverProc.kill();
         serverProc = null;
@@ -126,11 +133,20 @@ function prompt() {
       return;
     }
 
+    await wait(INPUT_DEBOUNCE_MS);
+
     try {
-      const replies = await send(text);
+      // #region agent log
+      fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H15",location:"chat-repl.js:prompt:input",message:"user input accepted",data:{inputPreview:trimmed.slice(0,120),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      const replies = await send(trimmed);
+      // #region agent log
+      fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H15",location:"chat-repl.js:prompt:replies",message:"replies received",data:{count:replies.length,repliesPreview:replies.map((r)=>String(r).slice(0,100)),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       for (const reply of replies) {
-        const delay = 300 + Math.floor(Math.random() * 900);
-        await wait(delay);
+        const baseDelay = 200 + Math.floor(Math.random() * 400);
+        const extraDelay = Math.min(400, Math.floor(String(reply).length / 8) * 30);
+        await wait(baseDelay + extraDelay);
         console.log(`Teto: ${reply}`);
       }
     } catch (error) {

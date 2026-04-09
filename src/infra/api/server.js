@@ -15,9 +15,9 @@ app.post("/chat", async (req, res) => {
     // #region agent log
     fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H14",location:"server.js:/chat:entry",message:"chat request received",data:{pid:process.pid,port:basePort,messagePreview:String(req.body?.message??"").slice(0,120),sessionId:req.body?.sessionId??null,userId:req.body?.userId??null},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
-    const { replies } = await handleIncomingMessage(runtime, req.body ?? {});
+    const { replies, input } = await handleIncomingMessage(runtime, req.body ?? {});
     // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H14",location:"server.js:/chat:exit",message:"chat response ready",data:{pid:process.pid,repliesCount:Array.isArray(replies)?replies.length:0,repliesPreview:Array.isArray(replies)?replies.map((r)=>String(r).slice(0,100)):[]},timestamp:Date.now()})}).catch(()=>{});
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H14",location:"server.js:/chat:exit",message:"chat response ready",data:{pid:process.pid,inputPreview:String(input ?? "").slice(0,120),repliesCount:Array.isArray(replies)?replies.length:0,repliesPreview:Array.isArray(replies)?replies.map((r)=>String(r).slice(0,100)):[]},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     return res.json({ replies });
   } catch (error) {

@@ -228,6 +228,9 @@ export class ChatService {
     // #region agent log
     fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H1",location:"chatService.js:handleMessage:rawReply",message:"raw reply from agent",data:{trimmed,rawPreview:String(raw).slice(0,180)},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H10",location:"chatService.js:handleMessage:context",message:"context used",data:{historyCount:Array.isArray(history)?history.length:0,metaKeys:Object.keys(meta ?? {}),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     const parts = this.responseProcessor
       ? this.responseProcessor.process(raw, {
         tone,

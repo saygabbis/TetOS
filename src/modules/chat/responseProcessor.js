@@ -87,8 +87,8 @@ function sanitize(text) {
 }
 
 function splitSentences(text) {
-  return text
-    .split(/(?<=[.!?…])\s+/)
+  return String(text)
+    .split(/(?<=[.!?…])\s+|\n+/)
     .map((part) => part.trim())
     .filter(Boolean);
 }
@@ -96,6 +96,24 @@ function splitSentences(text) {
 function splitByComma(sentence) {
   const parts = sentence.split(/,\s+/).map((part) => part.trim());
   return parts.filter((part) => part.length > 3);
+}
+
+function mergeTinyFragments(parts) {
+  const merged = [];
+  for (const part of parts) {
+    const cleaned = String(part).trim();
+    if (!cleaned) continue;
+    if (!merged.length) {
+      merged.push(cleaned);
+      continue;
+    }
+    if (cleaned.length < 12 || cleaned.split(/\s+/).length <= 2) {
+      merged[merged.length - 1] = `${merged[merged.length - 1]} ${cleaned}`.trim();
+      continue;
+    }
+    merged.push(cleaned);
+  }
+  return merged;
 }
 
 function isSensitiveMessage(text) {
@@ -151,7 +169,7 @@ function mergeShortParts(parts) {
     merged.push(part.trim());
   }
 
-  return merged.map((text) => text.replace(/^,\s*/g, "").trim());
+  return mergeTinyFragments(merged).map((text) => text.replace(/^,\s*/g, "").trim());
 }
 
 function chunkSentences(sentences, maxParts = 4) {
@@ -248,8 +266,12 @@ export class ResponseProcessor {
       }
     }
 
-    if (buffer.length && parts.length < this.maxParts) {
-      parts.push(buffer.join(" "));
+    if (buffer.length) {
+      if (parts.length < this.maxParts) {
+        parts.push(buffer.join(" "));
+      } else {
+        parts[parts.length - 1] = `${parts[parts.length - 1]} ${buffer.join(" ")}`.trim();
+      }
     }
 
     return parts.length ? parts : [sentences.join(" ")];
@@ -259,6 +281,9 @@ export class ResponseProcessor {
     const cleaned = sanitize(rawText);
     // #region agent log
     fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H2",location:"responseProcessor.js:process:cleaned",message:"raw vs cleaned",data:{rawPreview:String(rawText).slice(0,180),cleanedPreview:String(cleaned).slice(0,180),tone,userMessagePreview:String(userMessage).slice(0,120)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H12",location:"responseProcessor.js:process:raw",message:"raw output",data:{rawPreview:String(rawText).slice(0,200),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     let sentences = splitSentences(cleaned);
 
@@ -276,6 +301,9 @@ export class ResponseProcessor {
     let finalParts = mergeShortParts(parts)
       .map(capitalize)
       .filter((part) => part.length > 1);
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H12",location:"responseProcessor.js:process:parts",message:"processed parts",data:{parts:finalParts.length,partsPreview:finalParts.map((p)=>String(p).slice(0,100)),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     // Laughter control (dynamic): allow rarely, avoid back-to-back, never in calm.
     const combinedBefore = finalParts.join(" ");

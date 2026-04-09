@@ -83,7 +83,7 @@ export async function handleIncomingMessage(runtime, payload = {}) {
           content: msg.content.trim()
         }))
         .filter((msg) => msg.content)
-        .slice(-DEFAULTS.maxHistory)
+        .slice(-Math.max(5, DEFAULTS.maxHistory))
         .map((msg) => {
           const role = allowedRoles.has(msg?.role) ? msg.role : "user";
           return {
@@ -120,7 +120,7 @@ export async function handleIncomingMessage(runtime, payload = {}) {
 
   const replies = await runtime.chatService.handleMessage(
     input,
-    { userId: safeUserId, sessionId: safeSessionId, styleHint },
+    { userId: safeUserId, sessionId: safeSessionId, styleHint, recentHistoryCount: normalizedHistory?.length ?? 0 },
     normalizedHistory,
     tone
   );

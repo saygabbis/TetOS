@@ -50,6 +50,21 @@ npm run start:wa
 
 No primeiro start do WhatsApp, escaneie o QR no terminal.
 
+## Uso básico (chat REPL)
+1. Suba a API com `npm start`.
+2. Em outro terminal, rode:
+```bash
+node scripts/chat-repl.js
+```
+3. Converse normalmente. Use `/sair` para encerrar.
+
+## Estabilização de conversa (pipeline)
+- Separação rígida de input/output no REPL (evita mistura de stdout).
+- Respostas multi-mensagem preservadas e com pacing entre partes.
+- Split por sentença/linha com merge de fragmentos curtos (sem truncar conteúdo).
+- Recência garantida nas últimas 3–5 mensagens do histórico.
+- Logs de entrada, contexto usado, saída bruta e replies processadas.
+
 ## Testes rápidos
 Em outro terminal, com a API rodando:
 ```bash
