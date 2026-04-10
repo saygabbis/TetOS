@@ -1,7 +1,8 @@
-const response = await fetch("http://localhost:3000/chat", {
+const userId = process.env.TETOS_USER_ID ?? "5516988137617";
+const response = await fetch("http://localhost:6453/chat", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message: "Oi Teto" })
+  body: JSON.stringify({ message: "Oi Teto", userId })
 });
 
 if (!response.ok) {

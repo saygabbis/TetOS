@@ -9,8 +9,8 @@ const rl = readline.createInterface({
 const sessionId = `cli-${Date.now()}`;
 let serverProc = null;
 let apiBaseUrl = null;
-const REPL_PORT = Number(process.env.TETOS_REPL_PORT ?? 3010);
-const FALLBACK_PORTS = [3000, 3001, 3002, 3003, 3004, 3005];
+const REPL_PORT = Number(process.env.TETOS_REPL_PORT ?? 6453);
+const FALLBACK_PORTS = [6454, 6455, 3000, 3001, 3002, 3003, 3004, 3005];
 const INPUT_DEBOUNCE_MS = 420;
 const REPLY_DELAY_MIN_MS = 300;
 const REPLY_DELAY_MAX_MS = 3000;
@@ -109,10 +109,11 @@ async function send(message) {
   // #region agent log
   fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H15",location:"chat-repl.js:send",message:"sending chat request",data:{apiBaseUrl,messagePreview:String(message).slice(0,120),sessionId,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
   // #endregion
+  const userId = process.env.TETOS_USER_ID ?? "5516988137617";
   const response = await fetch(`${apiBaseUrl}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, sessionId, userId: "local" })
+    body: JSON.stringify({ message, sessionId, userId })
   });
 
   if (!response.ok) {

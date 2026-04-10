@@ -92,7 +92,7 @@ Copie `.env.example` para `.env` e ajuste:
 - `TETOS_OLLAMA_CLOUD_URL` (cloud, opcional)
 - `TETOS_MEMORY_PATH`
 - `TETOS_MAX_SHORT`
-- `TETOS_PORT`
+- `TETOS_PORT` (padrão 6453)
 - `TETOS_PERSONALITY_PATH`
 - `TETOS_MAX_HISTORY`
 - `TETOS_MAX_CONTENT`
@@ -101,6 +101,15 @@ Copie `.env.example` para `.env` e ajuste:
 - `TETOS_RESPONSE_HISTORY`
 - `TETOS_RESPONSE_SIMILARITY`
 - `TETOS_RESPONSE_MAX_PARTS` (opcional: teto de bolhas por resposta; omita, `0` ou `unlimited` = sem limite — só o que o texto gerar)
+- `TETOS_TIME_PATH` (persistência de tempo; padrão `./data/time.json`)
+- `TETOS_USER_PATTERNS_PATH` (padrões de rotina; padrão `./data/userPatterns.json`)
+- `TETOS_USER_ID` (opcional: força userId no terminal para unificar com WhatsApp)
+- `PRESENCE_ENABLED`
+- `PRESENCE_CHECK_MS`
+- `PRESENCE_MIN_COOLDOWN_MS`
+- `PRESENCE_MAX_COOLDOWN_MS`
+- `PRESENCE_MAX_DAILY_PER_USER`
+- `PRESENCE_INACTIVE_MS`
 
 ## API
 - `POST /chat` (accepts `message` or `messages[]`, optional `userId`, `sessionId`; roles allowed: user/assistant/system; missing role defaults to user; last TETOS_MAX_HISTORY kept; short-term separated by sessionId; userId/sessionId max TETOS_MAX_ID chars; message content max TETOS_MAX_CONTENT chars; tone detection + response processing; returns `replies[]`)

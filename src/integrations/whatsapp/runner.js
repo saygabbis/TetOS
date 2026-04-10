@@ -2,6 +2,7 @@ import "dotenv/config";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 import { createRuntime } from "../../app/createRuntime.js";
+import { NudgeEngine } from "../../core/autonomy/nudgeEngine.js";
 import { createBaileysClient } from "./baileysClient.js";
 import { registerMessageHandler } from "./messageHandler.js";
 import { DisconnectReason } from "baileys";
@@ -16,18 +17,19 @@ function listKnownUsers(runtime) {
   return [...ids];
 }
 
-async function runPresence(runtime, socket) {
+async function runPresence(runtime, socket, nudgeEngine) {
   if (!DEFAULTS.presenceEnabled) return;
   const users = listKnownUsers(runtime);
   for (const userId of users) {
-    const context = {
-      hasRecentMemory: (runtime.longTerm.getMediumTerm(userId) ?? []).length > 0
-    };
-    const nudge = runtime.basicLoop.maybeNudge(userId, context);
+    const nudge = nudgeEngine?.buildNudge(userId);
     if (!nudge?.text) continue;
+    const allowed = runtime.basicLoop.maybeNudge(userId, {});
+    if (!allowed) continue;
     const remoteJid = `${userId}@s.whatsapp.net`;
     await socket.sendMessage(remoteJid, { text: nudge.text });
     runtime.basicLoop.recordOutbound(userId);
+    runtime.timeStore?.markSeen(userId);
+    runtime.userPatterns?.recordInteraction(userId);
   }
 }
 
@@ -56,6 +58,11 @@ async function main() {
   });
 
   const runtime = createRuntime();
+  const nudgeEngine = new NudgeEngine({
+    timeStore: runtime.timeStore,
+    userPatterns: runtime.userPatterns,
+    internalState: runtime.internalState
+  });
   let socket = null;
   let isConnected = false;
   let reconnecting = false;
@@ -108,7 +115,7 @@ async function main() {
   if (DEFAULTS.presenceEnabled) {
     setInterval(() => {
       if (!isConnected || !socket) return;
-      runPresence(runtime, socket).catch((error) => {
+      runPresence(runtime, socket, nudgeEngine).catch((error) => {
         console.error("[presence] error:", error.message);
       });
     }, DEFAULTS.presenceCheckMs);

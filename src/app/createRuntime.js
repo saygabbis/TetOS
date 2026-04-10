@@ -16,6 +16,8 @@ import { ChatService } from "../modules/chat/chatService.js";
 import { ResponseProcessor } from "../modules/chat/responseProcessor.js";
 import { BasicLoop } from "../modules/scheduler/basicLoop.js";
 import { InternalState } from "../core/state/internalState.js";
+import { TimeStore } from "../core/time/timeStore.js";
+import { UserPatternsStore } from "../core/time/userPatternsStore.js";
 import { loadCharacter, loadPersonality } from "../core/personality/index.js";
 
 export function createRuntime() {
@@ -38,6 +40,8 @@ export function createRuntime() {
   const personality = loadPersonality(DEFAULTS.personalityPath);
   const character = loadCharacter(DEFAULTS.characterPath);
   const internalState = new InternalState(DEFAULTS.statePath);
+  const timeStore = new TimeStore(DEFAULTS.timePath);
+  const userPatterns = new UserPatternsStore(DEFAULTS.userPatternsPath);
   const agent = new Agent({
     personality,
     character,
@@ -69,7 +73,9 @@ export function createRuntime() {
     responseProcessor,
     basicLoop,
     chatService,
-    internalState
+    internalState,
+    timeStore,
+    userPatterns
   };
 }
 
@@ -198,6 +204,8 @@ export async function handleIncomingMessage(runtime, payload = {}) {
   );
 
   runtime.basicLoop.touch(safeUserId ?? "default");
+  runtime.timeStore?.markMessage(safeUserId ?? "default");
+  runtime.userPatterns?.recordInteraction(safeUserId ?? "default");
 
   if (replies.length > 0 && resumedAfterClose) {
     runtime.longTerm.updateProfile(safeUserId ?? "default", {

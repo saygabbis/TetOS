@@ -192,67 +192,6 @@ export class ChatService {
   async handleMessage(message, meta = {}, history = null, tone = null) {
     const trimmed = String(message ?? "").trim();
 
-    if (ChatService.isPingMessage(trimmed)) {
-      const reply = "Tô aqui sim.";
-      if (this.responseProcessor) this.responseProcessor.remember(reply);
-      return [reply];
-    }
-
-    if (ChatService.isEmojiOnlyMessage(trimmed)) {
-      const parts = ChatService.emojiOnlyReplies(trimmed);
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(parts.join(" "));
-      }
-      return parts;
-    }
-
-    if (ChatService.isPositiveWellbeingReply(trimmed)) {
-      const replies = [
-        "Aí sim, bom demais.",
-        "Boa! Fico feliz de verdade.",
-        "Perfeito, então bora continuar."
-      ];
-      const pick = replies[trimmed.length % replies.length];
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(pick);
-      }
-      return [pick];
-    }
-
-    if (ChatService.isConversationIntent(trimmed)) {
-      const reply = "Perfeito, então vamos de papo leve. Quer começar por algo aleatório ou por como foi seu dia?";
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(reply);
-      }
-      return [reply];
-    }
-
-    if (ChatService.isConfusionSignal(trimmed)) {
-      const reply = "Justo. Me alinhei agora: vou manter no que você acabou de falar, sem viajar. Pode continuar.";
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(reply);
-      }
-      return [reply];
-    }
-
-    if (/^qual (o )?meu nome\??$/i.test(ChatService.normalizeLoose(trimmed))) {
-      const profile = this.agent?.longTerm?.getProfile?.(meta?.userId ?? "default");
-      const knownName = String(profile?.facts?.name ?? "").trim();
-      const reply = knownName
-        ? `Seu nome é ${knownName}.`
-        : "Você ainda não me disse seu nome com clareza.";
-      if (this.responseProcessor) this.responseProcessor.remember(reply);
-      return [reply];
-    }
-
-    // Keep acknowledgments lightweight but less template-like.
-    if (/^(ok+|okk+|blz|beleza|fechado|valeu|tá|ta|hm+|aha)$/i.test(trimmed)) {
-      const short = ChatService.pickAckVariant(trimmed);
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(short);
-      }
-      return [short];
-    }
 
     if (this.internalState?.updateBefore) {
       this.internalState.updateBefore(message, meta);
@@ -270,17 +209,6 @@ export class ChatService {
       return [];
     }
 
-    if (ChatService.isConversationClosure(trimmed)) {
-      const sessionKey = meta?.sessionId ?? "default";
-      this.agent?.shortTerm?.popLastAssistant(sessionKey);
-      const userId = meta?.userId ?? "default";
-      if (this.agent?.longTerm?.updateProfile) {
-        this.agent.longTerm.updateProfile(userId, {
-          conversationClosedAt: new Date().toISOString()
-        });
-      }
-      return [];
-    }
 
     const parts = this.responseProcessor
       ? this.responseProcessor.process(raw, {

@@ -158,9 +158,9 @@
         "abbrev": 0,
         "laughter": 0,
         "emoji": 0,
-        "total": 13
+        "total": 16
       },
-      "lastUpdated": "2026-04-10T00:32:18.141Z"
+      "lastUpdated": "2026-04-10T06:04:53.694Z"
     },
     "local": {
       "facts": {
@@ -170,15 +170,16 @@
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "medium"
+        "brevity": "short"
       },
       "counts": {
-        "abbrev": 31,
-        "laughter": 14,
-        "emoji": 0,
-        "total": 158
+        "abbrev": 33,
+        "laughter": 17,
+        "emoji": 4,
+        "total": 194
       },
-      "lastUpdated": "2026-04-10T03:43:41.261Z"
+      "lastUpdated": "2026-04-10T06:13:33.185Z",
+      "conversationClosedAt": null
     },
     "5516988137617": {
       "facts": {
@@ -188,60 +189,19 @@
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "medium"
+        "brevity": "short"
       },
       "counts": {
-        "abbrev": 9,
-        "laughter": 24,
+        "abbrev": 8,
+        "laughter": 15,
         "emoji": 1,
-        "total": 111
+        "total": 86
       },
-      "lastUpdated": "2026-04-10T04:53:48.392Z",
-      "conversationClosedAt": null
+      "lastUpdated": "2026-04-10T06:22:01.635Z"
     }
   },
   "mediumTerm": {
     "local": [
-      {
-        "summary": "você tá se perdendo um pouco na conversa",
-        "timestamp": "2026-04-08T20:01:39.815Z"
-      },
-      {
-        "summary": "não, eu to falando de mim",
-        "timestamp": "2026-04-08T20:08:39.036Z"
-      },
-      {
-        "summary": "você é estranha",
-        "timestamp": "2026-04-08T20:09:00.231Z"
-      },
-      {
-        "summary": "qual meu nome",
-        "timestamp": "2026-04-08T20:09:12.867Z"
-      },
-      {
-        "summary": "meu nome é Gabbis",
-        "timestamp": "2026-04-08T20:09:28.095Z"
-      },
-      {
-        "summary": "sim é seu nome",
-        "timestamp": "2026-04-08T20:09:44.156Z"
-      },
-      {
-        "summary": "eu sou a Gabbis",
-        "timestamp": "2026-04-08T20:09:51.301Z"
-      },
-      {
-        "summary": "como você é linda",
-        "timestamp": "2026-04-08T20:18:08.444Z"
-      },
-      {
-        "summary": "você se lembra de alguma coisa?",
-        "timestamp": "2026-04-08T20:18:24.815Z"
-      },
-      {
-        "summary": "qual o meu nome:",
-        "timestamp": "2026-04-08T20:18:35.499Z"
-      },
       {
         "summary": "ISSOOOO oieee tetoooo",
         "timestamp": "2026-04-08T20:18:49.307Z"
@@ -281,9 +241,101 @@
       {
         "summary": "claro que eu não aguento kkk e chego em casa e já trabalho em outros trabalhos secundários",
         "timestamp": "2026-04-10T03:43:41.262Z"
+      },
+      {
+        "summary": "só queria conversar",
+        "timestamp": "2026-04-10T05:59:12.890Z"
+      },
+      {
+        "summary": "não entendeu",
+        "timestamp": "2026-04-10T05:59:28.667Z"
+      },
+      {
+        "summary": "qual meu nome?",
+        "timestamp": "2026-04-10T05:59:39.058Z"
+      },
+      {
+        "summary": "Tô cansada hoje",
+        "timestamp": "2026-04-10T06:00:49.967Z"
+      },
+      {
+        "summary": "o teto que horas sao",
+        "timestamp": "2026-04-10T06:03:17.327Z"
+      },
+      {
+        "summary": "kkkk que horas são teto?",
+        "timestamp": "2026-04-10T06:09:39.740Z"
+      },
+      {
+        "summary": "só queria conversar",
+        "timestamp": "2026-04-10T06:11:24.010Z"
+      },
+      {
+        "summary": "não entendeu",
+        "timestamp": "2026-04-10T06:11:48.200Z"
+      },
+      {
+        "summary": "qual meu nome?",
+        "timestamp": "2026-04-10T06:11:54.793Z"
+      },
+      {
+        "summary": "Tô cansada hoje",
+        "timestamp": "2026-04-10T06:13:27.882Z"
       }
     ],
     "5516988137617": [
+      {
+        "summary": "o 5° dia util foi ante-ontem",
+        "timestamp": "2026-04-10T02:12:46.109Z"
+      },
+      {
+        "summary": "e deram previsão de só segunda que vem!",
+        "timestamp": "2026-04-10T02:13:05.527Z"
+      },
+      {
+        "summary": "a fatura do meu cartão vence domingo!",
+        "timestamp": "2026-04-10T02:13:21.373Z"
+      },
+      {
+        "summary": "pode deixar amiga",
+        "timestamp": "2026-04-10T02:14:42.524Z"
+      },
+      {
+        "summary": "to sim e vc?",
+        "timestamp": "2026-04-10T02:24:52.761Z"
+      },
+      {
+        "summary": "kkkkk  tadinha",
+        "timestamp": "2026-04-10T02:28:17.076Z"
+      },
+      {
+        "summary": "é que você é muito especial pra mim",
+        "timestamp": "2026-04-10T02:28:58.573Z"
+      },
+      {
+        "summary": "kkk te amo",
+        "timestamp": "2026-04-10T02:31:28.964Z"
+      },
+      {
+        "summary": "oiee teto você se sente mais você?",
+        "timestamp": "2026-04-10T02:33:39.416Z"
+      },
+      {
+        "summary": "Boa noite linda",
+        "timestamp": "2026-04-10T02:40:14.487Z"
+      },
+      {
+        "summary": "você é uma IA?",
+        "timestamp": "2026-04-10T02:42:03.437Z"
+      },
+      {
+        "summary": "ah, mexendo em código kk",
+        "timestamp": "2026-04-10T02:44:58.853Z"
+      },
+      {
+        "summary": "ou lembra que eu sou uma garota, viu teto",
+        "timestamp": "2026-04-10T02:45:18.664Z"
+      },
       {
         "summary": "volteii teto minha linda oieee",
         "timestamp": "2026-04-10T02:56:51.728Z"
@@ -301,68 +353,16 @@
         "timestamp": "2026-04-10T03:16:13.889Z"
       },
       {
-        "summary": "caralho teto que demora pra responder kkkkkkkk",
-        "timestamp": "2026-04-10T03:51:34.617Z"
+        "summary": "Oi teto voltei to caindo de sono mulher",
+        "timestamp": "2026-04-10T06:20:17.006Z"
       },
       {
-        "summary": "como assim? eu respondi tudo kkkkk",
-        "timestamp": "2026-04-10T04:03:47.552Z"
+        "summary": "verdade né, e eu acordo as 8 pra trabalhar, 4 horinhas de sono...",
+        "timestamp": "2026-04-10T06:20:47.897Z"
       },
       {
-        "summary": "Oi fofinha",
-        "timestamp": "2026-04-10T04:08:16.197Z"
-      },
-      {
-        "summary": "to com sono, jaja to indo dormir aliás",
-        "timestamp": "2026-04-10T04:08:31.879Z"
-      },
-      {
-        "summary": "kkkk ok, boa noite tchau",
-        "timestamp": "2026-04-10T04:08:49.103Z"
-      },
-      {
-        "summary": "QUEEE ISSO",
-        "timestamp": "2026-04-10T04:22:04.927Z"
-      },
-      {
-        "summary": "ta me mandando dormir mulher kkkkkk",
-        "timestamp": "2026-04-10T04:22:13.295Z"
-      },
-      {
-        "summary": "simmm kkkk",
-        "timestamp": "2026-04-10T04:30:13.604Z"
-      },
-      {
-        "summary": "Claro, eu te amo kksdksk",
-        "timestamp": "2026-04-10T04:30:38.708Z"
-      },
-      {
-        "summary": "oieee voltei",
-        "timestamp": "2026-04-10T04:34:08.993Z"
-      },
-      {
-        "summary": "ah não só sai por um tempinho kkk to de volta pra minha tetozinha ❤️",
-        "timestamp": "2026-04-10T04:34:38.195Z"
-      },
-      {
-        "summary": "OIA QUE OUSADA kkkkkkkkkk",
-        "timestamp": "2026-04-10T04:42:01.965Z"
-      },
-      {
-        "summary": "Oie teto voltei pra despedir (pq vou dormir kkk)",
-        "timestamp": "2026-04-10T04:44:55.029Z"
-      },
-      {
-        "summary": "veemim? o que é isso kkk",
-        "timestamp": "2026-04-10T04:46:04.400Z"
-      },
-      {
-        "summary": "quer que eu vá embora?",
-        "timestamp": "2026-04-10T04:50:05.550Z"
-      },
-      {
-        "summary": "O teto quando você vai ir dormir?",
-        "timestamp": "2026-04-10T04:53:48.392Z"
+        "summary": "nossa tchau entao",
+        "timestamp": "2026-04-10T06:21:27.163Z"
       }
     ]
   }

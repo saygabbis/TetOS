@@ -68,7 +68,7 @@ function createConversationOrchestrator(socket, runtime) {
   /** @type {Map<string, { messagesSinceLastReaction: number, lastReactionAt: number }>} */
   const reactionStateByUser = new Map();
 
-  async function sendReplies(remoteJid, replies = [], token = 0) {
+  async function sendReplies(remoteJid, replies = [], token = 0, options = {}) {
     for (let index = 0; index < replies.length; index += 1) {
       const content = String(replies[index] ?? "").trim();
       if (!content) continue;
@@ -86,9 +86,10 @@ function createConversationOrchestrator(socket, runtime) {
       } else {
         needsTyping = true;
         const base = estimateTypingDelayMs(content, index);
+        const extraDelay = options?.softened ? randBetween(120, 320) : 0;
         typingDelayMs = Math.min(
           TYPING_MAX_DELAY_MS,
-          Math.max(FIRST_BUBBLE_TYPING_FLOOR_MS, base)
+          Math.max(FIRST_BUBBLE_TYPING_FLOOR_MS, base + extraDelay)
         );
       }
       if (index === 0 && needsTyping && typingDelayMs > 0) {
@@ -160,6 +161,8 @@ function createConversationOrchestrator(socket, runtime) {
           });
           replies = out?.replies ?? [];
         } finally {
+          runtime.timeStore?.markSeen(item.userId);
+          runtime.userPatterns?.recordInteraction(item.userId);
           if (typeof socket.sendPresenceUpdate === "function") {
             try {
               const hasOutgoing =
@@ -199,7 +202,10 @@ function createConversationOrchestrator(socket, runtime) {
             lastReactionAt: reactionState.lastReactionAt
           });
         }
-        await sendReplies(item.remoteJid, replies, token);
+        const softened = runtime.userPatterns
+          ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
+          : false;
+        await sendReplies(item.remoteJid, replies, token, { softened });
       }
     } finally {
       runningByUser.delete(userId);
