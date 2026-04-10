@@ -19,6 +19,8 @@ export class OllamaClient {
   }
 
   async generate(prompt) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
     const response = await fetch(`${this.baseUrl}/api/generate`, {
       method: "POST",
       headers: this._headers(),
@@ -30,8 +32,9 @@ export class OllamaClient {
           temperature: this.temperature,
           ...(this.numPredict != null ? { num_predict: this.numPredict } : {})
         }
-      })
-    });
+      }),
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeout));
 
     if (!response.ok) {
       const text = await response.text();

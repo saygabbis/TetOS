@@ -23,6 +23,11 @@ function extractText(message = {}) {
   );
 }
 
+function extractParticipant(incoming) {
+  const participant = incoming?.key?.participant ?? incoming?.participant ?? "";
+  return jidNormalizedUser(participant);
+}
+
 const USER_BATCH_WINDOW_MS = 650;
 /** Tende a esperar o usuário parar de "composing" antes de gerar resposta (multi-msg). */
 const USER_TYPING_GRACE_MS = 2400;
@@ -39,6 +44,7 @@ const POST_MODEL_BEFORE_BUBBLE_MS_MIN = 90;
 const POST_MODEL_BEFORE_BUBBLE_MS_MAX = 240;
 const INTERRUPT_DEBOUNCE_MIN_MS = 220;
 const INTERRUPT_DEBOUNCE_MAX_MS = 420;
+const MODEL_TIMEOUT_MS = 25000;
 function estimateTypingDelayMs(text, partIndex = 0) {
   const len = String(text ?? "").trim().length;
   if (len <= 0) return TYPING_MIN_DELAY_MS;
@@ -68,16 +74,20 @@ function createConversationOrchestrator(socket, runtime) {
   /** @type {Map<string, { messagesSinceLastReaction: number, lastReactionAt: number }>} */
   const reactionStateByUser = new Map();
 
-  async function sendReplies(remoteJid, replies = [], token = 0, options = {}) {
+  async function sendReplies(remoteJid, userId, replies = [], token = 0, options = {}) {
     for (let index = 0; index < replies.length; index += 1) {
       const content = String(replies[index] ?? "").trim();
       if (!content) continue;
-      if (interruptByUser.get(extractPhone(remoteJid)) !== token) return;
+      if (interruptByUser.get(userId) !== token) return;
       const remotePhone = extractPhone(remoteJid);
       const len = content.length;
+      const isGroup = remoteJid.endsWith("@g.us");
       let needsTyping;
       let typingDelayMs;
-      if (index > 0) {
+      if (isGroup) {
+        needsTyping = false;
+        typingDelayMs = 0;
+      } else if (index > 0) {
         needsTyping = true;
         typingDelayMs = estimateTypingDelayMs(content, index);
       } else if (len <= 4) {
@@ -104,9 +114,17 @@ function createConversationOrchestrator(socket, runtime) {
           console.warn(`[whatsapp] typing simulation failed for ${remotePhone}: ${error.message}`);
         }
       }
-      if (interruptByUser.get(extractPhone(remoteJid)) !== token) return;
+      if (interruptByUser.get(userId) !== token) {
+        return;
+      }
       console.log(`[whatsapp] outgoing ${remoteJid}: ${content}`);
-      await socket.sendMessage(remoteJid, { text: content });
+      const sendTask = socket.sendMessage(remoteJid, { text: content });
+      await Promise.race([
+        sendTask,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("send timeout")), 8000))
+      ]).catch((error) => {
+        console.error(`[whatsapp] send failed to ${remoteJid}:`, error.message);
+      });
       if (index < replies.length - 1) {
         const interPartDelayMs = randBetween(MULTI_PART_DELAY_MIN_MS, MULTI_PART_DELAY_MAX_MS);
         await sleep(interPartDelayMs);
@@ -154,12 +172,24 @@ function createConversationOrchestrator(socket, runtime) {
         }
         let replies = [];
         try {
-          const out = await handleIncomingMessage(runtime, {
-            message: item.message,
-            userId: item.userId,
-            sessionId: item.sessionId
-          });
+          const out = await Promise.race([
+            handleIncomingMessage(runtime, {
+              message: item.message,
+              userId: item.userId,
+              sessionId: item.sessionId
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("model timeout")), MODEL_TIMEOUT_MS)
+            )
+          ]);
+
           replies = out?.replies ?? [];
+          if (!Array.isArray(replies) || replies.length === 0) {
+            console.warn(`[whatsapp] empty reply for ${item.userId}`);
+          }
+        } catch (error) {
+          console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
+          replies = [];
         } finally {
           runtime.timeStore?.markSeen(item.userId);
           runtime.userPatterns?.recordInteraction(item.userId);
@@ -205,7 +235,7 @@ function createConversationOrchestrator(socket, runtime) {
         const softened = runtime.userPatterns
           ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
           : false;
-        await sendReplies(item.remoteJid, replies, token, { softened });
+        await sendReplies(item.remoteJid, item.userId, replies, token, { softened });
       }
     } finally {
       runningByUser.delete(userId);
@@ -250,10 +280,6 @@ function createConversationOrchestrator(socket, runtime) {
     }
   }
 
-  function extractParticipant(incoming) {
-    const participant = incoming?.key?.participant ?? incoming?.participant ?? "";
-    return jidNormalizedUser(participant);
-  }
 
   /** Invalidate in-flight replies when user sends a new message (must stay inside closure). */
   function bumpInterrupt(userId) {
@@ -270,6 +296,8 @@ function createConversationOrchestrator(socket, runtime) {
 
 export function registerMessageHandler({ socket, runtime }) {
   const orchestrator = createConversationOrchestrator(socket, runtime);
+  const groupContextByUser = new Map();
+  const GROUP_CONTEXT_WINDOW_MS = 5 * 60 * 1000;
   socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
 
   socket.ev.on("messages.upsert", async ({ messages, type }) => {
@@ -309,11 +337,23 @@ export function registerMessageHandler({ socket, runtime }) {
 
         if (isGroup) {
           const mentionHint = incoming.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
-          const hasMention = mentionHint.includes(remoteJid) || mentionHint.includes(`${participantId}@s.whatsapp.net`);
+          const botJid = jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
+          const botPhone = extractPhone(botJid);
+          const hasMention =
+            mentionHint.includes(botJid) ||
+            mentionHint.includes(`${botPhone}@s.whatsapp.net`) ||
+            mentionHint.includes(`${botPhone}@lid`) ||
+            mentionHint.includes(`${botPhone}@c.us`);
           const hasNickname = /(teto|tete|tetozinha)/i.test(text);
-          const isDirect = hasMention || hasNickname || /\?\s*$/.test(text);
-          if (!isDirect) {
+          const isDirect = hasMention || hasNickname;
+          const contextKey = `${baseUserId}:${participantId}`;
+          const lastContextAt = groupContextByUser.get(contextKey) ?? 0;
+          const inContext = Date.now() - lastContextAt <= GROUP_CONTEXT_WINDOW_MS;
+          if (!isDirect && !inContext) {
             continue;
+          }
+          if (isDirect) {
+            groupContextByUser.set(contextKey, Date.now());
           }
         }
 

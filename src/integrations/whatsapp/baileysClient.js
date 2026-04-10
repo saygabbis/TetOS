@@ -17,7 +17,9 @@ export async function createBaileysClient({
 
   const socket = makeWASocket({
     auth: state,
-    version
+    version,
+    printQRInTerminal: true,
+    syncFullHistory: true
   });
 
   socket.ev.on("creds.update", saveCreds);
