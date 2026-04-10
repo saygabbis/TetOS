@@ -15,11 +15,23 @@ export async function createBaileysClient({
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
   const { version } = await fetchLatestBaileysVersion();
 
+  const silentLogger = {
+    level: "silent",
+    child: () => silentLogger,
+    trace() {},
+    debug() {},
+    info() {},
+    warn() {},
+    error() {},
+    fatal() {}
+  };
+
   const socket = makeWASocket({
     auth: state,
     version,
-    printQRInTerminal: true,
-    syncFullHistory: false
+    printQRInTerminal: false,
+    syncFullHistory: false,
+    logger: silentLogger
   });
 
   socket.ev.on("creds.update", saveCreds);

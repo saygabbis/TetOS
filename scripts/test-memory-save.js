@@ -1,4 +1,5 @@
-const response = await fetch("http://localhost:3000/memory/save", {
+const port = process.env.TETOS_PORT ?? "6453";
+const response = await fetch(`http://localhost:${port}/memory/save`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({

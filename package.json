@@ -6,7 +6,16 @@
   "scripts": {
     "start": "node src/infra/api/server.js",
     "start:api": "node src/infra/api/server.js",
-    "start:wa": "node src/integrations/whatsapp/runner.js"
+    "start:wa": "node src/integrations/whatsapp/runner.js",
+    "test": "node scripts/test-status.js && node scripts/test-chat.js",
+    "test:status": "node scripts/test-status.js",
+    "test:chat": "node scripts/test-chat.js",
+    "test:memory:save": "node scripts/test-memory-save.js",
+    "test:memory:search": "node scripts/test-memory-search.js",
+    "test:memory:search:post": "node scripts/test-memory-search-post.js",
+    "test:memory:delete": "node scripts/test-memory-delete.js",
+    "test:session:clear": "node scripts/test-session-clear.js",
+    "test:all": "node scripts/test-status.js && node scripts/test-chat.js && node scripts/test-memory-save.js && node scripts/test-memory-search.js && node scripts/test-memory-search-post.js && node scripts/test-session-clear.js"
   },
   "dependencies": {
     "baileys": "^6.7.18",

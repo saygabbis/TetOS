@@ -1,5 +1,6 @@
+const port = process.env.TETOS_PORT ?? "6453";
 const userId = process.env.TETOS_USER_ID ?? "5516988137617";
-const response = await fetch("http://localhost:6453/chat", {
+const response = await fetch(`http://localhost:${port}/chat`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ message: "Oi Teto", userId })

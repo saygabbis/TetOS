@@ -1,5 +1,6 @@
+const port = process.env.TETOS_PORT ?? "6453";
 const response = await fetch(
-  "http://localhost:3000/memory/search?tag=bread,teto"
+  `http://localhost:${port}/memory/search?tag=bread,teto`
 );
 
 if (!response.ok) {

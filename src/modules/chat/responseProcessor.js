@@ -6,7 +6,21 @@ const META_TALK = /\b(você disse|você perguntou|você falou|sua mensagem|você
 const REMINDER_TALK = /\b(lembra\??!?)\b/gi;
 const TITLE_TALK = /\b(princesa|rainha)\b/gi;
 const AI_DISCLAIMER = /\b(as an ai|as a language model)\b/gi;
-const ENGLISH_FILLERS = /\b(by the way|btw|anyway|anyways|i mean|you know|well(?:\s+then)?|cool|nice|yep|yeah|nope|pls|please|thanks|thank you)\b/gi;
+const ENGLISH_FILLERS = /\b(by the way|btw|anyway|anyways|i mean|you know|well(?:\s+then)?|cool|nice|yep|yeah|nope|pls|please|thanks|thank you|pleasant|ok|okay|okey|sorry|lol|im|i'm|ive|i've|id|i'd|dont|don't|cant|can't|wont|won't|youre|you're|your|yours|you)\b/gi;
+const ENGLISH_TOKENS = /\b(working|work|day|distract|weekend|okay|okey|ok|cool|nice|sorry|thanks|thank|pleasant|you|your|yours|youre|you're|dont|don't|cant|can't|wont|won't|im|i'm|ive|i've)\b/gi;
+const SOFT_TILDE = /~+/g;
+const MASC_A_WORDS = new Set([
+  "dia",
+  "mapa",
+  "programa",
+  "tema",
+  "sistema",
+  "problema",
+  "clima",
+  "drama",
+  "idioma",
+  "poema"
+]);
 
 function normalizeLaughter(text) {
   // Não achatar kkk longos — só corta sequências absurdas (spam acidental).
@@ -26,6 +40,8 @@ function fixStrayApostropheArtifacts(text) {
 
 function repairPunctuation(text) {
   return String(text)
+    // split sentences when a new sentence starts mid-line
+    .replace(/([a-záéíóúàâêôãõç])\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ])/g, "$1. $2")
     // fix spacing before punctuation
     .replace(/\s+([!?.,…])/g, "$1")
     // collapse ugly punctuation combos introduced by removals
@@ -90,19 +106,58 @@ function stripForeignScripts(text) {
 
 function stripEnglishIntrusions(text) {
   return String(text)
-    .replace(/\b(ok|okay|okey|nice|cool|sorry|lol)\b/gi, (m) => m)
-    .replace(/\bso\b/gi, "")
+    .replace(/\b[a-z]{3,}\*(?=\s|$)/gi, "")
     .replace(ENGLISH_FILLERS, "")
+    .replace(ENGLISH_TOKENS, "")
+    .replace(/\b(so|pleasant\w*|okay|okey|ok|sorry|cool|nice|lol|thank\w*)\b/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
 
-function sanitize(text) {
+function pickPronounMode(pronounsRaw) {
+  const t = String(pronounsRaw ?? "").toLowerCase();
+  if (!t) return "auto";
+  if (/(elu|delu|ile|ielu|ile)/.test(t)) return "neuter";
+  if (/(ela|dela)/.test(t)) return "fem";
+  if (/(ele|dele)/.test(t)) return "masc";
+  return "auto";
+}
+
+function fixGenderedPossessives(text, pronounMode = "auto") {
+  const t = String(text ?? "");
+  return t.replace(
+    /\b(seu|teu|meu|sua|tua|minha)\s+([a-záéíóúàâêôãõç]{3,})\b/gi,
+    (m, poss, word) => {
+      const lowerWord = String(word).toLowerCase();
+      if (MASC_A_WORDS.has(lowerWord)) return m;
+      if (!/(a|as|osa|osa?s|eira|eiras|ona|onas|inha|inhas|uda|udas|ita|itas|vela|velas|tinha|tinhas|zinha|zinhas)$/i.test(lowerWord)) {
+        return m;
+      }
+      const mode = pronounMode || "auto";
+      if (mode === "neuter") {
+        const neuterMap = { seu: "delu", teu: "delu", meu: "minha", sua: "delu", tua: "delu", minha: "minha" };
+        const key = String(poss).toLowerCase();
+        const replacement = neuterMap[key] ?? poss;
+        return `${replacement} ${word}`;
+      }
+      if (mode === "masc") return m;
+      const femMap = { seu: "sua", teu: "tua", meu: "minha" };
+      const key = String(poss).toLowerCase();
+      const replacement = femMap[key] ?? poss;
+      return `${replacement} ${word}`;
+    }
+  );
+}
+
+function sanitize(text, meta = {}) {
   const cleaned = preserveParagraphBreaks(
     stripEnglishIntrusions(stripForeignScripts(String(text)))
       .replace(ROLEPLAY_MARKERS, "")
       .replace(AI_DISCLAIMER, "")
       .replace(/\b(comment|like|share|post|subscribe)\b/gi, "")
+      .replace(/[\\]/g, "")
+      .replace(SOFT_TILDE, "~")
+      .replace(ENGLISH_TOKENS, "")
       .replace(IDENTITY_LOOPS, "")
       .replace(META_TALK, "")
       .replace(REMINDER_TALK, "")
@@ -111,10 +166,12 @@ function sanitize(text) {
       .replace(/!{3,}/g, "!!")
   );
 
+  const pronounMode = pickPronounMode(meta?.userPronouns);
+
   return fixStrayApostropheArtifacts(
     repairPunctuation(
       normalizeLaughter(
-        cleaned
+        fixGenderedPossessives(cleaned, pronounMode)
           .replace(/\brs\b/gi, "")
           .replace(/[ \t]{2,}/g, " ")
           .trim()
@@ -219,7 +276,7 @@ function isInterjectionBubble(text) {
     return /^(opa|oi|oie+|oii|eae|ufa|poxa|nossa|blz|show|sim|não|kk|kkk+|rs+|ha+|né|né\?)$/i.test(t);
   }
   if (words.length === 2) {
-    return /^(de novo|tá bom|ta bom|tô aqui|to aqui|muito bem|por favor)$/i.test(t);
+    return /^(de novo|tá bom|ta bom|tô aqui|to aqui|muito bem|por favor|tô bem|to bem)$/i.test(t);
   }
   return false;
 }
@@ -231,20 +288,88 @@ function isCorrectionBubble(text) {
   return /\*$/u.test(t) && t.split(/\s+/).filter(Boolean).length <= 8;
 }
 
-/** Glitches comuns do modelo: bolha extra só com a forma certa + * */
-function ensureKnownTypoCorrectionBubbles(parts) {
-  const arr = Array.isArray(parts) ? [...parts] : [];
-  const out = [];
-  for (let i = 0; i < arr.length; i++) {
-    const p = String(arr[i] ?? "");
-    out.push(p);
-    if (/\bveemim\b/i.test(p)) {
-      const rest = arr.slice(i + 1);
-      const hasFix = rest.some((x) => /v[eê]\s+em\s+mim\*$/i.test(String(x).trim()));
-      if (!hasFix) out.push("vê em mim*");
-    }
+function sanitizeCorrectionBubble(text) {
+  const t = String(text ?? "").trim();
+  if (!t) return t;
+  if (!/\*$/.test(t)) return t;
+  const body = t.replace(/\*+$/, "").trim();
+  if (!body) return "";
+  if (body.length < 2) return "";
+  if (body.length > 36) return "";
+  if (!/[\p{L}]/u.test(body)) return "";
+  return `${body}*`;
+}
+
+/** Remove correções inválidas (ex.: inglês aleatório, lixo) e mantém bolhas curtas com letras. */
+function filterInvalidCorrectionBubbles(parts) {
+  if (!Array.isArray(parts)) return [];
+  return parts
+    .map((part) => {
+      if (!isCorrectionBubble(part)) return part;
+      return sanitizeCorrectionBubble(part);
+    })
+    .filter(Boolean);
+}
+
+function isEnglishLikeWord(word) {
+  const w = String(word ?? "");
+  if (!w) return false;
+  if (ENGLISH_TOKENS.test(w) || ENGLISH_FILLERS.test(w)) return true;
+  if (/\b\w+ing\b/i.test(w)) return true;
+  return false;
+}
+
+function mutateWord(word) {
+  const w = String(word ?? "");
+  if (w.length < 4) return null;
+  if (/\d/.test(w)) return null;
+  if (!/[\p{L}]/u.test(w)) return null;
+  if (isEnglishLikeWord(w)) return null;
+  const lower = w.toLowerCase();
+  if (/^(não|nao|sim|ok|oi|oie+|eae|kk+|rs+|tô|to|tá|ta|tb|tbm)$/i.test(lower)) return null;
+
+  const ops = [
+    (s) => s.slice(0, -1),
+    (s) => s.slice(0, 1) + s.slice(2),
+    (s) => s.slice(0, 1) + s[2] + s[1] + s.slice(3),
+    (s) => s.slice(0, -2) + s.slice(-1) + s.slice(-2, -1),
+    (s) => s.replace(/([a-záéíóúàâêôãõç])\1/i, "$1")
+  ];
+  const shuffled = ops.map((op) => ({ op, r: Math.random() })).sort((a, b) => a.r - b.r);
+  for (const { op } of shuffled) {
+    const mutated = op(w);
+    if (mutated && mutated !== w && mutated.length >= 3) return mutated;
   }
-  return out;
+  return null;
+}
+
+function injectDynamicTypo(parts) {
+  const arr = Array.isArray(parts) ? [...parts] : [];
+  if (!arr.length) return arr;
+  const first = String(arr[0] ?? "");
+  const words = first.split(/\s+/);
+  if (words.length < 3) return arr;
+
+  const candidateIndexes = words
+    .map((w, i) => ({ w, i }))
+    .filter(({ w, i }) => {
+      if (i === 0) return false;
+      if (w.length < 4) return false;
+      if (!/[\p{L}]/u.test(w)) return false;
+      if (isEnglishLikeWord(w)) return false;
+      if (/^(kk+|rs+|oi+|oie+|eae+|opa|mds|poxa|ah+|uff?|ufa|hm+|hmm+)$/i.test(w)) return false;
+      return true;
+    });
+  if (!candidateIndexes.length) return arr;
+
+  const pick = candidateIndexes[Math.floor(Math.random() * candidateIndexes.length)];
+  const mutated = mutateWord(pick.w);
+  if (!mutated) return arr;
+
+  const corrected = pick.w.replace(/[!?.,;:]+$/, "");
+  words[pick.i] = mutated;
+  const typoLine = words.join(" ");
+  return [typoLine, `${corrected}*`, ...arr.slice(1)];
 }
 
 function mergeTinyFragments(parts) {
@@ -292,6 +417,39 @@ function dropMetaQuestions(text) {
   });
 
   return (filtered.length ? filtered : sentences).join(" ").trim();
+}
+
+function dropTrailingFiller(parts) {
+  const list = Array.isArray(parts) ? [...parts] : [];
+  if (!list.length) return list;
+  const last = String(list[list.length - 1] ?? "").trim();
+  if (/^(né|ne|kk+|rs+|tá\?|ta\?|ok|blz|beleza|tipo|assim|sei lá)$/i.test(last)) {
+    return list.slice(0, -1);
+  }
+  return list;
+}
+
+function isLikelyQuestion(text) {
+  const t = String(text ?? "").trim().toLowerCase();
+  if (!t) return false;
+  if (/\?$/.test(t)) return true;
+  return /^(o que|oq|quem|quando|onde|por que|porque|pq|qual|como|cad[eê]|ce|cê|vc|você|vai|ta|tá|é|eh)\b/.test(t);
+}
+
+function enforceTerminalPunctuation(text) {
+  const t = String(text ?? "").trim();
+  if (!t) return t;
+  if (/[*]$/.test(t)) return t;
+  if (/[.!?…]$/.test(t)) return t;
+  if (isInterjectionBubble(t)) return t;
+  if (t.length < 12) return t;
+  if (/[\u203C-\u3299\uFE0F\u200D]|[\u{1F300}-\u{1FAFF}]|[\u2600-\u27BF]/u.test(t) && /[\u203C-\u3299\uFE0F\u200D]|[\u{1F300}-\u{1FAFF}]|[\u2600-\u27BF]$/u.test(t)) {
+    return t;
+  }
+  if (isLikelyQuestion(t)) return `${t}?`;
+  if (t.length < 18) return t;
+  if (Math.random() > 0.1) return t;
+  return `${t}.`;
 }
 
 function capitalize(text) {
@@ -387,6 +545,7 @@ export class ResponseProcessor {
     this.imperfectionEvents = [];
     this.maxImperfectionsPerWindow = 5;
     this.imperfectionWindowMs = 10 * 60 * 1000;
+    this.imperfectionCooldown = 0;
   }
 
   buildNaturalParts(sentences) {
@@ -530,8 +689,8 @@ export class ResponseProcessor {
     return capped;
   }
 
-  process(rawText, { tone = null, userMessage = "", styleHint = null } = {}) {
-    const cleaned = sanitize(rawText);
+  process(rawText, { tone = null, userMessage = "", styleHint = null, userPronouns = null } = {}) {
+    const cleaned = sanitize(rawText, { userPronouns });
     let sentences = splitSentences(cleaned);
 
     if (sentences.length === 1) {
@@ -594,15 +753,28 @@ export class ResponseProcessor {
       .filter(Boolean);
     // Keep intensity mirroring very subtle to avoid caricature.
     finalParts = finalParts.map((part) => applyGreetingIntensity(part, userMessage, styleHint));
-    finalParts = this.applyCalibratedImperfection(finalParts, { tone, userMessage });
-    finalParts = ensureKnownTypoCorrectionBubbles(finalParts);
-
+    if (styleHint?.userCapsBurst) {
+      finalParts = finalParts.map((part) => part.replace(/\b(não|nao)\b/gi, (m) => m.toUpperCase()));
+    }
+    finalParts = dropTrailingFiller(finalParts)
+      .map(enforceTerminalPunctuation)
+      .map((part) => String(part).replace(/\s{2,}/g, " ").trim());
+    finalParts = filterInvalidCorrectionBubbles(finalParts);
+    if (this.canInjectImperfection({ tone, userMessage }) && Math.random() < 0.05) {
+      finalParts = injectDynamicTypo(finalParts);
+      this.imperfectionEvents.push(Date.now());
+      this.imperfectionCooldown = 10;
+    }
     return finalParts.length ? finalParts : [capitalize(stripStandaloneLaughter(cleaned))].filter(Boolean);
   }
 
   canInjectImperfection({ tone, userMessage }) {
     if (tone === "calm") return false;
     if (isSensitiveMessage(userMessage)) return false;
+    if (this.imperfectionCooldown > 0) {
+      this.imperfectionCooldown -= 1;
+      return false;
+    }
     const now = Date.now();
     this.imperfectionEvents = this.imperfectionEvents.filter(
       (timestamp) => now - timestamp < this.imperfectionWindowMs

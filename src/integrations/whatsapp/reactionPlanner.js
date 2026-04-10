@@ -5,7 +5,7 @@
 
 const COOLDOWN_MS = 3.5 * 60 * 1000;
 const MIN_MESSAGES_BETWEEN = 6;
-const BASE_MATCH_CHANCE = 0.28;
+const BASE_MATCH_CHANCE = 0.35;
 
 const E = {
   heart: "❤️",
@@ -30,6 +30,9 @@ function pickEmojiForText(t) {
   }
   if (/\b(obrigad|brigad|valeu demais|vlw demais)\b/i.test(t) && lastLine.length < 56) {
     return Math.random() < 0.5 ? E.pray : E.sparkle;
+  }
+  if (/(^|\b)(flw|falou|tchau|xau|até|ate|ok|okey|blz|beleza|valeu|vlw)(\b|$)/i.test(lastLine) && lastLine.length < 24) {
+    return Math.random() < 0.65 ? E.heart : E.thumbs;
   }
   if (/\b(valeu|vlw|fechou|show)\b/i.test(lastLine) && lastLine.length < 28) {
     return E.thumbs;

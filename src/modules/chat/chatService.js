@@ -90,6 +90,7 @@ export class ChatService {
 
   static isConfusionSignal(text) {
     const t = ChatService.normalizeLoose(text);
+    if (/^(que|q|quê)\??$/.test(t)) return true;
     return /\b(ta se perdendo|tá se perdendo|sem sentido|nao entendeu|não entendeu|viajou|nada a ver)\b/.test(t);
   }
 
@@ -126,8 +127,8 @@ export class ChatService {
 
     if (/\b(pode deixar de|nao deixa|não deixa|deixa de)\b/.test(t)) return false;
 
-    if (/^(falou|flw|vlw)(\s+k{2,})?$/i.test(t)) return true;
-    if (/^(tchau|xau)(\s+k{2,})?$/i.test(t)) return true;
+    if (/^(falou+|flw+|vlw+)(\b|\s)/i.test(t)) return true;
+    if (/^(tchau+|xau+)(\b|\s)/i.test(t)) return true;
 
     if (/^pode deixar\b/.test(t)) return true;
     if (/^deixa\s+(quieto|pra la|pralá|comigo|assim)\b/.test(t)) return true;
@@ -139,6 +140,69 @@ export class ChatService {
     if (/^resolvido\b/.test(t)) return true;
     if (/^ta\s+tranquilo\b|^tá\s+tranquilo\b/.test(t) && t.length < 40) return true;
     return false;
+  }
+
+  static isShortAcknowledgement(text) {
+    const raw = String(text ?? "").trim();
+    if (!raw || raw.length > 24) return false;
+    const t = ChatService.normalizeLoose(raw);
+    return /^(ok+|okey+|okay+|blz+|beleza+|suave+|fechou+|vlw+|valeu+|flw+|falou+|xau+|tchau+|ate+|até+)$/.test(t);
+  }
+
+  static isLikelyQuestion(text) {
+    const raw = String(text ?? "").trim();
+    if (!raw) return false;
+    if (raw.endsWith("?")) return true;
+    const t = ChatService.normalizeLoose(raw);
+    return /^(o que|oq|quem|quando|onde|por que|porque|pq|qual|como|cadê|cade|vc|você|cê|ce|vai|ta|tá|é|eh)\b/.test(t);
+  }
+
+  static countRecentClosures(history = []) {
+    const source = Array.isArray(history) ? history : [];
+    const recentUser = source.filter((m) => m?.role === "user").slice(-3);
+    return recentUser.filter((m) => ChatService.isConversationClosure(m.content) || ChatService.isShortAcknowledgement(m.content)).length;
+  }
+
+  static decideClosure(userText, history = []) {
+    const trimmed = String(userText ?? "").trim();
+    if (!trimmed) return "none";
+    const isClosure = ChatService.isConversationClosure(trimmed) || ChatService.isShortAcknowledgement(trimmed);
+    if (!isClosure) return "none";
+
+    const source = Array.isArray(history) ? history : [];
+    const lastAssistant = [...source].reverse().find((m) => m?.role === "assistant");
+    if (lastAssistant?.content && ChatService.isLikelyQuestion(lastAssistant.content)) {
+      return "respond";
+    }
+
+    const assistantClosed = lastAssistant?.content
+      ? ChatService.isConversationClosure(lastAssistant.content) ||
+        ChatService.isShortAcknowledgement(lastAssistant.content)
+      : false;
+    const recentClosures = ChatService.countRecentClosures(source);
+
+    let silentChance = 0.15;
+    let reactChance = 0.28;
+    if (assistantClosed) {
+      silentChance = 0.22;
+      reactChance = 0.35;
+    } else if (recentClosures >= 2) {
+      silentChance = 0.2;
+      reactChance = 0.34;
+    }
+
+    const r = Math.random();
+    if (r < silentChance) return "silent";
+    if (r < silentChance + reactChance) return "react";
+    return "respond";
+  }
+
+  static shouldSilentlyClose(userText, history = []) {
+    return ChatService.decideClosure(userText, history) === "silent";
+  }
+
+  static shouldReactOnly(userText, history = []) {
+    return ChatService.decideClosure(userText, history) === "react";
   }
 
   static hasMetaDrift(text) {
@@ -161,7 +225,16 @@ export class ChatService {
       this.internalState.updateBefore(message, meta);
     }
 
-    const raw = await this.agent.respond(message, meta, history, tone);
+    const closureDecision = meta?.closeDecision ?? ChatService.decideClosure(trimmed, history);
+    if (closureDecision === "silent" || closureDecision === "react") {
+      return [];
+    }
+
+    const metaWithFallback = ChatService.isConfusionSignal(trimmed)
+      ? { ...meta, fallback: "ground" }
+      : meta;
+
+    const raw = await this.agent.respond(message, metaWithFallback, history, tone);
 
     if (Agent.isSilentReply(raw)) {
       const userId = meta?.userId ?? "default";
@@ -178,7 +251,8 @@ export class ChatService {
       ? this.responseProcessor.process(raw, {
         tone,
         userMessage: message,
-        styleHint: meta?.styleHint ?? null
+        styleHint: meta?.styleHint ?? null,
+        userPronouns: meta?.userPronouns ?? null
       })
       : [raw];
 
@@ -227,7 +301,8 @@ export class ChatService {
           ? this.responseProcessor.process(regen, {
               tone,
               userMessage: message,
-              styleHint: meta?.styleHint ?? null
+              styleHint: meta?.styleHint ?? null,
+              userPronouns: meta?.userPronouns ?? null
             })
           : [regen];
         resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
@@ -248,12 +323,25 @@ export class ChatService {
           ? this.responseProcessor.process(regen, {
               tone,
               userMessage: message,
-              styleHint: meta?.styleHint ?? null
+              styleHint: meta?.styleHint ?? null,
+              userPronouns: meta?.userPronouns ?? null
             })
           : [regen];
         resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
       }
     }
+
+    if (resultParts.length) {
+      const shortAffirm = /^(nunquinha|nunca+a+|jamais|de jeito nenhum|claro|com certeza|isso|isso mesmo)(\s+kk+)?$/i;
+      if (shortAffirm.test(trimmed) && resultParts.length > 1) {
+        resultParts = [resultParts[0]];
+      }
+    }
+
+    if (ChatService.shouldSilentlyClose(trimmed, history)) {
+      return [];
+    }
+
     return resultParts;
   }
 }

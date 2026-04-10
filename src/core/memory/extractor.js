@@ -13,6 +13,13 @@ const I_AM_PATTERNS = [
   /\beu tô\s+([^.!?]{2,60})/iu
 ];
 
+const PRONOUN_PATTERNS = [
+  /\bmeus\s+pronomes\s+(?:s[aã]o|é)\s+([^.!?]{2,32})/iu,
+  /\bmeus\s+pronomes\s*(?::|-)?\s*([^.!?]{2,32})/iu,
+  /\bpronomes\s*(?::|-)?\s*([^.!?]{2,32})/iu,
+  /\bme\s+chama\s+de\s+(ele|ela|elu|ielu|ile)/iu
+];
+
 function matchFirst(patterns, text) {
   for (const pattern of patterns) {
     const match = text.match(pattern);
@@ -31,6 +38,9 @@ export function extractFacts(message) {
 
   const identity = matchFirst(I_AM_PATTERNS, message);
   if (identity) facts.push({ type: "user_identity", value: identity });
+
+  const pronouns = matchFirst(PRONOUN_PATTERNS, message);
+  if (pronouns) facts.push({ type: "user_pronouns", value: pronouns });
 
   return facts;
 }

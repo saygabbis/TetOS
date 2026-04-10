@@ -70,7 +70,12 @@ export class InternalState {
     }
 
     if (styleHint.userMessageMessy || styleHint.userKeyboardSmash) {
-      this.state.energy = clamp01(this.state.energy - 0.05);
+      this.state.energy = clamp01(this.state.energy - 0.03);
+    }
+
+    if (styleHint.userLaughterEnergy === "high" || styleHint.userMessyLaughter) {
+      this.state.energy = clamp01(this.state.energy + 0.03);
+      this.state.social = clamp01(this.state.social + 0.02);
     }
 
     if (sentiment === "positive") {

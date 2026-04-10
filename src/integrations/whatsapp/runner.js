@@ -21,6 +21,10 @@ async function runPresence(runtime, socket, nudgeEngine) {
   if (!DEFAULTS.presenceEnabled) return;
   const users = listKnownUsers(runtime);
   for (const userId of users) {
+    const profile = runtime.longTerm.getProfile(userId);
+    if (profile?.facts?.lastChannel !== "direct") {
+      continue;
+    }
     const nudge = nudgeEngine?.buildNudge(userId);
     if (!nudge?.text) continue;
     const allowed = runtime.basicLoop.maybeNudge(userId, {});
@@ -39,11 +43,59 @@ async function runPresence(runtime, socket, nudgeEngine) {
     );
     const text = Array.isArray(replies) ? replies[0] : replies;
     if (!text) continue;
-    await socket.sendMessage(remoteJid, { text });
+    if (!remoteJid.endsWith("@g.us")) {
+      await socket.sendMessage(remoteJid, { text });
+    }
     runtime.basicLoop.recordOutbound(userId);
     runtime.timeStore?.markSeen(userId);
     runtime.userPatterns?.recordInteraction(userId);
   }
+}
+
+function suppressNoisyLogs() {
+  const originalLog = console.log;
+  const originalError = console.error;
+  const originalWarn = console.warn;
+  const noisyPatterns = [
+    /Failed to decrypt message/i,
+    /Bad MAC/i,
+    /Session error/i,
+    /Closing open session/i,
+    /SessionEntry \{/i,
+    /creds updated/i
+  ];
+
+  const shouldSuppress = (args) => {
+    if (!args.length) return false;
+    const text = args
+      .map((arg) => (typeof arg === "string" ? arg : arg?.message ?? ""))
+      .join(" ");
+    return noisyPatterns.some((re) => re.test(text));
+  };
+
+  const wrapWrite = (original) => (chunk, encoding, cb) => {
+    const text = typeof chunk === "string" ? chunk : chunk?.toString?.() ?? "";
+    if (noisyPatterns.some((re) => re.test(text))) {
+      if (typeof cb === "function") cb();
+      return true;
+    }
+    return original.call(process.stderr, chunk, encoding, cb);
+  };
+
+  console.log = (...args) => {
+    if (shouldSuppress(args)) return;
+    originalLog(...args);
+  };
+  console.error = (...args) => {
+    if (shouldSuppress(args)) return;
+    originalError(...args);
+  };
+  console.warn = (...args) => {
+    if (shouldSuppress(args)) return;
+    originalWarn(...args);
+  };
+  process.stderr.write = wrapWrite(process.stderr.write);
+  process.stdout.write = wrapWrite(process.stdout.write);
 }
 
 async function main() {
@@ -51,6 +103,8 @@ async function main() {
     console.log("WhatsApp disabled. Set WHATSAPP_ENABLED=true to run.");
     return;
   }
+
+  suppressNoisyLogs();
 
   const lockPath = ".wa-runner.lock";
   if (existsSync(lockPath)) {
@@ -94,7 +148,7 @@ async function main() {
           reconnecting = false;
           console.log("[whatsapp] connected");
         }
-        if (update?.qr) console.log("[whatsapp] scan QR in terminal");
+        if (update?.qr) console.log("[whatsapp] QR recebido, use o handler de QR");
 
         if (connection === "close" && DEFAULTS.whatsappAutoConnect && !reconnecting) {
           isConnected = false;
@@ -117,6 +171,16 @@ async function main() {
             }, 2000);
           }
         }
+      }
+    });
+
+    socket.ev.on("creds.update", () => {
+      console.log("[whatsapp] creds updated");
+    });
+
+    socket.ev.on("connection.update", (update) => {
+      if (update?.lastDisconnect?.error?.message?.includes("bad-request")) {
+        console.warn("[whatsapp] init queries warning: bad-request");
       }
     });
 

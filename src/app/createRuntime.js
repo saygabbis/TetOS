@@ -173,12 +173,15 @@ export async function handleIncomingMessage(runtime, payload = {}) {
   else if (userKkMaxRun >= 5 || /(?:ha|rs){3,}/i.test(input) || isMessyLaughterMessage(input)) {
     userLaughterEnergy = "medium";
   }
+  const normalized = String(input ?? "").trim();
+  const hasCaps = /[A-ZÁÉÍÓÚÂÊÔÃÕÇ]{3,}/.test(normalized);
+  const shortClauseCount = normalized.split(/[.!?]/).filter((s) => s.trim().length > 0).length;
   const styleHint = {
     ...(existingProfile?.style ?? {}),
     userIsShort: style.isShort,
     userIsLong: style.isLong,
     repeatedVowels: repeatedChars,
-    userGreetingIntensity: /^(oi+|oie+|eae+|hey+)/i.test(input.trim()) ? repeatedChars : 0,
+    userGreetingIntensity: /^(oi+|oie+|eae+|hey+)/i.test(normalized) ? repeatedChars : 0,
     userBurst: burstMessages > 1,
     userKkMaxRun,
     userLaughterEnergy,
@@ -186,6 +189,8 @@ export async function handleIncomingMessage(runtime, payload = {}) {
     userMessageMessy,
     userMessyLaughter: isMessyLaughterMessage(input),
     sparseGreetingFloodCount,
+    userCapsBurst: hasCaps,
+    userShortClauseCount: shortClauseCount,
     conversationEnergy: tone === "calm" ? "low" : "playful"
   };
 
@@ -197,7 +202,8 @@ export async function handleIncomingMessage(runtime, payload = {}) {
       styleHint,
       recentHistoryCount: normalizedHistory?.length ?? 0,
       recentHistory,
-      resumedAfterClose
+      resumedAfterClose,
+      userPronouns: existingProfile?.facts?.pronouns ?? null
     },
     normalizedHistory,
     tone
@@ -243,6 +249,9 @@ export async function handleIncomingMessage(runtime, payload = {}) {
       facts: {
         ...(facts.find((f) => f.type === "user_name")
           ? { name: facts.find((f) => f.type === "user_name").value }
+          : {}),
+        ...(facts.find((f) => f.type === "user_pronouns")
+          ? { pronouns: facts.find((f) => f.type === "user_pronouns").value }
           : {})
       },
       style: nextStyle,

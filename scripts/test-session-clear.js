@@ -1,4 +1,5 @@
-const response = await fetch("http://localhost:3000/session/clear", {
+const port = process.env.TETOS_PORT ?? "6453";
+const response = await fetch(`http://localhost:${port}/session/clear`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ sessionId: "s1" })

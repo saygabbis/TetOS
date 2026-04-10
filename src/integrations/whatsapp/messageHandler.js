@@ -1,6 +1,7 @@
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { jidNormalizedUser } from "baileys";
 import { planWhatsAppReaction } from "./reactionPlanner.js";
+import { ChatService } from "../../modules/chat/chatService.js";
 
 function extractPhone(remoteJid = "") {
   return String(remoteJid).replace(/@.+$/, "");
@@ -47,8 +48,8 @@ const FIRST_BUBBLE_TYPING_FLOOR_MS = 480;
 /** Pequena pausa entre soltar "paused" pós-modelo e recomposing da 1ª bolha (mais natural). */
 const POST_MODEL_BEFORE_BUBBLE_MS_MIN = 90;
 const POST_MODEL_BEFORE_BUBBLE_MS_MAX = 240;
-const INTERRUPT_DEBOUNCE_MIN_MS = 220;
-const INTERRUPT_DEBOUNCE_MAX_MS = 420;
+const INTERRUPT_DEBOUNCE_MIN_MS = 120;
+const INTERRUPT_DEBOUNCE_MAX_MS = 260;
 const MODEL_TIMEOUT_MS = 25000;
 function estimateTypingDelayMs(text, partIndex = 0) {
   const len = String(text ?? "").trim().length;
@@ -145,18 +146,6 @@ function createConversationOrchestrator(socket, runtime) {
         const item = queueByUser.get(userId).shift();
         if (!item) continue;
         const typingUntil = typingByUser.get(userId) ?? 0;
-        let waitForTypingMs = Math.max(0, typingUntil - Date.now());
-        if (waitForTypingMs > 0) {
-          // Às vezes responde ainda com o usuário "digitando" (complementando várias bolhas) — mais raro.
-          if (Math.random() < 0.14) {
-            waitForTypingMs = Math.min(waitForTypingMs, randBetween(120, 420));
-          } else if (Math.random() < 0.09) {
-            waitForTypingMs = Math.floor(waitForTypingMs * 0.32);
-          }
-          await sleep(waitForTypingMs);
-        }
-        const debounceMs = randBetween(INTERRUPT_DEBOUNCE_MIN_MS, INTERRUPT_DEBOUNCE_MAX_MS);
-        await sleep(debounceMs);
         const token = Date.now();
         interruptByUser.set(userId, token);
         const prevR = reactionStateByUser.get(userId) ?? {
@@ -167,21 +156,24 @@ function createConversationOrchestrator(socket, runtime) {
           messagesSinceLastReaction: (prevR.messagesSinceLastReaction ?? 0) + 1,
           lastReactionAt: prevR.lastReactionAt ?? 0
         };
-        console.log(`[whatsapp] generating reply for ${userId}…`);
-        if (typeof socket.sendPresenceUpdate === "function") {
-          try {
-            await socket.sendPresenceUpdate("composing", item.remoteJid);
-          } catch (e) {
-            console.warn(`[whatsapp] composing (during generation) failed: ${e.message}`);
+        let replies = [];
+        if (item.closeDecision === "respond") {
+          console.log(`[whatsapp] generating reply for ${userId}…`);
+          if (typeof socket.sendPresenceUpdate === "function") {
+            try {
+              await socket.sendPresenceUpdate("composing", item.remoteJid);
+            } catch (e) {
+              console.warn(`[whatsapp] composing (during generation) failed: ${e.message}`);
+            }
           }
         }
-        let replies = [];
         try {
           const out = await Promise.race([
             handleIncomingMessage(runtime, {
               message: item.message,
               userId: item.userId,
-              sessionId: item.sessionId
+              sessionId: item.sessionId,
+              closeDecision: item.closeDecision
             }),
             new Promise((_, reject) =>
               setTimeout(() => reject(new Error("model timeout")), MODEL_TIMEOUT_MS)
@@ -189,25 +181,28 @@ function createConversationOrchestrator(socket, runtime) {
           ]);
 
           replies = out?.replies ?? [];
-          if (!Array.isArray(replies) || replies.length === 0) {
-            console.warn(`[whatsapp] empty reply for ${item.userId}`);
-          }
         } catch (error) {
           console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
           replies = [];
-        } finally {
-          runtime.timeStore?.markSeen(item.userId);
-          runtime.userPatterns?.recordInteraction(item.userId);
-          if (typeof socket.sendPresenceUpdate === "function") {
-            try {
-              const hasOutgoing =
-                Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
-              if (!hasOutgoing) {
-                await socket.sendPresenceUpdate("paused", item.remoteJid);
-              }
-            } catch (_) {
-              /* ignore */
-            }
+        }
+
+        const hasOutgoing =
+          Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
+        if (hasOutgoing && typeof socket.sendPresenceUpdate === "function") {
+          try {
+            await socket.sendPresenceUpdate("composing", item.remoteJid);
+          } catch (e) {
+            console.warn(`[whatsapp] composing (during generation) failed: ${e.message}`);
+          }
+        }
+
+        runtime.timeStore?.markSeen(item.userId);
+        runtime.userPatterns?.recordInteraction(item.userId);
+        if (!hasOutgoing && typeof socket.sendPresenceUpdate === "function") {
+          try {
+            await socket.sendPresenceUpdate("paused", item.remoteJid);
+          } catch (_) {
+            /* ignore */
           }
         }
         if (interruptByUser.get(userId) !== token) continue;
@@ -215,10 +210,13 @@ function createConversationOrchestrator(socket, runtime) {
           userText: item.message,
           state: reactionState
         });
-        if (plan.emoji && item.messageKey && typeof socket.sendMessage === "function") {
+        const forcedReaction = item.closeDecision === "react" ? "❤️" : null;
+        const emoji = plan.emoji ?? forcedReaction;
+        const reacted = Boolean(emoji && item.messageKey && typeof socket.sendMessage === "function");
+        if (reacted) {
           try {
             await socket.sendMessage(item.remoteJid, {
-              react: { text: plan.emoji, key: item.messageKey }
+              react: { text: emoji, key: item.messageKey }
             });
             reactionStateByUser.set(userId, {
               messagesSinceLastReaction: 0,
@@ -240,7 +238,24 @@ function createConversationOrchestrator(socket, runtime) {
         const softened = runtime.userPatterns
           ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
           : false;
-        await sendReplies(item.remoteJid, item.userId, replies, token, { softened });
+        if (!reacted) {
+          const hasOutgoing =
+            Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
+          if (hasOutgoing) {
+            let waitForTypingMs = Math.max(0, typingUntil - Date.now());
+            if (waitForTypingMs > 0) {
+              if (Math.random() < 0.14) {
+                waitForTypingMs = Math.min(waitForTypingMs, randBetween(120, 420));
+              } else if (Math.random() < 0.09) {
+                waitForTypingMs = Math.floor(waitForTypingMs * 0.32);
+              }
+              await sleep(waitForTypingMs);
+            }
+            const debounceMs = randBetween(INTERRUPT_DEBOUNCE_MIN_MS, INTERRUPT_DEBOUNCE_MAX_MS);
+            await sleep(debounceMs);
+          }
+          await sendReplies(item.remoteJid, item.userId, replies, token, { softened });
+        }
       }
     } finally {
       runningByUser.delete(userId);
@@ -314,6 +329,12 @@ export function registerMessageHandler({ socket, runtime }) {
       try {
         if (!incoming?.message) continue;
         if (incoming.key?.fromMe) continue;
+        if (incoming?.messageStubType && !incoming.message?.conversation) {
+          continue;
+        }
+        if (incoming?.message?.protocolMessage || incoming?.message?.senderKeyDistributionMessage) {
+          continue;
+        }
 
         const messageKeyId = incoming.key?.id ?? "";
         if (messageKeyId) {
@@ -343,6 +364,9 @@ export function registerMessageHandler({ socket, runtime }) {
         const userId = isGroup ? participantId : baseUserId;
         const sessionId = isGroup && participantId ? `wa-group:${baseUserId}:${participantId}` : `wa-${baseUserId}`;
 
+        const historySnapshot = runtime.shortTerm.getAll(sessionId);
+        const closeDecision = ChatService.decideClosure(text, historySnapshot);
+
         orchestrator.bumpInterrupt(userId);
         orchestrator.clearTypingGrace(userId);
         const profile = runtime.longTerm.getProfile(userId);
@@ -353,6 +377,10 @@ export function registerMessageHandler({ socket, runtime }) {
             facts: { ...(profile?.facts ?? {}), name: pushName }
           });
         }
+
+        runtime.longTerm.updateProfile(userId, {
+          facts: { ...(profile?.facts ?? {}), lastChannel: isGroup ? "group" : "direct" }
+        });
 
         if (isGroup) {
           const mentionHint = incoming.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
@@ -379,6 +407,7 @@ export function registerMessageHandler({ socket, runtime }) {
           message: text,
           userId,
           sessionId,
+          closeDecision,
           messageKey: incoming.key ? { ...incoming.key } : undefined
         });
       } catch (error) {

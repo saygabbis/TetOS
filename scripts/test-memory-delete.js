@@ -5,7 +5,8 @@ if (!id) {
   process.exit(1);
 }
 
-const response = await fetch("http://localhost:3000/memory/delete", {
+const port = process.env.TETOS_PORT ?? "6453";
+const response = await fetch(`http://localhost:${port}/memory/delete`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ id })
