@@ -143,6 +143,17 @@
       "userId": "5516988137617",
       "content": "uma garota, viu teto",
       "timestamp": "2026-04-10T02:45:18.663Z"
+    },
+    {
+      "id": "eb9bee1b-4513-4ded-ac00-7996df7dc3e2",
+      "tags": [
+        "user_identity"
+      ],
+      "type": "user_identity",
+      "value": "perdida kkkk quem é essa pessoa",
+      "userId": "120363426815699053:58141777641473",
+      "content": "perdida kkkk quem é essa pessoa",
+      "timestamp": "2026-04-10T08:27:58.475Z"
     }
   ],
   "profiles": {
@@ -195,9 +206,9 @@
         "abbrev": 9,
         "laughter": 15,
         "emoji": 2,
-        "total": 94
+        "total": 101
       },
-      "lastUpdated": "2026-04-10T08:03:26.038Z"
+      "lastUpdated": "2026-04-10T08:40:36.553Z"
     },
     "120363426815699053:157947506229421": {
       "facts": {
@@ -207,23 +218,67 @@
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "medium"
+        "brevity": "short"
       },
       "counts": {
         "abbrev": 0,
         "laughter": 0,
         "emoji": 0,
-        "total": 16
+        "total": 18
       },
-      "lastUpdated": "2026-04-10T08:11:34.444Z"
+      "lastUpdated": "2026-04-10T08:28:09.341Z"
     },
     "120363426815699053:58141777641473": {
       "facts": {
         "name": "Sellye!"
       },
+      "style": {
+        "prefersAbbrev": true,
+        "prefersLaughter": true,
+        "prefersEmoji": false,
+        "brevity": "medium"
+      },
+      "counts": {
+        "abbrev": 2,
+        "laughter": 3,
+        "emoji": 0,
+        "total": 3
+      },
+      "lastUpdated": "2026-04-10T08:28:46.348Z"
+    },
+    "120363426815699053:5516993061143": {
+      "facts": {
+        "name": "Sellye!"
+      },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-04-10T08:11:28.348Z"
+      "lastUpdated": "2026-04-10T08:37:18.185Z"
+    },
+    "120363426815699053:5516988137617": {
+      "facts": {
+        "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+      },
+      "style": {
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 0,
+        "laughter": 0,
+        "emoji": 0,
+        "total": 2
+      },
+      "lastUpdated": "2026-04-10T08:37:23.905Z"
+    },
+    "5516993061143": {
+      "facts": {
+        "name": "Sellye!"
+      },
+      "style": {},
+      "counts": {},
+      "lastUpdated": "2026-04-10T08:40:52.948Z"
     }
   },
   "mediumTerm": {
@@ -311,30 +366,6 @@
     ],
     "5516988137617": [
       {
-        "summary": "kkkkk  tadinha",
-        "timestamp": "2026-04-10T02:28:17.076Z"
-      },
-      {
-        "summary": "é que você é muito especial pra mim",
-        "timestamp": "2026-04-10T02:28:58.573Z"
-      },
-      {
-        "summary": "kkk te amo",
-        "timestamp": "2026-04-10T02:31:28.964Z"
-      },
-      {
-        "summary": "oiee teto você se sente mais você?",
-        "timestamp": "2026-04-10T02:33:39.416Z"
-      },
-      {
-        "summary": "Boa noite linda",
-        "timestamp": "2026-04-10T02:40:14.487Z"
-      },
-      {
-        "summary": "você é uma IA?",
-        "timestamp": "2026-04-10T02:42:03.437Z"
-      },
-      {
         "summary": "ah, mexendo em código kk",
         "timestamp": "2026-04-10T02:44:58.853Z"
       },
@@ -389,6 +420,30 @@
       {
         "summary": "e as 8 levanto pra trabalhar...",
         "timestamp": "2026-04-10T08:03:26.038Z"
+      },
+      {
+        "summary": "Você lembra de mim?",
+        "timestamp": "2026-04-10T08:32:46.115Z"
+      },
+      {
+        "summary": "que horas são",
+        "timestamp": "2026-04-10T08:36:23.076Z"
+      },
+      {
+        "summary": "To indo deitar, ok?",
+        "timestamp": "2026-04-10T08:39:29.865Z"
+      },
+      {
+        "summary": "sabe quem sou eu?",
+        "timestamp": "2026-04-10T08:39:46.546Z"
+      },
+      {
+        "summary": "tendi, obrigada teto, beijos boa noite",
+        "timestamp": "2026-04-10T08:40:06.653Z"
+      },
+      {
+        "summary": "Teto boa noite, lembra quem sou eu?",
+        "timestamp": "2026-04-10T08:40:36.553Z"
       }
     ],
     "120363426815699053:157947506229421": [
@@ -435,6 +490,38 @@
       {
         "summary": "tá ta vai dormir agora, tchau",
         "timestamp": "2026-04-10T08:11:34.444Z"
+      },
+      {
+        "summary": "teto fala com ela\nteto fala com ela",
+        "timestamp": "2026-04-10T08:27:45.349Z"
+      },
+      {
+        "summary": "A @58141777641473",
+        "timestamp": "2026-04-10T08:28:09.341Z"
+      }
+    ],
+    "120363426815699053:58141777641473": [
+      {
+        "summary": "teto é alguém?? me explica isso direito pq eu tô perdida kkkk quem é essa pessoa",
+        "timestamp": "2026-04-10T08:27:58.476Z"
+      },
+      {
+        "summary": "Também não sei kkkk quem é essa \"ela\" que o teto fala?? isso tá confuso demais",
+        "timestamp": "2026-04-10T08:28:16.793Z"
+      },
+      {
+        "summary": "mencionou alguém?? quem é esse aí kkkk不认识这个人诶",
+        "timestamp": "2026-04-10T08:28:32.896Z"
+      }
+    ],
+    "120363426815699053:5516988137617": [
+      {
+        "summary": "@174165839581324 Teto que horas são",
+        "timestamp": "2026-04-10T08:36:52.379Z"
+      },
+      {
+        "summary": "você lembra de mim?",
+        "timestamp": "2026-04-10T08:37:16.520Z"
       }
     ]
   }

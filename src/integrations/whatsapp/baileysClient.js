@@ -19,7 +19,7 @@ export async function createBaileysClient({
     auth: state,
     version,
     printQRInTerminal: true,
-    syncFullHistory: true
+    syncFullHistory: false
   });
 
   socket.ev.on("creds.update", saveCreds);

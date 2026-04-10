@@ -24,7 +24,12 @@ function extractText(message = {}) {
 }
 
 function extractParticipant(incoming) {
-  const participant = incoming?.key?.participant ?? incoming?.participant ?? "";
+  const participant =
+    incoming?.key?.participantPn ??
+    incoming?.participantPn ??
+    incoming?.key?.participant ??
+    incoming?.participant ??
+    "";
   return jidNormalizedUser(participant);
 }
 
@@ -298,6 +303,8 @@ export function registerMessageHandler({ socket, runtime }) {
   const orchestrator = createConversationOrchestrator(socket, runtime);
   const groupContextByUser = new Map();
   const GROUP_CONTEXT_WINDOW_MS = 5 * 60 * 1000;
+  const seenMessageIds = new Map();
+  const MESSAGE_DEDUPE_TTL_MS = 60 * 1000;
   socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
 
   socket.ev.on("messages.upsert", async ({ messages, type }) => {
@@ -307,6 +314,15 @@ export function registerMessageHandler({ socket, runtime }) {
       try {
         if (!incoming?.message) continue;
         if (incoming.key?.fromMe) continue;
+
+        const messageKeyId = incoming.key?.id ?? "";
+        if (messageKeyId) {
+          const lastSeenAt = seenMessageIds.get(messageKeyId);
+          if (lastSeenAt && Date.now() - lastSeenAt < MESSAGE_DEDUPE_TTL_MS) {
+            continue;
+          }
+          seenMessageIds.set(messageKeyId, Date.now());
+        }
 
         const remoteJidRaw = incoming.key?.remoteJid ?? "";
         const remoteJid = jidNormalizedUser(remoteJidRaw);
@@ -321,8 +337,11 @@ export function registerMessageHandler({ socket, runtime }) {
 
         const baseUserId = extractPhone(remoteJid);
         const participantId = isGroup ? extractPhone(extractParticipant(incoming)) : "";
-        const userId = isGroup && participantId ? `${baseUserId}:${participantId}` : baseUserId;
-        const sessionId = isGroup && participantId ? `wa-${baseUserId}:${participantId}` : `wa-${baseUserId}`;
+        if (isGroup && !participantId) {
+          continue;
+        }
+        const userId = isGroup ? participantId : baseUserId;
+        const sessionId = isGroup && participantId ? `wa-group:${baseUserId}:${participantId}` : `wa-${baseUserId}`;
 
         orchestrator.bumpInterrupt(userId);
         orchestrator.clearTypingGrace(userId);
@@ -352,9 +371,7 @@ export function registerMessageHandler({ socket, runtime }) {
           if (!isDirect && !inContext) {
             continue;
           }
-          if (isDirect) {
-            groupContextByUser.set(contextKey, Date.now());
-          }
+          groupContextByUser.set(contextKey, Date.now());
         }
 
         orchestrator.scheduleIncoming({
