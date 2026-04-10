@@ -51,12 +51,11 @@ export class BasicLoop {
 
   textForIntent(intent) {
     const byIntent = {
-      inactive_user: ["sumiu", "tá aí?", "oi, tudo bem?"],
-      memory_recall: ["lembrei de você agora", "pensei em você rapidinho"],
-      curiosity: ["bateu curiosidade: como você tá?", "e aí, novidades?"]
+      inactive_user: "Reconhecer que a pessoa sumiu um pouco e abrir o papo.",
+      memory_recall: "Mencionar que lembrou da pessoa e abrir uma pergunta leve.",
+      curiosity: "Abrir uma conversa leve pedindo novidade ou como está."
     };
-    const options = byIntent[intent] ?? byIntent.curiosity;
-    return options[Math.floor(Math.random() * options.length)];
+    return byIntent[intent] ?? byIntent.curiosity;
   }
 
   maybeNudge(userId = "default", context = {}) {

@@ -6,6 +6,7 @@ const META_TALK = /\b(você disse|você perguntou|você falou|sua mensagem|você
 const REMINDER_TALK = /\b(lembra\??!?)\b/gi;
 const TITLE_TALK = /\b(princesa|rainha)\b/gi;
 const AI_DISCLAIMER = /\b(as an ai|as a language model)\b/gi;
+const ENGLISH_FILLERS = /\b(by the way|btw|anyway|anyways|i mean|you know|well(?:\s+then)?|cool|nice|yep|yeah|nope|pls|please|thanks|thank you)\b/gi;
 
 function normalizeLaughter(text) {
   // Não achatar kkk longos — só corta sequências absurdas (spam acidental).
@@ -87,12 +88,20 @@ function stripForeignScripts(text) {
     .trim();
 }
 
+function stripEnglishIntrusions(text) {
+  return String(text)
+    .replace(/\b(ok|okay|okey|nice|cool|sorry|lol)\b/gi, (m) => m)
+    .replace(/\bso\b/gi, "")
+    .replace(ENGLISH_FILLERS, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function sanitize(text) {
   const cleaned = preserveParagraphBreaks(
-    stripForeignScripts(String(text))
+    stripEnglishIntrusions(stripForeignScripts(String(text)))
       .replace(ROLEPLAY_MARKERS, "")
       .replace(AI_DISCLAIMER, "")
-      .replace(/\b(kidding aside|by the way|btw)\b/gi, "")
       .replace(/\b(comment|like|share|post|subscribe)\b/gi, "")
       .replace(IDENTITY_LOOPS, "")
       .replace(META_TALK, "")
@@ -161,8 +170,8 @@ function splitLongChatLine(sentence) {
     if (body.length >= 12 && tail.length >= 2) return [body, tail];
   }
 
-  const masSplit = t.match(/^(.{12,}?)\s+((?:mas|só que)\s+.+)$/i);
-  if (masSplit && masSplit[2].trim().length >= 10) {
+  const masSplit = t.match(/^(.{16,}?)\s+((?:mas|só que)\s+.+)$/i);
+  if (masSplit && masSplit[2].trim().length >= 12) {
     return [masSplit[1].trim(), masSplit[2].trim()];
   }
 
@@ -287,7 +296,9 @@ function dropMetaQuestions(text) {
 
 function capitalize(text) {
   if (!text) return text;
-  return text.charAt(0).toUpperCase() + text.slice(1);
+  const cleaned = String(text).trimStart();
+  if (!cleaned) return cleaned;
+  return `${cleaned.charAt(0).toUpperCase()}${cleaned.slice(1)}`;
 }
 
 function applyGreetingIntensity(text, userMessage, styleHint = null) {
@@ -313,7 +324,8 @@ function mergeShortParts(parts) {
       !isInterjectionBubble(trimmed) &&
       !isCorrectionBubble(trimmed) &&
       words.length <= 2 &&
-      trimmed.length < 10;
+      trimmed.length < 10 &&
+      !/^[A-ZÁÉÍÓÚÂÊÔÃÕÇ]/.test(trimmed);
     if (tiny) {
       merged[merged.length - 1] = `${merged[merged.length - 1]} ${trimmed}`.trim();
       continue;

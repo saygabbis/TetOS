@@ -1,9 +1,9 @@
 import { classifyAbsence } from "./absenceClassifier.js";
 
-const NUDGE_TEMPLATES = {
-  medium: ["e aí, tudo certo por aí?"],
-  long: ["faz um tempinho, como você tá?"],
-  very_long: ["faz um tempinho... tudo bem por aí?"]
+const NUDGE_INTENTS = {
+  medium: "Sinalizar que faz pouco tempo e abrir espaço para o usuário responder.",
+  long: "Reconhecer que sumiu um tempo e perguntar como a pessoa está.",
+  very_long: "Reconhecer um hiato maior e abrir um retorno leve sem pressão."
 };
 
 const NEUTRAL_PREFIXES = ["oi", "opa", "eae"];
@@ -14,10 +14,9 @@ function pickFrom(list = []) {
 }
 
 function buildText(absenceLabel, softened) {
-  const base = pickFrom(NUDGE_TEMPLATES[absenceLabel] ?? NUDGE_TEMPLATES.medium);
-  if (!softened) return base;
-  const prefix = pickFrom(NEUTRAL_PREFIXES);
-  return `${prefix}! ${base}`.trim();
+  const intent = NUDGE_INTENTS[absenceLabel] ?? NUDGE_INTENTS.medium;
+  const prefix = softened ? `${pickFrom(NEUTRAL_PREFIXES)}! ` : "";
+  return `${prefix}[NUDGE] ${intent}`.trim();
 }
 
 export class NudgeEngine {
@@ -51,7 +50,8 @@ export class NudgeEngine {
       text,
       absence: absence.label,
       softened,
-      gapMs: absence.gapMs ?? 0
+      gapMs: absence.gapMs ?? 0,
+      intent: NUDGE_INTENTS[absence.label] ?? NUDGE_INTENTS.medium
     };
   }
 }

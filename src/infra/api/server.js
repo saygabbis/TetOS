@@ -62,11 +62,21 @@ app.post("/memory/search", (req, res) => {
   return res.json({ entries: results });
 });
 
-app.post("/nudge", (req, res) => {
+app.post("/nudge", async (req, res) => {
   const { userId } = req.body ?? {};
   const targetUser = typeof userId === "string" ? userId : "default";
   const payload = basicLoop.maybeNudge(targetUser, { hasRecentMemory: true });
-  return res.json({ message: payload?.text ?? null, reason: payload?.reason ?? null });
+  if (!payload?.text) {
+    return res.json({ message: null, reason: payload?.reason ?? null });
+  }
+  const replies = await runtime.chatService.handleMessage(
+    payload.text,
+    { userId: targetUser, sessionId: `api-nudge-${targetUser}`, fallback: "ground" },
+    null,
+    "calm"
+  );
+  const text = Array.isArray(replies) ? replies[0] : replies;
+  return res.json({ message: text ?? null, reason: payload?.reason ?? null });
 });
 
 app.post("/session/clear", (req, res) => {

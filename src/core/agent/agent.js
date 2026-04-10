@@ -70,6 +70,27 @@ export class Agent {
     const metaBlock = Object.keys(metaRest).length
       ? ["[META]", Object.entries(metaRest).map(([k, v]) => `${k}: ${v}`).join("\n")]
       : [];
+
+    const fallbackBlock =
+      meta?.fallback === "clarify"
+        ? [
+            "[FALLBACK]",
+            "Responda em PT-BR com 1 frase curta pedindo esclarecimento, sem parecer resposta padrão fixa.",
+            "Não faça metaconversa nem repita o texto do usuário."
+          ]
+        : meta?.fallback === "ground"
+          ? [
+              "[FALLBACK]",
+              "Responda em PT-BR com 1–2 frases curtas, mantendo exatamente o assunto do usuário.",
+              "Sem desviar, sem meta-comentários, sem inventar contexto."
+            ]
+          : meta?.fallback === "emoji"
+            ? [
+                "[FALLBACK]",
+                "O usuário enviou só emoji. Responda com 1 frase curta e natural, sem parecer resposta padrão.",
+                "Não pergunte 'tá tudo bem?' a menos que o emoji indique tristeza clara."
+              ]
+            : [];
     const resumeBlock = resumedAfterClose
       ? [
           "[CONVERSA NOVA]",
@@ -105,6 +126,7 @@ export class Agent {
       "Responda sempre em português do Brasil, só com letras e pontuação usuais do português.",
       "Nunca insira caracteres de outros alfabetos (chinês, japonês, coreano, etc.) no meio da frase.",
       "Não use palavras aleatórias de outros idiomas; se não souber o termo em português, reformule.",
+      "Evite palavras soltas em inglês no meio da frase (tipo 'so', 'well', 'anyway'); se escapar, reformule em português.",
       "Não use palavras soltas de interface em inglês (Comment, Like, Post, Share, Subscribe).",
       "Não diga que é IA/assistente/modelo e não fale sobre treinamento.",
       "Não use narração/ações entre asteriscos (*tipo assim*). Pode usar * só no fim de uma palavra corrigida no estilo WhatsApp (ex.: certo*), sem roleplay.",
@@ -277,6 +299,7 @@ export class Agent {
       ...metaBlock,
       ...factsBlock,
       ...reinforceBlock,
+      ...fallbackBlock,
       "[INPUT]",
       `User: ${userMessage}`,
       "[OUTPUT]",

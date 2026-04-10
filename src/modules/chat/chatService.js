@@ -43,15 +43,6 @@ export class ChatService {
     return null;
   }
 
-  static pickAckVariant(trimmed) {
-    const key = String(trimmed ?? "").toLowerCase();
-    if (/^(valeu)$/i.test(key)) return "De nada.";
-    if (/^(blz|beleza|fechado)$/i.test(key)) {
-      return key.length % 2 === 0 ? "Fechou." : "Perfeito, fechou.";
-    }
-    return key.length % 2 === 0 ? "Blz, seguimos." : "Boa, seguimos.";
-  }
-
   static deEcho(userMessage, assistantText) {
     const u = String(userMessage ?? "").toLowerCase();
     const a = String(assistantText ?? "").toLowerCase();
@@ -116,31 +107,12 @@ export class ChatService {
     return /[\u203C-\u3299\uFE0F\u200D]|[\u{1F300}-\u{1FAFF}]|[\u2600-\u27BF]/u.test(raw);
   }
 
-  static emojiOnlyReplies(text) {
-    const t = String(text ?? "");
-    if (/[❤💕💗💋🥰😘💖]/.test(t)) {
-      const variants = [
-        ["Aí ❤️", "Tô aqui."],
-        ["Recebi kkk ❤️"],
-        ["Bateu até aqui, mds ❤️"]
-      ];
-      return variants[t.length % variants.length];
-    }
-    if (/[😂🤣💀☠]/.test(t)) {
-      return ["Kkkkk", "Tá animada hoje"];
-    }
-    if (/[😭😢]/.test(t)) {
-      return ["Eita", "Tá tudo bem aí?"];
-    }
-    return ["Vi aqui 😊", "Manda mais quando quiser."];
-  }
-
   static contextualFallbackForEmpty(userMessage) {
     const t = String(userMessage ?? "").trim();
     if (ChatService.isEmojiOnlyMessage(t)) {
-      return ChatService.emojiOnlyReplies(t)[0];
+      return { strategy: "emoji", hint: t };
     }
-    return "Hm, não peguei direito — manda de novo ou explica melhor?";
+    return { strategy: "clarify", hint: t };
   }
 
   /**
@@ -180,14 +152,6 @@ export class ChatService {
     return hits >= 2;
   }
 
-  static groundedFallback(userMessage) {
-    const t = ChatService.normalizeLoose(userMessage);
-    if (/^(eu)$/.test(t)) return "Te ouvi. Pode continuar que eu acompanho.";
-    if (/^(sim|isso|exato|isso mesmo)$/.test(t)) return "Fechado, estamos alinhadas.";
-    if (/\b(nao|não) estou\b/.test(t)) return "Tranquilo, sem pressão. A gente segue no papo normal.";
-    if (/\bvoc[eê] [ée] estranha\b/.test(t)) return "Justo. Vou manter mais direto e natural daqui pra frente.";
-    return "Entendi. Vou seguir exatamente no que você acabou de dizer, sem desviar.";
-  }
 
   async handleMessage(message, meta = {}, history = null, tone = null) {
     const trimmed = String(message ?? "").trim();
@@ -253,12 +217,42 @@ export class ChatService {
     if (resultParts.length) {
       const first = String(resultParts[0] ?? "");
       if (ChatService.hasMetaDrift(first)) {
-        resultParts = [ChatService.groundedFallback(trimmed)];
+        const regen = await this.agent.respond(
+          trimmed,
+          { ...meta, fallback: "ground" },
+          history,
+          tone
+        );
+        const regenParts = this.responseProcessor
+          ? this.responseProcessor.process(regen, {
+              tone,
+              userMessage: message,
+              styleHint: meta?.styleHint ?? null
+            })
+          : [regen];
+        resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
       }
     }
 
     if (!resultParts.length) {
-      resultParts = [ChatService.contextualFallbackForEmpty(trimmed)];
+      const fallback = ChatService.contextualFallbackForEmpty(trimmed);
+      if (fallback?.strategy) {
+        const metaWithFallback = { ...meta, fallback: fallback.strategy };
+        const regen = await this.agent.respond(
+          fallback.hint || trimmed,
+          metaWithFallback,
+          history,
+          tone
+        );
+        const regenParts = this.responseProcessor
+          ? this.responseProcessor.process(regen, {
+              tone,
+              userMessage: message,
+              styleHint: meta?.styleHint ?? null
+            })
+          : [regen];
+        resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
+      }
     }
     return resultParts;
   }

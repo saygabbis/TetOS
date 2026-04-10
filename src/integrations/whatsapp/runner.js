@@ -26,7 +26,20 @@ async function runPresence(runtime, socket, nudgeEngine) {
     const allowed = runtime.basicLoop.maybeNudge(userId, {});
     if (!allowed) continue;
     const remoteJid = `${userId}@s.whatsapp.net`;
-    await socket.sendMessage(remoteJid, { text: nudge.text });
+    const replies = await runtime.chatService.handleMessage(
+      nudge.text,
+      {
+        userId,
+        sessionId: `presence-${userId}`,
+        styleHint: { conversationEnergy: "low" },
+        fallback: "ground"
+      },
+      null,
+      "calm"
+    );
+    const text = Array.isArray(replies) ? replies[0] : replies;
+    if (!text) continue;
+    await socket.sendMessage(remoteJid, { text });
     runtime.basicLoop.recordOutbound(userId);
     runtime.timeStore?.markSeen(userId);
     runtime.userPatterns?.recordInteraction(userId);
