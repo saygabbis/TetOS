@@ -12,13 +12,7 @@ const { longTerm, shortTerm, basicLoop } = runtime;
 
 app.post("/chat", async (req, res) => {
   try {
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H14",location:"server.js:/chat:entry",message:"chat request received",data:{pid:process.pid,port:basePort,messagePreview:String(req.body?.message??"").slice(0,120),sessionId:req.body?.sessionId??null,userId:req.body?.userId??null},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    const { replies, input } = await handleIncomingMessage(runtime, req.body ?? {});
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H14",location:"server.js:/chat:exit",message:"chat response ready",data:{pid:process.pid,inputPreview:String(input ?? "").slice(0,120),repliesCount:Array.isArray(replies)?replies.length:0,repliesPreview:Array.isArray(replies)?replies.map((r)=>String(r).slice(0,100)):[]},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
+    const { replies } = await handleIncomingMessage(runtime, req.body ?? {});
     return res.json({ replies });
   } catch (error) {
     const statusCode = error?.statusCode ?? 500;
@@ -109,27 +103,13 @@ const maxPortRetries = 5;
 const envPortIsExplicit = typeof process.env.TETOS_PORT === "string" && process.env.TETOS_PORT.trim() !== "";
 
 function startServer(port, attempt = 0) {
-  // #region agent log
-  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"post-fix",hypothesisId:"H6",location:"server.js:startServer:attempt",message:"about to listen",data:{port,attempt,pid:process.pid,envPort:process.env.TETOS_PORT??null,envPortIsExplicit},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   const server = app.listen(port, () => {
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"post-fix",hypothesisId:"H6",location:"server.js:startServer:success",message:"listen success",data:{port,attempt,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     console.log(`TetOS API running on http://localhost:${port}`);
   });
 
   server.on("error", (error) => {
     const conflict = error?.code === "EADDRINUSE";
     const canFallback = conflict && attempt < maxPortRetries;
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"post-fix",hypothesisId:"H6",location:"server.js:startServer:error",message:"listen error",data:{code:error?.code??null,errno:error?.errno??null,address:error?.address??null,port:error?.port??port,attempt,canFallback,envPortIsExplicit,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    // #region agent log
-    console.error(
-      `[api-debug] conflict=${conflict} canFallback=${canFallback} envPortIsExplicit=${envPortIsExplicit} envPort=${process.env.TETOS_PORT ?? "null"} attempt=${attempt} nextPort=${port + 1}`
-    );
-    // #endregion
     if (canFallback) {
       if (envPortIsExplicit && attempt === 0) {
         console.warn(

@@ -13,22 +13,63 @@ const model =
 const ollamaApiKey =
   process.env.TETOS_OLLAMA_API_KEY ?? process.env.OLLAMA_API_KEY ?? "";
 
+const ollamaTempEnv = process.env.TETOS_OLLAMA_TEMPERATURE;
+const parsedTemp =
+  ollamaTempEnv !== undefined && String(ollamaTempEnv).trim() !== ""
+    ? Number(ollamaTempEnv)
+    : NaN;
+const ollamaTemperature = Number.isFinite(parsedTemp) ? parsedTemp : 0.65;
+
+/** Limite de tokens gerados — respostas de chat ficam mais rápidas; 0 ou unlimited = sem teto. */
+const rawNumPredict = process.env.TETOS_OLLAMA_NUM_PREDICT;
+let ollamaNumPredict = 400;
+if (rawNumPredict !== undefined && rawNumPredict !== null && String(rawNumPredict).trim() !== "") {
+  const s = String(rawNumPredict).trim();
+  if (/^unlimited$/i.test(s) || s === "0") {
+    ollamaNumPredict = null;
+  } else {
+    const n = Number(s);
+    if (Number.isFinite(n) && n > 0) {
+      ollamaNumPredict = Math.floor(n);
+    }
+  }
+}
+
+const rawResponseMaxParts = process.env.TETOS_RESPONSE_MAX_PARTS;
+const trimmedResponseMaxParts =
+  rawResponseMaxParts !== undefined && rawResponseMaxParts !== null
+    ? String(rawResponseMaxParts).trim()
+    : "";
+const parsedResponseMaxParts = trimmedResponseMaxParts ? Number(trimmedResponseMaxParts) : NaN;
+/** Sem limite artificial: só divide pelo texto. Use env com inteiro ≥1 se quiser teto opcional. */
+const responseMaxParts =
+  !trimmedResponseMaxParts || /^unlimited$/i.test(trimmedResponseMaxParts)
+    ? Infinity
+    : Number.isFinite(parsedResponseMaxParts) && parsedResponseMaxParts > 0
+      ? Math.floor(parsedResponseMaxParts)
+      : Infinity;
+
 export const DEFAULTS = {
   ollamaMode,
   model,
   ollamaBaseUrl,
   ollamaApiKey,
+  ollamaTemperature,
+  /** @type {number | null} null = sem limite (pode ser mais lento em respostas longas) */
+  ollamaNumPredict,
   memoryPath: process.env.TETOS_MEMORY_PATH ?? "./data/memory.json",
   maxShortTerm: Number(process.env.TETOS_MAX_SHORT ?? 8),
   port: Number(process.env.TETOS_PORT ?? 3000),
   personalityPath: process.env.TETOS_PERSONALITY_PATH ?? "./data/personality.json",
+  characterPath: process.env.TETOS_CHARACTER_PATH ?? "./data/character.json",
   maxHistory: Number(process.env.TETOS_MAX_HISTORY ?? 12),
   maxContentLength: Number(process.env.TETOS_MAX_CONTENT ?? 2000),
   maxIdLength: Number(process.env.TETOS_MAX_ID ?? 64),
   maxTags: Number(process.env.TETOS_MAX_TAGS ?? 10),
   responseHistoryLimit: Number(process.env.TETOS_RESPONSE_HISTORY ?? 5),
   responseSimilarity: Number(process.env.TETOS_RESPONSE_SIMILARITY ?? 0.75),
-  responseMaxParts: Number(process.env.TETOS_RESPONSE_MAX_PARTS ?? 4),
+  responseMaxParts,
+  statePath: process.env.TETOS_STATE_PATH ?? "./data/state.json",
   whatsappEnabled: String(process.env.WHATSAPP_ENABLED ?? "false").toLowerCase() === "true",
   whatsappSessionPath: process.env.WHATSAPP_SESSION_PATH ?? "./data/session",
   whatsappAutoConnect: String(process.env.WHATSAPP_AUTO_CONNECT ?? "true").toLowerCase() === "true",

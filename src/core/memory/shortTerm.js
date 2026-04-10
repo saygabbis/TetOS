@@ -20,4 +20,13 @@ export class ShortTermMemory {
   clear(sessionId = "default") {
     this.sessions.delete(sessionId);
   }
+
+  /** Remove a última mensagem da assistente (ex.: fallback terciário que descarta resposta). */
+  popLastAssistant(sessionId = "default") {
+    const history = this.sessions.get(sessionId) ?? [];
+    if (history.length && history[history.length - 1]?.role === "assistant") {
+      history.pop();
+      this.sessions.set(sessionId, history);
+    }
+  }
 }

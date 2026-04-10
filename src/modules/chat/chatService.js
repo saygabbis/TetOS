@@ -1,9 +1,10 @@
-import { detectIdentityIntent, buildIdentityReply } from "../../core/identity/identityResolver.js";
+import { Agent } from "../../core/agent/agent.js";
 
 export class ChatService {
-  constructor(agent, responseProcessor) {
+  constructor(agent, responseProcessor, internalState) {
     this.agent = agent;
     this.responseProcessor = responseProcessor;
+    this.internalState = internalState;
   }
 
   static normalizeLoose(text) {
@@ -30,12 +31,8 @@ export class ChatService {
   static isWhoAreYouQuestion(text) {
     const t = ChatService.normalizeLoose(text);
     const hasQuem = t.includes("quem");
-    const hasVoc = t.includes("voc");
-    return (
-      (hasQuem && hasVoc) ||
-      /\be\s+voc/.test(t) ||
-      /\be (voce|vc)\??\s*$/.test(t)
-    );
+    const hasVoc = t.includes("voc") || /\bvc\b/.test(t);
+    return hasQuem && hasVoc;
   }
 
   static extractGroupMention(text) {
@@ -44,22 +41,6 @@ export class ChatService {
     if (/\b(teto|tete|tetozinha)\b/.test(t)) return "name";
     if (/@\d{4,}/.test(t)) return "mention";
     return null;
-  }
-
-  static isSimpleGreeting(text) {
-    const t = ChatService.normalizeLoose(text);
-    return /^(oi+|oie+|ola+|eae+|hey+|oxi+)$/.test(t);
-  }
-
-  static greetingReply(text) {
-    const raw = String(text ?? "").toLowerCase();
-    const stretch = Math.min(3, Math.max(1, ((raw.match(/e{2,}/g) ?? [""]).join("").length || 1)));
-    const variants = [
-      `Oi${"e".repeat(stretch)}! Tudo bem?`,
-      `Oie${"e".repeat(Math.max(0, stretch - 1))}! Como cê tá?`,
-      `Oi${"e".repeat(stretch)}! Bora conversar?`
-    ];
-    return variants[raw.length % variants.length];
   }
 
   static pickAckVariant(trimmed) {
@@ -82,6 +63,13 @@ export class ChatService {
       }
     }
 
+    if (
+      /\b(respondi tudo|eu respondi|j[áa] falei tudo|falei tudo|eu falei)\b/.test(u) &&
+      /\b(falou demais|faltando|incomplet|ficou faltando)\b/.test(a)
+    ) {
+      return "Foi mal, entendi torto. Tudo certo então — bora seguir o papo.";
+    }
+
     return assistantText;
   }
 
@@ -91,8 +79,17 @@ export class ChatService {
   }
 
   static isPositiveWellbeingReply(text) {
-    const t = ChatService.normalizeLoose(text);
-    return /^(tudo|td|to bem|tô bem|estou bem|bem|de boa|tranquilo|tranquila|suave)$/.test(t);
+    let t = ChatService.normalizeLoose(text);
+    t = t.replace(/\s+k{2,}\s*$/i, "").trim();
+    if (!t) return false;
+    if (/^(tudo|td|to bem|tô bem|estou bem|bem|de boa|tranquilo|tranquila|suave)$/.test(t)) {
+      return true;
+    }
+    if (/^tud+o+$/.test(t)) return true;
+    if (/^td+o+$/.test(t)) return true;
+    if (/^to+ bem$/.test(t)) return true;
+    if (/^t[oô]+ b[oô]+m$/.test(t)) return true;
+    return false;
   }
 
   static isConversationIntent(text) {
@@ -108,6 +105,68 @@ export class ChatService {
   static isPingMessage(text) {
     const t = ChatService.normalizeLoose(text);
     return /^(alou|alo|alou\?|alo\?)$/.test(t);
+  }
+
+  /** Só emoji / símbolo (sem palavras) — ex.: ❤️, 😂, combinações curtas. */
+  static isEmojiOnlyMessage(text) {
+    const raw = String(text ?? "").trim();
+    if (!raw || raw.length > 64) return false;
+    const letters = raw.replace(/[^\p{L}]/gu, "");
+    if (letters.length > 0) return false;
+    return /[\u203C-\u3299\uFE0F\u200D]|[\u{1F300}-\u{1FAFF}]|[\u2600-\u27BF]/u.test(raw);
+  }
+
+  static emojiOnlyReplies(text) {
+    const t = String(text ?? "");
+    if (/[❤💕💗💋🥰😘💖]/.test(t)) {
+      const variants = [
+        ["Aí ❤️", "Tô aqui."],
+        ["Recebi kkk ❤️"],
+        ["Bateu até aqui, mds ❤️"]
+      ];
+      return variants[t.length % variants.length];
+    }
+    if (/[😂🤣💀☠]/.test(t)) {
+      return ["Kkkkk", "Tá animada hoje"];
+    }
+    if (/[😭😢]/.test(t)) {
+      return ["Eita", "Tá tudo bem aí?"];
+    }
+    return ["Vi aqui 😊", "Manda mais quando quiser."];
+  }
+
+  static contextualFallbackForEmpty(userMessage) {
+    const t = String(userMessage ?? "").trim();
+    if (ChatService.isEmojiOnlyMessage(t)) {
+      return ChatService.emojiOnlyReplies(t)[0];
+    }
+    return "Hm, não peguei direito — manda de novo ou explica melhor?";
+  }
+
+  /**
+   * Fallback terciário (depois do modelo): despedida isolada por palavra-chave.
+   * O foco continua sendo [SEM_RESPOSTA] + contexto; isto só age se o modelo ainda gerou texto.
+   */
+  static isConversationClosure(text) {
+    const raw = String(text ?? "").trim();
+    if (!raw || raw.length > 160) return false;
+    const t = ChatService.normalizeLoose(text);
+
+    if (/\b(pode deixar de|nao deixa|não deixa|deixa de)\b/.test(t)) return false;
+
+    if (/^(falou|flw|vlw)(\s+k{2,})?$/i.test(t)) return true;
+    if (/^(tchau|xau)(\s+k{2,})?$/i.test(t)) return true;
+
+    if (/^pode deixar\b/.test(t)) return true;
+    if (/^deixa\s+(quieto|pra la|pralá|comigo|assim)\b/.test(t)) return true;
+    if (/^(valeu|vlw)\s+(amiga|amigo|viu|mesmo|aí|ai)\b/.test(t)) return true;
+    if (/^até\s+(logo|mais|amanha|amanhã)\b/.test(t)) return true;
+    if (/^tchau\b/.test(t)) return true;
+    if (/^beleza[, ]+então\b/.test(t)) return true;
+    if (/^por hoje (é|e) isso\b/.test(t)) return true;
+    if (/^resolvido\b/.test(t)) return true;
+    if (/^ta\s+tranquilo\b|^tá\s+tranquilo\b/.test(t) && t.length < 40) return true;
+    return false;
   }
 
   static hasMetaDrift(text) {
@@ -132,45 +191,19 @@ export class ChatService {
 
   async handleMessage(message, meta = {}, history = null, tone = null) {
     const trimmed = String(message ?? "").trim();
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H8",location:"chatService.js:handleMessage:entry",message:"chat entry",data:{trimmedPreview:trimmed.slice(0,120),tone,hasHistory:Array.isArray(history)&&history.length>0,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    // #region agent log
-    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:entry",message:"incoming message",data:{trimmed,tone,hasHistory:Array.isArray(history)&&history.length>0},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-
-    const identityIntent = detectIdentityIntent(trimmed);
-    if (identityIntent) {
-      const reply = buildIdentityReply(identityIntent);
-      if (reply) {
-        // #region agent log
-        fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:identityFastPath",message:"identity fast-path used",data:{trimmed,reply},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
-        if (this.responseProcessor) {
-          this.responseProcessor.remember(reply);
-        }
-        return [reply];
-      }
-    }
-
-    if (ChatService.isSimpleGreeting(trimmed)) {
-      const reply = ChatService.greetingReply(trimmed);
-      // #region agent log
-      fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H9",location:"chatService.js:handleMessage:greetingFastPath",message:"greeting fast path triggered",data:{trimmed,reply,pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      // #region agent log
-      fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:greetingFastPath",message:"greeting fast-path used",data:{trimmed,reply},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(reply);
-      }
-      return [reply];
-    }
 
     if (ChatService.isPingMessage(trimmed)) {
       const reply = "Tô aqui sim.";
       if (this.responseProcessor) this.responseProcessor.remember(reply);
       return [reply];
+    }
+
+    if (ChatService.isEmojiOnlyMessage(trimmed)) {
+      const parts = ChatService.emojiOnlyReplies(trimmed);
+      if (this.responseProcessor) {
+        this.responseProcessor.remember(parts.join(" "));
+      }
+      return parts;
     }
 
     if (ChatService.isPositiveWellbeingReply(trimmed)) {
@@ -221,16 +254,34 @@ export class ChatService {
       return [short];
     }
 
+    if (this.internalState?.updateBefore) {
+      this.internalState.updateBefore(message, meta);
+    }
+
     const raw = await this.agent.respond(message, meta, history, tone);
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H10",location:"chatService.js:handleMessage:raw",message:"raw model reply",data:{rawPreview:String(raw).slice(0,200),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    // #region agent log
-    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H1",location:"chatService.js:handleMessage:rawReply",message:"raw reply from agent",data:{trimmed,rawPreview:String(raw).slice(0,180)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H10",location:"chatService.js:handleMessage:context",message:"context used",data:{historyCount:Array.isArray(history)?history.length:0,metaKeys:Object.keys(meta ?? {}),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
+
+    if (Agent.isSilentReply(raw)) {
+      const userId = meta?.userId ?? "default";
+      if (this.agent?.longTerm?.updateProfile) {
+        this.agent.longTerm.updateProfile(userId, {
+          conversationClosedAt: new Date().toISOString()
+        });
+      }
+      return [];
+    }
+
+    if (ChatService.isConversationClosure(trimmed)) {
+      const sessionKey = meta?.sessionId ?? "default";
+      this.agent?.shortTerm?.popLastAssistant(sessionKey);
+      const userId = meta?.userId ?? "default";
+      if (this.agent?.longTerm?.updateProfile) {
+        this.agent.longTerm.updateProfile(userId, {
+          conversationClosedAt: new Date().toISOString()
+        });
+      }
+      return [];
+    }
+
     const parts = this.responseProcessor
       ? this.responseProcessor.process(raw, {
         tone,
@@ -254,6 +305,10 @@ export class ChatService {
     const normalizedCombined = String(safeCombined).replace(/\s{2,}/g, " ").trim();
     this.responseProcessor.remember(normalizedCombined);
 
+    if (this.internalState?.updateAfter) {
+      this.internalState.updateAfter(normalizedCombined);
+    }
+
     // Multi-message contract: if we have multiple parts, never collapse to one.
     // If repetition guard altered the combined form, keep parts but still remember the combined safe form.
     const baseParts = safeParts.length ? safeParts : [normalizedCombined];
@@ -264,7 +319,9 @@ export class ChatService {
     // Avoid repetitive "como vai você?" loops after user already answered wellbeing.
     if (ChatService.isPositiveWellbeingReply(trimmed)) {
       resultParts = resultParts
-        .map((part) => part.replace(/\b(como vai voc[eê]\??|como voce ta\??|como você tá\??)\b/gi, ""))
+        .map((part) =>
+          part.replace(/\b(como vai voc[eê]\??|como voce ta\??|como você tá\??|de boa e vc\??|e vc\??|e você\??)\b/gi, "")
+        )
         .map((part) => part.replace(/\s{2,}/g, " ").trim())
         .filter(Boolean);
     }
@@ -282,14 +339,8 @@ export class ChatService {
     }
 
     if (!resultParts.length) {
-      resultParts = ["Entendi. Pode continuar."];
+      resultParts = [ChatService.contextualFallbackForEmpty(trimmed)];
     }
-    // #region agent log
-    fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:finalReplies",message:"final replies ready",data:{count:resultParts.length,repliesPreview:resultParts.map((r)=>String(r).slice(0,120))},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H11",location:"chatService.js:handleMessage:final",message:"final replies",data:{parts:resultParts.length,repliesPreview:resultParts.map((r)=>String(r).slice(0,100)),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     return resultParts;
   }
 }

@@ -35,11 +35,35 @@ export function extractFacts(message) {
   return facts;
 }
 
+/** Maior sequência de "k" na mensagem (útil onde \bk+\b não casa "kkksks"). */
+export function maxConsecutiveKRun(message) {
+  const runs = String(message ?? "").match(/k+/gi) ?? [];
+  return runs.length ? Math.max(...runs.map((s) => s.length)) : 0;
+}
+
+/**
+ * Risada de teclado sem palavras (kkksks, kkskdsks, kkkkh…).
+ * Inclui letras “vizinhas” do k (d/f/m/n) e não depende só de \b kk+ \b.
+ */
+export function isMessyLaughterMessage(message) {
+  const raw = String(message ?? "").trim();
+  if (!raw) return false;
+  const noSpace = raw.replace(/\s/g, "");
+  if (noSpace.length < 3 || noSpace.length > 48) return false;
+  // ksksks / ksksksk (alternância k/s sem kk no começo)
+  if (/^[ks]{6,}$/i.test(noSpace) && /k/i.test(noSpace) && /s/i.test(noSpace)) return true;
+  if (!/k{2,}/i.test(noSpace)) return false;
+  // Só caracteres típicos de barulho de teclado / risada
+  if (/^[khskjdfmnrgwl]+$/i.test(noSpace)) return true;
+  const laughish = (noSpace.match(/[khskjd]/gi) ?? []).length;
+  return noSpace.length <= 32 && laughish / noSpace.length >= 0.42;
+}
+
 export function extractStyle(message) {
   const text = message.toLowerCase();
   const style = {
     usesAbbrev: /\b(vc|pq|q\?|tb|msm|n)\b/.test(text),
-    usesLaughter: /(kkk+|rs)/.test(text),
+    usesLaughter: /(kkk+|rs)/.test(text) || isMessyLaughterMessage(message),
     usesEmojis: /[\u{1F300}-\u{1FAFF}]/u.test(message),
     isShort: message.length < 25,
     isLong: message.length > 120
