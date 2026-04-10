@@ -250,6 +250,11 @@ function createConversationOrchestrator(socket, runtime) {
     }
   }
 
+  function extractParticipant(incoming) {
+    const participant = incoming?.key?.participant ?? incoming?.participant ?? "";
+    return jidNormalizedUser(participant);
+  }
+
   /** Invalidate in-flight replies when user sends a new message (must stay inside closure). */
   function bumpInterrupt(userId) {
     interruptByUser.set(userId, Date.now());
@@ -286,10 +291,13 @@ export function registerMessageHandler({ socket, runtime }) {
         if (!text) continue;
         console.log(`[whatsapp] incoming ${remoteJid}: ${text}`);
 
-        const userId = extractPhone(remoteJid);
+        const baseUserId = extractPhone(remoteJid);
+        const participantId = isGroup ? extractPhone(extractParticipant(incoming)) : "";
+        const userId = isGroup && participantId ? `${baseUserId}:${participantId}` : baseUserId;
+        const sessionId = isGroup && participantId ? `wa-${baseUserId}:${participantId}` : `wa-${baseUserId}`;
+
         orchestrator.bumpInterrupt(userId);
         orchestrator.clearTypingGrace(userId);
-        const sessionId = `wa-${userId}`;
         const profile = runtime.longTerm.getProfile(userId);
         const pushName = incoming.pushName?.trim();
 
@@ -301,7 +309,7 @@ export function registerMessageHandler({ socket, runtime }) {
 
         if (isGroup) {
           const mentionHint = incoming.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
-          const hasMention = mentionHint.includes(remoteJid) || mentionHint.includes(`${userId}@s.whatsapp.net`);
+          const hasMention = mentionHint.includes(remoteJid) || mentionHint.includes(`${participantId}@s.whatsapp.net`);
           const hasNickname = /(teto|tete|tetozinha)/i.test(text);
           const isDirect = hasMention || hasNickname || /\?\s*$/.test(text);
           if (!isDirect) {

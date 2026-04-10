@@ -244,15 +244,6 @@ export class ChatService {
       .map((p) => ChatService.deEcho(message, p))
       .map((part) => String(part).replace(/\s{2,}/g, " ").trim())
       .filter(Boolean);
-    // Avoid repetitive "como vai você?" loops after user already answered wellbeing.
-    if (ChatService.isPositiveWellbeingReply(trimmed)) {
-      resultParts = resultParts
-        .map((part) =>
-          part.replace(/\b(como vai voc[eê]\??|como voce ta\??|como você tá\??|de boa e vc\??|e vc\??|e você\??)\b/gi, "")
-        )
-        .map((part) => part.replace(/\s{2,}/g, " ").trim())
-        .filter(Boolean);
-    }
     if (ChatService.containsLoveDeclaration(trimmed) && resultParts.length) {
       const first = resultParts[0].trim();
       if (!/^ufa!/i.test(first)) {
