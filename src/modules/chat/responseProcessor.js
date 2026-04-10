@@ -98,6 +98,38 @@ function splitByComma(sentence) {
   return parts.filter((part) => part.length > 3);
 }
 
+function isReactionOnly(sentence) {
+  const text = String(sentence ?? "").trim();
+  if (!text) return false;
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length > 4 || text.length > 22) return false;
+  return /^(ah+|ahh+|boa|blz|beleza|ok+|okk+|certo|perfeito|show|ufa|entendi|poxa|nossa|opa|ei|oi|hm+|hmm+|sim|fechou)[!.?]*$/i.test(text);
+}
+
+function splitReactionLead(sentence) {
+  const trimmed = String(sentence ?? "").trim();
+  const match = trimmed.match(/^(ah+|ahh+|boa|blz|beleza|ok+|okk+|certo|perfeito|show|ufa|entendi|poxa|nossa|opa|ei)[,!.?]+\s+(.+)$/i);
+  if (!match) return [trimmed];
+  const lead = match[1].trim();
+  const rest = match[2].trim();
+  if (!lead || !rest) return [trimmed];
+  return [lead, rest];
+}
+
+function isCorrectionStart(sentence) {
+  return /^(pera|perai|na real|quer dizer|ou melhor|ali[aá]s)\b/i.test(String(sentence ?? "").trim());
+}
+
+function isTopicShift(sentence) {
+  return /^(por falar|mudando de assunto|sobre isso|sobre aquilo|outra coisa|e outra|mais uma)\b/i.test(
+    String(sentence ?? "").trim()
+  );
+}
+
+function isQuestion(sentence) {
+  return String(sentence ?? "").trim().endsWith("?");
+}
+
 function mergeTinyFragments(parts) {
   const merged = [];
   for (const part of parts) {
@@ -277,6 +309,80 @@ export class ResponseProcessor {
     return parts.length ? parts : [sentences.join(" ")];
   }
 
+  buildHumanParts(parts, { userMessage = "" } = {}) {
+    const sourceParts = Array.isArray(parts) ? parts : [String(parts ?? "")];
+    const flattened = sourceParts
+      .map((part) => splitSentences(String(part ?? "")))
+      .flat()
+      .map((sentence) => sentence.trim())
+      .filter(Boolean);
+
+    if (!flattened.length) return [];
+
+    const output = [];
+    let buffer = [];
+
+    const flush = () => {
+      if (!buffer.length) return;
+      output.push(buffer.join(" ").trim());
+      buffer = [];
+    };
+
+    for (let index = 0; index < flattened.length; index += 1) {
+      const sentence = flattened[index];
+      if (!sentence) continue;
+
+      const reactionSplit = splitReactionLead(sentence);
+      if (reactionSplit.length === 2) {
+        flush();
+        output.push(reactionSplit[0]);
+        buffer.push(reactionSplit[1]);
+        continue;
+      }
+
+      if (isReactionOnly(sentence)) {
+        flush();
+        output.push(sentence);
+        continue;
+      }
+
+      if (buffer.length) {
+        const prev = buffer[buffer.length - 1];
+        if (isQuestion(prev)) {
+          flush();
+        }
+      }
+
+      if (!buffer.length && isCorrectionStart(sentence)) {
+        flush();
+      }
+
+      buffer.push(sentence);
+
+      const bufferText = buffer.join(" ");
+      const shouldSplit =
+        isQuestion(sentence) ||
+        isCorrectionStart(sentence) ||
+        isTopicShift(sentence) ||
+        bufferText.length > 150;
+
+      if (shouldSplit) {
+        flush();
+      }
+    }
+
+    flush();
+
+    const merged = mergeShortParts(output)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    const capped = merged.slice(0, this.maxParts);
+    if (!capped.length) return [];
+
+    return capped;
+  }
+
   process(rawText, { tone = null, userMessage = "", styleHint = null } = {}) {
     const cleaned = sanitize(rawText);
     // #region agent log
@@ -295,10 +401,11 @@ export class ResponseProcessor {
     }
 
     const parts = this.buildNaturalParts(sentences);
+    const humanParts = this.buildHumanParts(parts, { userMessage });
     // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H12",location:"responseProcessor.js:process:split",message:"split decision",data:{rawLen:String(rawText??"").length,cleanedLen:cleaned.length,sentences:sentences.length,partsBeforeMerge:parts.length,firstSentencePreview:String(sentences[0]??"").slice(0,120),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H12",location:"responseProcessor.js:process:split",message:"split decision",data:{rawLen:String(rawText??"").length,cleanedLen:cleaned.length,sentences:sentences.length,partsBeforeMerge:parts.length,humanParts:humanParts.length,firstSentencePreview:String(sentences[0]??"").slice(0,120),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
-    let finalParts = mergeShortParts(parts)
+    let finalParts = mergeShortParts(humanParts.length ? humanParts : parts)
       .map(capitalize)
       .filter((part) => part.length > 1);
     // #region agent log

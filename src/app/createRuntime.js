@@ -94,6 +94,13 @@ export async function handleIncomingMessage(runtime, payload = {}) {
         })
     : null;
 
+  const recentHistoryLimit = normalizedHistory?.length
+    ? Math.max(3, Math.min(5, normalizedHistory.length))
+    : 0;
+  const recentHistory = normalizedHistory?.length
+    ? normalizedHistory.slice(-recentHistoryLimit)
+    : null;
+
   const input = clampContent(
     message ?? normalizedHistory?.[normalizedHistory.length - 1]?.content
   );
@@ -120,7 +127,13 @@ export async function handleIncomingMessage(runtime, payload = {}) {
 
   const replies = await runtime.chatService.handleMessage(
     input,
-    { userId: safeUserId, sessionId: safeSessionId, styleHint, recentHistoryCount: normalizedHistory?.length ?? 0 },
+    {
+      userId: safeUserId,
+      sessionId: safeSessionId,
+      styleHint,
+      recentHistoryCount: normalizedHistory?.length ?? 0,
+      recentHistory
+    },
     normalizedHistory,
     tone
   );

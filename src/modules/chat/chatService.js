@@ -1,3 +1,5 @@
+import { detectIdentityIntent, buildIdentityReply } from "../../core/identity/identityResolver.js";
+
 export class ChatService {
   constructor(agent, responseProcessor) {
     this.agent = agent;
@@ -34,6 +36,14 @@ export class ChatService {
       /\be\s+voc/.test(t) ||
       /\be (voce|vc)\??\s*$/.test(t)
     );
+  }
+
+  static extractGroupMention(text) {
+    const t = String(text ?? "").toLowerCase();
+    if (!t) return null;
+    if (/\b(teto|tete|tetozinha)\b/.test(t)) return "name";
+    if (/@\d{4,}/.test(t)) return "mention";
+    return null;
   }
 
   static isSimpleGreeting(text) {
@@ -129,28 +139,18 @@ export class ChatService {
     fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:entry",message:"incoming message",data:{trimmed,tone,hasHistory:Array.isArray(history)&&history.length>0},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
 
-    // Direct answer fast-path: name questions must be answered directly.
-    if (ChatService.isNameQuestion(trimmed)) {
-      const replies = ["Sou a Teto. E você?"];
-      // #region agent log
-      fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:nameFastPath",message:"name fast-path used",data:{trimmed,replies},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(replies.join(" "));
+    const identityIntent = detectIdentityIntent(trimmed);
+    if (identityIntent) {
+      const reply = buildIdentityReply(identityIntent);
+      if (reply) {
+        // #region agent log
+        fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:identityFastPath",message:"identity fast-path used",data:{trimmed,reply},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        if (this.responseProcessor) {
+          this.responseProcessor.remember(reply);
+        }
+        return [reply];
       }
-      return replies;
-    }
-
-    // Direct identity answer: keep short and natural.
-    if (ChatService.isWhoAreYouQuestion(trimmed)) {
-      const reply = "Sou a Teto.";
-      // #region agent log
-      fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:identityFastPath",message:"identity fast-path used",data:{trimmed,reply},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-      if (this.responseProcessor) {
-        this.responseProcessor.remember(reply);
-      }
-      return [reply];
     }
 
     if (ChatService.isSimpleGreeting(trimmed)) {
@@ -246,17 +246,21 @@ export class ChatService {
     // Apply repetition guard without breaking multi-message continuity.
     const safeParts = parts
       .map((part) => this.responseProcessor.ensureNonRepetitive(part))
-      .map((part) => String(part).trim())
+      .map((part) => String(part).replace(/\s{2,}/g, " ").trim())
       .filter(Boolean);
 
     const combined = safeParts.join(" ").trim();
     const safeCombined = this.responseProcessor.ensureNonRepetitive(combined);
-    this.responseProcessor.remember(safeCombined);
+    const normalizedCombined = String(safeCombined).replace(/\s{2,}/g, " ").trim();
+    this.responseProcessor.remember(normalizedCombined);
 
     // Multi-message contract: if we have multiple parts, never collapse to one.
     // If repetition guard altered the combined form, keep parts but still remember the combined safe form.
-    const baseParts = safeParts.length ? safeParts : [safeCombined];
-    let resultParts = baseParts.map((p) => ChatService.deEcho(message, p)).filter(Boolean);
+    const baseParts = safeParts.length ? safeParts : [normalizedCombined];
+    let resultParts = baseParts
+      .map((p) => ChatService.deEcho(message, p))
+      .map((part) => String(part).replace(/\s{2,}/g, " ").trim())
+      .filter(Boolean);
     // Avoid repetitive "como vai você?" loops after user already answered wellbeing.
     if (ChatService.isPositiveWellbeingReply(trimmed)) {
       resultParts = resultParts
@@ -275,6 +279,10 @@ export class ChatService {
       if (ChatService.hasMetaDrift(first)) {
         resultParts = [ChatService.groundedFallback(trimmed)];
       }
+    }
+
+    if (!resultParts.length) {
+      resultParts = ["Entendi. Pode continuar."];
     }
     // #region agent log
     fetch("http://127.0.0.1:7244/ingest/09114a94-5bb3-425c-bf31-cddf552667ae",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runId:"baseline",hypothesisId:"H3",location:"chatService.js:handleMessage:finalReplies",message:"final replies ready",data:{count:resultParts.length,repliesPreview:resultParts.map((r)=>String(r).slice(0,120))},timestamp:Date.now()})}).catch(()=>{});

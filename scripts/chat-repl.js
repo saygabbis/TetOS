@@ -12,9 +12,17 @@ let apiBaseUrl = null;
 const REPL_PORT = Number(process.env.TETOS_REPL_PORT ?? 3010);
 const FALLBACK_PORTS = [3000, 3001, 3002, 3003, 3004, 3005];
 const INPUT_DEBOUNCE_MS = 420;
+const REPLY_DELAY_MIN_MS = 300;
+const REPLY_DELAY_MAX_MS = 3000;
+const REPLY_PART_MIN_GAP_MS = 200;
+const REPLY_PART_MAX_GAP_MS = 600;
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function randBetween(min, max) {
+  return Math.floor(min + Math.random() * (max - min + 1));
 }
 
 async function pingStatus(baseUrl, timeoutMs = 800) {
@@ -143,11 +151,16 @@ function prompt() {
       // #region agent log
       fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8",{method:"POST",headers:{"Content-Type":"application/json","X-Debug-Session-Id":"c4ae5b"},body:JSON.stringify({sessionId:"c4ae5b",runId:"conversation-debug",hypothesisId:"H15",location:"chat-repl.js:prompt:replies",message:"replies received",data:{count:replies.length,repliesPreview:replies.map((r)=>String(r).slice(0,100)),pid:process.pid},timestamp:Date.now()})}).catch(()=>{});
       // #endregion
-      for (const reply of replies) {
-        const baseDelay = 200 + Math.floor(Math.random() * 400);
-        const extraDelay = Math.min(400, Math.floor(String(reply).length / 8) * 30);
-        await wait(baseDelay + extraDelay);
+      for (let index = 0; index < replies.length; index += 1) {
+        const reply = replies[index];
+        const length = Math.max(1, String(reply).length);
+        const estimate = Math.min(REPLY_DELAY_MAX_MS, Math.floor((length / 12) * 1000));
+        const base = randBetween(REPLY_DELAY_MIN_MS, REPLY_DELAY_MAX_MS);
+        await wait(Math.min(REPLY_DELAY_MAX_MS, Math.max(REPLY_DELAY_MIN_MS, estimate + base)));
         console.log(`Teto: ${reply}`);
+        if (index < replies.length - 1) {
+          await wait(randBetween(REPLY_PART_MIN_GAP_MS, REPLY_PART_MAX_GAP_MS));
+        }
       }
     } catch (error) {
       console.error("Erro:", error.message);

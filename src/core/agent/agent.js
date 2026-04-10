@@ -39,9 +39,11 @@ export class Agent {
       .join("\n");
 
     const sessionKey = meta.sessionId ?? "default";
-    const historySource = Array.isArray(history)
-      ? history
-      : this.shortTerm.getAll(sessionKey);
+    const historySource = Array.isArray(meta?.recentHistory)
+      ? meta.recentHistory
+      : Array.isArray(history)
+        ? history
+        : this.shortTerm.getAll(sessionKey);
     const lastAssistant = [...historySource].reverse().find((m) => m?.role === "assistant");
     const assistantJustStatedIdentity = Agent.containsIdentityLoop(lastAssistant?.content);
     const conversationText = historySource

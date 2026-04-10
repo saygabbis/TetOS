@@ -24,9 +24,13 @@ function extractText(message = {}) {
 
 const USER_BATCH_WINDOW_MS = 900;
 const USER_TYPING_GRACE_MS = 1800;
-const TYPING_MIN_DELAY_MS = 900;
-const TYPING_MAX_DELAY_MS = 4200;
-const TYPING_CHARS_PER_SECOND = 10;
+const TYPING_MIN_DELAY_MS = 300;
+const TYPING_MAX_DELAY_MS = 3000;
+const TYPING_CHARS_PER_SECOND = 12;
+const MULTI_PART_DELAY_MIN_MS = 200;
+const MULTI_PART_DELAY_MAX_MS = 600;
+const INTERRUPT_DEBOUNCE_MIN_MS = 400;
+const INTERRUPT_DEBOUNCE_MAX_MS = 700;
 
 function estimateTypingDelayMs(text) {
   const length = Math.max(1, String(text ?? "").length);
@@ -38,16 +42,22 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function randBetween(min, max) {
+  return Math.floor(min + Math.random() * (max - min + 1));
+}
+
 function createConversationOrchestrator(socket, runtime) {
   const pendingByUser = new Map();
   const queueByUser = new Map();
   const runningByUser = new Set();
   const typingByUser = new Map();
+  const interruptByUser = new Map();
 
-  async function sendReplies(remoteJid, replies = []) {
+  async function sendReplies(remoteJid, replies = [], token = 0) {
     for (let index = 0; index < replies.length; index += 1) {
       const content = String(replies[index] ?? "").trim();
       if (!content) continue;
+      if (interruptByUser.get(extractPhone(remoteJid)) !== token) return;
       const remotePhone = extractPhone(remoteJid);
       const isFollowUpPart = index > 0;
       const needsTyping = isFollowUpPart || content.length > 35;
@@ -60,8 +70,12 @@ function createConversationOrchestrator(socket, runtime) {
           console.warn(`[whatsapp] typing simulation failed for ${remotePhone}: ${error.message}`);
         }
       }
+      if (interruptByUser.get(extractPhone(remoteJid)) !== token) return;
       console.log(`[whatsapp] outgoing ${remoteJid}: ${content}`);
       await socket.sendMessage(remoteJid, { text: content });
+      if (index < replies.length - 1) {
+        await sleep(randBetween(MULTI_PART_DELAY_MIN_MS, MULTI_PART_DELAY_MAX_MS));
+      }
     }
   }
 
@@ -77,12 +91,17 @@ function createConversationOrchestrator(socket, runtime) {
         if (waitForTypingMs > 0) {
           await sleep(waitForTypingMs);
         }
+        const debounceMs = randBetween(INTERRUPT_DEBOUNCE_MIN_MS, INTERRUPT_DEBOUNCE_MAX_MS);
+        await sleep(debounceMs);
+        const token = Date.now();
+        interruptByUser.set(userId, token);
         const { replies } = await handleIncomingMessage(runtime, {
           message: item.message,
           userId: item.userId,
           sessionId: item.sessionId
         });
-        await sendReplies(item.remoteJid, replies);
+        if (interruptByUser.get(userId) !== token) continue;
+        await sendReplies(item.remoteJid, replies, token);
       }
     } finally {
       runningByUser.delete(userId);
@@ -147,11 +166,13 @@ export function registerMessageHandler({ socket, runtime }) {
           continue;
         }
 
+        const isGroup = remoteJid.endsWith("@g.us");
         const text = extractText(incoming.message).trim();
         if (!text) continue;
         console.log(`[whatsapp] incoming ${remoteJid}: ${text}`);
 
         const userId = extractPhone(remoteJid);
+        interruptByUser.set(userId, Date.now());
         const sessionId = `wa-${userId}`;
         const profile = runtime.longTerm.getProfile(userId);
         const pushName = incoming.pushName?.trim();
@@ -160,6 +181,16 @@ export function registerMessageHandler({ socket, runtime }) {
           runtime.longTerm.updateProfile(userId, {
             facts: { ...(profile?.facts ?? {}), name: pushName }
           });
+        }
+
+        if (isGroup) {
+          const mentionHint = incoming.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
+          const hasMention = mentionHint.includes(remoteJid) || mentionHint.includes(`${userId}@s.whatsapp.net`);
+          const hasNickname = /(teto|tete|tetozinha)/i.test(text);
+          const isDirect = hasMention || hasNickname || /\?\s*$/.test(text);
+          if (!isDirect) {
+            continue;
+          }
         }
 
         orchestrator.scheduleIncoming({
