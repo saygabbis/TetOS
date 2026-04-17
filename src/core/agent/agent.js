@@ -67,7 +67,18 @@ export class Agent {
       })
       .join("\n");
 
-    const { resumedAfterClose, styleHint, ...metaRest } = meta ?? {};
+    const {
+      resumedAfterClose,
+      styleHint,
+      searchQuery,
+      searchResults,
+      quotedMessage,
+      documentContext,
+      reminderContext,
+      operationContext,
+      mediaContext,
+      ...metaRest
+    } = meta ?? {};
     const metaBlock = Object.keys(metaRest).length
       ? ["[META]", Object.entries(metaRest).map(([k, v]) => `${k}: ${v}`).join("\n")]
       : [];
@@ -152,6 +163,8 @@ export class Agent {
       "Não atribua ao usuário frases ou intenções que não estão no texto dele.",
       "Não invente palavras ou barulhos sem sentido no meio da frase (tipo sequência aleatória de letras); se for typo, uma palavra só com * ou reformule.",
       "Evite frases quebradas/confusas (ex.: 'tô X e falar coisa com coisa'); se ficar cansada, diga de forma clara e completa.",
+      "Se houver [MEDIA CONTEXT] com descrição, análise, transcrição ou legenda, trate isso como conteúdo disponível da mídia. Não diga que não consegue ver, não consegue ler ou não consegue interpretar a mídia quando esse bloco existir.",
+      "Se houver [MEDIA CONTEXT], use o que foi visto/analisado ali como base da resposta. Só admita limitação se o bloco disser explicitamente que a análise falhou ou está ausente.",
       "'Oxi', 'queee isso', 'mds', CAPS de surpresa = reação ao que acabou de acontecer no papo, NÃO é início de conversa nova. Proibido resetar para 'Oi! Tudo bem?' como se não houvesse histórico.",
       "Apelidos afetuosos em diminutivo que o usuário usa PARA você (ex.: tetozinha, 'minha tetozinha', 'voltei pra minha tetozinha') referem-se a VOCÊ — a Teto. Não chame o usuário pelo mesmo apelido nem inverta os papéis (ele não é 'tetozinha')."
     ];
@@ -289,6 +302,39 @@ export class Agent {
       ? ["[RECENT CONVERSATION]", conversationText]
       : [];
 
+    const quotedBlock = quotedMessage
+      ? ["[QUOTED MESSAGE]", String(quotedMessage)]
+      : [];
+
+    const searchBlock = searchResults
+      ? [
+          "[WEB SEARCH]",
+          `Query: ${searchQuery ?? ""}`,
+          String(searchResults),
+          "Se usar os resultados, mantenha-se fiel ao que aparece neles e não invente fatos além disso."
+        ]
+      : [];
+
+    const documentBlock = documentContext
+      ? ["[DOCUMENT CONTEXT]", String(documentContext)]
+      : [];
+
+    const operationBlock = operationContext
+      ? ["[OPERATION CONTEXT]", String(operationContext)]
+      : [];
+
+    const reminderBlock = reminderContext
+      ? ["[REMINDER CONTEXT]", String(reminderContext)]
+      : [];
+
+    const mediaBlock = mediaContext
+      ? [
+          "[MEDIA CONTEXT]",
+          String(mediaContext),
+          "Use esse bloco como percepção disponível da mídia atual. Se houver descrição visual, transcrição de áudio, legenda ou análise de sticker/imagem, responda com base nisso em vez de dizer que não consegue ver a mídia."
+        ]
+      : [];
+
     const silenceBlock = [
       "[ENCERRAMENTO — PRIORIDADE: JULGAMENTO DINÂMICO]",
       "Foco: ler o histórico e decidir se o papo já encerrou. Se sim e não couber mais resposta, use só a linha exata [SEM_RESPOSTA].",
@@ -314,6 +360,12 @@ export class Agent {
       ...mediumBlock,
       ...memoryBlock,
       ...conversationBlock,
+      ...quotedBlock,
+      ...searchBlock,
+      ...documentBlock,
+      ...operationBlock,
+      ...reminderBlock,
+      ...mediaBlock,
       ...metaBlock,
       ...factsBlock,
       ...reinforceBlock,

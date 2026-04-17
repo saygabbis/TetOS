@@ -1,0 +1,28 @@
+{
+  "channels": {
+    "direct:5516988137617": {
+      "id": "direct:5516988137617",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": false,
+      "participants": [],
+      "createdAt": "2026-04-17T14:49:46.985Z",
+      "updatedAt": "2026-04-17T14:50:00.116Z",
+      "participantCount": 0
+    },
+    "5516988137617@s.whatsapp.net": {
+      "id": "5516988137617@s.whatsapp.net",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": false,
+      "participants": [
+        "5516988137617"
+      ],
+      "createdAt": "2026-04-17T14:56:09.612Z",
+      "updatedAt": "2026-04-17T20:55:27.646Z",
+      "participantCount": 1
+    }
+  }
+}

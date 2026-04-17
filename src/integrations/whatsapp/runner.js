@@ -52,6 +52,59 @@ async function runPresence(runtime, socket, nudgeEngine) {
   }
 }
 
+function isValidReminderRecipient(userId) {
+  const normalized = String(userId ?? "").trim();
+  return /^\d+$/.test(normalized) && normalized.length >= 8;
+}
+
+async function deliverDueReminders(runtime, socket) {
+  const due = runtime.reminderScheduler?.pendingDelivery?.() ?? [];
+  runtime.reminderScheduler?.markDeliverySweep?.();
+  if (!due.length) return;
+
+  for (const reminder of due) {
+    const attemptedAt = new Date().toISOString();
+    if (!isValidReminderRecipient(reminder.userId)) {
+      runtime.reminders?.markDeliveryAttempt?.(reminder.id, {
+        attemptedAt,
+        error: "invalid_recipient"
+      });
+      runtime.logger?.log?.("reminders.delivery_skipped", {
+        reminderId: reminder.id,
+        userId: reminder.userId,
+        reason: "invalid_recipient"
+      });
+      runtime.metrics?.increment?.("reminders.delivery_skipped");
+      continue;
+    }
+
+    const remoteJid = `${reminder.userId}@s.whatsapp.net`;
+    try {
+      await socket.sendMessage(remoteJid, {
+        text: `⏰ Lembrete: ${reminder.text}`
+      });
+      runtime.reminders?.markDeliveryAttempt?.(reminder.id, { attemptedAt });
+      runtime.reminders?.markDelivered?.(reminder.id, attemptedAt);
+      runtime.logger?.log?.("reminders.delivered", {
+        reminderId: reminder.id,
+        userId: reminder.userId
+      });
+      runtime.metrics?.increment?.("reminders.delivered");
+    } catch (error) {
+      runtime.reminders?.markDeliveryAttempt?.(reminder.id, {
+        attemptedAt,
+        error: error.message
+      });
+      runtime.logger?.log?.("reminders.delivery_error", {
+        reminderId: reminder.id,
+        userId: reminder.userId,
+        error: error.message
+      });
+      runtime.metrics?.increment?.("reminders.delivery_error");
+    }
+  }
+}
+
 function suppressNoisyLogs() {
   const originalLog = console.log;
   const originalError = console.error;
@@ -197,6 +250,17 @@ async function main() {
       });
     }, DEFAULTS.presenceCheckMs);
   }
+
+  setInterval(() => {
+    const due = runtime.reminderScheduler?.sweep?.() ?? [];
+    if (due.length) {
+      runtime.logger?.log?.("reminders.scheduled_due", { count: due.length });
+    }
+    if (!isConnected || !socket) return;
+    deliverDueReminders(runtime, socket).catch((error) => {
+      console.error("[reminders] delivery error:", error.message);
+    });
+  }, DEFAULTS.reminderSweepMs);
 }
 
 main().catch((error) => {

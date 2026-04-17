@@ -1,25 +1,33 @@
 import { handleIncomingMessage } from "../../app/createRuntime.js";
-import { jidNormalizedUser } from "baileys";
+import { jidNormalizedUser, downloadContentFromMessage } from "baileys";
 import { planWhatsAppReaction } from "./reactionPlanner.js";
+import { persistMedia } from "./mediaStore.js";
+import { resolvePassiveModeAction } from "../../core/channels/passiveModeAction.js";
+import { resolveStickerAsset } from "./stickerAssets.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 
 function extractPhone(remoteJid = "") {
   return String(remoteJid).replace(/@.+$/, "");
 }
 
-function extractText(message = {}) {
+function unwrapMessage(message = {}) {
   const viewOnce = message?.viewOnceMessage?.message;
   const ephemeral = message?.ephemeralMessage?.message;
   const wrapped = viewOnce ?? ephemeral;
-  if (wrapped) return extractText(wrapped);
+  if (wrapped) return unwrapMessage(wrapped);
+  return message;
+}
 
+function extractText(message = {}) {
+  const unwrapped = unwrapMessage(message);
   return (
-    message?.conversation ??
-    message?.extendedTextMessage?.text ??
-    message?.imageMessage?.caption ??
-    message?.videoMessage?.caption ??
-    message?.buttonsResponseMessage?.selectedButtonId ??
-    message?.listResponseMessage?.title ??
+    unwrapped?.conversation ??
+    unwrapped?.extendedTextMessage?.text ??
+    unwrapped?.imageMessage?.caption ??
+    unwrapped?.videoMessage?.caption ??
+    unwrapped?.stickerMessage?.fileName ??
+    unwrapped?.buttonsResponseMessage?.selectedButtonId ??
+    unwrapped?.listResponseMessage?.title ??
     ""
   );
 }
@@ -173,6 +181,13 @@ function createConversationOrchestrator(socket, runtime) {
               message: item.message,
               userId: item.userId,
               sessionId: item.sessionId,
+              channelId: item.channelId,
+              isGroup: item.isGroup,
+              participants: item.participants,
+              isDirectMention: item.isDirectMention,
+              isReply: item.isReply,
+              quotedMessage: item.quotedMessage,
+              messageKey: item.messageKey,
               closeDecision: item.closeDecision
             }),
             new Promise((_, reject) =>
@@ -181,6 +196,10 @@ function createConversationOrchestrator(socket, runtime) {
           ]);
 
           replies = out?.replies ?? [];
+          item.passiveMode = out?.policy?.mode ?? "full";
+          if (item.passiveMode === "react_only") {
+            replies = [];
+          }
         } catch (error) {
           console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
           replies = [];
@@ -206,11 +225,17 @@ function createConversationOrchestrator(socket, runtime) {
           }
         }
         if (interruptByUser.get(userId) !== token) continue;
+        const passiveAction = resolvePassiveModeAction({
+          policy: { allowed: true, mode: item.passiveMode },
+          media: item.media,
+          isGroup: item.isGroup
+        });
+
         const plan = planWhatsAppReaction({
           userText: item.message,
           state: reactionState
         });
-        const forcedReaction = item.closeDecision === "react" ? "❤️" : null;
+        const forcedReaction = item.closeDecision === "react" || passiveAction.type === "react_only" ? "❤️" : null;
         const emoji = plan.emoji ?? forcedReaction;
         const reacted = Boolean(emoji && item.messageKey && typeof socket.sendMessage === "function");
         if (reacted) {
@@ -238,6 +263,31 @@ function createConversationOrchestrator(socket, runtime) {
         const softened = runtime.userPatterns
           ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
           : false;
+        if (!reacted && passiveAction.type === "sticker_only") {
+          const stickerAsset = resolveStickerAsset(passiveAction.stickerKey, runtime.defaults.stickersPath);
+          if (stickerAsset) {
+            try {
+              await socket.sendMessage(item.remoteJid, { sticker: stickerAsset });
+              runtime.metrics?.increment?.("whatsapp.sticker.sent");
+              runtime.logger?.log?.("whatsapp.sticker_sent", {
+                remoteJid: item.remoteJid,
+                stickerKey: stickerAsset.key
+              });
+            } catch (error) {
+              runtime.logger?.log?.("whatsapp.sticker_error", {
+                remoteJid: item.remoteJid,
+                error: error.message
+              });
+            }
+          } else {
+            runtime.metrics?.increment?.("whatsapp.sticker.missing_asset");
+            runtime.logger?.log?.("whatsapp.sticker_missing_asset", {
+              remoteJid: item.remoteJid,
+              stickerKey: passiveAction.stickerKey
+            });
+          }
+        }
+
         if (!reacted) {
           const hasOutgoing =
             Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
@@ -352,9 +402,16 @@ export function registerMessageHandler({ socket, runtime }) {
         }
 
         const isGroup = remoteJid.endsWith("@g.us");
-        const text = extractText(incoming.message).trim();
-        if (!text) continue;
-        console.log(`[whatsapp] incoming ${remoteJid}: ${text}`);
+        const unwrappedMessage = unwrapMessage(incoming.message);
+        const text = extractText(unwrappedMessage).trim();
+        const hasMediaPayload = Boolean(
+          unwrappedMessage?.imageMessage ||
+          unwrappedMessage?.videoMessage ||
+          unwrappedMessage?.audioMessage ||
+          unwrappedMessage?.stickerMessage
+        );
+        if (!text && !hasMediaPayload) continue;
+        console.log(`[whatsapp] incoming ${remoteJid}: ${text || "[media]"}`);
 
         const baseUserId = extractPhone(remoteJid);
         const participantId = isGroup ? extractPhone(extractParticipant(incoming)) : "";
@@ -402,11 +459,153 @@ export function registerMessageHandler({ socket, runtime }) {
           groupContextByUser.set(contextKey, Date.now());
         }
 
-        orchestrator.scheduleIncoming({
+        const quotedMessage = unwrappedMessage?.extendedTextMessage?.contextInfo?.quotedMessage
+          ? extractText(unwrappedMessage.extendedTextMessage.contextInfo.quotedMessage).trim()
+          : "";
+
+        let media = null;
+        try {
+          if (unwrappedMessage?.imageMessage && incoming.key?.id) {
+            const path = await persistMedia({
+              downloadContentFromMessage,
+              content: unwrappedMessage.imageMessage,
+              type: "image",
+              id: `${incoming.key.id}-image`,
+              basePath: runtime.defaults.whatsappMediaPath
+            });
+            const visualDescription = await runtime.semanticVisionAnalyzer?.analyze?.({
+              filePath: path,
+              mediaType: "image"
+            }) ?? await runtime.visualAnalyzer?.analyze?.({
+              filePath: path,
+              mediaType: "image"
+            });
+            if (visualDescription) {
+              runtime.visualAnalyses?.save?.({
+                userId,
+                channelId: remoteJid,
+                mediaPath: path,
+                mediaType: "image",
+                description: visualDescription
+              });
+            }
+            media = {
+              type: "image",
+              caption: unwrappedMessage.imageMessage?.caption ?? text,
+              transcript: visualDescription,
+              path
+            };
+          } else if (unwrappedMessage?.videoMessage && incoming.key?.id) {
+            media = {
+              type: "video",
+              caption: unwrappedMessage.videoMessage?.caption ?? text,
+              isAnimated: Boolean(unwrappedMessage.videoMessage?.gifPlayback),
+              path: await persistMedia({
+                downloadContentFromMessage,
+                content: unwrappedMessage.videoMessage,
+                type: "video",
+                id: `${incoming.key.id}-video`,
+                basePath: runtime.defaults.whatsappMediaPath
+              })
+            };
+          } else if (unwrappedMessage?.audioMessage && incoming.key?.id) {
+            const path = await persistMedia({
+              downloadContentFromMessage,
+              content: unwrappedMessage.audioMessage,
+              type: "audio",
+              id: `${incoming.key.id}-audio`,
+              basePath: runtime.defaults.whatsappMediaPath
+            });
+            const transcript = await runtime.audioTranscriber?.transcribe?.({
+              filePath: path,
+              mimetype: unwrappedMessage.audioMessage?.mimetype,
+              seconds: unwrappedMessage.audioMessage?.seconds
+            });
+            if (transcript) {
+              runtime.audioTranscriptions?.save?.({
+                userId,
+                channelId: remoteJid,
+                mediaPath: path,
+                transcript,
+                source: "fallback"
+              });
+            }
+            media = {
+              type: "audio",
+              transcript,
+              caption: text,
+              path
+            };
+          } else if (unwrappedMessage?.stickerMessage && incoming.key?.id) {
+            const path = await persistMedia({
+              downloadContentFromMessage,
+              content: unwrappedMessage.stickerMessage,
+              type: "sticker",
+              id: `${incoming.key.id}-sticker`,
+              basePath: runtime.defaults.whatsappMediaPath
+            });
+            const isAnimated = Boolean(unwrappedMessage.stickerMessage?.isAnimated);
+            const visualDescription = await runtime.semanticVisionAnalyzer?.analyze?.({
+              filePath: path,
+              mediaType: "sticker",
+              isAnimated
+            }) ?? await runtime.visualAnalyzer?.analyze?.({
+              filePath: path,
+              mediaType: "sticker",
+              isAnimated
+            });
+            if (visualDescription) {
+              runtime.visualAnalyses?.save?.({
+                userId,
+                channelId: remoteJid,
+                mediaPath: path,
+                mediaType: "sticker",
+                description: visualDescription
+              });
+            }
+            media = {
+              type: "sticker",
+              caption: text,
+              transcript: visualDescription,
+              isAnimated,
+              path
+            };
+          }
+        } catch (error) {
+          runtime.logger?.log?.("whatsapp.media_error", {
+            messageId: incoming.key?.id ?? null,
+            error: error.message
+          });
+        }
+
+        runtime.logger?.log?.("whatsapp.incoming", {
           remoteJid,
-          message: text,
           userId,
           sessionId,
+          isGroup,
+          hasQuotedMessage: Boolean(quotedMessage),
+          mediaType: media?.type ?? null,
+          messageId: incoming.key?.id ?? null
+        });
+        runtime.metrics?.increment?.("whatsapp.incoming");
+        if (media?.type) {
+          runtime.metrics?.increment?.(`whatsapp.media.${media.type}`);
+        }
+
+        const effectiveMessage = text || media?.transcript || media?.caption || `[${media?.type ?? "media"}]`;
+
+        orchestrator.scheduleIncoming({
+          remoteJid,
+          message: effectiveMessage,
+          userId,
+          sessionId,
+          channelId: remoteJid,
+          isGroup,
+          participants: isGroup ? [baseUserId, participantId].filter(Boolean) : [userId],
+          isDirectMention: isGroup ? isDirect : false,
+          isReply: Boolean(unwrappedMessage?.extendedTextMessage?.contextInfo?.stanzaId),
+          quotedMessage,
+          media,
           closeDecision,
           messageKey: incoming.key ? { ...incoming.key } : undefined
         });

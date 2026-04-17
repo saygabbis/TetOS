@@ -1,135 +1,245 @@
 # TetOS
 
-## Como iniciar (rápido)
+TetOS é um bot local com API HTTP, runtime modular e integração com WhatsApp. Nesta fase, a base foi consolidada com memória seletiva, memória multimodal com retrieval recente, reminders locais com scheduler e entrega real via WhatsApp, observabilidade persistida e fluxo sticker-only funcional.
+
+## Estado atual
+
+A base atual da TetOS já cobre:
+- arquitetura modular por runtime
+- pipeline central de mensagens
+- memória short-term, long-term e selective
+- memória multimodal com recuperação recente no prompt
+- governança de canal e modos passivos
+- quoted context e persistência de mídia
+- busca web
+- documentos locais e escrita assistida
+- operações administrativas e confirmações seguras
+- reminders locais com scheduler e entrega no WhatsApp
+- logs estruturados e métricas persistidas
+- endpoints de inspeção operacional
+- sticker-only com fallback de assets
+- execução por PM2
+
+## Pré-requisitos
+
+- Node.js 18+
+- npm
+- Ollama local ou Ollama Cloud
+- WhatsApp opcional para a camada de automação real
+
+## Instalação
+
 ```bash
 cd "C:\Users\jonas\OneDrive\Documentos\GABBIS\BOTS\TetOS"
 npm install
 ```
 
-## Pré-requisitos
-- Node.js 18+
-- **Ollama local** *ou* **Ollama Cloud** (conta em [ollama.com](https://ollama.com) e chave em [ollama.com/settings/keys](https://ollama.com/settings/keys))
+## Configuração principal
 
-## Configuração
-1. Copie `.env.example` para `.env`.
-2. Escolha **local** ou **cloud** (veja abaixo) e ajuste os campos principais.
-3. Para WhatsApp: `WHATSAPP_ENABLED=true`.
+Copie `.env.example` para `.env` e ajuste o necessário.
 
-### Opção A — Ollama local (padrão)
-- `TETOS_OLLAMA_MODE=local` (ou omita; o padrão é local)
-- `TETOS_MODEL=llama3` (ou outro modelo que você tiver puxado)
+### Ollama local
+- `TETOS_OLLAMA_MODE=local`
+- `TETOS_MODEL=llama3`
 - `TETOS_OLLAMA_URL=http://localhost:11434`
 
-### Opção B — Ollama Cloud
-O TetOS usa o mesmo cliente HTTP (`/api/generate`); em cloud a API fica em `https://ollama.com` e exige autenticação por Bearer.
-
-No `.env`:
+### Ollama Cloud
 - `TETOS_OLLAMA_MODE=cloud`
-- `TETOS_OLLAMA_API_KEY=<sua chave>` (alternativa: `OLLAMA_API_KEY`, como na documentação da Ollama)
-- Modelo padrão em cloud: **`minimax-m2.7:cloud`** (sobrescreva com `TETOS_MODEL` se quiser outro modelo cloud)
-- Opcional: `TETOS_OLLAMA_CLOUD_URL` se precisar apontar para outro host (padrão `https://ollama.com`)
+- `TETOS_OLLAMA_API_KEY=<sua chave>`
+- `TETOS_MODEL=minimax-m2.7:cloud`
+- opcional: `TETOS_OLLAMA_CLOUD_URL`
 
-## Subir serviços
-### 1) Ollama local: subir o daemon e o modelo
-Ignore este passo se estiver só em **cloud**.
+### WhatsApp
+- `WHATSAPP_ENABLED=true`
+- `WHATSAPP_AUTO_CONNECT=true`
+- `WHATSAPP_SESSION_PATH=./data/session`
 
-```bash
-ollama serve
-ollama pull llama3
-```
+### Reminders e sticker-only
+- `TETOS_REMINDER_SWEEP_MS=60000`
+- `TETOS_REMINDER_MAX_DELIVERY_ATTEMPTS=5`
+- `TETOS_REMINDER_DELIVERY_RETRY_MS=300000`
+- `TETOS_STICKER_ONLY_CHANCE=0.35`
+- `TETOS_STICKERS_PATH=./data/stickers`
 
-### 2) Inicie a API (HTTP)
+## Como subir
+
+### 1. API HTTP
 ```bash
 npm start
 ```
 
-### 3) Inicie o bot do WhatsApp (em outro terminal)
+Ou:
+```bash
+npm run start:api
+```
+
+### 2. Runner do WhatsApp
 ```bash
 npm run start:wa
 ```
 
-No primeiro start do WhatsApp, escaneie o QR no terminal.
+No primeiro start, autentique via QR.
 
-## Uso básico (chat REPL)
-1. Suba a API com `npm start`.
-2. Em outro terminal, rode:
+### 3. PM2
 ```bash
-node scripts/chat-repl.js
-```
-3. Converse normalmente. Use `/sair` para encerrar.
-
-## Estabilização de conversa (pipeline)
-- Separação rígida de input/output no REPL (evita mistura de stdout).
-- Respostas multi-mensagem preservadas e com pacing entre partes.
-- Split por sentença/linha com merge de fragmentos curtos (sem truncar conteúdo).
-- Recência garantida nas últimas 3–5 mensagens do histórico.
-- Logs de entrada, contexto usado, saída bruta e replies processadas.
-
-## Testes rápidos
-Em outro terminal, com a API rodando:
-```bash
-node scripts/test-status.js
-node scripts/test-chat.js
-node scripts/test-session-clear.js
-node scripts/test-memory-search.js
-node scripts/test-memory-save.js
-node scripts/test-memory-delete.js <id>
-node scripts/test-memory-search-post.js
-node scripts/chat-repl.js
+npm run pm2:start
+npm run pm2:restart
+npm run pm2:stop
 ```
 
-## Problemas comuns
-- `fetch failed` no `/chat` (modo **local**): Ollama não está rodando ou modelo ausente.
-- Erro 401 no `/chat` (modo **cloud**): `TETOS_OLLAMA_API_KEY` / `OLLAMA_API_KEY` ausente ou inválida.
-- Sem resposta no WhatsApp: confira `WHATSAPP_ENABLED=true` e se o QR foi autenticado.
+## Scripts úteis
 
-## Config
-Copie `.env.example` para `.env` e ajuste:
-- `TETOS_OLLAMA_MODE` (`local` | `cloud`)
-- `TETOS_MODEL`
-- `TETOS_OLLAMA_URL` (local)
-- `TETOS_OLLAMA_API_KEY` ou `OLLAMA_API_KEY` (cloud)
-- `TETOS_OLLAMA_CLOUD_URL` (cloud, opcional)
-- `TETOS_MEMORY_PATH`
-- `TETOS_MAX_SHORT`
-- `TETOS_PORT` (padrão 6453)
-- `TETOS_PERSONALITY_PATH`
-- `TETOS_MAX_HISTORY`
-- `TETOS_MAX_CONTENT`
-- `TETOS_MAX_ID`
-- `TETOS_MAX_TAGS`
-- `TETOS_RESPONSE_HISTORY`
-- `TETOS_RESPONSE_SIMILARITY`
-- `TETOS_RESPONSE_MAX_PARTS` (opcional: teto de bolhas por resposta; omita, `0` ou `unlimited` = sem limite — só o que o texto gerar)
-- `TETOS_TIME_PATH` (persistência de tempo; padrão `./data/time.json`)
-- `TETOS_USER_PATTERNS_PATH` (padrões de rotina; padrão `./data/userPatterns.json`)
-- `TETOS_USER_ID` (opcional: força userId no terminal para unificar com WhatsApp)
-- `PRESENCE_ENABLED`
-- `PRESENCE_CHECK_MS`
-- `PRESENCE_MIN_COOLDOWN_MS`
-- `PRESENCE_MAX_COOLDOWN_MS`
-- `PRESENCE_MAX_DAILY_PER_USER`
-- `PRESENCE_INACTIVE_MS`
+```bash
+npm test
+npm run test:status
+npm run test:chat
+npm run test:memory:save
+npm run test:memory:search
+npm run test:memory:search:post
+npm run test:memory:delete -- <id>
+npm run test:session:clear
+```
 
-## API
-- `POST /chat` (accepts `message` or `messages[]`, optional `userId`, `sessionId`; roles allowed: user/assistant/system; missing role defaults to user; last TETOS_MAX_HISTORY kept; short-term separated by sessionId; userId/sessionId max TETOS_MAX_ID chars; message content max TETOS_MAX_CONTENT chars; tone detection + response processing; returns `replies[]`)
-- `POST /memory/save` (accepts `tag` or `tags[]`, capped by TETOS_MAX_TAGS)
+## Principais capacidades implementadas
+
+### Pipeline e memória
+- pipeline central de mensagens com política de canal
+- recent history normalizado por sessão
+- extração de facts e style
+- memória seletiva com promoção
+- multimodal memory persistida
+- retrieval recente multimodal injetado no prompt via `[RECENT MULTIMODAL MEMORY]`
+
+### Reminders
+- criação, listagem e conclusão de reminders
+- scheduler local com `due()`, `sweep()` e `lastSweepAt`
+- fila de entrega pendente com `pendingDelivery()`
+- entrega real de reminders vencidos via WhatsApp
+- `deliveryAttempts`, `delivered`, `deliveredAt`, `deliveryError`
+- retry/backoff com limite de tentativas
+- proteção contra destinatário inválido
+
+### Observabilidade
+- logs estruturados persistidos
+- métricas persistidas
+- `memorySummary`
+- `runtimeSummary`
+- `reminderSummary`
+- `logsSummary`
+- status operacional mais rico em `/status`
+
+### Sticker-only
+- envio de sticker no fluxo passivo
+- assets locais em `data/stickers`
+- fallback automático para `ack`, `ok`, `thumbs_up`, `heart`
+- métricas e logs para sticker enviado, erro e asset ausente
+
+## Assets de sticker atuais
+
+A pasta `data/stickers` já foi preparada com:
+- `ack.webp`
+- `ok.webp`
+- `heart.webp`
+- `thumbs_up.webp`
+
+Eles funcionam como placeholders operacionais e podem ser trocados depois por assets finais.
+
+## Endpoints principais
+
+### Chat e memória
+- `POST /chat`
+- `POST /memory/save`
 - `POST /memory/delete`
 - `GET /memory`
-- `GET /memory/search` (tag accepts CSV: `tag=bread,teto`)
-- `POST /memory/search` (body: `{ tag, q }`)
+- `GET /memory/search`
+- `POST /memory/search`
+- `GET /memory/multimodal`
 - `POST /session/clear`
-- `GET /status` (optional `sessionId` query; inclui `ollamaMode`, `ollamaBaseUrl`, `model`, limites ativos)
 
-### /chat payload example
-```json
-{
-  "messages": [
-    {"role": "user", "content": "oi"},
-    {"role": "assistant", "content": "e aí"},
-    {"role": "user", "content": "fala da baguete"}
-  ],
-  "userId": "u1",
-  "sessionId": "s1"
-}
-```
+### Operação e inspeção
+- `GET /status`
+- `GET /runtime/summary`
+- `GET /logs`
+- `GET /metrics`
+- `GET /channels`
+- `GET /channels/:channelId`
+- `POST /channels/admin`
+- `POST /operations`
+
+### Documentos
+- `GET /documents`
+- `GET /documents/:id`
+- `POST /documents/:id`
+
+### Reminders
+- `GET /reminders`
+- `GET /reminders?userId=<id>`
+- `GET /reminders?filter=open`
+- `GET /reminders?filter=pending`
+- `GET /reminders?filter=delivered`
+- `GET /reminders?filter=failed`
+
+## O que observar no /status
+
+`GET /status` agora retorna, entre outros:
+- `memorySummary`
+- `runtimeSummary`
+- `reminderSummary`
+- `logsSummary`
+- `metrics`
+- limites ativos
+
+## Fluxo recomendado de teste
+
+### Teste da API
+1. subir a API
+2. chamar `GET /status`
+3. chamar `GET /reminders`
+4. executar `npm run test:status`
+5. executar `npm run test:chat`
+
+### Teste de reminders no WhatsApp
+1. subir API e runner
+2. criar reminder com `dueAt` próximo
+3. aguardar o sweep
+4. conferir entrega no WhatsApp
+5. validar `GET /reminders?filter=pending`
+6. validar `GET /reminders?filter=delivered`
+7. validar `GET /status`
+
+### Teste de sticker-only
+1. manter assets na pasta `data/stickers`
+2. provocar cenário passivo com `react_only`
+3. conferir se foi enviado sticker
+4. validar fallback para `ack` se a chave pedida não existir
+
+## Problemas comuns
+
+- `fetch failed`: Ollama local não está rodando ou modelo ausente
+- `401` no modo cloud: chave inválida ou ausente
+- sem resposta no WhatsApp: `WHATSAPP_ENABLED=true` não configurado ou sessão não autenticada
+- reminder não entregue: verificar `deliveryError`, `deliveryAttempts`, `retryBlocked` e logs
+- sticker não apareceu: verificar `data/stickers` e eventos `whatsapp.sticker_missing_asset`
+
+## Estrutura operacional relevante
+
+- `src/core/pipeline/messagePipeline.js`
+- `src/core/memory/multimodalRetrieval.js`
+- `src/modules/reminders/reminderStore.js`
+- `src/modules/reminders/reminderScheduler.js`
+- `src/modules/reminders/reminderSummary.js`
+- `src/app/createRuntime.js`
+- `src/integrations/whatsapp/runner.js`
+- `src/integrations/whatsapp/messageHandler.js`
+- `src/integrations/whatsapp/stickerAssets.js`
+- `src/infra/api/server.js`
+- `src/infra/config/defaults.js`
+
+## Próximos passos opcionais
+
+A fase atual está fechada. Se houver uma nova fase no futuro, os melhores próximos passos seriam:
+- trocar stickers placeholder por assets finais
+- adicionar testes E2E automatizados para reminders e WhatsApp
+- melhorar workflows de calendário
+- aprofundar automações contextuais seguras
+- refinar UX das mensagens de lembrete e operação
