@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 import { createRuntime } from "../../app/createRuntime.js";
 import { NudgeEngine } from "../../core/autonomy/nudgeEngine.js";
@@ -18,6 +19,7 @@ function listKnownUsers(runtime) {
 }
 
 async function runPresence(runtime, socket, nudgeEngine) {
+  if (!DEFAULTS.replyEnabled) return;
   if (!DEFAULTS.presenceEnabled) return;
   const users = listKnownUsers(runtime);
   for (const userId of users) {
@@ -58,6 +60,7 @@ function isValidReminderRecipient(userId) {
 }
 
 async function deliverDueReminders(runtime, socket) {
+  if (!DEFAULTS.replyEnabled) return;
   const due = runtime.reminderScheduler?.pendingDelivery?.() ?? [];
   runtime.reminderScheduler?.markDeliverySweep?.();
   if (!due.length) return;
@@ -151,38 +154,76 @@ function suppressNoisyLogs() {
   process.stdout.write = wrapWrite(process.stdout.write);
 }
 
-async function main() {
-  if (!DEFAULTS.whatsappEnabled) {
-    console.log("WhatsApp disabled. Set WHATSAPP_ENABLED=true to run.");
-    return;
-  }
-
-  suppressNoisyLogs();
-
-  const lockPath = ".wa-runner.lock";
-  if (existsSync(lockPath)) {
-    try {
-      const existingPid = Number(readFileSync(lockPath, "utf8"));
-      if (existingPid && existingPid !== process.pid) {
-        process.kill(existingPid, 0);
-        console.error(`[whatsapp] runner already active (pid ${existingPid}). Stop it before starting another.`);
-        process.exit(1);
-      }
-    } catch {
-      // stale lock, continue
+function attachChatLedgerListeners(socket, runtime) {
+  socket.ev.on("chats.update", (chats = []) => {
+    for (const chat of chats) {
+      runtime.eventLedger?.append?.({
+        eventType: "chat.update",
+        remoteJid: chat?.id ?? null,
+        unreadCount: chat?.unreadCount ?? null,
+        archived: chat?.archive ?? null
+      });
     }
-  }
-  writeFileSync(lockPath, String(process.pid));
-  process.on("exit", () => {
-    try { unlinkSync(lockPath); } catch {}
   });
 
-  const runtime = createRuntime();
-  const nudgeEngine = new NudgeEngine({
-    timeStore: runtime.timeStore,
-    userPatterns: runtime.userPatterns,
-    internalState: runtime.internalState
+  socket.ev.on("groups.update", (groups = []) => {
+    for (const group of groups) {
+      runtime.eventLedger?.append?.({
+        eventType: "group.update",
+        remoteJid: group?.id ?? null,
+        subject: group?.subject ?? null,
+        announce: group?.announce ?? null
+      });
+    }
   });
+
+  socket.ev.on("group-participants.update", (payload = {}) => {
+    runtime.eventLedger?.append?.({
+      eventType: "group.participants_update",
+      remoteJid: payload?.id ?? null,
+      participants: payload?.participants ?? [],
+      action: payload?.action ?? null
+    });
+  });
+}
+
+function scheduleAuxiliaryLoops(runtime, nudgeEngine, getSocket, getConnected) {
+  if (DEFAULTS.presenceEnabled) {
+    setInterval(() => {
+      const socket = getSocket();
+      if (!getConnected() || !socket) return;
+      runPresence(runtime, socket, nudgeEngine).catch((error) => {
+        console.error("[presence] error:", error.message);
+      });
+    }, DEFAULTS.presenceCheckMs);
+  }
+
+  setInterval(() => {
+    const due = runtime.reminderScheduler?.sweep?.() ?? [];
+    if (due.length) {
+      runtime.logger?.log?.("reminders.scheduled_due", { count: due.length });
+    }
+    const socket = getSocket();
+    if (!getConnected() || !socket) return;
+    deliverDueReminders(runtime, socket).catch((error) => {
+      console.error("[reminders] delivery error:", error.message);
+    });
+  }, DEFAULTS.reminderSweepMs);
+
+  if (DEFAULTS.dailyReportEnabled) {
+    setInterval(() => {
+      const report = runtime.dailyReportGenerator?.maybeGenerateNow?.(
+        new Date(),
+        DEFAULTS.dailyReportTime
+      );
+      if (report) {
+        runtime.logger?.log?.("learning.daily_report_generated", report);
+      }
+    }, 30000);
+  }
+}
+
+async function runSingleWhatsApp(runtime, nudgeEngine) {
   let socket = null;
   let isConnected = false;
   let reconnecting = false;
@@ -201,7 +242,7 @@ async function main() {
           reconnecting = false;
           console.log("[whatsapp] connected");
         }
-        if (update?.qr) console.log("[whatsapp] QR recebido, use o handler de QR");
+        if (update?.qr) console.log("[whatsapp] QR recebido — escaneie para autenticar");
 
         if (connection === "close" && DEFAULTS.whatsappAutoConnect && !reconnecting) {
           isConnected = false;
@@ -237,30 +278,185 @@ async function main() {
       }
     });
 
-    registerMessageHandler({ socket, runtime });
+    attachChatLedgerListeners(socket, runtime);
+    registerMessageHandler({ socket, runtime, role: "full" });
   };
 
   await connect();
 
-  if (DEFAULTS.presenceEnabled) {
-    setInterval(() => {
-      if (!isConnected || !socket) return;
-      runPresence(runtime, socket, nudgeEngine).catch((error) => {
-        console.error("[presence] error:", error.message);
-      });
-    }, DEFAULTS.presenceCheckMs);
+  scheduleAuxiliaryLoops(runtime, nudgeEngine, () => socket, () => isConnected);
+}
+
+async function runDualWhatsApp(runtime, nudgeEngine) {
+  let mainSocket = null;
+  let mediaSocket = null;
+  let mainConnected = false;
+  let mediaConnected = false;
+  let mainReconnecting = false;
+  let mediaReconnecting = false;
+  let mainGeneration = 0;
+  let mediaGeneration = 0;
+
+  const connectMain = async () => {
+    const generation = ++mainGeneration;
+    mainSocket = await createBaileysClient({
+      sessionPath: DEFAULTS.whatsappSessionPath,
+      autoConnect: DEFAULTS.whatsappAutoConnect,
+      onConnectionUpdate: async (update) => {
+        if (generation !== mainGeneration) return;
+        const connection = update?.connection;
+        if (connection === "open") {
+          mainConnected = true;
+          mainReconnecting = false;
+          console.log("[whatsapp] main connected (aprendizado / chat)");
+        }
+        if (update?.qr) {
+          console.log("[whatsapp] QR — número principal (aprendizado). Escaneie primeiro se for nova sessão.");
+        }
+
+        if (connection === "close" && DEFAULTS.whatsappAutoConnect && !mainReconnecting) {
+          mainConnected = false;
+          const code = update?.lastDisconnect?.error?.output?.statusCode;
+          const loggedOut = code === DisconnectReason.loggedOut;
+          const conflict = update?.lastDisconnect?.error?.message?.includes("conflict");
+          if (conflict) {
+            console.error("[whatsapp] main: conflict — outro processo substituiu esta sessão.");
+          }
+          if (!loggedOut) {
+            mainReconnecting = true;
+            try {
+              mainSocket?.ws?.close();
+            } catch {}
+            setTimeout(() => {
+              connectMain().catch((error) => {
+                mainReconnecting = false;
+                console.error("[whatsapp] main reconnect error:", error.message);
+              });
+            }, 2000);
+          }
+        }
+      }
+    });
+
+    mainSocket.ev.on("creds.update", () => console.log("[whatsapp] main creds updated"));
+    mainSocket.ev.on("connection.update", (update) => {
+      if (update?.lastDisconnect?.error?.message?.includes("bad-request")) {
+        console.warn("[whatsapp] main init queries warning: bad-request");
+      }
+    });
+
+    attachChatLedgerListeners(mainSocket, runtime);
+    registerMessageHandler({ socket: mainSocket, runtime, role: "main" });
+  };
+
+  const connectMedia = async () => {
+    const generation = ++mediaGeneration;
+    mediaSocket = await createBaileysClient({
+      sessionPath: DEFAULTS.whatsappMediaSessionPath,
+      autoConnect: DEFAULTS.whatsappAutoConnect,
+      onConnectionUpdate: async (update) => {
+        if (generation !== mediaGeneration) return;
+        const connection = update?.connection;
+        if (connection === "open") {
+          mediaConnected = true;
+          mediaReconnecting = false;
+          console.log("[whatsapp] media connected (.sticker / .toimg)");
+        }
+        if (update?.qr) {
+          console.log("[whatsapp] QR — número só figurinhas. Escaneie com o segundo aparelho/número.");
+        }
+
+        if (connection === "close" && DEFAULTS.whatsappAutoConnect && !mediaReconnecting) {
+          mediaConnected = false;
+          const code = update?.lastDisconnect?.error?.output?.statusCode;
+          const loggedOut = code === DisconnectReason.loggedOut;
+          const conflict = update?.lastDisconnect?.error?.message?.includes("conflict");
+          if (conflict) {
+            console.error("[whatsapp] media: conflict — outro processo substituiu esta sessão.");
+          }
+          if (!loggedOut) {
+            mediaReconnecting = true;
+            try {
+              mediaSocket?.ws?.close();
+            } catch {}
+            setTimeout(() => {
+              connectMedia().catch((error) => {
+                mediaReconnecting = false;
+                console.error("[whatsapp] media reconnect error:", error.message);
+              });
+            }, 2000);
+          }
+        }
+      }
+    });
+
+    mediaSocket.ev.on("creds.update", () => console.log("[whatsapp] media creds updated"));
+    mediaSocket.ev.on("connection.update", (update) => {
+      if (update?.lastDisconnect?.error?.message?.includes("bad-request")) {
+        console.warn("[whatsapp] media init queries warning: bad-request");
+      }
+    });
+
+    registerMessageHandler({ socket: mediaSocket, runtime, role: "media" });
+  };
+
+  await connectMain();
+  await connectMedia();
+
+  scheduleAuxiliaryLoops(runtime, nudgeEngine, () => mainSocket, () => mainConnected);
+}
+
+async function main() {
+  if (!DEFAULTS.whatsappEnabled) {
+    console.log("WhatsApp disabled. Set WHATSAPP_ENABLED=true to run.");
+    return;
   }
 
-  setInterval(() => {
-    const due = runtime.reminderScheduler?.sweep?.() ?? [];
-    if (due.length) {
-      runtime.logger?.log?.("reminders.scheduled_due", { count: due.length });
+  suppressNoisyLogs();
+
+  const lockPath = ".wa-runner.lock";
+  if (existsSync(lockPath)) {
+    try {
+      const existingPid = Number(readFileSync(lockPath, "utf8"));
+      if (existingPid && existingPid !== process.pid) {
+        process.kill(existingPid, 0);
+        console.error(`[whatsapp] runner already active (pid ${existingPid}). Stop it before starting another.`);
+        process.exit(1);
+      }
+    } catch {
+      // stale lock, continue
     }
-    if (!isConnected || !socket) return;
-    deliverDueReminders(runtime, socket).catch((error) => {
-      console.error("[reminders] delivery error:", error.message);
-    });
-  }, DEFAULTS.reminderSweepMs);
+  }
+  writeFileSync(lockPath, String(process.pid));
+  process.on("exit", () => {
+    try { unlinkSync(lockPath); } catch {}
+  });
+
+  const dual = DEFAULTS.whatsappMode === "dual";
+  if (dual) {
+    const absMain = path.resolve(DEFAULTS.whatsappSessionPath);
+    const absMedia = path.resolve(DEFAULTS.whatsappMediaSessionPath);
+    if (absMain === absMedia) {
+      console.error(
+        "[whatsapp] dual mode: WHATSAPP_MEDIA_SESSION_PATH must be a folder different from WHATSAPP_SESSION_PATH."
+      );
+      process.exit(1);
+    }
+    console.log("[whatsapp] mode=dual — duas sessões (principal + figurinhas). Dois QR se ainda não autenticou.");
+  }
+
+  const runtime = createRuntime();
+  const nudgeEngine = new NudgeEngine({
+    timeStore: runtime.timeStore,
+    userPatterns: runtime.userPatterns,
+    internalState: runtime.internalState
+  });
+
+  if (dual) {
+    await runDualWhatsApp(runtime, nudgeEngine);
+  } else {
+    await runSingleWhatsApp(runtime, nudgeEngine);
+  }
 }
 
 main().catch((error) => {

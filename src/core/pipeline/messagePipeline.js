@@ -171,6 +171,24 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
+  if (!runtime.defaults.replyEnabled) {
+    runtime.logger?.log?.("pipeline.observe_only", {
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId
+    });
+    runtime.metrics?.increment?.("pipeline.observe_only");
+    return {
+      replies: [],
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId,
+      input,
+      tone,
+      policy: { ...policy, mode: "learn_only" }
+    };
+  }
+
   const searchResult = await runtime.searchModule?.handle?.(input);
   if (searchResult?.results?.length) {
     runtime.metrics?.increment?.("search.executed");

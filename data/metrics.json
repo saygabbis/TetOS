@@ -3,12 +3,13 @@
     "pipeline.policy.checked": 33,
     "pipeline.completed": 32,
     "pipeline.replied": 32,
-    "whatsapp.incoming": 36,
-    "whatsapp.media.sticker": 10,
+    "whatsapp.incoming": 176,
+    "whatsapp.media.sticker": 46,
     "operations.intent.detected": 1,
-    "whatsapp.media.audio": 1,
+    "whatsapp.media.audio": 2,
     "reminders.created": 1,
-    "whatsapp.media.image": 2
+    "whatsapp.media.image": 9,
+    "whatsapp.media.video": 10
   },
-  "lastUpdated": "2026-04-17T20:55:27.647Z"
+  "lastUpdated": "2026-04-27T22:38:04.477Z"
 }

@@ -1,0 +1,682 @@
+{
+  "users": {
+    "131778236952767": {
+      "totals": {
+        "events": 89,
+        "messages": 59,
+        "reactions": 1,
+        "media": 6,
+        "links": 0
+      },
+      "byHour": {
+        "18": 19,
+        "19": 49,
+        "20": 21
+      },
+      "byChat": {
+        "131778236952767@lid": 88,
+        "120363425975987063@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "553198136873:12": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 1,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "18": 1
+      },
+      "byChat": {
+        "120363399605801453@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "553121810389:4": {
+      "totals": {
+        "events": 5,
+        "messages": 0,
+        "reactions": 5,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "18": 1,
+        "19": 1,
+        "20": 1,
+        "21": 1,
+        "22": 1
+      },
+      "byChat": {
+        "120363399605801453@g.us": 5
+      },
+      "responseLatencyMs": []
+    },
+    "118115962716356": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "18": 2
+      },
+      "byChat": {
+        "120363406008700621@g.us": 2
+      },
+      "responseLatencyMs": []
+    },
+    "5516997241905": {
+      "totals": {
+        "events": 74,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "18": 1,
+        "19": 45,
+        "20": 28
+      },
+      "byChat": {
+        "5516997241905@s.whatsapp.net": 74
+      },
+      "responseLatencyMs": []
+    },
+    "157947506229421": {
+      "totals": {
+        "events": 36,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "19": 1,
+        "20": 31,
+        "21": 4
+      },
+      "byChat": {
+        "120363425975987063@g.us": 2,
+        "157947506229421@lid": 34
+      },
+      "responseLatencyMs": []
+    },
+    "263444871807104": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "19": 1
+      },
+      "byChat": {
+        "5516991242473-1515078704@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "190546341540031": {
+      "totals": {
+        "events": 12,
+        "messages": 5,
+        "reactions": 0,
+        "media": 3,
+        "links": 0
+      },
+      "byHour": {
+        "19": 2,
+        "20": 8,
+        "22": 2
+      },
+      "byChat": {
+        "120363425975987063@g.us": 1,
+        "190546341540031@lid": 11
+      },
+      "responseLatencyMs": []
+    },
+    "5516988137617": {
+      "totals": {
+        "events": 86,
+        "messages": 83,
+        "reactions": 0,
+        "media": 43,
+        "links": 3
+      },
+      "byHour": {
+        "19": 19,
+        "20": 42,
+        "21": 15,
+        "22": 10
+      },
+      "byChat": {
+        "5516997241905@s.whatsapp.net": 28,
+        "5516994435369@s.whatsapp.net": 10,
+        "5516988137617@s.whatsapp.net": 20,
+        "190546341540031@lid": 3,
+        "131778236952767@lid": 1,
+        "264841222742022@lid": 3,
+        "5516991617729@s.whatsapp.net": 2,
+        "5516991476228@s.whatsapp.net": 1,
+        "65197804912879@lid": 1,
+        "6283879987068@s.whatsapp.net": 13,
+        "174165839581324@lid": 4
+      },
+      "responseLatencyMs": [
+        465485,
+        121098,
+        554994,
+        4231,
+        8666,
+        22746,
+        15565,
+        622,
+        4640,
+        43798,
+        11041,
+        3989,
+        3973
+      ]
+    },
+    "553197341629:34": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 1,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "19": 1
+      },
+      "byChat": {
+        "120363399605801453@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "5516994435369": {
+      "totals": {
+        "events": 15,
+        "messages": 0,
+        "reactions": 1,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "19": 5,
+        "20": 10
+      },
+      "byChat": {
+        "5516994435369@s.whatsapp.net": 15
+      },
+      "responseLatencyMs": []
+    },
+    "5516994435369:61": {
+      "totals": {
+        "events": 9,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "19": 2,
+        "20": 7
+      },
+      "byChat": {
+        "5516994435369:61@s.whatsapp.net": 9
+      },
+      "responseLatencyMs": []
+    },
+    "190546341540031:61": {
+      "totals": {
+        "events": 15,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "19": 2,
+        "20": 13
+      },
+      "byChat": {
+        "190546341540031:61@lid": 15
+      },
+      "responseLatencyMs": []
+    },
+    "185967939985556": {
+      "totals": {
+        "events": 15,
+        "messages": 9,
+        "reactions": 0,
+        "media": 2,
+        "links": 0
+      },
+      "byHour": {
+        "20": 6,
+        "21": 9
+      },
+      "byChat": {
+        "185967939985556@lid": 15
+      },
+      "responseLatencyMs": []
+    },
+    "197053250547801": {
+      "totals": {
+        "events": 8,
+        "messages": 3,
+        "reactions": 0,
+        "media": 1,
+        "links": 0
+      },
+      "byHour": {
+        "20": 6,
+        "21": 2
+      },
+      "byChat": {
+        "197053250547801@lid": 8
+      },
+      "responseLatencyMs": []
+    },
+    "132813357596880": {
+      "totals": {
+        "events": 16,
+        "messages": 0,
+        "reactions": 2,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 16
+      },
+      "byChat": {
+        "132813357596880@lid": 14,
+        "120363425975987063@g.us": 2
+      },
+      "responseLatencyMs": []
+    },
+    "120363342938049353": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 2
+      },
+      "byChat": {
+        "120363342938049353@g.us": 2
+      },
+      "responseLatencyMs": []
+    },
+    "120363421295952491": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 1
+      },
+      "byChat": {
+        "120363421295952491@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "120363403627506811": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 1
+      },
+      "byChat": {
+        "120363403627506811@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "120363289474967524": {
+      "totals": {
+        "events": 4,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 4
+      },
+      "byChat": {
+        "120363289474967524@g.us": 4
+      },
+      "responseLatencyMs": []
+    },
+    "120363319826395839": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 2
+      },
+      "byChat": {
+        "120363319826395839@g.us": 2
+      },
+      "responseLatencyMs": []
+    },
+    "120363289511224232": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 2
+      },
+      "byChat": {
+        "120363289511224232@g.us": 2
+      },
+      "responseLatencyMs": []
+    },
+    "195786285547589": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 2
+      },
+      "byChat": {
+        "195786285547589@lid": 2
+      },
+      "responseLatencyMs": []
+    },
+    "120363253599303612": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 1
+      },
+      "byChat": {
+        "120363253599303612@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "554198276889": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 1
+      },
+      "byChat": {
+        "status@broadcast": 1
+      },
+      "responseLatencyMs": []
+    },
+    "74053859672191": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 1,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 1
+      },
+      "byChat": {
+        "120363425975987063@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "81544400130175": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 2,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 2
+      },
+      "byChat": {
+        "120363425975987063@g.us": 2
+      },
+      "responseLatencyMs": []
+    },
+    "264841222742022:50": {
+      "totals": {
+        "events": 3,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 3
+      },
+      "byChat": {
+        "264841222742022:50@lid": 3
+      },
+      "responseLatencyMs": []
+    },
+    "264841222742022": {
+      "totals": {
+        "events": 6,
+        "messages": 3,
+        "reactions": 0,
+        "media": 2,
+        "links": 0
+      },
+      "byHour": {
+        "20": 6
+      },
+      "byChat": {
+        "264841222742022@lid": 6
+      },
+      "responseLatencyMs": []
+    },
+    "5516991617729": {
+      "totals": {
+        "events": 5,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "20": 5
+      },
+      "byChat": {
+        "5516991617729@s.whatsapp.net": 5
+      },
+      "responseLatencyMs": []
+    },
+    "65197804912879": {
+      "totals": {
+        "events": 7,
+        "messages": 2,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 7
+      },
+      "byChat": {
+        "65197804912879@lid": 7
+      },
+      "responseLatencyMs": []
+    },
+    "6283879987068": {
+      "totals": {
+        "events": 189,
+        "messages": 59,
+        "reactions": 0,
+        "media": 40,
+        "links": 0
+      },
+      "byHour": {
+        "21": 85,
+        "22": 104
+      },
+      "byChat": {
+        "6283879987068@s.whatsapp.net": 189
+      },
+      "responseLatencyMs": []
+    },
+    "6283879987068:12": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 2
+      },
+      "byChat": {
+        "6283879987068:12@s.whatsapp.net": 2
+      },
+      "responseLatencyMs": []
+    },
+    "170660643000554": {
+      "totals": {
+        "events": 2,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 2
+      },
+      "byChat": {
+        "5516991968623-1484590609@g.us": 2
+      },
+      "responseLatencyMs": []
+    },
+    "6283879987068:13": {
+      "totals": {
+        "events": 51,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 20,
+        "22": 31
+      },
+      "byChat": {
+        "6283879987068:13@s.whatsapp.net": 51
+      },
+      "responseLatencyMs": []
+    },
+    "174165839581324": {
+      "totals": {
+        "events": 8,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 5,
+        "22": 3
+      },
+      "byChat": {
+        "174165839581324@lid": 8
+      },
+      "responseLatencyMs": []
+    },
+    "174165839581324:13": {
+      "totals": {
+        "events": 7,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 4,
+        "22": 3
+      },
+      "byChat": {
+        "174165839581324:13@lid": 7
+      },
+      "responseLatencyMs": []
+    },
+    "197096200257752": {
+      "totals": {
+        "events": 4,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 3,
+        "22": 1
+      },
+      "byChat": {
+        "120363401333384858@g.us": 3,
+        "120363406008700621@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "101580489650428": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 0,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "21": 1
+      },
+      "byChat": {
+        "120363401333384858@g.us": 1
+      },
+      "responseLatencyMs": []
+    }
+  }
+}

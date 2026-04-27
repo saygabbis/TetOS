@@ -33,6 +33,11 @@ import { SemanticVisionAnalyzer } from "../modules/vision/semanticVisionAnalyzer
 import { Logger } from "../infra/observability/logger.js";
 import { MetricsStore } from "../infra/observability/metricsStore.js";
 import { loadCharacter, loadPersonality } from "../core/personality/index.js";
+import { PrivacyAnonymizer } from "../core/privacy/anonymizer.js";
+import { EventLedger } from "../core/learning/eventLedger.js";
+import { BehaviorProfiler } from "../core/learning/behaviorProfiler.js";
+import { FocusConfigStore } from "../core/learning/focusConfigStore.js";
+import { DailyReportGenerator } from "../core/learning/dailyReportGenerator.js";
 
 export function createRuntime() {
   if (DEFAULTS.ollamaMode === "cloud" && !DEFAULTS.ollamaApiKey) {
@@ -88,6 +93,26 @@ export function createRuntime() {
   });
   const personality = loadPersonality(DEFAULTS.personalityPath);
   const character = loadCharacter(DEFAULTS.characterPath);
+  const anonymizer = new PrivacyAnonymizer({
+    mode: DEFAULTS.thirdPartyAnonymization,
+    targetUserId: DEFAULTS.learningTargetUserId
+  });
+  const eventLedger = new EventLedger({
+    basePath: DEFAULTS.learningLedgerPath,
+    timeZone: DEFAULTS.dailyReportTz,
+    anonymizer
+  });
+  const behaviorProfiler = new BehaviorProfiler(DEFAULTS.behaviorProfilesPath, {
+    targetUserId: DEFAULTS.learningTargetUserId
+  });
+  const learningFocus = new FocusConfigStore(DEFAULTS.learningFocusPath);
+  const dailyReportGenerator = new DailyReportGenerator({
+    reportsPath: DEFAULTS.dailyReportsPath,
+    ledger: eventLedger,
+    behaviorProfiler,
+    focusStore: learningFocus,
+    timeZone: DEFAULTS.dailyReportTz
+  });
   const internalState = new InternalState(DEFAULTS.statePath);
   const timeStore = new TimeStore(DEFAULTS.timePath);
   const userPatterns = new UserPatternsStore(DEFAULTS.userPatternsPath);
@@ -145,6 +170,11 @@ export function createRuntime() {
     visualAnalyses,
     visualAnalyzer,
     semanticVisionAnalyzer,
+    anonymizer,
+    eventLedger,
+    behaviorProfiler,
+    learningFocus,
+    dailyReportGenerator,
     reminderScheduler,
     brain,
     agent,

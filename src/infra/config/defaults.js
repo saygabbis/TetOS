@@ -96,8 +96,52 @@ export const DEFAULTS = {
   reminderDeliveryRetryMs: Number(process.env.TETOS_REMINDER_DELIVERY_RETRY_MS ?? 300000),
   stickerOnlyChance: Number(process.env.TETOS_STICKER_ONLY_CHANCE ?? 0.35),
   whatsappEnabled: String(process.env.WHATSAPP_ENABLED ?? "false").toLowerCase() === "true",
+  /**
+   * single = uma sessão (chat + comandos de mídia).
+   * dual | multi | split = duas sessões no mesmo processo: principal (aprendizado/chat) + secundária (só .sticker/.toimg).
+   */
+  whatsappMode: (() => {
+    const raw = String(process.env.WHATSAPP_MODE ?? "single").trim().toLowerCase();
+    if (raw === "dual" || raw === "multi" || raw === "split") return "dual";
+    return "single";
+  })(),
+  /** Pasta Baileys do número usado só para comandos de figurinha (apenas WHATSAPP_MODE=dual). */
+  whatsappMediaSessionPath: process.env.WHATSAPP_MEDIA_SESSION_PATH ?? "./data/session-media",
+  /** dual + sessão principal: texto opcional quando alguém manda comando de figurinha no número errado (vazio = só ignora). */
+  whatsappStickerCommandsDisabledHint:
+    process.env.WHATSAPP_STICKER_COMMANDS_DISABLED_HINT ??
+    process.env.WHATSAPP_STICKER_DISABLED_HINT ??
+    "",
   whatsappSessionPath: process.env.WHATSAPP_SESSION_PATH ?? "./data/session",
   whatsappAutoConnect: String(process.env.WHATSAPP_AUTO_CONNECT ?? "true").toLowerCase() === "true",
+  learningModeEnabled: String(process.env.LEARNING_MODE_ENABLED ?? "false").toLowerCase() === "true",
+  replyEnabled: String(process.env.REPLY_ENABLED ?? "true").toLowerCase() === "true",
+  thinkingLogsEnabled: String(process.env.THINKING_LOGS_ENABLED ?? "true").toLowerCase() === "true",
+  commandPrefix: process.env.COMMAND_PREFIX ?? ".",
+  commandMediaHistoryLimit: Number(process.env.COMMAND_MEDIA_HISTORY_LIMIT ?? 30),
+  commandMediaDerivedPath: process.env.COMMAND_MEDIA_DERIVED_PATH ?? "./data/media/derived",
+  /**
+   * Teto em KiB para figurinha no WhatsApp (≈1 MiB no cliente; abaixo disso costuma renderizar bem).
+   * Comandos .sticker reencodificam com qualidade/resolução menores até caber (animado e estático lossy).
+   * TETOS_STICKER_MAX_KB em KiB (ex.: 950). Default 950 KiB ≈ 973000 bytes.
+   */
+  tetosStickerMaxBytes: (() => {
+    const raw = process.env.TETOS_STICKER_MAX_KB;
+    if (raw !== undefined && raw !== null && String(raw).trim() !== "") {
+      const kb = Number(String(raw).trim());
+      if (Number.isFinite(kb) && kb >= 64 && kb <= 1024) return Math.floor(kb * 1024);
+    }
+    return 950 * 1024;
+  })(),
+  dailyReportEnabled: String(process.env.DAILY_REPORT_ENABLED ?? "false").toLowerCase() === "true",
+  dailyReportTime: process.env.DAILY_REPORT_TIME ?? "00:00",
+  dailyReportTz: process.env.DAILY_REPORT_TZ ?? "America/Sao_Paulo",
+  thirdPartyAnonymization: process.env.THIRD_PARTY_ANONYMIZATION ?? "strong",
+  learningTargetUserId: process.env.LEARNING_TARGET_USER_ID ?? "",
+  learningLedgerPath: process.env.LEARNING_LEDGER_PATH ?? "./data/learning-ledger",
+  learningFocusPath: process.env.LEARNING_FOCUS_PATH ?? "./data/learningFocus.json",
+  behaviorProfilesPath: process.env.BEHAVIOR_PROFILES_PATH ?? "./data/behaviorProfiles.json",
+  dailyReportsPath: process.env.DAILY_REPORTS_PATH ?? "./data/reports/daily",
   presenceEnabled: String(process.env.PRESENCE_ENABLED ?? "true").toLowerCase() === "true",
   presenceCheckMs: Number(process.env.PRESENCE_CHECK_MS ?? 60000),
   presenceMinCooldownMs: Number(process.env.PRESENCE_MIN_COOLDOWN_MS ?? 1800000),

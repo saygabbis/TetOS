@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { jidNormalizedUser, downloadContentFromMessage } from "baileys";
 import { planWhatsAppReaction } from "./reactionPlanner.js";
@@ -5,6 +6,10 @@ import { persistMedia } from "./mediaStore.js";
 import { resolvePassiveModeAction } from "../../core/channels/passiveModeAction.js";
 import { resolveStickerAsset } from "./stickerAssets.js";
 import { ChatService } from "../../modules/chat/chatService.js";
+import { ChatCommandQueue } from "./chatCommandQueue.js";
+import { ChatMediaHistoryStore } from "./chatMediaHistoryStore.js";
+import { resolveCommandTarget } from "./commandTargetResolver.js";
+import { MediaProcessor } from "../../core/media/mediaProcessor.js";
 
 function extractPhone(remoteJid = "") {
   return String(remoteJid).replace(/@.+$/, "");
@@ -30,6 +35,164 @@ function extractText(message = {}) {
     unwrapped?.listResponseMessage?.title ??
     ""
   );
+}
+
+function extractLinks(text = "") {
+  const matches = String(text).match(/https?:\/\/[^\s]+/gi);
+  return matches ? [...new Set(matches)] : [];
+}
+
+function classifyContent(text = "") {
+  const lower = String(text ?? "").toLowerCase();
+  if (!lower.trim()) return "empty";
+  if (/(nsfw|18\+|porn|nude|putaria|sexo|xxx)/i.test(lower)) return "sensitive_nsfw";
+  return "general";
+}
+
+function logThinking(runtime, payload = {}) {
+  if (!runtime?.defaults?.thinkingLogsEnabled) return;
+  const {
+    phase = "unknown",
+    userId = "unknown",
+    remoteJid = "unknown",
+    detail = ""
+  } = payload;
+  const detailText = String(detail ?? "").trim();
+  console.log(
+    `[thinking] phase=${phase} user=${userId} chat=${remoteJid}${detailText ? ` detail="${detailText}"` : ""}`
+  );
+}
+
+function detectMediaKind(unwrappedMessage = {}) {
+  if (unwrappedMessage?.audioMessage) return "audio";
+  if (unwrappedMessage?.imageMessage) return "image";
+  if (unwrappedMessage?.videoMessage?.gifPlayback) return "gif";
+  if (unwrappedMessage?.videoMessage) return "video";
+  if (unwrappedMessage?.stickerMessage) return "sticker";
+  if (unwrappedMessage?.documentMessage) {
+    const mime = String(unwrappedMessage.documentMessage?.mimetype ?? "").toLowerCase();
+    if (/^image\//.test(mime)) return "image";
+    if (/^video\//.test(mime)) return "video";
+    return "document";
+  }
+  return "text";
+}
+
+function buildIncomingAudit(payload = {}) {
+  const {
+    remoteJid,
+    userId,
+    isGroup,
+    text,
+    links,
+    media,
+    quotedMessage,
+    isReply,
+    isDirectMention,
+    mentionHint,
+    closeDecision,
+    messageId,
+    participantId,
+    pushName
+  } = payload;
+  return {
+    ts: new Date().toISOString(),
+    remoteJid,
+    userId,
+    participantId: participantId || null,
+    pushName: pushName || null,
+    isGroup: Boolean(isGroup),
+    messageId: messageId || null,
+    text: text || "",
+    links: Array.isArray(links) ? links : [],
+    mediaType: media?.type ?? "none",
+    mediaPath: media?.path ?? null,
+    mediaCaption: media?.caption ?? null,
+    mediaTranscript: media?.transcript ?? null,
+    isReply: Boolean(isReply),
+    quotedMessage: quotedMessage || null,
+    isDirectMention: Boolean(isDirectMention),
+    mentionCount: Array.isArray(mentionHint) ? mentionHint.length : 0,
+    closeDecision: closeDecision || null
+  };
+}
+
+function logIncomingAudit(runtime, payload = {}) {
+  if (!runtime?.defaults?.thinkingLogsEnabled) return;
+  const audit = buildIncomingAudit(payload);
+  console.log(`[audit.incoming] ${JSON.stringify(audit)}`);
+}
+
+function logOutgoingAudit(runtime, payload = {}) {
+  if (!runtime?.defaults?.thinkingLogsEnabled) return;
+  const audit = buildIncomingAudit(payload);
+  console.log(`[audit.outgoing] ${JSON.stringify(audit)}`);
+}
+
+function inferEditReason(beforeText = "", afterText = "") {
+  const before = String(beforeText ?? "").trim();
+  const after = String(afterText ?? "").trim();
+  if (!before && after) return "complemento";
+  if (before && !after) return "limpeza";
+  if (before.toLowerCase() === after.toLowerCase() && before !== after) return "formatacao";
+  if (Math.abs(before.length - after.length) <= 3) return "correcao_rapida";
+  if (after.length > before.length) return "detalhamento";
+  if (after.length < before.length) return "resumo";
+  return "nao_informado";
+}
+
+function buildMessageSnapshot({ messageId, remoteJid, actorId, text, mediaType, quotedMessage }) {
+  return {
+    messageId: messageId ?? null,
+    remoteJid: remoteJid ?? null,
+    actorId: actorId ?? null,
+    text: String(text ?? ""),
+    mediaType: mediaType ?? null,
+    quotedMessage: quotedMessage ?? null,
+    ts: new Date().toISOString()
+  };
+}
+
+function extractUpdatedText(update = {}) {
+  const msg = update?.update?.message;
+  if (!msg) return "";
+  return extractText(msg).trim();
+}
+
+function parseWhatsAppCommand(text = "", prefix = ".") {
+  const raw = String(text ?? "").trim();
+  if (!raw.startsWith(prefix)) return null;
+  const withoutPrefix = raw.slice(prefix.length).trim();
+  if (!withoutPrefix) return null;
+  const [cmdRaw, ...args] = withoutPrefix.split(/\s+/);
+  const command = String(cmdRaw ?? "").toLowerCase();
+  const aliases = {
+    stiker: "sticker",
+    fstiker: "fsticker",
+    cstiker: "csticker"
+  };
+  const normalized = aliases[command] ?? command;
+  if (!["sticker", "fsticker", "csticker", "toimg"].includes(normalized)) {
+    return null;
+  }
+  return { command: normalized, args };
+}
+
+function inferDocumentAsMedia(unwrappedMessage = {}) {
+  const doc = unwrappedMessage?.documentMessage;
+  if (!doc) return null;
+  const mime = String(doc?.mimetype ?? "").toLowerCase();
+  const name = String(doc?.fileName ?? "").toLowerCase();
+  if (/^image\//.test(mime) || /\.(png|jpe?g|webp|gif)$/.test(name)) {
+    return { type: "image", doc };
+  }
+  if (/^video\//.test(mime) || /\.(mp4|webm|mov)$/.test(name)) {
+    return { type: "video", doc };
+  }
+  if (/gif/.test(mime) || /\.gif$/.test(name)) {
+    return { type: "gif", doc };
+  }
+  return null;
 }
 
 function extractParticipant(incoming) {
@@ -89,6 +252,7 @@ function createConversationOrchestrator(socket, runtime) {
   const reactionStateByUser = new Map();
 
   async function sendReplies(remoteJid, userId, replies = [], token = 0, options = {}) {
+    if (!runtime.defaults.replyEnabled) return;
     for (let index = 0; index < replies.length; index += 1) {
       const content = String(replies[index] ?? "").trim();
       if (!content) continue;
@@ -175,34 +339,49 @@ function createConversationOrchestrator(socket, runtime) {
             }
           }
         }
-        try {
-          const out = await Promise.race([
-            handleIncomingMessage(runtime, {
-              message: item.message,
-              userId: item.userId,
-              sessionId: item.sessionId,
-              channelId: item.channelId,
-              isGroup: item.isGroup,
-              participants: item.participants,
-              isDirectMention: item.isDirectMention,
-              isReply: item.isReply,
-              quotedMessage: item.quotedMessage,
-              messageKey: item.messageKey,
-              closeDecision: item.closeDecision
-            }),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("model timeout")), MODEL_TIMEOUT_MS)
-            )
-          ]);
+        if (runtime.defaults.replyEnabled) {
+          try {
+            const out = await Promise.race([
+              handleIncomingMessage(runtime, {
+                message: item.message,
+                userId: item.userId,
+                sessionId: item.sessionId,
+                channelId: item.channelId,
+                isGroup: item.isGroup,
+                participants: item.participants,
+                isDirectMention: item.isDirectMention,
+                isReply: item.isReply,
+                quotedMessage: item.quotedMessage,
+                messageKey: item.messageKey,
+                closeDecision: item.closeDecision
+              }),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("model timeout")), MODEL_TIMEOUT_MS)
+              )
+            ]);
 
-          replies = out?.replies ?? [];
-          item.passiveMode = out?.policy?.mode ?? "full";
-          if (item.passiveMode === "react_only") {
+            replies = out?.replies ?? [];
+            item.passiveMode = out?.policy?.mode ?? "full";
+            if (item.passiveMode === "react_only") {
+              replies = [];
+            }
+          } catch (error) {
+            console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
             replies = [];
           }
-        } catch (error) {
-          console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
+        } else {
           replies = [];
+          item.passiveMode = "learn_only";
+          logThinking(runtime, {
+            phase: "observe_only",
+            userId: item.userId,
+            remoteJid: item.remoteJid,
+            detail: `closeDecision=${item.closeDecision} media=${item.media?.type ?? "none"}`
+          });
+          runtime.logger?.log?.("learning.observe_only", {
+            userId: item.userId,
+            channelId: item.channelId
+          });
         }
 
         const hasOutgoing =
@@ -238,7 +417,7 @@ function createConversationOrchestrator(socket, runtime) {
         const forcedReaction = item.closeDecision === "react" || passiveAction.type === "react_only" ? "❤️" : null;
         const emoji = plan.emoji ?? forcedReaction;
         const reacted = Boolean(emoji && item.messageKey && typeof socket.sendMessage === "function");
-        if (reacted) {
+        if (reacted && runtime.defaults.replyEnabled) {
           try {
             await socket.sendMessage(item.remoteJid, {
               react: { text: emoji, key: item.messageKey }
@@ -263,7 +442,7 @@ function createConversationOrchestrator(socket, runtime) {
         const softened = runtime.userPatterns
           ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
           : false;
-        if (!reacted && passiveAction.type === "sticker_only") {
+        if (!reacted && passiveAction.type === "sticker_only" && runtime.defaults.replyEnabled) {
           const stickerAsset = resolveStickerAsset(passiveAction.stickerKey, runtime.defaults.stickersPath);
           if (stickerAsset) {
             try {
@@ -288,7 +467,7 @@ function createConversationOrchestrator(socket, runtime) {
           }
         }
 
-        if (!reacted) {
+        if (!reacted && runtime.defaults.replyEnabled) {
           const hasOutgoing =
             Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
           if (hasOutgoing) {
@@ -364,13 +543,229 @@ function createConversationOrchestrator(socket, runtime) {
   return { scheduleIncoming, onPresenceUpdate, bumpInterrupt, clearTypingGrace };
 }
 
-export function registerMessageHandler({ socket, runtime }) {
-  const orchestrator = createConversationOrchestrator(socket, runtime);
+export function registerMessageHandler({ socket, runtime, role = "full" }) {
+  const orchestrator =
+    role === "media" ? null : createConversationOrchestrator(socket, runtime);
   const groupContextByUser = new Map();
+  const messageSnapshotById = new Map();
+  const commandQueue = new ChatCommandQueue();
+  const mediaHistoryStore = new ChatMediaHistoryStore(runtime.defaults.commandMediaHistoryLimit);
+  const mediaProcessor = new MediaProcessor({
+    outputDir: runtime.defaults.commandMediaDerivedPath,
+    maxStickerBytes: runtime.defaults.tetosStickerMaxBytes
+  });
   const GROUP_CONTEXT_WINDOW_MS = 5 * 60 * 1000;
   const seenMessageIds = new Map();
   const MESSAGE_DEDUPE_TTL_MS = 60 * 1000;
-  socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
+  const skipVisionEnrichment = role === "media";
+  const waLogPrefix = role === "media" ? "[whatsapp:media]" : "[whatsapp]";
+  if (orchestrator) {
+    socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
+  }
+
+  async function handleMediaCommand({
+    incoming,
+    parsedCommand,
+    remoteJid,
+    userId,
+    media
+  }) {
+    return commandQueue.enqueue(remoteJid, async () => {
+      const startedAt = Date.now();
+      const resolved = await resolveCommandTarget({
+        incoming,
+        remoteJid,
+        media,
+        historyStore: mediaHistoryStore,
+        persistMedia,
+        downloadContentFromMessage,
+        basePath: runtime.defaults.whatsappMediaPath
+      });
+      if (!resolved?.media?.path) {
+        await socket.sendMessage(remoteJid, {
+          text: "Nao achei midia valida. Use no anexo, reply, ou mande uma midia recente."
+        });
+        runtime.eventLedger?.append?.({
+          eventType: "command.media",
+          commandName: parsedCommand.command,
+          status: "error",
+          reason: "target_not_found",
+          remoteJid,
+          actorId: userId
+        });
+        return true;
+      }
+
+      try {
+        let output = null;
+        if (parsedCommand.command === "sticker") {
+          output = await mediaProcessor.toSticker(resolved.media, "stretch");
+        } else if (parsedCommand.command === "fsticker") {
+          output = await mediaProcessor.toSticker(resolved.media, "contain");
+        } else if (parsedCommand.command === "csticker") {
+          output = await mediaProcessor.toSticker(resolved.media, "crop");
+        } else if (parsedCommand.command === "toimg") {
+          output = await mediaProcessor.toMediaFromSticker(resolved.media);
+        }
+
+        const skipToimgPlayback =
+          parsedCommand.command === "toimg" &&
+          output.kind === "video" &&
+          output.toimgPlaybackSkipped === true;
+        if (!output?.path && !skipToimgPlayback) throw new Error("processing failed");
+
+        const outBuffer = output.path ? readFileSync(output.path) : null;
+
+        // #region agent log
+        if (outBuffer && ["sticker", "fsticker", "csticker"].includes(parsedCommand.command)) {
+          const head = outBuffer.subarray(0, Math.min(16, outBuffer.length));
+          const hex = [...head].map((x) => x.toString(16).padStart(2, "0")).join("");
+          fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "99966e" },
+            body: JSON.stringify({
+              sessionId: "99966e",
+              location: "messageHandler.js:handleMediaCommand",
+              message: "buffer before sendMessage sticker",
+              data: {
+                command: parsedCommand.command,
+                outputKind: output.kind,
+                bufferLen: outBuffer.length,
+                magicHex16: hex,
+                looksLikePng: hex.startsWith("89504e470d0a1a0a"),
+                looksLikeWebp:
+                  outBuffer.length >= 12 &&
+                  outBuffer.subarray(0, 4).toString() === "RIFF" &&
+                  outBuffer.subarray(8, 12).toString() === "WEBP",
+                looksLikeMp4: hex.includes("66747970")
+              },
+              timestamp: Date.now(),
+              hypothesisId: "H1-H4",
+              runId: "webp-fix-v1"
+            })
+          }).catch(() => {});
+        }
+        // #endregion
+
+        if (parsedCommand.command === "toimg") {
+          if (output.kind === "video") {
+            if (outBuffer) {
+              const playbackMime = output.toimgPlaybackMime ?? "video/mp4";
+              const playbackPayload = {
+                video: outBuffer,
+                gifPlayback: true,
+                mimetype: playbackMime,
+                ...(playbackMime === "video/mp4" &&
+                typeof output.toimgPlaybackSeconds === "number"
+                  ? { seconds: output.toimgPlaybackSeconds }
+                  : {})
+              };
+              // #region agent log
+              {
+                const head = outBuffer.subarray(0, Math.min(12, outBuffer.length));
+                const hex = [...head].map((x) => x.toString(16).padStart(2, "0")).join("");
+                fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-Debug-Session-Id": "99966e"
+                  },
+                  body: JSON.stringify({
+                    sessionId: "99966e",
+                    location: "messageHandler.js:toimg-playback",
+                    message: "toimg animated playback send",
+                    data: {
+                      playbackMime,
+                      seconds: output.toimgPlaybackSeconds ?? null,
+                      bufferLen: outBuffer.length,
+                      magicHex12: hex
+                    },
+                    timestamp: Date.now(),
+                    hypothesisId: "H-toimg-mp4-decode",
+                    runId: "toimg-playback-v1"
+                  })
+                }).catch(() => {});
+              }
+              // #endregion
+              await socket.sendMessage(remoteJid, playbackPayload);
+            }
+            const gifDoc = output.toimgGifPath;
+            if (gifDoc && existsSync(gifDoc)) {
+              await socket.sendMessage(remoteJid, {
+                document: readFileSync(gifDoc),
+                mimetype: "image/gif",
+                fileName: "sticker-convertido.gif"
+              });
+            }
+          } else {
+            await socket.sendMessage(remoteJid, { image: outBuffer });
+            await socket.sendMessage(remoteJid, {
+              document: outBuffer,
+              mimetype: "image/png",
+              fileName: "sticker-convertido.png"
+            });
+          }
+        } else if (output.kind === "video") {
+          await socket.sendMessage(remoteJid, { sticker: outBuffer });
+        } else {
+          await socket.sendMessage(remoteJid, { sticker: outBuffer });
+        }
+
+        const elapsedMs = Date.now() - startedAt;
+        if (runtime.defaults.thinkingLogsEnabled) {
+          console.log(`[audit.command] ${JSON.stringify({
+            ts: new Date().toISOString(),
+            commandName: parsedCommand.command,
+            status: "ok",
+            targetSource: resolved.source,
+            inputType: resolved.media.type,
+            outputType: output.kind,
+            remoteJid,
+            actorId: userId,
+            elapsedMs
+          })}`);
+        }
+        runtime.eventLedger?.append?.({
+          eventType: "command.media",
+          commandName: parsedCommand.command,
+          status: "ok",
+          targetSource: resolved.source,
+          inputType: resolved.media.type,
+          outputType: output.kind,
+          remoteJid,
+          actorId: userId,
+          elapsedMs
+        });
+        return true;
+      } catch (error) {
+        await socket.sendMessage(remoteJid, {
+          text: `Falha ao processar ${parsedCommand.command}: ${error.message}`
+        });
+        runtime.eventLedger?.append?.({
+          eventType: "command.media",
+          commandName: parsedCommand.command,
+          status: "error",
+          reason: error.message,
+          targetSource: resolved.source,
+          inputType: resolved.media?.type ?? null,
+          remoteJid,
+          actorId: userId
+        });
+        if (runtime.defaults.thinkingLogsEnabled) {
+          console.log(`[audit.command] ${JSON.stringify({
+            ts: new Date().toISOString(),
+            commandName: parsedCommand.command,
+            status: "error",
+            reason: error.message,
+            targetSource: resolved.source,
+            remoteJid,
+            actorId: userId
+          })}`);
+        }
+        return true;
+      }
+    });
+  }
 
   socket.ev.on("messages.upsert", async ({ messages, type }) => {
     if (type !== "notify" && type !== "append") return;
@@ -378,8 +773,35 @@ export function registerMessageHandler({ socket, runtime }) {
     for (const incoming of messages ?? []) {
       try {
         if (!incoming?.message) continue;
-        if (incoming.key?.fromMe) continue;
         if (incoming?.messageStubType && !incoming.message?.conversation) {
+          continue;
+        }
+        const protocolMessage = incoming?.message?.protocolMessage;
+        if (protocolMessage?.key) {
+          const deletedId = protocolMessage.key?.id ?? null;
+          const deletedRemoteJid = protocolMessage.key?.remoteJid ?? incoming.key?.remoteJid ?? null;
+          const previous = deletedId ? messageSnapshotById.get(deletedId) : null;
+          const reason = protocolMessage?.type === 0 ? "revoke" : "protocol";
+          if (runtime?.defaults?.thinkingLogsEnabled) {
+            console.log(`[audit.delete] ${JSON.stringify({
+              ts: new Date().toISOString(),
+              messageId: deletedId,
+              remoteJid: deletedRemoteJid,
+              before: previous?.text ?? null,
+              reason
+            })}`);
+          }
+          runtime.eventLedger?.append?.({
+            eventType: "message.deleted",
+            messageId: deletedId,
+            remoteJid: deletedRemoteJid,
+            beforeText: previous?.text ?? null,
+            beforeMediaType: previous?.mediaType ?? null,
+            reason
+          });
+          if (deletedId) {
+            messageSnapshotById.delete(deletedId);
+          }
           continue;
         }
         if (incoming?.message?.protocolMessage || incoming?.message?.senderKeyDistributionMessage) {
@@ -404,14 +826,19 @@ export function registerMessageHandler({ socket, runtime }) {
         const isGroup = remoteJid.endsWith("@g.us");
         const unwrappedMessage = unwrapMessage(incoming.message);
         const text = extractText(unwrappedMessage).trim();
+        const links = extractLinks(text);
+        const parsedCommand = parseWhatsAppCommand(text, runtime.defaults.commandPrefix);
+        const mediaKind = detectMediaKind(unwrappedMessage);
+        const isFromMe = Boolean(incoming.key?.fromMe);
         const hasMediaPayload = Boolean(
           unwrappedMessage?.imageMessage ||
           unwrappedMessage?.videoMessage ||
           unwrappedMessage?.audioMessage ||
-          unwrappedMessage?.stickerMessage
+          unwrappedMessage?.stickerMessage ||
+          unwrappedMessage?.documentMessage
         );
         if (!text && !hasMediaPayload) continue;
-        console.log(`[whatsapp] incoming ${remoteJid}: ${text || "[media]"}`);
+        console.log(`${waLogPrefix} ${isFromMe ? "outgoing" : "incoming"} ${remoteJid}: ${text || `[${mediaKind}]`}`);
 
         const baseUserId = extractPhone(remoteJid);
         const participantId = isGroup ? extractPhone(extractParticipant(incoming)) : "";
@@ -421,26 +848,51 @@ export function registerMessageHandler({ socket, runtime }) {
         const userId = isGroup ? participantId : baseUserId;
         const sessionId = isGroup && participantId ? `wa-group:${baseUserId}:${participantId}` : `wa-${baseUserId}`;
 
-        const historySnapshot = runtime.shortTerm.getAll(sessionId);
-        const closeDecision = ChatService.decideClosure(text, historySnapshot);
+        if (role === "media") {
+          if (!parsedCommand && !hasMediaPayload) continue;
+        }
 
-        orchestrator.bumpInterrupt(userId);
-        orchestrator.clearTypingGrace(userId);
-        const profile = runtime.longTerm.getProfile(userId);
-        const pushName = incoming.pushName?.trim();
+        if (role === "main" && parsedCommand) {
+          const hint = String(runtime.defaults.whatsappStickerCommandsDisabledHint ?? "").trim();
+          if (hint) {
+            await socket.sendMessage(remoteJid, { text: hint });
+          }
+          continue;
+        }
 
-        if (pushName) {
-          runtime.longTerm.updateProfile(userId, {
-            facts: { ...(profile?.facts ?? {}), name: pushName }
+        let historySnapshot = [];
+        let closeDecision = "open";
+        if (role !== "media") {
+          historySnapshot = runtime.shortTerm.getAll(sessionId);
+          closeDecision = ChatService.decideClosure(text, historySnapshot);
+          logThinking(runtime, {
+            phase: "close_decision",
+            userId,
+            remoteJid,
+            detail: `decision=${closeDecision}`
           });
         }
 
-        runtime.longTerm.updateProfile(userId, {
-          facts: { ...(profile?.facts ?? {}), lastChannel: isGroup ? "group" : "direct" }
-        });
+        orchestrator?.bumpInterrupt(userId);
+        orchestrator?.clearTypingGrace(userId);
+        const profile = role !== "media" ? runtime.longTerm.getProfile(userId) : {};
+        const pushName = incoming.pushName?.trim();
 
-        if (isGroup) {
-          const mentionHint = incoming.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
+        if (role !== "media") {
+          if (pushName) {
+            runtime.longTerm.updateProfile(userId, {
+              facts: { ...(profile?.facts ?? {}), name: pushName }
+            });
+          }
+
+          runtime.longTerm.updateProfile(userId, {
+            facts: { ...(profile?.facts ?? {}), lastChannel: isGroup ? "group" : "direct" }
+          });
+        }
+
+        const mentionHint = incoming.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
+        let isDirect = false;
+        if (isGroup && !parsedCommand) {
           const botJid = jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
           const botPhone = extractPhone(botJid);
           const hasMention =
@@ -449,11 +901,17 @@ export function registerMessageHandler({ socket, runtime }) {
             mentionHint.includes(`${botPhone}@lid`) ||
             mentionHint.includes(`${botPhone}@c.us`);
           const hasNickname = /(teto|tete|tetozinha)/i.test(text);
-          const isDirect = hasMention || hasNickname;
+          isDirect = hasMention || hasNickname;
           const contextKey = `${baseUserId}:${participantId}`;
           const lastContextAt = groupContextByUser.get(contextKey) ?? 0;
           const inContext = Date.now() - lastContextAt <= GROUP_CONTEXT_WINDOW_MS;
           if (!isDirect && !inContext) {
+            logThinking(runtime, {
+              phase: "group_filtered",
+              userId,
+              remoteJid,
+              detail: "sem menção direta e fora de contexto ativo"
+            });
             continue;
           }
           groupContextByUser.set(contextKey, Date.now());
@@ -473,21 +931,26 @@ export function registerMessageHandler({ socket, runtime }) {
               id: `${incoming.key.id}-image`,
               basePath: runtime.defaults.whatsappMediaPath
             });
-            const visualDescription = await runtime.semanticVisionAnalyzer?.analyze?.({
-              filePath: path,
-              mediaType: "image"
-            }) ?? await runtime.visualAnalyzer?.analyze?.({
-              filePath: path,
-              mediaType: "image"
-            });
-            if (visualDescription) {
-              runtime.visualAnalyses?.save?.({
-                userId,
-                channelId: remoteJid,
-                mediaPath: path,
-                mediaType: "image",
-                description: visualDescription
-              });
+            let visualDescription = null;
+            if (!skipVisionEnrichment) {
+              visualDescription =
+                (await runtime.semanticVisionAnalyzer?.analyze?.({
+                  filePath: path,
+                  mediaType: "image"
+                })) ??
+                (await runtime.visualAnalyzer?.analyze?.({
+                  filePath: path,
+                  mediaType: "image"
+                }));
+              if (visualDescription) {
+                runtime.visualAnalyses?.save?.({
+                  userId,
+                  channelId: remoteJid,
+                  mediaPath: path,
+                  mediaType: "image",
+                  description: visualDescription
+                });
+              }
             }
             media = {
               type: "image",
@@ -516,19 +979,22 @@ export function registerMessageHandler({ socket, runtime }) {
               id: `${incoming.key.id}-audio`,
               basePath: runtime.defaults.whatsappMediaPath
             });
-            const transcript = await runtime.audioTranscriber?.transcribe?.({
-              filePath: path,
-              mimetype: unwrappedMessage.audioMessage?.mimetype,
-              seconds: unwrappedMessage.audioMessage?.seconds
-            });
-            if (transcript) {
-              runtime.audioTranscriptions?.save?.({
-                userId,
-                channelId: remoteJid,
-                mediaPath: path,
-                transcript,
-                source: "fallback"
+            let transcript = null;
+            if (!skipVisionEnrichment) {
+              transcript = await runtime.audioTranscriber?.transcribe?.({
+                filePath: path,
+                mimetype: unwrappedMessage.audioMessage?.mimetype,
+                seconds: unwrappedMessage.audioMessage?.seconds
               });
+              if (transcript) {
+                runtime.audioTranscriptions?.save?.({
+                  userId,
+                  channelId: remoteJid,
+                  mediaPath: path,
+                  transcript,
+                  source: "fallback"
+                });
+              }
             }
             media = {
               type: "audio",
@@ -545,23 +1011,28 @@ export function registerMessageHandler({ socket, runtime }) {
               basePath: runtime.defaults.whatsappMediaPath
             });
             const isAnimated = Boolean(unwrappedMessage.stickerMessage?.isAnimated);
-            const visualDescription = await runtime.semanticVisionAnalyzer?.analyze?.({
-              filePath: path,
-              mediaType: "sticker",
-              isAnimated
-            }) ?? await runtime.visualAnalyzer?.analyze?.({
-              filePath: path,
-              mediaType: "sticker",
-              isAnimated
-            });
-            if (visualDescription) {
-              runtime.visualAnalyses?.save?.({
-                userId,
-                channelId: remoteJid,
-                mediaPath: path,
-                mediaType: "sticker",
-                description: visualDescription
-              });
+            let visualDescription = null;
+            if (!skipVisionEnrichment) {
+              visualDescription =
+                (await runtime.semanticVisionAnalyzer?.analyze?.({
+                  filePath: path,
+                  mediaType: "sticker",
+                  isAnimated
+                })) ??
+                (await runtime.visualAnalyzer?.analyze?.({
+                  filePath: path,
+                  mediaType: "sticker",
+                  isAnimated
+                }));
+              if (visualDescription) {
+                runtime.visualAnalyses?.save?.({
+                  userId,
+                  channelId: remoteJid,
+                  mediaPath: path,
+                  mediaType: "sticker",
+                  description: visualDescription
+                });
+              }
             }
             media = {
               type: "sticker",
@@ -570,12 +1041,133 @@ export function registerMessageHandler({ socket, runtime }) {
               isAnimated,
               path
             };
+          } else if (unwrappedMessage?.documentMessage && incoming.key?.id) {
+            const docHint = inferDocumentAsMedia(unwrappedMessage);
+            if (docHint) {
+              const persistType = docHint.type === "gif" ? "video" : docHint.type;
+              const path = await persistMedia({
+                downloadContentFromMessage,
+                content: docHint.doc,
+                type: persistType,
+                id: `${incoming.key.id}-document`,
+                basePath: runtime.defaults.whatsappMediaPath
+              });
+              if (docHint.type === "image") {
+                media = {
+                  type: "image",
+                  caption: unwrappedMessage.documentMessage?.caption ?? text,
+                  path
+                };
+              } else {
+                media = {
+                  type: docHint.type === "gif" ? "gif" : "video",
+                  caption: unwrappedMessage.documentMessage?.caption ?? text,
+                  isAnimated: docHint.type === "gif",
+                  path
+                };
+              }
+            }
           }
         } catch (error) {
           runtime.logger?.log?.("whatsapp.media_error", {
             messageId: incoming.key?.id ?? null,
             error: error.message
           });
+        }
+
+        if (media?.path && media?.type) {
+          mediaHistoryStore.add(remoteJid, {
+            messageId: incoming.key?.id ?? null,
+            userId,
+            media
+          });
+        }
+
+        if (parsedCommand) {
+          const handled = await handleMediaCommand({
+            incoming,
+            parsedCommand,
+            remoteJid,
+            userId,
+            media
+          });
+          if (handled) continue;
+        }
+
+        if (role === "media") continue;
+
+        if (!isFromMe) {
+          logIncomingAudit(runtime, {
+            remoteJid,
+            userId,
+            participantId,
+            isGroup,
+            text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
+            links,
+            media,
+            quotedMessage,
+            isReply: Boolean(unwrappedMessage?.extendedTextMessage?.contextInfo?.stanzaId),
+            isDirectMention: isGroup ? isDirect : false,
+            mentionHint,
+            closeDecision,
+            messageId: incoming.key?.id ?? null,
+            pushName
+          });
+        }
+
+        if (isFromMe) {
+          logOutgoingAudit(runtime, {
+            remoteJid,
+            userId,
+            participantId,
+            isGroup,
+            text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
+            links,
+            media,
+            quotedMessage,
+            isReply: Boolean(unwrappedMessage?.extendedTextMessage?.contextInfo?.stanzaId),
+            isDirectMention: isGroup ? isDirect : false,
+            mentionHint,
+            closeDecision: "self_message",
+            messageId: incoming.key?.id ?? null,
+            pushName
+          });
+          runtime.eventLedger?.append?.({
+            eventType: "message.outgoing",
+            actorId: runtime.defaults.learningTargetUserId || "self",
+            userId: runtime.defaults.learningTargetUserId || "self",
+            remoteJid,
+            participantId,
+            isGroup,
+            isReply: Boolean(unwrappedMessage?.extendedTextMessage?.contextInfo?.stanzaId),
+            hasQuotedMessage: Boolean(quotedMessage),
+            messageId: incoming.key?.id ?? null,
+            mediaType: media?.type ?? null,
+            contentClass: classifyContent(text),
+            links
+          });
+          runtime.behaviorProfiler?.record?.({
+            ts: new Date().toISOString(),
+            eventType: "message.incoming",
+            actorId: runtime.defaults.learningTargetUserId || "self",
+            remoteJid,
+            mediaType: media?.type ?? null,
+            links
+          });
+          if (incoming.key?.id) {
+            messageSnapshotById.set(
+              incoming.key.id,
+              buildMessageSnapshot({
+                messageId: incoming.key.id,
+                remoteJid,
+                actorId: runtime.defaults.learningTargetUserId || "self",
+                text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
+                mediaType: media?.type ?? null,
+                quotedMessage
+              })
+            );
+          }
+          continue;
         }
 
         runtime.logger?.log?.("whatsapp.incoming", {
@@ -587,6 +1179,48 @@ export function registerMessageHandler({ socket, runtime }) {
           mediaType: media?.type ?? null,
           messageId: incoming.key?.id ?? null
         });
+        runtime.eventLedger?.append?.({
+          eventType: "message.incoming",
+          actorId: userId,
+          userId,
+          remoteJid,
+          participantId,
+          isGroup,
+          isReply: Boolean(unwrappedMessage?.extendedTextMessage?.contextInfo?.stanzaId),
+          hasQuotedMessage: Boolean(quotedMessage),
+          messageId: incoming.key?.id ?? null,
+          mediaType: media?.type ?? null,
+          contentClass: classifyContent(text),
+          links,
+          pushName: incoming.pushName ?? null
+        });
+        runtime.behaviorProfiler?.record?.({
+          ts: new Date().toISOString(),
+          eventType: "message.incoming",
+          actorId: userId,
+          remoteJid,
+          mediaType: media?.type ?? null,
+          links
+        });
+        if (incoming.key?.id) {
+          messageSnapshotById.set(
+            incoming.key.id,
+            buildMessageSnapshot({
+              messageId: incoming.key.id,
+              remoteJid,
+              actorId: userId,
+              text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
+              mediaType: media?.type ?? null,
+              quotedMessage
+            })
+          );
+        }
+        logThinking(runtime, {
+          phase: "event_captured",
+          userId,
+          remoteJid,
+          detail: `media=${media?.type ?? "none"} links=${links.length} class=${classifyContent(text)}`
+        });
         runtime.metrics?.increment?.("whatsapp.incoming");
         if (media?.type) {
           runtime.metrics?.increment?.(`whatsapp.media.${media.type}`);
@@ -594,7 +1228,7 @@ export function registerMessageHandler({ socket, runtime }) {
 
         const effectiveMessage = text || media?.transcript || media?.caption || `[${media?.type ?? "media"}]`;
 
-        orchestrator.scheduleIncoming({
+        orchestrator?.scheduleIncoming({
           remoteJid,
           message: effectiveMessage,
           userId,
@@ -614,4 +1248,114 @@ export function registerMessageHandler({ socket, runtime }) {
       }
     }
   });
+
+  if (role !== "media") {
+    socket.ev.on("messages.update", (updates = []) => {
+      for (const update of updates) {
+        const messageId = update?.key?.id ?? null;
+        const before = messageId ? messageSnapshotById.get(messageId) : null;
+        const updatedText = extractUpdatedText(update);
+        const isEdit = Boolean(updatedText && before && updatedText !== before.text);
+        if (isEdit) {
+          const reason = inferEditReason(before?.text, updatedText);
+          if (runtime?.defaults?.thinkingLogsEnabled) {
+            console.log(`[audit.edit] ${JSON.stringify({
+              ts: new Date().toISOString(),
+              messageId,
+              remoteJid: update?.key?.remoteJid ?? null,
+              actorId: before?.actorId ?? extractPhone(update?.key?.participant ?? update?.key?.remoteJid ?? ""),
+              before: before?.text ?? null,
+              after: updatedText,
+              reason
+            })}`);
+          }
+          runtime.eventLedger?.append?.({
+            eventType: "message.edited",
+            messageId,
+            remoteJid: update?.key?.remoteJid ?? null,
+            actorId: before?.actorId ?? extractPhone(update?.key?.participant ?? update?.key?.remoteJid ?? ""),
+            beforeText: before?.text ?? null,
+            afterText: updatedText,
+            reason
+          });
+          messageSnapshotById.set(
+            messageId,
+            {
+              ...before,
+              text: updatedText,
+              ts: new Date().toISOString()
+            }
+          );
+        }
+        if (runtime?.defaults?.thinkingLogsEnabled) {
+          console.log(`[audit.update] ${JSON.stringify({
+            ts: new Date().toISOString(),
+            messageId,
+            remoteJid: update?.key?.remoteJid ?? null,
+            participant: update?.key?.participant ?? null,
+            status: update?.update?.status ?? null
+          })}`);
+        }
+        runtime.eventLedger?.append?.({
+          eventType: "message.update",
+          messageId,
+          remoteJid: update?.key?.remoteJid ?? null,
+          actorId: extractPhone(update?.key?.participant ?? update?.key?.remoteJid ?? "")
+        });
+        runtime.behaviorProfiler?.record?.({
+          ts: new Date().toISOString(),
+          eventType: "message.update",
+          actorId: extractPhone(update?.key?.participant ?? update?.key?.remoteJid ?? ""),
+          remoteJid: update?.key?.remoteJid ?? null
+        });
+      }
+    });
+
+    socket.ev.on("message-receipt.update", (updates = []) => {
+      for (const update of updates) {
+        if (runtime?.defaults?.thinkingLogsEnabled) {
+          console.log(`[audit.receipt] ${JSON.stringify({
+            ts: new Date().toISOString(),
+            messageId: update?.key?.id ?? null,
+            remoteJid: update?.key?.remoteJid ?? null,
+            receipt: update?.receipt ?? null
+          })}`);
+        }
+        runtime.eventLedger?.append?.({
+          eventType: "message.receipt_update",
+          messageId: update?.key?.id ?? null,
+          remoteJid: update?.key?.remoteJid ?? null,
+          receipt: update?.receipt ?? null
+        });
+      }
+    });
+
+    socket.ev.on("messages.reaction", (reactions = []) => {
+      for (const reaction of reactions) {
+        const actorId = extractPhone(reaction?.key?.participant ?? reaction?.key?.remoteJid ?? "");
+        if (runtime?.defaults?.thinkingLogsEnabled) {
+          console.log(`[audit.reaction] ${JSON.stringify({
+            ts: new Date().toISOString(),
+            actorId,
+            remoteJid: reaction?.key?.remoteJid ?? null,
+            messageId: reaction?.key?.id ?? null,
+            reactionText: reaction?.reaction?.text ?? null
+          })}`);
+        }
+        runtime.eventLedger?.append?.({
+          eventType: "message.reaction",
+          actorId,
+          remoteJid: reaction?.key?.remoteJid ?? null,
+          messageId: reaction?.key?.id ?? null,
+          reactionText: reaction?.reaction?.text ?? null
+        });
+        runtime.behaviorProfiler?.record?.({
+          ts: new Date().toISOString(),
+          eventType: "message.reaction",
+          actorId,
+          remoteJid: reaction?.key?.remoteJid ?? null
+        });
+      }
+    });
+  }
 }
