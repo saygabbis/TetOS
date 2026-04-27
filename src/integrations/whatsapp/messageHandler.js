@@ -181,11 +181,11 @@ function parseWhatsAppCommand(text = "", prefix = ".") {
   return { command: normalized, args };
 }
 
-/** Texto do `.help` — curto para caber bem no Zap. */
-function formatWhatsAppHelpText(prefix = ".", role = "full", whatsappMode = "single") {
+/** Texto do `.help` — só usado no número de comandos de mídia (ou sessão única `full`). */
+function formatWhatsAppHelpText(prefix = ".") {
   const p = String(prefix ?? ".");
   const c = (name) => `${p}${name}`;
-  const lines = [
+  return [
     "*Comandos TetOS*",
     "",
     `${c("help")} — Esta lista (também ${p}ajuda).`,
@@ -193,18 +193,7 @@ function formatWhatsAppHelpText(prefix = ".", role = "full", whatsappMode = "sin
     `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain).`,
     `${c("csticker")} — Recorta o centro para caber na figurinha (crop).`,
     `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`
-  ];
-  if (whatsappMode === "dual") {
-    if (role === "main") {
-      lines.push(
-        "",
-        "_Modo dual:_ os comandos de mídia acima funcionam no *outro número* (só figurinhas). Este número é chat/aprendizado."
-      );
-    } else if (role === "media") {
-      lines.push("", "*Este número* só processa os comandos de mídia da lista.");
-    }
-  }
-  return lines.join("\n");
+  ].join("\n");
 }
 
 function inferDocumentAsMedia(unwrappedMessage = {}) {
@@ -878,13 +867,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const sessionId = isGroup && participantId ? `wa-group:${baseUserId}:${participantId}` : `wa-${baseUserId}`;
 
         if (parsedCommand?.command === "help") {
-          await socket.sendMessage(remoteJid, {
-            text: formatWhatsAppHelpText(
-              runtime.defaults.commandPrefix,
-              role,
-              runtime.defaults.whatsappMode
-            )
-          });
+          if (role === "media" || role === "full") {
+            await socket.sendMessage(remoteJid, {
+              text: formatWhatsAppHelpText(runtime.defaults.commandPrefix)
+            });
+          }
           continue;
         }
 
