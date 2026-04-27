@@ -83,6 +83,18 @@ export const DEFAULTS = {
   adminUserId: process.env.TETOS_ADMIN_USER_ID ?? process.env.ADMIN_USER_ID ?? "",
   logPath: process.env.TETOS_LOG_PATH ?? "./data/logs/tetos.log",
   whatsappMediaPath: process.env.TETOS_WHATSAPP_MEDIA_PATH ?? "./data/media",
+  /** Limite em MB para mídia “quente” (exceto `_archive`); acima disso remove LRU e arquiva thumbs de aprendizado. */
+  mediaRetentionEnabled: String(process.env.TETOS_MEDIA_RETENTION_ENABLED ?? "true").toLowerCase() === "true",
+  mediaHotMaxBytes: (() => {
+    const mb = Number(process.env.TETOS_MEDIA_HOT_MAX_MB ?? "100");
+    if (!Number.isFinite(mb) || mb < 10 || mb > 2048) return 100 * 1024 * 1024;
+    return Math.floor(mb * 1024 * 1024);
+  })(),
+  mediaRetentionIntervalMs: (() => {
+    const ms = Number(process.env.TETOS_MEDIA_RETENTION_INTERVAL_MS ?? "900000");
+    if (!Number.isFinite(ms) || ms < 60000) return 900000;
+    return Math.floor(ms);
+  })(),
   audioTranscriptionsPath: process.env.TETOS_AUDIO_TRANSCRIPTIONS_PATH ?? "./data/audioTranscriptions.json",
   visualAnalysesPath: process.env.TETOS_VISUAL_ANALYSES_PATH ?? "./data/visualAnalyses.json",
   documentsPath: process.env.TETOS_DOCUMENTS_PATH ?? "./data/documents",

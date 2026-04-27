@@ -2,6 +2,7 @@ import "dotenv/config";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DEFAULTS } from "../../infra/config/defaults.js";
+import { runMediaRetentionSweep } from "../../infra/media/mediaRetentionSweep.js";
 import { createRuntime } from "../../app/createRuntime.js";
 import { NudgeEngine } from "../../core/autonomy/nudgeEngine.js";
 import { createBaileysClient } from "./baileysClient.js";
@@ -220,6 +221,21 @@ function scheduleAuxiliaryLoops(runtime, nudgeEngine, getSocket, getConnected) {
         runtime.logger?.log?.("learning.daily_report_generated", report);
       }
     }, 30000);
+  }
+
+  if (DEFAULTS.mediaRetentionEnabled) {
+    const sweep = () =>
+      runMediaRetentionSweep({
+        mediaRoot: DEFAULTS.whatsappMediaPath,
+        maxBytes: DEFAULTS.mediaHotMaxBytes,
+        visualAnalysesPath: DEFAULTS.visualAnalysesPath,
+        multimodalMemoryPath: DEFAULTS.multimodalMemoryPath,
+        logger: runtime.logger
+      }).catch((error) => {
+        console.error("[media-retention]", error?.message ?? error);
+      });
+    setTimeout(sweep, 120_000);
+    setInterval(sweep, DEFAULTS.mediaRetentionIntervalMs);
   }
 }
 
