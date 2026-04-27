@@ -313,6 +313,17 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   let mainGeneration = 0;
   let mediaGeneration = 0;
 
+  /** Só o arranque: a segunda sessão só arranca depois do principal estar `open`. */
+  let resolveMainBootstrap = null;
+  const mainBootstrapReady = new Promise((r) => {
+    resolveMainBootstrap = r;
+  });
+  const notifyMainBootstrapOnline = () => {
+    const fn = resolveMainBootstrap;
+    resolveMainBootstrap = null;
+    fn?.();
+  };
+
   const connectMain = async () => {
     const generation = ++mainGeneration;
     mainSocket = await createBaileysClient({
@@ -324,10 +335,13 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         if (connection === "open") {
           mainConnected = true;
           mainReconnecting = false;
-          console.log("[whatsapp] main connected (aprendizado / chat)");
+          console.log("[whatsapp] main connected — número que lê chats, aprende e responde.");
+          notifyMainBootstrapOnline();
         }
         if (update?.qr) {
-          console.log("[whatsapp] QR — número principal (aprendizado). Escaneie primeiro se for nova sessão.");
+          console.log(
+            "[whatsapp] 1/2 — QR do número PRINCIPAL (lê mensagens e aprende). Escaneie só este até conectar; o QR dos comandos vem depois."
+          );
         }
 
         if (connection === "close" && DEFAULTS.whatsappAutoConnect && !mainReconnecting) {
@@ -376,10 +390,12 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         if (connection === "open") {
           mediaConnected = true;
           mediaReconnecting = false;
-          console.log("[whatsapp] media connected (.sticker / .toimg)");
+          console.log("[whatsapp] media connected — número só para comandos .sticker / .toimg");
         }
         if (update?.qr) {
-          console.log("[whatsapp] QR — número só figurinhas. Escaneie com o segundo aparelho/número.");
+          console.log(
+            "[whatsapp] 2/2 — QR do número só COMANDOS DE MÍDIA (.sticker, .toimg). Pode escanear com o segundo telefone/número."
+          );
         }
 
         if (connection === "close" && DEFAULTS.whatsappAutoConnect && !mediaReconnecting) {
@@ -417,6 +433,10 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   };
 
   await connectMain();
+  await mainBootstrapReady;
+  console.log(
+    "[whatsapp] Principal online. A iniciar a sessão só de comandos de mídia — o próximo QR é do bot de .sticker / .toimg."
+  );
   await connectMedia();
 
   scheduleAuxiliaryLoops(runtime, nudgeEngine, () => mainSocket, () => mainConnected);
@@ -458,7 +478,9 @@ async function main() {
       );
       process.exit(1);
     }
-    console.log("[whatsapp] mode=dual — duas sessões (principal + figurinhas). Dois QR se ainda não autenticou.");
+    console.log(
+      "[whatsapp] mode=dual — primeiro QR = número que aprende/responde; só depois de conectar aparece o QR do número de .sticker/.toimg."
+    );
   }
 
   const runtime = createRuntime();
