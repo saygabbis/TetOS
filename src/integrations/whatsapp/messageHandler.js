@@ -169,13 +169,42 @@ function parseWhatsAppCommand(text = "", prefix = ".") {
   const aliases = {
     stiker: "sticker",
     fstiker: "fsticker",
-    cstiker: "csticker"
+    cstiker: "csticker",
+    ajuda: "help",
+    comandos: "help",
+    commands: "help"
   };
   const normalized = aliases[command] ?? command;
-  if (!["sticker", "fsticker", "csticker", "toimg"].includes(normalized)) {
+  if (!["sticker", "fsticker", "csticker", "toimg", "help"].includes(normalized)) {
     return null;
   }
   return { command: normalized, args };
+}
+
+/** Texto do `.help` — curto para caber bem no Zap. */
+function formatWhatsAppHelpText(prefix = ".", role = "full", whatsappMode = "single") {
+  const p = String(prefix ?? ".");
+  const c = (name) => `${p}${name}`;
+  const lines = [
+    "*Comandos TetOS*",
+    "",
+    `${c("help")} — Esta lista (também ${p}ajuda).`,
+    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF: usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch).`,
+    `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain).`,
+    `${c("csticker")} — Recorta o centro para caber na figurinha (crop).`,
+    `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`
+  ];
+  if (whatsappMode === "dual") {
+    if (role === "main") {
+      lines.push(
+        "",
+        "_Modo dual:_ os comandos de mídia acima funcionam no *outro número* (só figurinhas). Este número é chat/aprendizado."
+      );
+    } else if (role === "media") {
+      lines.push("", "*Este número* só processa os comandos de mídia da lista.");
+    }
+  }
+  return lines.join("\n");
 }
 
 function inferDocumentAsMedia(unwrappedMessage = {}) {
@@ -847,6 +876,17 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
         const userId = isGroup ? participantId : baseUserId;
         const sessionId = isGroup && participantId ? `wa-group:${baseUserId}:${participantId}` : `wa-${baseUserId}`;
+
+        if (parsedCommand?.command === "help") {
+          await socket.sendMessage(remoteJid, {
+            text: formatWhatsAppHelpText(
+              runtime.defaults.commandPrefix,
+              role,
+              runtime.defaults.whatsappMode
+            )
+          });
+          continue;
+        }
 
         if (role === "media") {
           if (!parsedCommand && !hasMediaPayload) continue;
