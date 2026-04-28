@@ -12,7 +12,9 @@ import { resolveCommandTarget } from "./commandTargetResolver.js";
 import { MediaProcessor } from "../../core/media/mediaProcessor.js";
 
 function extractPhone(remoteJid = "") {
-  return String(remoteJid).replace(/@.+$/, "");
+  return String(remoteJid)
+    .replace(/@.+$/, "")
+    .replace(/:\d+$/, "");
 }
 
 /** Alinha ao Baileys: documento com legenda vem em `documentWithCaptionMessage`, não só em `documentMessage`. */
@@ -270,59 +272,69 @@ function createConversationOrchestrator(socket, runtime) {
 
   async function sendReplies(remoteJid, userId, replies = [], token = 0, options = {}) {
     if (!runtime.defaults.replyEnabled) return;
-    for (let index = 0; index < replies.length; index += 1) {
-      const content = String(replies[index] ?? "").trim();
-      if (!content) continue;
-      if (interruptByUser.get(userId) !== token) return;
-      const remotePhone = extractPhone(remoteJid);
-      const len = content.length;
-      const isGroup = remoteJid.endsWith("@g.us");
-      let needsTyping;
-      let typingDelayMs;
-      if (isGroup) {
-        needsTyping = false;
-        typingDelayMs = 0;
-      } else if (index > 0) {
-        needsTyping = true;
-        typingDelayMs = estimateTypingDelayMs(content, index);
-      } else if (len <= 4) {
-        needsTyping = false;
-        typingDelayMs = 0;
-      } else {
-        needsTyping = true;
-        const base = estimateTypingDelayMs(content, index);
-        const extraDelay = options?.softened ? randBetween(120, 320) : 0;
-        typingDelayMs = Math.min(
-          TYPING_MAX_DELAY_MS,
-          Math.max(FIRST_BUBBLE_TYPING_FLOOR_MS, base + extraDelay)
-        );
-      }
-      if (index === 0 && needsTyping && typingDelayMs > 0) {
-        await sleep(randBetween(POST_MODEL_BEFORE_BUBBLE_MS_MIN, POST_MODEL_BEFORE_BUBBLE_MS_MAX));
-      }
-      if (needsTyping && typingDelayMs > 0 && typeof socket.sendPresenceUpdate === "function") {
-        try {
-          await socket.sendPresenceUpdate("composing", remoteJid);
-          await sleep(typingDelayMs);
-          await socket.sendPresenceUpdate("paused", remoteJid);
-        } catch (error) {
-          console.warn(`[whatsapp] typing simulation failed for ${remotePhone}: ${error.message}`);
+    try {
+      for (let index = 0; index < replies.length; index += 1) {
+        const content = String(replies[index] ?? "").trim();
+        if (!content) continue;
+        if (interruptByUser.get(userId) !== token) return;
+        const remotePhone = extractPhone(remoteJid);
+        const len = content.length;
+        const isGroup = remoteJid.endsWith("@g.us");
+        let needsTyping;
+        let typingDelayMs;
+        if (isGroup) {
+          needsTyping = false;
+          typingDelayMs = 0;
+        } else if (index > 0) {
+          needsTyping = true;
+          typingDelayMs = estimateTypingDelayMs(content, index);
+        } else if (len <= 4) {
+          needsTyping = false;
+          typingDelayMs = 0;
+        } else {
+          needsTyping = true;
+          const base = estimateTypingDelayMs(content, index);
+          const extraDelay = options?.softened ? randBetween(120, 320) : 0;
+          typingDelayMs = Math.min(
+            TYPING_MAX_DELAY_MS,
+            Math.max(FIRST_BUBBLE_TYPING_FLOOR_MS, base + extraDelay)
+          );
+        }
+        if (index === 0 && needsTyping && typingDelayMs > 0) {
+          await sleep(randBetween(POST_MODEL_BEFORE_BUBBLE_MS_MIN, POST_MODEL_BEFORE_BUBBLE_MS_MAX));
+        }
+        if (needsTyping && typingDelayMs > 0 && typeof socket.sendPresenceUpdate === "function") {
+          try {
+            await socket.sendPresenceUpdate("composing", remoteJid);
+            await sleep(typingDelayMs);
+            await socket.sendPresenceUpdate("paused", remoteJid);
+          } catch (error) {
+            console.warn(`[whatsapp] typing simulation failed for ${remotePhone}: ${error.message}`);
+          }
+        }
+        if (interruptByUser.get(userId) !== token) {
+          return;
+        }
+        console.log(`[whatsapp] outgoing ${remoteJid}: ${content}`);
+        const sendTask = socket.sendMessage(remoteJid, { text: content });
+        await Promise.race([
+          sendTask,
+          new Promise((_, reject) => setTimeout(() => reject(new Error("send timeout")), 8000))
+        ]).catch((error) => {
+          console.error(`[whatsapp] send failed to ${remoteJid}:`, error.message);
+        });
+        if (index < replies.length - 1) {
+          const interPartDelayMs = randBetween(MULTI_PART_DELAY_MIN_MS, MULTI_PART_DELAY_MAX_MS);
+          await sleep(interPartDelayMs);
         }
       }
-      if (interruptByUser.get(userId) !== token) {
-        return;
-      }
-      console.log(`[whatsapp] outgoing ${remoteJid}: ${content}`);
-      const sendTask = socket.sendMessage(remoteJid, { text: content });
-      await Promise.race([
-        sendTask,
-        new Promise((_, reject) => setTimeout(() => reject(new Error("send timeout")), 8000))
-      ]).catch((error) => {
-        console.error(`[whatsapp] send failed to ${remoteJid}:`, error.message);
-      });
-      if (index < replies.length - 1) {
-        const interPartDelayMs = randBetween(MULTI_PART_DELAY_MIN_MS, MULTI_PART_DELAY_MAX_MS);
-        await sleep(interPartDelayMs);
+    } finally {
+      if (typeof socket.sendPresenceUpdate === "function") {
+        try {
+          await socket.sendPresenceUpdate("paused", remoteJid);
+        } catch {
+          /* ignore */
+        }
       }
     }
   }
