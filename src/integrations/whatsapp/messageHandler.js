@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
-import { jidNormalizedUser, downloadContentFromMessage } from "baileys";
+import { jidNormalizedUser, downloadContentFromMessage, normalizeMessageContent } from "baileys";
 import { planWhatsAppReaction } from "./reactionPlanner.js";
-import { persistMedia } from "./mediaStore.js";
+import { persistMedia, fileExtFromDocumentMessage } from "./mediaStore.js";
 import { resolvePassiveModeAction } from "../../core/channels/passiveModeAction.js";
 import { resolveStickerAsset } from "./stickerAssets.js";
 import { ChatService } from "../../modules/chat/chatService.js";
@@ -15,12 +15,10 @@ function extractPhone(remoteJid = "") {
   return String(remoteJid).replace(/@.+$/, "");
 }
 
+/** Alinha ao Baileys: documento com legenda vem em `documentWithCaptionMessage`, não só em `documentMessage`. */
 function unwrapMessage(message = {}) {
-  const viewOnce = message?.viewOnceMessage?.message;
-  const ephemeral = message?.ephemeralMessage?.message;
-  const wrapped = viewOnce ?? ephemeral;
-  if (wrapped) return unwrapMessage(wrapped);
-  return message;
+  const normalized = normalizeMessageContent(message);
+  return normalized ?? message ?? {};
 }
 
 function extractText(message = {}) {
@@ -30,6 +28,7 @@ function extractText(message = {}) {
     unwrapped?.extendedTextMessage?.text ??
     unwrapped?.imageMessage?.caption ??
     unwrapped?.videoMessage?.caption ??
+    unwrapped?.documentMessage?.caption ??
     unwrapped?.stickerMessage?.fileName ??
     unwrapped?.buttonsResponseMessage?.selectedButtonId ??
     unwrapped?.listResponseMessage?.title ??
@@ -189,7 +188,7 @@ function formatWhatsAppHelpText(prefix = ".") {
     "*Comandos TetOS*",
     "",
     `${c("help")} — Esta lista (também ${p}ajuda).`,
-    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF: usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch).`,
+    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch).`,
     `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain).`,
     `${c("csticker")} — Recorta o centro para caber na figurinha (crop).`,
     `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`
@@ -204,7 +203,7 @@ function inferDocumentAsMedia(unwrappedMessage = {}) {
   if (/^image\//.test(mime) || /\.(png|jpe?g|webp|gif)$/.test(name)) {
     return { type: "image", doc };
   }
-  if (/^video\//.test(mime) || /\.(mp4|webm|mov)$/.test(name)) {
+  if (/^video\//.test(mime) || /\.(mp4|webm|mov|m4v|mkv)$/.test(name)) {
     return { type: "video", doc };
   }
   if (/gif/.test(mime) || /\.gif$/.test(name)) {
@@ -1077,7 +1076,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 content: docHint.doc,
                 type: persistType,
                 id: `${incoming.key.id}-document`,
-                basePath: runtime.defaults.whatsappMediaPath
+                basePath: runtime.defaults.whatsappMediaPath,
+                preferredExt: fileExtFromDocumentMessage(docHint.doc),
+                decryptMediaAs: "document"
               });
               if (docHint.type === "image") {
                 media = {

@@ -1,9 +1,9 @@
+import { normalizeMessageContent } from "baileys";
+import { fileExtFromDocumentMessage } from "./mediaStore.js";
+
 function unwrapMessage(message = {}) {
-  const viewOnce = message?.viewOnceMessage?.message;
-  const ephemeral = message?.ephemeralMessage?.message;
-  const wrapped = viewOnce ?? ephemeral;
-  if (wrapped) return unwrapMessage(wrapped);
-  return message;
+  const normalized = normalizeMessageContent(message);
+  return normalized ?? message ?? {};
 }
 
 function detectMediaType(message = {}) {
@@ -18,7 +18,7 @@ function detectMediaType(message = {}) {
     const mime = String(doc?.mimetype ?? "").toLowerCase();
     const name = String(doc?.fileName ?? "").toLowerCase();
     if (/^image\//.test(mime) || /\.(png|jpe?g|webp|gif)$/.test(name)) return "image";
-    if (/^video\//.test(mime) || /\.(mp4|webm|mov)$/.test(name)) return "video";
+    if (/^video\//.test(mime) || /\.(mp4|webm|mov|m4v|mkv)$/.test(name)) return "video";
     if (/gif/.test(mime) || /\.gif$/.test(name)) return "gif";
   }
   return null;
@@ -37,7 +37,8 @@ export async function resolveCommandTarget({
     return { source: "self", media };
   }
 
-  const contextInfo = incoming?.message?.extendedTextMessage?.contextInfo;
+  const incomingRoot = unwrapMessage(incoming?.message ?? {});
+  const contextInfo = incomingRoot?.extendedTextMessage?.contextInfo;
   const quotedMessage = contextInfo?.quotedMessage;
   const quotedType = detectMediaType(quotedMessage);
   if (quotedMessage && quotedType && incoming?.key?.id) {
@@ -52,12 +53,23 @@ export async function resolveCommandTarget({
             : quotedContent.stickerMessage;
     try {
       const stickerMsg = quotedContent?.stickerMessage;
+      const fromDocument =
+        quotedContent.documentMessage && content === quotedContent.documentMessage;
+      const decryptMediaAs = fromDocument
+        ? "document"
+        : quotedType === "sticker"
+          ? "sticker"
+          : quotedType === "gif"
+            ? "video"
+            : quotedType;
       const path = await persistMedia({
         downloadContentFromMessage,
         content,
         type: quotedType === "gif" ? "video" : quotedType,
         id: `${incoming.key.id}-quoted-${quotedType}`,
-        basePath
+        basePath,
+        preferredExt: quotedContent.documentMessage ? fileExtFromDocumentMessage(quotedContent.documentMessage) : null,
+        decryptMediaAs
       });
       const isStickerAnim =
         quotedType === "gif" || Boolean(stickerMsg?.isAnimated === true || stickerMsg?.isAnimated === "true");

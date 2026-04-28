@@ -400,3 +400,20 @@
 {"ts":"2026-04-27T22:37:57.815Z","event":"learning.observe_only","userId":"6283879987068","channelId":"6283879987068@s.whatsapp.net"}
 {"ts":"2026-04-27T22:38:04.475Z","event":"whatsapp.incoming","remoteJid":"6283879987068@s.whatsapp.net","userId":"6283879987068","sessionId":"wa-6283879987068","isGroup":false,"hasQuotedMessage":false,"mediaType":"sticker","messageId":"3EB0C31A7B2DF163EFB48D"}
 {"ts":"2026-04-27T22:38:05.131Z","event":"learning.observe_only","userId":"6283879987068","channelId":"6283879987068@s.whatsapp.net"}
+{"ts":"2026-04-28T00:17:23.361Z","event":"whatsapp.media_error","messageId":"3EB0391908AA7C772814A8","error":"error:1C800064:Provider routines::bad decrypt"}
+{"ts":"2026-04-28T00:18:19.820Z","event":"whatsapp.media_error","messageId":"3EB0C0BA14A401FC7B3D6E","error":"error:1C800064:Provider routines::bad decrypt"}
+{"ts":"2026-04-28T00:19:23.589Z","event":"whatsapp.incoming","remoteJid":"5511958102125@s.whatsapp.net","userId":"5511958102125","sessionId":"wa-5511958102125","isGroup":false,"hasQuotedMessage":false,"mediaType":"image","messageId":"3EB062F66200D98F744FD0"}
+{"ts":"2026-04-28T00:19:24.243Z","event":"learning.observe_only","userId":"5511958102125","channelId":"5511958102125@s.whatsapp.net"}
+{"ts":"2026-04-28T00:19:24.281Z","event":"whatsapp.media_error","messageId":"3EB0DDC3EE6ACD9824C75B","error":"error:1C800064:Provider routines::bad decrypt"}
+{"ts":"2026-04-28T00:39:00.337Z","event":"whatsapp.incoming","remoteJid":"190546341540031@lid","userId":"190546341540031","sessionId":"wa-190546341540031","isGroup":false,"hasQuotedMessage":false,"mediaType":null,"messageId":"ACA6437E5690EB2E242B2393937BE73D"}
+{"ts":"2026-04-28T00:39:01.011Z","event":"learning.observe_only","userId":"190546341540031","channelId":"190546341540031@lid"}
+{"ts":"2026-04-28T00:39:01.605Z","event":"whatsapp.incoming","remoteJid":"190546341540031@lid","userId":"190546341540031","sessionId":"wa-190546341540031","isGroup":false,"hasQuotedMessage":false,"mediaType":null,"messageId":"AC975C18DF558925D7CA203277612A3E"}
+{"ts":"2026-04-28T00:39:02.257Z","event":"learning.observe_only","userId":"190546341540031","channelId":"190546341540031@lid"}
+{"ts":"2026-04-28T00:39:03.487Z","event":"whatsapp.incoming","remoteJid":"190546341540031@lid","userId":"190546341540031","sessionId":"wa-190546341540031","isGroup":false,"hasQuotedMessage":false,"mediaType":null,"messageId":"ACA988D894D23FDDBFE25EA4D52EC10A"}
+{"ts":"2026-04-28T00:39:04.138Z","event":"learning.observe_only","userId":"190546341540031","channelId":"190546341540031@lid"}
+{"ts":"2026-04-28T00:39:05.790Z","event":"whatsapp.incoming","remoteJid":"190546341540031@lid","userId":"190546341540031","sessionId":"wa-190546341540031","isGroup":false,"hasQuotedMessage":false,"mediaType":null,"messageId":"AC410949E5195B59D3674A65CC51DEB8"}
+{"ts":"2026-04-28T00:39:06.443Z","event":"learning.observe_only","userId":"190546341540031","channelId":"190546341540031@lid"}
+{"ts":"2026-04-28T00:57:27.902Z","event":"whatsapp.incoming","remoteJid":"174165839581324@lid","userId":"174165839581324","sessionId":"wa-174165839581324","isGroup":false,"hasQuotedMessage":false,"mediaType":null,"messageId":"3EB0B11800647A82D8EBE8"}
+{"ts":"2026-04-28T00:57:28.554Z","event":"learning.observe_only","userId":"174165839581324","channelId":"174165839581324@lid"}
+{"ts":"2026-04-28T00:58:09.022Z","event":"whatsapp.incoming","remoteJid":"174165839581324@lid","userId":"174165839581324","sessionId":"wa-174165839581324","isGroup":false,"hasQuotedMessage":false,"mediaType":"sticker","messageId":"3EB00FDE67A7F4B9E4A564"}
+{"ts":"2026-04-28T00:58:09.674Z","event":"learning.observe_only","userId":"174165839581324","channelId":"174165839581324@lid"}
