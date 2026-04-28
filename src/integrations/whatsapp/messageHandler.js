@@ -716,10 +716,54 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 }).catch(() => {});
               }
               // #endregion
+              // #region agent log
+              fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
+                body: JSON.stringify({
+                  sessionId: "e69bad",
+                  runId: "toimg-large-gif-v1",
+                  hypothesisId: "H5",
+                  location: "messageHandler.js:handleMediaCommand",
+                  message: "enviando playback toimg para chat",
+                  data: {
+                    playbackMime,
+                    playbackSeconds: output.toimgPlaybackSeconds ?? null,
+                    playbackBytes: outBuffer.length
+                  },
+                  timestamp: Date.now()
+                })
+              }).catch(() => {});
+              // #endregion
               await socket.sendMessage(remoteJid, playbackPayload);
             }
             const gifDoc = output.toimgGifPath;
             if (gifDoc && existsSync(gifDoc)) {
+              // #region agent log
+              fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
+                body: JSON.stringify({
+                  sessionId: "e69bad",
+                  runId: "toimg-large-gif-v1",
+                  hypothesisId: "H1-H4",
+                  location: "messageHandler.js:handleMediaCommand",
+                  message: "enviando documento gif do toimg",
+                  data: {
+                    mime: "image/gif",
+                    fileName: "sticker-convertido.gif",
+                    gifBytes: (() => {
+                      try {
+                        return readFileSync(gifDoc).length;
+                      } catch {
+                        return -1;
+                      }
+                    })()
+                  },
+                  timestamp: Date.now()
+                })
+              }).catch(() => {});
+              // #endregion
               await socket.sendMessage(remoteJid, {
                 document: readFileSync(gifDoc),
                 mimetype: "image/gif",

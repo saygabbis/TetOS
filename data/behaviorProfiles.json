@@ -91,7 +91,7 @@
     },
     "157947506229421": {
       "totals": {
-        "events": 79,
+        "events": 132,
         "messages": 0,
         "reactions": 0,
         "media": 0,
@@ -100,13 +100,16 @@
       "byHour": {
         "0": 37,
         "3": 6,
+        "14": 53,
         "19": 1,
         "20": 31,
         "21": 4
       },
       "byChat": {
         "120363425975987063@g.us": 2,
-        "157947506229421@lid": 77
+        "157947506229421@lid": 106,
+        "157947506229421:47@lid": 12,
+        "157947506229421:65@lid": 12
       },
       "responseLatencyMs": []
     },
@@ -149,15 +152,16 @@
     },
     "5516988137617": {
       "totals": {
-        "events": 147,
-        "messages": 138,
+        "events": 180,
+        "messages": 153,
         "reactions": 0,
-        "media": 91,
+        "media": 106,
         "links": 3
       },
       "byHour": {
         "0": 56,
         "3": 5,
+        "14": 33,
         "19": 19,
         "20": 42,
         "21": 15,
@@ -166,7 +170,7 @@
       "byChat": {
         "5516997241905@s.whatsapp.net": 28,
         "5516994435369@s.whatsapp.net": 10,
-        "5516988137617@s.whatsapp.net": 43,
+        "5516988137617@s.whatsapp.net": 60,
         "190546341540031@lid": 3,
         "131778236952767@lid": 1,
         "264841222742022@lid": 3,
@@ -176,7 +180,9 @@
         "6283879987068@s.whatsapp.net": 14,
         "174165839581324@lid": 6,
         "5511958102125@s.whatsapp.net": 5,
-        "157947506229421@lid": 30
+        "157947506229421@lid": 36,
+        "5516988137617:47@s.whatsapp.net": 4,
+        "5516988137617:65@s.whatsapp.net": 6
       },
       "responseLatencyMs": [
         465485,
@@ -472,17 +478,19 @@
     },
     "74053859672191": {
       "totals": {
-        "events": 1,
+        "events": 2,
         "messages": 0,
         "reactions": 1,
         "media": 0,
         "links": 0
       },
       "byHour": {
+        "14": 1,
         "20": 1
       },
       "byChat": {
-        "120363425975987063@g.us": 1
+        "120363425975987063@g.us": 1,
+        "120363342938049353@g.us": 1
       },
       "responseLatencyMs": []
     },
@@ -812,6 +820,38 @@
       },
       "byChat": {
         "6283879987068:17@s.whatsapp.net": 1
+      },
+      "responseLatencyMs": []
+    },
+    "15900036092065": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 1,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "14": 1
+      },
+      "byChat": {
+        "120363402362643675@g.us": 1
+      },
+      "responseLatencyMs": []
+    },
+    "129386040836118": {
+      "totals": {
+        "events": 1,
+        "messages": 0,
+        "reactions": 1,
+        "media": 0,
+        "links": 0
+      },
+      "byHour": {
+        "14": 1
+      },
+      "byChat": {
+        "120363402362643675@g.us": 1
       },
       "responseLatencyMs": []
     }

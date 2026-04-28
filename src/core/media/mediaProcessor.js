@@ -641,6 +641,32 @@ async function animatedStickerToVideo(inputPath, outputDir) {
     .gif({ effort: 8, colours: 256 })
     .toFile(outputGif);
 
+  // #region agent log
+  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
+    body: JSON.stringify({
+      sessionId: "e69bad",
+      runId: "toimg-large-gif-v1",
+      hypothesisId: "H1",
+      location: "mediaProcessor.js:animatedStickerToVideo",
+      message: "gif base gerado para toimg",
+      data: {
+        inputExt: extname(String(inputPath)).toLowerCase(),
+        gifBytes: (() => {
+          try {
+            return statSync(outputGif).size;
+          } catch {
+            return -1;
+          }
+        })(),
+        gifPathBase: basename(outputGif)
+      },
+      timestamp: Date.now()
+    })
+  }).catch(() => {});
+  // #endregion
+
   if (!looksLikeGifFile(outputGif)) {
     throw new Error("nao foi possivel gerar gif a partir da figurinha animada");
   }
@@ -674,6 +700,31 @@ async function animatedStickerToVideo(inputPath, outputDir) {
     const mp4Probe = mp4OkForToimgPlayback(outputMp4);
     if (mp4Probe.ok) {
       const fin = finalizeToimgPlaybackMp4(outputMp4, mp4Probe);
+      // #region agent log
+      fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
+        body: JSON.stringify({
+          sessionId: "e69bad",
+          runId: "toimg-large-gif-v1",
+          hypothesisId: "H2",
+          location: "mediaProcessor.js:animatedStickerToVideo",
+          message: "mp4 playback valido no primeiro encode",
+          data: {
+            mp4Bytes: (() => {
+              try {
+                return statSync(outputMp4).size;
+              } catch {
+                return -1;
+              }
+            })(),
+            seconds: fin.seconds ?? null,
+            mp4PathBase: basename(outputMp4)
+          },
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+      // #endregion
       return withGifDoc(outputMp4, "video/mp4", {
         toimgPlaybackSeconds: fin.seconds
       });
@@ -702,10 +753,66 @@ async function animatedStickerToVideo(inputPath, outputDir) {
       seconds: playbackEnc.seconds
     };
     const fin = finalizeToimgPlaybackMp4(outputMp4, fb);
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
+      body: JSON.stringify({
+        sessionId: "e69bad",
+        runId: "toimg-large-gif-v1",
+        hypothesisId: "H3",
+        location: "mediaProcessor.js:animatedStickerToVideo",
+        message: "mp4 playback valido via fallback agressivo",
+        data: {
+          mp4Bytes: (() => {
+            try {
+              return statSync(outputMp4).size;
+            } catch {
+              return -1;
+            }
+          })(),
+          seconds: fin.seconds ?? null,
+          gifBytes: (() => {
+            try {
+              return statSync(outputGif).size;
+            } catch {
+              return -1;
+            }
+          })()
+        },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
     return withGifDoc(outputMp4, "video/mp4", {
       toimgPlaybackSeconds: fin.seconds
     });
   }
+
+  // #region agent log
+  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
+    body: JSON.stringify({
+      sessionId: "e69bad",
+      runId: "toimg-large-gif-v1",
+      hypothesisId: "H4",
+      location: "mediaProcessor.js:animatedStickerToVideo",
+      message: "sem mp4 reproduzivel; apenas documento gif",
+      data: {
+        gifBytes: (() => {
+          try {
+            return statSync(outputGif).size;
+          } catch {
+            return -1;
+          }
+        })(),
+        outputMp4Base: basename(outputMp4)
+      },
+      timestamp: Date.now()
+    })
+  }).catch(() => {});
+  // #endregion
 
   return {
     kind: "video",
