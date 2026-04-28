@@ -735,9 +735,89 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
           }
         } else if (output.kind === "video") {
-          await socket.sendMessage(remoteJid, { sticker: outBuffer });
+          // #region agent log
+          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
+            body: JSON.stringify({
+              sessionId: "ebbfbc",
+              runId: "gif-long-debug-v1",
+              hypothesisId: "H4",
+              location: "messageHandler.js:handleMediaCommand",
+              message: "sending sticker payload from video output",
+              data: {
+                command: parsedCommand.command,
+                inputType: resolved.media?.type ?? null,
+                outputKind: output.kind,
+                bufferLen: outBuffer?.length ?? 0,
+                remoteJid
+              },
+              timestamp: Date.now()
+            })
+          }).catch(() => {});
+          // #endregion
+          const sendResult = await socket.sendMessage(remoteJid, { sticker: outBuffer });
+          // #region agent log
+          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
+            body: JSON.stringify({
+              sessionId: "ebbfbc",
+              runId: "gif-long-debug-v1",
+              hypothesisId: "H5",
+              location: "messageHandler.js:handleMediaCommand",
+              message: "sticker send acknowledged by socket",
+              data: {
+                command: parsedCommand.command,
+                sentMessageId: sendResult?.key?.id ?? null,
+                remoteJid: sendResult?.key?.remoteJid ?? remoteJid
+              },
+              timestamp: Date.now()
+            })
+          }).catch(() => {});
+          // #endregion
         } else {
-          await socket.sendMessage(remoteJid, { sticker: outBuffer });
+          // #region agent log
+          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
+            body: JSON.stringify({
+              sessionId: "ebbfbc",
+              runId: "gif-long-debug-v1",
+              hypothesisId: "H4",
+              location: "messageHandler.js:handleMediaCommand",
+              message: "sending sticker payload from image output",
+              data: {
+                command: parsedCommand.command,
+                inputType: resolved.media?.type ?? null,
+                outputKind: output.kind,
+                bufferLen: outBuffer?.length ?? 0,
+                remoteJid
+              },
+              timestamp: Date.now()
+            })
+          }).catch(() => {});
+          // #endregion
+          const sendResult = await socket.sendMessage(remoteJid, { sticker: outBuffer });
+          // #region agent log
+          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
+            body: JSON.stringify({
+              sessionId: "ebbfbc",
+              runId: "gif-long-debug-v1",
+              hypothesisId: "H5",
+              location: "messageHandler.js:handleMediaCommand",
+              message: "sticker send acknowledged by socket",
+              data: {
+                command: parsedCommand.command,
+                sentMessageId: sendResult?.key?.id ?? null,
+                remoteJid: sendResult?.key?.remoteJid ?? remoteJid
+              },
+              timestamp: Date.now()
+            })
+          }).catch(() => {});
+          // #endregion
         }
 
         const elapsedMs = Date.now() - startedAt;
