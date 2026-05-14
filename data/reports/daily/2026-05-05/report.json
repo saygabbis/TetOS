@@ -1,0 +1,357 @@
+{
+  "day": "2026-05-05",
+  "generatedAt": "2026-05-06T00:00:12.561Z",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 6832,
+    "byEvent": {
+      "message.reaction": 148,
+      "chat.update": 3894,
+      "message.update": 267,
+      "message.outgoing": 76,
+      "message.receipt_update": 2292,
+      "message.incoming": 89,
+      "message.deleted": 38,
+      "command.media": 5,
+      "group.participants_update": 19,
+      "group.update": 4
+    }
+  },
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 38,
+    "samples": [
+      {
+        "ts": "2026-05-05T04:54:27.903Z",
+        "messageId": "AC837DDE09AD2738D632ADF8B079B696",
+        "beforeText": "Toma uma waifu de graça aí",
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T06:08:21.149Z",
+        "messageId": "ACD2F21CC38D3E7B6B2904315D2E07CA",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T06:08:21.249Z",
+        "messageId": "ACD2F21CC38D3E7B6B2904315D2E07CA",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T11:41:27.741Z",
+        "messageId": "3EB0B8329E060069E1CD0B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T11:41:27.794Z",
+        "messageId": "3EB0B8329E060069E1CD0B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T12:03:13.424Z",
+        "messageId": "3EB04747A27CDBD0A0066B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T12:03:13.478Z",
+        "messageId": "3EB04747A27CDBD0A0066B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T12:31:48.648Z",
+        "messageId": "3EB01AC785DE767E59FD2D",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T12:31:48.699Z",
+        "messageId": "3EB01AC785DE767E59FD2D",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T12:31:53.689Z",
+        "messageId": "3EB004E0DEEDF74ECBDF09",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T12:31:53.734Z",
+        "messageId": "3EB004E0DEEDF74ECBDF09",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T13:06:47.338Z",
+        "messageId": "3EB028973BC0BABBC6357D",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T13:21:04.391Z",
+        "messageId": "3EB0472F950E989FD88762",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T13:21:04.474Z",
+        "messageId": "3EB0472F950E989FD88762",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T13:26:48.151Z",
+        "messageId": "3EB0B5687C9C39278FD798",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T13:26:48.213Z",
+        "messageId": "3EB0B5687C9C39278FD798",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T14:59:39.524Z",
+        "messageId": "3A43F66C048992BE9F58",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-05T15:17:11.322Z",
+        "messageId": "AC0715EC1DFD4B37D558D79DBD917FF8",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-05T15:17:11.458Z",
+        "messageId": "AC0715EC1DFD4B37D558D79DBD917FF8",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-05T17:26:53.175Z",
+        "messageId": "ACD9AA8B8F7F81EA02BC593C6EA5D65F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T17:26:53.205Z",
+        "messageId": "ACD9AA8B8F7F81EA02BC593C6EA5D65F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T17:45:20.193Z",
+        "messageId": "3EB05B4229090A3BF35179",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T17:45:20.220Z",
+        "messageId": "3EB05B4229090A3BF35179",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T17:50:56.391Z",
+        "messageId": "3EB06BD188E3F85CE71454",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T17:50:56.427Z",
+        "messageId": "3EB06BD188E3F85CE71454",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T17:51:31.067Z",
+        "messageId": "ACB8D625FFFF7AA4350F18DEF60B6C5B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T17:51:31.099Z",
+        "messageId": "ACB8D625FFFF7AA4350F18DEF60B6C5B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T18:27:39.566Z",
+        "messageId": "3EB0B82E8282C0F6A3E07A",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T18:27:39.603Z",
+        "messageId": "3EB0B82E8282C0F6A3E07A",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T18:41:35.471Z",
+        "messageId": "3EB0B208BD99ED3D2E9013",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T18:41:35.504Z",
+        "messageId": "3EB0B208BD99ED3D2E9013",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T18:43:46.384Z",
+        "messageId": "3EB086C10C05408EBA8B98",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T18:43:46.388Z",
+        "messageId": "3EB086C10C05408EBA8B98",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T19:39:51.726Z",
+        "messageId": "3A0AADCC95F071F4DD65",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-05T21:21:19.732Z",
+        "messageId": "AC16BC4D7653A978643D591E93E83D02",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T21:21:19.801Z",
+        "messageId": "AC16BC4D7653A978643D591E93E83D02",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T23:52:27.523Z",
+        "messageId": "AC49DFF476FF51DC870888B00E316287",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-05T23:52:27.552Z",
+        "messageId": "AC49DFF476FF51DC870888B00E316287",
+        "beforeText": null,
+        "reason": "protocol"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 5,
+    "avgLatencyMs": 2040,
+    "byCommand": {
+      "sticker": 3,
+      "fsticker": 2
+    },
+    "byStatus": {
+      "ok": 5
+    },
+    "byInputType": {
+      "image": 3,
+      "gif": 2
+    },
+    "byOutputType": {
+      "image": 5
+    },
+    "byTargetSource": {
+      "self": 2,
+      "reply": 3
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 996,
+      "messages": 969,
+      "reactions": 0,
+      "media": 317,
+      "links": 42
+    },
+    "byHour": {
+      "0": 84,
+      "1": 33,
+      "2": 23,
+      "3": 38,
+      "4": 48,
+      "5": 24,
+      "6": 4,
+      "7": 9,
+      "8": 1,
+      "11": 6,
+      "12": 56,
+      "13": 7,
+      "14": 36,
+      "15": 35,
+      "16": 44,
+      "17": 34,
+      "18": 44,
+      "19": 90,
+      "20": 94,
+      "21": 133,
+      "22": 107,
+      "23": 46
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 49,
+      "5516994435369@s.whatsapp.net": 14,
+      "5516988137617@s.whatsapp.net": 64,
+      "190546341540031@lid": 38,
+      "131778236952767@lid": 146,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 2,
+      "5516991476228@s.whatsapp.net": 1,
+      "65197804912879@lid": 5,
+      "6283879987068@s.whatsapp.net": 17,
+      "174165839581324@lid": 9,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 43,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 155,
+      "5516988776338@s.whatsapp.net": 35,
+      "185967939985556@lid": 174,
+      "5517991664082@s.whatsapp.net": 16,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 100,
+      "272172178223326@lid": 11,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 7,
+      "238009924509886@lid": 19,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 19,
+      "103659153158378@lid": 6,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 3,
+      "187995030323304@lid": 14,
+      "150242334867642@lid": 7,
+      "137053111091288@lid": 4,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 2,
+      "3689544732728@lid": 4
+    },
+    "avgLatencyMs": 7422165
+  }
+}

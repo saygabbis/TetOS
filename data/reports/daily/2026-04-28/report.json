@@ -1,0 +1,215 @@
+{
+  "day": "2026-04-28",
+  "generatedAt": "2026-04-29T00:00:07.215Z",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 5039,
+    "byEvent": {
+      "chat.update": 2875,
+      "message.receipt_update": 1585,
+      "command.media": 13,
+      "message.update": 309,
+      "message.outgoing": 112,
+      "message.reaction": 52,
+      "message.incoming": 68,
+      "message.deleted": 18,
+      "group.participants_update": 4,
+      "group.update": 3
+    }
+  },
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 18,
+    "samples": [
+      {
+        "ts": "2026-04-28T14:32:58.832Z",
+        "messageId": "ACB01C2D2A0A83766C8C3C13094F3B39",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T15:10:58.279Z",
+        "messageId": "AC5F5F55EE6E26943AEC80B43DDB012D",
+        "beforeText": "O jonas botou a narry no kevin kkkkkkkkk",
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T16:51:07.830Z",
+        "messageId": "AC95B059D50F1F0A843E982A8110FC2F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T16:51:07.840Z",
+        "messageId": "AC95B059D50F1F0A843E982A8110FC2F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T17:48:51.624Z",
+        "messageId": "3EB071C9C9A1DD6A65FF16",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T17:55:35.101Z",
+        "messageId": "3EB05A97DA5C4B0AFF0686",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T17:55:50.029Z",
+        "messageId": "3EB05A97DA5C4B0AFF0686",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T17:57:52.391Z",
+        "messageId": "3EB00F27DF775F16DAC712",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T17:58:34.241Z",
+        "messageId": "3EB0EE183AE7358D017AF5",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T18:02:14.441Z",
+        "messageId": "3A92D4F737B90C12BAB0",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T19:43:45.731Z",
+        "messageId": "3EB0650342C33813888FB4",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T19:43:45.736Z",
+        "messageId": "3EB0650342C33813888FB4",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T19:51:12.746Z",
+        "messageId": "AC51AC2F463D3C9A1D957F935B8553BA",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T19:51:12.788Z",
+        "messageId": "AC51AC2F463D3C9A1D957F935B8553BA",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T20:11:47.866Z",
+        "messageId": "3EB09AE5464588C8F69AAD",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T20:11:47.870Z",
+        "messageId": "3EB09AE5464588C8F69AAD",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-28T22:03:08.080Z",
+        "messageId": "3A34835B6B540A78939C",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-28T23:59:25.841Z",
+        "messageId": "AC57326D950F8BC356A1044CB50F57B1",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 13,
+    "avgLatencyMs": 27672,
+    "byCommand": {
+      "csticker": 1,
+      "fsticker": 1,
+      "sticker": 2,
+      "toimg": 9
+    },
+    "byStatus": {
+      "ok": 13
+    },
+    "byInputType": {
+      "video": 2,
+      "gif": 2,
+      "sticker": 9
+    },
+    "byOutputType": {
+      "image": 4,
+      "video": 9
+    },
+    "byTargetSource": {
+      "self": 1,
+      "reply": 12
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 273,
+      "messages": 246,
+      "reactions": 0,
+      "media": 140,
+      "links": 5
+    },
+    "byHour": {
+      "0": 56,
+      "3": 5,
+      "14": 35,
+      "15": 24,
+      "16": 20,
+      "17": 2,
+      "18": 21,
+      "19": 26,
+      "20": 42,
+      "21": 24,
+      "22": 16,
+      "23": 2
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 40,
+      "5516994435369@s.whatsapp.net": 13,
+      "5516988137617@s.whatsapp.net": 63,
+      "190546341540031@lid": 5,
+      "131778236952767@lid": 19,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 2,
+      "5516991476228@s.whatsapp.net": 1,
+      "65197804912879@lid": 1,
+      "6283879987068@s.whatsapp.net": 17,
+      "174165839581324@lid": 7,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 36,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 8,
+      "5516988776338@s.whatsapp.net": 4,
+      "185967939985556@lid": 22,
+      "5517991664082@s.whatsapp.net": 13,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 2
+    },
+    "avgLatencyMs": 1430842
+  }
+}

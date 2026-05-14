@@ -1,0 +1,302 @@
+{
+  "day": "2026-05-13",
+  "generatedAt": "2026-05-14T00:00:27.009Z",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 4767,
+    "byEvent": {
+      "chat.update": 1373,
+      "message.receipt_update": 2085,
+      "message.update": 789,
+      "message.incoming": 206,
+      "group.participants_update": 7,
+      "message.outgoing": 234,
+      "message.reaction": 39,
+      "command.media": 7,
+      "message.deleted": 27
+    }
+  },
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 27,
+    "samples": [
+      {
+        "ts": "2026-05-13T15:59:16.395Z",
+        "messageId": "3EB0A32ADB55B4AB8BF607",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0A32ADB55B4AB8BF607-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T15:59:16.586Z",
+        "messageId": "3EB05F1B327858021C462B",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/3EB05F1B327858021C462B-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T15:59:36.136Z",
+        "messageId": "3EB0054389F59AFE9A45D2",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0054389F59AFE9A45D2-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T15:59:43.189Z",
+        "messageId": "3EB057AE0E9C3C171F07DA",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/3EB057AE0E9C3C171F07DA-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T15:59:43.379Z",
+        "messageId": "3EB0A1425E06FD1C94DCA4",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0A1425E06FD1C94DCA4-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T15:59:43.593Z",
+        "messageId": "3EB056BE754D33D8774E81",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/3EB056BE754D33D8774E81-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T15:59:43.786Z",
+        "messageId": "3EB0FFF7FEFBEE526C5CB7",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0FFF7FEFBEE526C5CB7-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T17:25:45.438Z",
+        "messageId": "2A148CE820BED5B003BA",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/2A148CE820BED5B003BA-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T19:35:42.705Z",
+        "messageId": "3EB094B2B62142C1EFE292",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T19:35:42.711Z",
+        "messageId": "3EB094B2B62142C1EFE292",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T19:37:00.372Z",
+        "messageId": "3EB048F5492DE14CAEEEA4",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T19:37:00.389Z",
+        "messageId": "3EB048F5492DE14CAEEEA4",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T19:39:54.302Z",
+        "messageId": "3EB0A53EDEC954AEC1146C",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T19:39:54.328Z",
+        "messageId": "3EB0A53EDEC954AEC1146C",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T19:40:22.621Z",
+        "messageId": "3EB0CF1180C9E234812872",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T19:40:22.646Z",
+        "messageId": "3EB0CF1180C9E234812872",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T20:07:51.768Z",
+        "messageId": "3A4C7D516BEC32830AD1",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:07:55.732Z",
+        "messageId": "3A23D711479650D50060",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:12:35.694Z",
+        "messageId": "3EB025970738FAC24537BA",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:30:37.907Z",
+        "messageId": "ACAA295CA057A02D811AB45634D80736",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:30:38.427Z",
+        "messageId": "ACDF1AEA84DFF0E58576A3EE76B3E0CA",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:30:39.030Z",
+        "messageId": "AC762FE660B3E6AF563CEBD0BA3EB692",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:30:39.500Z",
+        "messageId": "AC50004EFD9DB3D8C6FE35535398B8ED",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:30:39.900Z",
+        "messageId": "AC1A8199D5D0818936A9409FEFA819C8",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T20:30:40.307Z",
+        "messageId": "ACEBF9D30A8463C74B244CEA2DE576E0",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-13T23:08:58.067Z",
+        "messageId": "3EB0E4EED9FD745B9276CA",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-13T23:09:03.727Z",
+        "messageId": "3EB0E4EED9FD745B9276CA",
+        "beforeText": null,
+        "reason": "protocol"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 7,
+    "avgLatencyMs": 17441,
+    "byCommand": {
+      "csticker": 3,
+      "toimg": 1,
+      "sticker": 3
+    },
+    "byStatus": {
+      "ok": 7
+    },
+    "byInputType": {
+      "gif": 3,
+      "sticker": 1,
+      "image": 3
+    },
+    "byOutputType": {
+      "image": 6,
+      "video": 1
+    },
+    "byTargetSource": {
+      "reply": 5,
+      "self": 2
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 2720,
+      "messages": 2693,
+      "reactions": 0,
+      "media": 743,
+      "links": 74
+    },
+    "byHour": {
+      "0": 117,
+      "1": 56,
+      "2": 51,
+      "3": 130,
+      "4": 60,
+      "5": 32,
+      "6": 17,
+      "7": 9,
+      "8": 1,
+      "11": 15,
+      "12": 129,
+      "13": 106,
+      "14": 121,
+      "15": 99,
+      "16": 158,
+      "17": 87,
+      "18": 168,
+      "19": 392,
+      "20": 311,
+      "21": 248,
+      "22": 195,
+      "23": 218
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 54,
+      "5516994435369@s.whatsapp.net": 19,
+      "5516988137617@s.whatsapp.net": 66,
+      "190546341540031@lid": 90,
+      "131778236952767@lid": 645,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 8,
+      "5516991476228@s.whatsapp.net": 1,
+      "65197804912879@lid": 14,
+      "6283879987068@s.whatsapp.net": 17,
+      "174165839581324@lid": 66,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 80,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 642,
+      "5516988776338@s.whatsapp.net": 44,
+      "185967939985556@lid": 410,
+      "5517991664082@s.whatsapp.net": 25,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 227,
+      "272172178223326@lid": 20,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 20,
+      "238009924509886@lid": 19,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 19,
+      "103659153158378@lid": 25,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 13,
+      "187995030323304@lid": 18,
+      "150242334867642@lid": 18,
+      "137053111091288@lid": 4,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 2,
+      "3689544732728@lid": 18,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 25,
+      "9281743114312@lid": 27,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 34,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 3,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3
+    },
+    "avgLatencyMs": 3529558
+  }
+}

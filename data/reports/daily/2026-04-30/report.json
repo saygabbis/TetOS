@@ -1,0 +1,371 @@
+{
+  "day": "2026-04-30",
+  "generatedAt": "2026-05-01T00:00:25.720Z",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 4696,
+    "byEvent": {
+      "message.reaction": 77,
+      "chat.update": 1601,
+      "message.receipt_update": 2051,
+      "message.deleted": 42,
+      "message.update": 580,
+      "message.incoming": 152,
+      "group.participants_update": 13,
+      "message.outgoing": 176,
+      "command.media": 4
+    }
+  },
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 42,
+    "samples": [
+      {
+        "ts": "2026-04-30T05:50:25.023Z",
+        "messageId": "2A1ACFAC2214C197D595",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-30T10:02:18.104Z",
+        "messageId": "AC520728DEF887992DA4CFFEB1A86B58",
+        "beforeText": "Hoje tem gamelyas avasadas",
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T10:51:57.381Z",
+        "messageId": "AC552638B3B59803816BE52EAB1C8DE1",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T10:51:57.471Z",
+        "messageId": "AC552638B3B59803816BE52EAB1C8DE1",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T12:03:35.573Z",
+        "messageId": "3EB0E55A60705C03379244",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T12:03:35.651Z",
+        "messageId": "3EB0E55A60705C03379244",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T12:14:30.897Z",
+        "messageId": "3EB08DDF8BC5ED9E1955B8",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T12:18:48.263Z",
+        "messageId": "3EB0A08F403918A002B1BF",
+        "beforeText": "pdp",
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T12:23:54.495Z",
+        "messageId": "3EB08A26774689E3CE0243",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T13:48:54.189Z",
+        "messageId": "AC55C3E2458CA621C20E778C3AE33FE8",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T13:48:54.207Z",
+        "messageId": "AC55C3E2458CA621C20E778C3AE33FE8",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:09:53.093Z",
+        "messageId": "AC133AFC1B5B0AAFBCF196967FE79096",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:09:53.167Z",
+        "messageId": "AC133AFC1B5B0AAFBCF196967FE79096",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:10:22.344Z",
+        "messageId": "ACA556E1A112BFD7ACF79EE045C90EFF",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:10:22.453Z",
+        "messageId": "ACA556E1A112BFD7ACF79EE045C90EFF",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:16:58.083Z",
+        "messageId": "ACA8C3E252B1DDF369EBAB89AF83FC7C",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:16:58.142Z",
+        "messageId": "ACA8C3E252B1DDF369EBAB89AF83FC7C",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:52:50.059Z",
+        "messageId": "ACEC6EA1292983826D42303DA6B8E1AA",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T14:52:50.135Z",
+        "messageId": "ACEC6EA1292983826D42303DA6B8E1AA",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T15:00:47.574Z",
+        "messageId": "3EB05DA1E1EA187685E5EC",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T15:22:45.362Z",
+        "messageId": "ACDA5660311CF657A93247366A406B81",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T15:22:45.440Z",
+        "messageId": "ACDA5660311CF657A93247366A406B81",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T16:36:17.936Z",
+        "messageId": "3EB09A3923D2088828A553",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T16:36:18.011Z",
+        "messageId": "3EB09A3923D2088828A553",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T17:13:26.178Z",
+        "messageId": "AC31E09FC78DBE0B8558E36430C577D2",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-30T17:14:07.567Z",
+        "messageId": "AC0E23875933194FFD6881B4F6940E89",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T17:14:07.662Z",
+        "messageId": "AC0E23875933194FFD6881B4F6940E89",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T17:36:55.685Z",
+        "messageId": "ACE10E171BB08E4B93488F985790223F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T17:36:55.721Z",
+        "messageId": "ACE10E171BB08E4B93488F985790223F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T19:18:47.141Z",
+        "messageId": "ACFF6D6B93CCBECDE2B9E93835041CBF",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T19:19:47.100Z",
+        "messageId": "3EB049EB4EE809CB505E76",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-30T19:49:17.258Z",
+        "messageId": "ACD1E7BDE3F7DD18760396BCCE108F7C",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-30T19:49:21.823Z",
+        "messageId": "AC1568CB2B1156587D9CB33DB034FD75",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-30T20:14:38.360Z",
+        "messageId": "3A0BE197314178BA1D6D",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-30T20:48:50.260Z",
+        "messageId": "AC531EAFB6AAB410CED94784D35AB14F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T20:48:50.286Z",
+        "messageId": "AC531EAFB6AAB410CED94784D35AB14F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T21:06:22.191Z",
+        "messageId": "AC013BB4A6C7175B540B79324A14A980",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T21:06:22.268Z",
+        "messageId": "AC013BB4A6C7175B540B79324A14A980",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T21:18:40.980Z",
+        "messageId": "AC2C07ABC2098B584427A8C74D00261F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T21:18:41.035Z",
+        "messageId": "AC2C07ABC2098B584427A8C74D00261F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-04-30T21:27:59.083Z",
+        "messageId": "AC9E30EDEFEFD800919B239ED6878DA4",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-04-30T22:13:02.532Z",
+        "messageId": "ACC70DDE037572137F429B71359201B6",
+        "beforeText": "Pov bossfight de hollow knight",
+        "reason": "protocol"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 4,
+    "avgLatencyMs": 4662,
+    "byCommand": {
+      "sticker": 3,
+      "fsticker": 1
+    },
+    "byStatus": {
+      "ok": 4
+    },
+    "byInputType": {
+      "gif": 1,
+      "image": 3
+    },
+    "byOutputType": {
+      "image": 4
+    },
+    "byTargetSource": {
+      "reply": 1,
+      "self": 3
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 642,
+      "messages": 615,
+      "reactions": 0,
+      "media": 219,
+      "links": 16
+    },
+    "byHour": {
+      "0": 63,
+      "1": 11,
+      "2": 11,
+      "3": 15,
+      "4": 3,
+      "5": 9,
+      "12": 46,
+      "13": 4,
+      "14": 36,
+      "15": 24,
+      "16": 37,
+      "17": 13,
+      "18": 26,
+      "19": 48,
+      "20": 87,
+      "21": 106,
+      "22": 72,
+      "23": 31
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 46,
+      "5516994435369@s.whatsapp.net": 14,
+      "5516988137617@s.whatsapp.net": 64,
+      "190546341540031@lid": 14,
+      "131778236952767@lid": 59,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 2,
+      "5516991476228@s.whatsapp.net": 1,
+      "65197804912879@lid": 5,
+      "6283879987068@s.whatsapp.net": 17,
+      "174165839581324@lid": 7,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 38,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 86,
+      "5516988776338@s.whatsapp.net": 26,
+      "185967939985556@lid": 126,
+      "5517991664082@s.whatsapp.net": 15,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 35,
+      "272172178223326@lid": 5,
+      "5516996242810@s.whatsapp.net": 2,
+      "74053859672191@lid": 7,
+      "238009924509886@lid": 19,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 17,
+      "103659153158378@lid": 6,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 3,
+      "187995030323304@lid": 2
+    },
+    "avgLatencyMs": 3055991
+  }
+}

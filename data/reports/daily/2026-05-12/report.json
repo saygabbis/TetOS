@@ -1,0 +1,233 @@
+{
+  "day": "2026-05-12",
+  "generatedAt": "2026-05-13T00:00:19.271Z",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 3348,
+    "byEvent": {
+      "chat.update": 1103,
+      "message.update": 521,
+      "message.incoming": 108,
+      "message.reaction": 71,
+      "message.receipt_update": 1331,
+      "message.outgoing": 180,
+      "group.participants_update": 14,
+      "message.deleted": 16,
+      "command.media": 4
+    }
+  },
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 16,
+    "samples": [
+      {
+        "ts": "2026-05-12T11:55:49.064Z",
+        "messageId": "3EB0F78CF009D00771F8B3",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-12T11:55:49.068Z",
+        "messageId": "3EB0F78CF009D00771F8B3",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-12T12:12:02.305Z",
+        "messageId": "AC23DD9B1C6534AB05FE435967CBCF06",
+        "beforeText": "Sticker analisada localmente. Arquivo persistido em data/media/AC23DD9B1C6534AB05FE435967CBCF06-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T12:50:50.355Z",
+        "messageId": "3EB0D83118A7ADC302FAC1",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-12T12:50:50.448Z",
+        "messageId": "3EB0D83118A7ADC302FAC1",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-05-12T20:09:55.459Z",
+        "messageId": "ACE50611B9E1399DE5659EBCEEBEDD78",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:26:57.292Z",
+        "messageId": "2A4DBE27850431F77043",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:26:58.307Z",
+        "messageId": "2A11FF40FBE6D90542DE",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:26:59.493Z",
+        "messageId": "2AE78B027525172FA592",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:27:02.119Z",
+        "messageId": "2A31F0EB7C7747595F8B",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:27:04.995Z",
+        "messageId": "2A16E309A6CE45D3194B",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:27:07.535Z",
+        "messageId": "2A10DAF773B1C14CA1A6",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:27:10.967Z",
+        "messageId": "2A29369CD414169A9548",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:27:13.604Z",
+        "messageId": "2A3BFC19392E66F7FA20",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T21:27:16.547Z",
+        "messageId": "2A6CA43E3A642CD6536F",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-12T22:59:29.570Z",
+        "messageId": "2A5203D5EB491510E304",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 4,
+    "avgLatencyMs": 5409,
+    "byCommand": {
+      "sticker": 2,
+      "csticker": 1,
+      "fsticker": 1
+    },
+    "byStatus": {
+      "ok": 4
+    },
+    "byInputType": {
+      "video": 1,
+      "gif": 3
+    },
+    "byOutputType": {
+      "image": 4
+    },
+    "byTargetSource": {
+      "reply": 4
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 2467,
+      "messages": 2440,
+      "reactions": 0,
+      "media": 673,
+      "links": 63
+    },
+    "byHour": {
+      "0": 109,
+      "1": 48,
+      "2": 48,
+      "3": 130,
+      "4": 58,
+      "5": 31,
+      "6": 17,
+      "7": 9,
+      "8": 1,
+      "11": 15,
+      "12": 127,
+      "13": 105,
+      "14": 114,
+      "15": 81,
+      "16": 94,
+      "17": 85,
+      "18": 167,
+      "19": 387,
+      "20": 234,
+      "21": 225,
+      "22": 192,
+      "23": 190
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 51,
+      "5516994435369@s.whatsapp.net": 18,
+      "5516988137617@s.whatsapp.net": 65,
+      "190546341540031@lid": 83,
+      "131778236952767@lid": 575,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 8,
+      "5516991476228@s.whatsapp.net": 1,
+      "65197804912879@lid": 12,
+      "6283879987068@s.whatsapp.net": 17,
+      "174165839581324@lid": 38,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 72,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 563,
+      "5516988776338@s.whatsapp.net": 42,
+      "185967939985556@lid": 399,
+      "5517991664082@s.whatsapp.net": 24,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 218,
+      "272172178223326@lid": 19,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 20,
+      "238009924509886@lid": 19,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 19,
+      "103659153158378@lid": 21,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 9,
+      "187995030323304@lid": 18,
+      "150242334867642@lid": 18,
+      "137053111091288@lid": 4,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 2,
+      "3689544732728@lid": 17,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 25,
+      "9281743114312@lid": 27,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 13,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 3,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3
+    },
+    "avgLatencyMs": 4467978
+  }
+}
