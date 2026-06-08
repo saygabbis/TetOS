@@ -2,45 +2,9 @@
   "mood": "tired",
   "energy": 0,
   "social": 1,
-  "focus": 1,
-  "lastInteraction": "2026-06-08T18:22:45.415Z",
+  "focus": 0.98,
+  "lastInteraction": "2026-06-08T20:17:45.018Z",
   "recentInteractions": [
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 0,
-      "timestamp": "2026-06-08T18:08:40.864Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 18,
-      "timestamp": "2026-06-08T18:08:44.399Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 25,
-      "timestamp": "2026-06-08T18:11:00.729Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 124,
-      "timestamp": "2026-06-08T18:11:04.106Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 8,
-      "timestamp": "2026-06-08T18:11:21.977Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 77,
-      "timestamp": "2026-06-08T18:11:25.348Z"
-    },
     {
       "type": "user",
       "sentiment": "neutral",
@@ -124,6 +88,42 @@
       "sentiment": "neutral",
       "length": 78,
       "timestamp": "2026-06-08T18:22:48.316Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 7,
+      "timestamp": "2026-06-08T20:15:49.508Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 13,
+      "timestamp": "2026-06-08T20:15:49.523Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 7,
+      "timestamp": "2026-06-08T20:16:15.393Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 13,
+      "timestamp": "2026-06-08T20:16:15.407Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 7,
+      "timestamp": "2026-06-08T20:17:45.018Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 13,
+      "timestamp": "2026-06-08T20:17:45.033Z"
     }
   ]
 }

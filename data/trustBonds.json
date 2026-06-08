@@ -89,11 +89,11 @@
     "test_user_reply::direct": {
       "userId": "test_user_reply",
       "channelScope": "direct",
-      "trust": 0.49000000000000005,
-      "intimacy": 0.38,
+      "trust": 0.514,
+      "intimacy": 0.398,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-06-08T18:18:06.874Z",
+      "lastInteractionAt": "2026-06-08T20:17:42.592Z",
       "notes": [
         {
           "type": "reinforce",
@@ -119,6 +119,21 @@
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-06-08T18:18:06.874Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T20:15:46.737Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T20:16:12.957Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T20:17:42.592Z"
         }
       ]
     },

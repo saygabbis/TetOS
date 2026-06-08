@@ -1,6 +1,13 @@
+import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { TetoActivationStore } from "../src/core/channels/TetoActivationStore.js";
 import { parseTetoSlashCommand } from "../src/integrations/whatsapp/tetoSlashCommands.js";
 import { assert, ok } from "./test-helpers.js";
+
+const emptyStore = { dm: {}, groups: {}, meta: { lastUpdated: null } };
+for (const path of ["./data/test-activations-open.json", "./data/test-activations-gated.json"]) {
+  if (existsSync(path)) rmSync(path);
+  writeFileSync(path, `${JSON.stringify(emptyStore, null, 2)}\n`);
+}
 
 const storeOpen = new TetoActivationStore("./data/test-activations-open.json", { activationRequired: false });
 assert(storeOpen.isDmActive("u1"), "open mode allows dm");
@@ -17,5 +24,12 @@ const cmd = parseTetoSlashCommand("/teto-ativar");
 assert(cmd?.action === "activate_dm", "parse ativar");
 const gcmd = parseTetoSlashCommand("/teto-grupo-desativar");
 assert(gcmd?.action === "deactivate_group", "parse grupo desativar");
+
+const touchPath = "./data/test-activations-gated-touch.json";
+if (existsSync(touchPath)) rmSync(touchPath);
+const gatedTouch = new TetoActivationStore(touchPath, { activationRequired: true });
+assert(!gatedTouch.isDmActive("u99"), "gated blocks fresh user");
+gatedTouch.touchDm("u99");
+assert(!gatedTouch.isDmActive("u99"), "touchDm must not auto-activate when gated");
 
 ok("test-teto-activation");

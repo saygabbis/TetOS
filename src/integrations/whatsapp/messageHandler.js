@@ -260,7 +260,26 @@ function createConversationOrchestrator(socket, runtime) {
       for (let index = 0; index < replies.length; index += 1) {
         const content = String(replies[index] ?? "").trim();
         if (!content) continue;
-        if (interruptBySession.get(sessionId) !== token) return;
+        if (interruptBySession.get(sessionId) !== token) {
+          // #region agent log
+          fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+            body: JSON.stringify({
+              sessionId: "9518ce",
+              location: "messageHandler.js:sendReplies_interrupt",
+              message: "send_aborted_interrupt",
+              data: { sessionId, index, total: replies.length, token, current: interruptBySession.get(sessionId) },
+              timestamp: Date.now(),
+              hypothesisId: "H1"
+            })
+          }).catch(() => {});
+          // #endregion
+          console.warn(
+            `[whatsapp] send interrompido bolha ${index + 1}/${replies.length} (interrupt token mismatch)`
+          );
+          return;
+        }
         const remotePhone = extractPhone(remoteJid);
         const len = content.length;
         const isGroup = remoteJid.endsWith("@g.us");
@@ -301,6 +320,9 @@ function createConversationOrchestrator(socket, runtime) {
           }
         }
         if (interruptBySession.get(sessionId) !== token) {
+          console.warn(
+            `[whatsapp] send interrompido bolha ${index + 1}/${replies.length} após typing (interrupt token mismatch)`
+          );
           return;
         }
         console.log(`[whatsapp] outgoing ${remoteJid}: ${content}`);
@@ -955,8 +977,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
         }
 
-        orchestrator?.bumpInterrupt(sessionId);
-        orchestrator?.clearTypingGrace(userId);
+        if (!isFromMe) {
+          orchestrator?.bumpInterrupt(sessionId);
+          orchestrator?.clearTypingGrace(userId);
+        }
         const pushName = incoming.pushName?.trim();
 
         const contextInfo = extractContextInfo(unwrappedMessage);
