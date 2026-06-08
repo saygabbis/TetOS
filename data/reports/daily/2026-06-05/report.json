@@ -1,0 +1,181 @@
+{
+  "day": "2026-06-05",
+  "generatedAt": "2026-06-06T00:00:02.848Z",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 3416,
+    "byEvent": {
+      "chat.update": 1074,
+      "message.update": 330,
+      "message.incoming": 82,
+      "message.receipt_update": 1761,
+      "message.outgoing": 94,
+      "message.reaction": 63,
+      "group.participants_update": 5,
+      "message.deleted": 7
+    }
+  },
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 7,
+    "samples": [
+      {
+        "ts": "2026-06-05T11:55:32.688Z",
+        "messageId": "ACEA57F3F8248D14B2F51A87B697C3B8",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-05T12:30:54.108Z",
+        "messageId": "3EB0DC501D3F3A1F84404F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-05T12:30:54.114Z",
+        "messageId": "3EB0DC501D3F3A1F84404F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-05T14:11:41.595Z",
+        "messageId": "ACEE18A54F03C21A14F8EC1875F32D84",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-05T17:13:25.065Z",
+        "messageId": "ACBE28300A5D99B449BF077206C2270D",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-05T18:22:43.210Z",
+        "messageId": "AC641E60284EFCE78497AFE675D2D1CE",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-05T19:41:58.117Z",
+        "messageId": "AC767A5B3F5E6BEFCD3FA697E9528E95",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 0,
+    "avgLatencyMs": null,
+    "byCommand": {},
+    "byStatus": {},
+    "byInputType": {},
+    "byOutputType": {},
+    "byTargetSource": {}
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 5974,
+      "messages": 5947,
+      "reactions": 0,
+      "media": 1609,
+      "links": 179
+    },
+    "byHour": {
+      "0": 239,
+      "1": 146,
+      "2": 153,
+      "3": 277,
+      "4": 182,
+      "5": 83,
+      "6": 89,
+      "7": 61,
+      "8": 51,
+      "9": 14,
+      "10": 17,
+      "11": 108,
+      "12": 265,
+      "13": 217,
+      "14": 354,
+      "15": 231,
+      "16": 253,
+      "17": 141,
+      "18": 364,
+      "19": 585,
+      "20": 459,
+      "21": 722,
+      "22": 564,
+      "23": 399
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 67,
+      "5516994435369@s.whatsapp.net": 25,
+      "5516988137617@s.whatsapp.net": 70,
+      "190546341540031@lid": 480,
+      "131778236952767@lid": 1420,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 16,
+      "5516991476228@s.whatsapp.net": 2,
+      "65197804912879@lid": 41,
+      "6283879987068@s.whatsapp.net": 18,
+      "174165839581324@lid": 140,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 202,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 1166,
+      "5516988776338@s.whatsapp.net": 62,
+      "185967939985556@lid": 996,
+      "5517991664082@s.whatsapp.net": 39,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 612,
+      "272172178223326@lid": 47,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 23,
+      "238009924509886@lid": 23,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 48,
+      "103659153158378@lid": 40,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 23,
+      "187995030323304@lid": 34,
+      "150242334867642@lid": 30,
+      "137053111091288@lid": 5,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 5,
+      "3689544732728@lid": 86,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 31,
+      "9281743114312@lid": 63,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 40,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 7,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3,
+      "207202157650019@lid": 20,
+      "124841948631110@lid": 15,
+      "69123321135269@lid": 1,
+      "164076609101978@lid": 4,
+      "206579353784338@lid": 2,
+      "5516996184325@s.whatsapp.net": 1,
+      "5516997824041@s.whatsapp.net": 1,
+      "58141777641473@lid": 1,
+      "141167085773019@lid": 1,
+      "49809339740364@lid": 5,
+      "238083022835725@lid": 7,
+      "206476459155457@lid": 1,
+      "224098508644548@lid": 1,
+      "140269471174762@lid": 6
+    },
+    "avgLatencyMs": 6237625
+  }
+}

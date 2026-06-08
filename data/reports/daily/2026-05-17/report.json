@@ -1,0 +1,211 @@
+{
+  "day": "2026-05-17",
+  "generatedAt": "2026-05-18T00:00:20.173Z",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 2336,
+    "byEvent": {
+      "chat.update": 602,
+      "message.deleted": 14,
+      "message.update": 370,
+      "message.reaction": 16,
+      "message.receipt_update": 1143,
+      "message.outgoing": 107,
+      "message.incoming": 78,
+      "group.participants_update": 6
+    }
+  },
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 14,
+    "samples": [
+      {
+        "ts": "2026-05-17T03:02:52.599Z",
+        "messageId": "ACFB2B9EA4B3B64C092E236147DFFFB4",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T03:02:53.088Z",
+        "messageId": "AC5D4EF93057A96D8A1B1361262D5772",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T03:02:53.477Z",
+        "messageId": "AC09739B84CD988753F2AFD0CDBE3047",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T03:02:53.894Z",
+        "messageId": "ACDD222AFDA2880ECAACF0F871845C12",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T03:02:54.284Z",
+        "messageId": "AC95ECC891DFB6ED22F408A8BD788AD9",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T03:02:54.719Z",
+        "messageId": "ACB23EB9AF1B11ABB2858ABCEC6789CF",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T03:02:55.184Z",
+        "messageId": "AC5956217EFAAC35569864A42186A9D8",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T03:02:55.550Z",
+        "messageId": "AC81954EB58D610AF94C1DC118ED085E",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T04:14:07.351Z",
+        "messageId": "AC9AB4A10271E4F8F2A506FD2FAD7417",
+        "beforeText": "Sticker analisada localmente. Arquivo persistido em data/media/AC9AB4A10271E4F8F2A506FD2FAD7417-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T09:25:27.506Z",
+        "messageId": "ACD10FD64FC527A0A0912D692F3E09BB",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/ACD10FD64FC527A0A0912D692F3E09BB-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T09:25:27.919Z",
+        "messageId": "ACF17DB9106767AE013FB5C1F2541E12",
+        "beforeText": "Imagem analisada localmente. Arquivo persistido em data/media/ACF17DB9106767AE013FB5C1F2541E12-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T09:25:28.354Z",
+        "messageId": "AC6A4BCC42C558BF278209AD066C922D",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T15:37:51.173Z",
+        "messageId": "3A508AB38A5A45BAC35B",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-05-17T16:04:11.512Z",
+        "messageId": "AC7DD4C3588CCB9C93FDD0ACFC650341",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 0,
+    "avgLatencyMs": null,
+    "byCommand": {},
+    "byStatus": {},
+    "byInputType": {},
+    "byOutputType": {},
+    "byTargetSource": {}
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 3285,
+      "messages": 3258,
+      "reactions": 0,
+      "media": 860,
+      "links": 81
+    },
+    "byHour": {
+      "0": 133,
+      "1": 65,
+      "2": 54,
+      "3": 172,
+      "4": 134,
+      "5": 49,
+      "6": 28,
+      "7": 25,
+      "8": 11,
+      "11": 39,
+      "12": 147,
+      "13": 120,
+      "14": 170,
+      "15": 112,
+      "16": 173,
+      "17": 96,
+      "18": 234,
+      "19": 419,
+      "20": 347,
+      "21": 305,
+      "22": 210,
+      "23": 242
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 57,
+      "5516994435369@s.whatsapp.net": 21,
+      "5516988137617@s.whatsapp.net": 66,
+      "190546341540031@lid": 120,
+      "131778236952767@lid": 761,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 10,
+      "5516991476228@s.whatsapp.net": 1,
+      "65197804912879@lid": 16,
+      "6283879987068@s.whatsapp.net": 18,
+      "174165839581324@lid": 68,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 94,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 707,
+      "5516988776338@s.whatsapp.net": 49,
+      "185967939985556@lid": 587,
+      "5517991664082@s.whatsapp.net": 29,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 325,
+      "272172178223326@lid": 24,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 21,
+      "238009924509886@lid": 20,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 19,
+      "103659153158378@lid": 25,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 13,
+      "187995030323304@lid": 18,
+      "150242334867642@lid": 30,
+      "137053111091288@lid": 4,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 4,
+      "3689544732728@lid": 18,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 25,
+      "9281743114312@lid": 27,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 34,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 6,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3,
+      "207202157650019@lid": 3,
+      "124841948631110@lid": 15,
+      "69123321135269@lid": 1,
+      "164076609101978@lid": 2
+    },
+    "avgLatencyMs": 3889109
+  }
+}
