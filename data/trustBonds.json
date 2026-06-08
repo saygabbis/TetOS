@@ -223,6 +223,38 @@
           "ts": "2026-06-08T18:07:54.369Z"
         }
       ]
+    },
+    "test_dm_silence::direct": {
+      "userId": "test_dm_silence",
+      "channelScope": "direct",
+      "trust": 0.458,
+      "intimacy": 0.356,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": "2026-06-08T20:48:48.016Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T20:48:48.016Z"
+        }
+      ]
+    },
+    "test_grp_silence::group:120@g.us": {
+      "userId": "test_grp_silence",
+      "channelScope": "group:120@g.us",
+      "trust": 0.458,
+      "intimacy": 0.356,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": "2026-06-08T20:48:50.478Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T20:48:50.478Z"
+        }
+      ]
     }
   }
 }

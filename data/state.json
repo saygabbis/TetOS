@@ -2,21 +2,9 @@
   "mood": "tired",
   "energy": 0,
   "social": 1,
-  "focus": 0.98,
-  "lastInteraction": "2026-06-08T20:17:45.018Z",
+  "focus": 0.99,
+  "lastInteraction": "2026-06-08T20:48:50.455Z",
   "recentInteractions": [
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 5,
-      "timestamp": "2026-06-08T18:11:43.276Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 100,
-      "timestamp": "2026-06-08T18:11:46.684Z"
-    },
     {
       "type": "user",
       "sentiment": "neutral",
@@ -124,6 +112,18 @@
       "sentiment": "neutral",
       "length": 13,
       "timestamp": "2026-06-08T20:17:45.033Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 8,
+      "timestamp": "2026-06-08T20:48:50.455Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 15,
+      "timestamp": "2026-06-08T20:48:50.469Z"
     }
   ]
 }

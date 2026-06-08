@@ -210,19 +210,23 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
+  const trimmedInput = String(input ?? "").trim();
   const directSubstantive =
     !isGroup &&
-    (String(input ?? "").trim().length > 12 ||
-      /[?]/.test(String(input ?? "")) ||
-      /\b(fala|conta|me diz|o que|como|por que|pq)\b/i.test(String(input ?? "")));
+    (trimmedInput.length > 12 ||
+      /[?]/.test(trimmedInput) ||
+      /\b(fala|conta|me diz|o que|como|por que|pq)\b/i.test(trimmedInput));
 
-  if (
+  // timing_silence só corta resposta em grupo sem menção; no privado sempre gera reply.
+  const timingSilenceSkip =
+    isGroup &&
     timingPlan?.silenceAppropriate &&
     !effectiveMention &&
     !isReply &&
     effectiveCloseDecision !== "respond" &&
-    !directSubstantive
-  ) {
+    !directSubstantive;
+
+  if (timingSilenceSkip) {
     runtime.metrics?.increment?.("pipeline.timing.silence");
     runtime.logger?.log?.("pipeline.timing_silence", {
       userId: safeUserId,
@@ -240,6 +244,28 @@ export async function runMessagePipeline(runtime, payload = {}) {
       timingPlan
     };
   }
+
+  // #region agent log
+  if (!isGroup && timingPlan?.silenceAppropriate) {
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+      body: JSON.stringify({
+        sessionId: "9518ce",
+        location: "messagePipeline.js:dm_timing_bypass",
+        message: "dm_bypassed_timing_silence",
+        data: {
+          userId: safeUserId,
+          inputLen: trimmedInput.length,
+          reasons: timingPlan.reasons ?? []
+        },
+        timestamp: Date.now(),
+        hypothesisId: "H1",
+        runId: "post-fix"
+      })
+    }).catch(() => {});
+  }
+  // #endregion
 
   if (!runtime.defaults.replyEnabled) {
     runtime.logger?.log?.("pipeline.observe_only", {

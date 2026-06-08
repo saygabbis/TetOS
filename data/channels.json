@@ -61,6 +61,28 @@
       "createdAt": "2026-06-08T18:06:46.662Z",
       "updatedAt": "2026-06-08T18:23:04.002Z",
       "participantCount": 1
+    },
+    "direct:test_dm_silence": {
+      "id": "direct:test_dm_silence",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": false,
+      "participants": [],
+      "createdAt": "2026-06-08T20:48:48.018Z",
+      "updatedAt": "2026-06-08T20:48:48.018Z",
+      "participantCount": 0
+    },
+    "120@g.us": {
+      "id": "120@g.us",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": true,
+      "participants": [],
+      "createdAt": "2026-06-08T20:48:50.478Z",
+      "updatedAt": "2026-06-08T20:48:50.478Z",
+      "participantCount": 0
     }
   }
 }

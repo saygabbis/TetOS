@@ -234,6 +234,19 @@
       ],
       "topics": {},
       "lastUpdated": "2026-06-08T18:22:48.319Z"
+    },
+    "direct:test_dm_silence": {
+      "utterances": [
+        {
+          "fp": "oiee o que foi?",
+          "text": "Oiee o que foi?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T20:48:50.470Z"
+        }
+      ],
+      "topics": {},
+      "lastUpdated": "2026-06-08T20:48:50.470Z"
     }
   }
 }

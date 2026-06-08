@@ -3527,6 +3527,25 @@
       },
       "channelScope": "direct",
       "lastUpdated": "2026-06-08T20:17:45.037Z"
+    },
+    "test_dm_silence": {
+      "facts": {
+        "lastChannel": "direct"
+      },
+      "style": {
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 0,
+        "laughter": 0,
+        "emoji": 0,
+        "total": 1
+      },
+      "channelScope": "direct",
+      "lastUpdated": "2026-06-08T20:48:50.473Z"
     }
   },
   "mediumTerm": {
