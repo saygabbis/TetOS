@@ -10,6 +10,10 @@ import { ChatCommandQueue } from "./chatCommandQueue.js";
 import { ChatMediaHistoryStore } from "./chatMediaHistoryStore.js";
 import { resolveCommandTarget } from "./commandTargetResolver.js";
 import { MediaProcessor } from "../../core/media/mediaProcessor.js";
+import { resolveTimingConfig, estimateTypingDelayMs as estimateTypingFromCfg } from "../../core/timing/timingConfig.js";
+import { extractContextInfo, isDirectTetoAddress } from "./messageContext.js";
+import { parseTetoSlashCommand, handleTetoSlashCommand } from "./tetoSlashCommands.js";
+import { canonicalSessionId, canonicalUserId } from "../../core/channels/userActivity.js";
 
 function extractPhone(remoteJid = "") {
   return String(remoteJid)
@@ -51,7 +55,6 @@ function classifyContent(text = "") {
 }
 
 function logThinking(runtime, payload = {}) {
-  if (!runtime?.defaults?.thinkingLogsEnabled) return;
   const {
     phase = "unknown",
     userId = "unknown",
@@ -59,6 +62,12 @@ function logThinking(runtime, payload = {}) {
     detail = ""
   } = payload;
   const detailText = String(detail ?? "").trim();
+  runtime.brainOrchestrator?.mindLogger?.append?.({
+    input: { phase, userId, remoteJid, detail: detailText },
+    brain: { thinking: true },
+    output: {}
+  });
+  if (!runtime?.defaults?.thinkingLogsEnabled) return;
   console.log(
     `[thinking] phase=${phase} user=${userId} chat=${remoteJid}${detailText ? ` detail="${detailText}"` : ""}`
   );
@@ -224,34 +233,6 @@ function extractParticipant(incoming) {
   return jidNormalizedUser(participant);
 }
 
-const USER_BATCH_WINDOW_MS = 650;
-/** Tende a esperar o usuário parar de "composing" antes de gerar resposta (multi-msg). */
-const USER_TYPING_GRACE_MS = 2400;
-/** Pausa "digitando": visível o suficiente; sobe com √tamanho + variação por bolha. */
-const TYPING_MIN_DELAY_MS = 140;
-const TYPING_MAX_DELAY_MS = 2400;
-const TYPING_SQRT_REF_LEN = 220;
-const MULTI_PART_DELAY_MIN_MS = 120;
-const MULTI_PART_DELAY_MAX_MS = 380;
-/** Piso na 1ª bolha quando mostramos composing só no envio (acks ultra curtos sem composing). */
-const FIRST_BUBBLE_TYPING_FLOOR_MS = 480;
-/** Pequena pausa entre soltar "paused" pós-modelo e recomposing da 1ª bolha (mais natural). */
-const POST_MODEL_BEFORE_BUBBLE_MS_MIN = 90;
-const POST_MODEL_BEFORE_BUBBLE_MS_MAX = 240;
-const INTERRUPT_DEBOUNCE_MIN_MS = 120;
-const INTERRUPT_DEBOUNCE_MAX_MS = 260;
-const MODEL_TIMEOUT_MS = 25000;
-function estimateTypingDelayMs(text, partIndex = 0) {
-  const len = String(text ?? "").trim().length;
-  if (len <= 0) return TYPING_MIN_DELAY_MS;
-  const span = TYPING_MAX_DELAY_MS - TYPING_MIN_DELAY_MS;
-  const ratio = Math.sqrt(len) / Math.sqrt(TYPING_SQRT_REF_LEN);
-  const blended = TYPING_MIN_DELAY_MS + Math.min(1, ratio) * span;
-  const partWave = 1 + (partIndex % 2 === 0 ? 0.05 : 0.14);
-  const jitter = 0.82 + Math.random() * 0.34;
-  const ms = blended * partWave * jitter;
-  return Math.round(Math.min(TYPING_MAX_DELAY_MS, Math.max(TYPING_MIN_DELAY_MS, ms)));
-}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -262,21 +243,24 @@ function randBetween(min, max) {
 }
 
 function createConversationOrchestrator(socket, runtime) {
-  const pendingByUser = new Map();
-  const queueByUser = new Map();
-  const runningByUser = new Set();
+  const timingCfg = resolveTimingConfig(runtime?.defaults ?? {});
+  const pendingBySession = new Map();
+  const queueBySession = new Map();
+  const runningBySession = new Set();
   const typingByUser = new Map();
-  const interruptByUser = new Map();
+  const interruptBySession = new Map();
   /** @type {Map<string, { messagesSinceLastReaction: number, lastReactionAt: number }>} */
   const reactionStateByUser = new Map();
 
-  async function sendReplies(remoteJid, userId, replies = [], token = 0, options = {}) {
+  async function sendReplies(remoteJid, userId, sessionId, replies = [], token = 0, options = {}) {
+    const quoteKey = options?.quoteMessageKey ?? null;
     if (!runtime.defaults.replyEnabled) return;
+    const plan = options?.timingPlan ?? {};
     try {
       for (let index = 0; index < replies.length; index += 1) {
         const content = String(replies[index] ?? "").trim();
         if (!content) continue;
-        if (interruptByUser.get(userId) !== token) return;
+        if (interruptBySession.get(sessionId) !== token) return;
         const remotePhone = extractPhone(remoteJid);
         const len = content.length;
         const isGroup = remoteJid.endsWith("@g.us");
@@ -284,24 +268,28 @@ function createConversationOrchestrator(socket, runtime) {
         let typingDelayMs;
         if (isGroup) {
           needsTyping = false;
+          typingDelayMs = plan.readDelayMs ? Math.min(plan.readDelayMs, 1200) : 0;
+          if (typingDelayMs > 0) await sleep(typingDelayMs);
           typingDelayMs = 0;
         } else if (index > 0) {
           needsTyping = true;
-          typingDelayMs = estimateTypingDelayMs(content, index);
+          typingDelayMs = estimateTypingFromCfg(content, index, timingCfg);
         } else if (len <= 4) {
           needsTyping = false;
           typingDelayMs = 0;
         } else {
           needsTyping = true;
-          const base = estimateTypingDelayMs(content, index);
+          const base = index === 0 && plan.typingDelayMs
+            ? plan.typingDelayMs
+            : estimateTypingFromCfg(content, index, timingCfg);
           const extraDelay = options?.softened ? randBetween(120, 320) : 0;
           typingDelayMs = Math.min(
-            TYPING_MAX_DELAY_MS,
-            Math.max(FIRST_BUBBLE_TYPING_FLOOR_MS, base + extraDelay)
+            timingCfg.typingMaxDelayMs,
+            Math.max(timingCfg.firstBubbleTypingFloorMs, base + extraDelay)
           );
         }
         if (index === 0 && needsTyping && typingDelayMs > 0) {
-          await sleep(randBetween(POST_MODEL_BEFORE_BUBBLE_MS_MIN, POST_MODEL_BEFORE_BUBBLE_MS_MAX));
+          await sleep(randBetween(timingCfg.postModelBeforeBubbleMinMs, timingCfg.postModelBeforeBubbleMaxMs));
         }
         if (needsTyping && typingDelayMs > 0 && typeof socket.sendPresenceUpdate === "function") {
           try {
@@ -312,11 +300,15 @@ function createConversationOrchestrator(socket, runtime) {
             console.warn(`[whatsapp] typing simulation failed for ${remotePhone}: ${error.message}`);
           }
         }
-        if (interruptByUser.get(userId) !== token) {
+        if (interruptBySession.get(sessionId) !== token) {
           return;
         }
         console.log(`[whatsapp] outgoing ${remoteJid}: ${content}`);
-        const sendTask = socket.sendMessage(remoteJid, { text: content });
+        const payload =
+          index === 0 && quoteKey
+            ? { text: content, quoted: quoteKey }
+            : { text: content };
+        const sendTask = socket.sendMessage(remoteJid, payload);
         await Promise.race([
           sendTask,
           new Promise((_, reject) => setTimeout(() => reject(new Error("send timeout")), 8000))
@@ -324,7 +316,7 @@ function createConversationOrchestrator(socket, runtime) {
           console.error(`[whatsapp] send failed to ${remoteJid}:`, error.message);
         });
         if (index < replies.length - 1) {
-          const interPartDelayMs = randBetween(MULTI_PART_DELAY_MIN_MS, MULTI_PART_DELAY_MAX_MS);
+          const interPartDelayMs = randBetween(timingCfg.multiPartDelayMinMs, timingCfg.multiPartDelayMaxMs);
           await sleep(interPartDelayMs);
         }
       }
@@ -339,17 +331,17 @@ function createConversationOrchestrator(socket, runtime) {
     }
   }
 
-  async function drainUserQueue(userId) {
-    if (runningByUser.has(userId)) return;
-    runningByUser.add(userId);
+  async function drainSessionQueue(sessionId) {
+    if (runningBySession.has(sessionId)) return;
+    runningBySession.add(sessionId);
     try {
-      while (queueByUser.get(userId)?.length) {
-        const item = queueByUser.get(userId).shift();
+      while (queueBySession.get(sessionId)?.length) {
+        const item = queueBySession.get(sessionId).shift();
         if (!item) continue;
-        const typingUntil = typingByUser.get(userId) ?? 0;
+        const typingUntil = typingByUser.get(item.userId) ?? 0;
         const token = Date.now();
-        interruptByUser.set(userId, token);
-        const prevR = reactionStateByUser.get(userId) ?? {
+        interruptBySession.set(sessionId, token);
+        const prevR = reactionStateByUser.get(item.userId) ?? {
           messagesSinceLastReaction: 10,
           lastReactionAt: 0
         };
@@ -359,7 +351,7 @@ function createConversationOrchestrator(socket, runtime) {
         };
         let replies = [];
         if (item.closeDecision === "respond") {
-          console.log(`[whatsapp] generating reply for ${userId}…`);
+          console.log(`[whatsapp] generating reply for ${item.userId}…`);
           if (typeof socket.sendPresenceUpdate === "function") {
             try {
               await socket.sendPresenceUpdate("composing", item.remoteJid);
@@ -368,35 +360,61 @@ function createConversationOrchestrator(socket, runtime) {
             }
           }
         }
-        if (runtime.defaults.replyEnabled) {
-          try {
-            const out = await Promise.race([
-              handleIncomingMessage(runtime, {
-                message: item.message,
-                userId: item.userId,
-                sessionId: item.sessionId,
-                channelId: item.channelId,
-                isGroup: item.isGroup,
-                participants: item.participants,
-                isDirectMention: item.isDirectMention,
-                isReply: item.isReply,
-                quotedMessage: item.quotedMessage,
-                messageKey: item.messageKey,
-                closeDecision: item.closeDecision
-              }),
-              new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("model timeout")), MODEL_TIMEOUT_MS)
-              )
-            ]);
+        let timingPlan = null;
+        const shouldRunPipeline =
+          runtime.defaults.replyEnabled || runtime.defaults.learningModeEnabled;
+        if (shouldRunPipeline) {
+          let lastError = null;
+          for (let attempt = 0; attempt < 2; attempt += 1) {
+            try {
+              const genStart = Date.now();
+              const out = await Promise.race([
+                handleIncomingMessage(runtime, {
+                  message: item.message,
+                  userId: item.userId,
+                  sessionId: item.sessionId,
+                  channelId: item.channelId,
+                  isGroup: item.isGroup,
+                  participants: item.participants,
+                  isDirectMention: item.isDirectMention,
+                  isReply: item.isReply,
+                  quotedMessage: item.quotedMessage,
+                  messageKey: item.messageKey,
+                  closeDecision: item.closeDecision,
+                  media: item.media
+                }),
+                new Promise((_, reject) =>
+                  setTimeout(() => reject(new Error("model timeout")), timingCfg.modelTimeoutMs)
+                )
+              ]);
 
-            replies = out?.replies ?? [];
-            item.passiveMode = out?.policy?.mode ?? "full";
-            if (item.passiveMode === "react_only") {
+              replies = out?.replies ?? [];
+              timingPlan = out?.timingPlan ?? null;
+              const targetLatency = (timingPlan?.readDelayMs ?? 0) + (timingPlan?.thinkDelayMs ?? 0);
+              const remaining = Math.max(0, targetLatency - (Date.now() - genStart));
+              if (remaining > 0 && replies.length > 0) {
+                await sleep(remaining);
+              }
+              item.passiveMode = out?.policy?.mode ?? "full";
+              if (item.passiveMode === "react_only") {
+                replies = [];
+              }
+              lastError = null;
+              break;
+            } catch (error) {
+              lastError = error;
+              if (error.message === "model timeout" && attempt === 0) {
+                console.warn(`[whatsapp] model timeout, retrying for ${item.userId}…`);
+                await sleep(400);
+                continue;
+              }
+              console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
               replies = [];
+              break;
             }
-          } catch (error) {
-            console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
-            replies = [];
+          }
+          if (lastError?.message === "model timeout") {
+            runtime.logger?.log?.("whatsapp.model_timeout", { userId: item.userId, sessionId: item.sessionId });
           }
         } else {
           replies = [];
@@ -407,7 +425,7 @@ function createConversationOrchestrator(socket, runtime) {
             remoteJid: item.remoteJid,
             detail: `closeDecision=${item.closeDecision} media=${item.media?.type ?? "none"}`
           });
-          runtime.logger?.log?.("learning.observe_only", {
+          runtime.logger?.log?.("learning.observe_only_skipped", {
             userId: item.userId,
             channelId: item.channelId
           });
@@ -415,6 +433,11 @@ function createConversationOrchestrator(socket, runtime) {
 
         const hasOutgoing =
           Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
+        if (!hasOutgoing && shouldRunPipeline && runtime.defaults.replyEnabled) {
+          console.warn(
+            `[whatsapp] empty reply for ${item.userId} (close=${item.closeDecision} mode=${item.passiveMode ?? "?"})`
+          );
+        }
         if (hasOutgoing && typeof socket.sendPresenceUpdate === "function") {
           try {
             await socket.sendPresenceUpdate("composing", item.remoteJid);
@@ -432,16 +455,18 @@ function createConversationOrchestrator(socket, runtime) {
             /* ignore */
           }
         }
-        if (interruptByUser.get(userId) !== token) continue;
+        if (interruptBySession.get(sessionId) !== token) continue;
         const passiveAction = resolvePassiveModeAction({
           policy: { allowed: true, mode: item.passiveMode },
           media: item.media,
           isGroup: item.isGroup
         });
 
+        const affinities = runtime.brainOrchestrator?.mediaHub?.getAffinities?.(item.userId) ?? null;
         const plan = planWhatsAppReaction({
           userText: item.message,
-          state: reactionState
+          state: reactionState,
+          affinities
         });
         const forcedReaction = item.closeDecision === "react" || passiveAction.type === "react_only" ? "❤️" : null;
         const emoji = plan.emoji ?? forcedReaction;
@@ -451,19 +476,19 @@ function createConversationOrchestrator(socket, runtime) {
             await socket.sendMessage(item.remoteJid, {
               react: { text: emoji, key: item.messageKey }
             });
-            reactionStateByUser.set(userId, {
+            reactionStateByUser.set(item.userId, {
               messagesSinceLastReaction: 0,
               lastReactionAt: Date.now()
             });
           } catch (e) {
             console.warn(`[whatsapp] reaction failed: ${e.message}`);
-            reactionStateByUser.set(userId, {
+            reactionStateByUser.set(item.userId, {
               ...reactionState,
               lastReactionAt: reactionState.lastReactionAt
             });
           }
         } else {
-          reactionStateByUser.set(userId, {
+          reactionStateByUser.set(item.userId, {
             messagesSinceLastReaction: reactionState.messagesSinceLastReaction,
             lastReactionAt: reactionState.lastReactionAt
           });
@@ -509,41 +534,72 @@ function createConversationOrchestrator(socket, runtime) {
               }
               await sleep(waitForTypingMs);
             }
-            const debounceMs = randBetween(INTERRUPT_DEBOUNCE_MIN_MS, INTERRUPT_DEBOUNCE_MAX_MS);
+            const debounceMs = randBetween(timingCfg.interruptDebounceMinMs, timingCfg.interruptDebounceMaxMs);
             await sleep(debounceMs);
           }
-          await sendReplies(item.remoteJid, item.userId, replies, token, { softened });
+          await sendReplies(item.remoteJid, item.userId, item.sessionId, replies, token, {
+            softened,
+            timingPlan,
+            quoteMessageKey: item.isReply ? item.messageKey : null
+          });
         }
       }
     } finally {
-      runningByUser.delete(userId);
+      runningBySession.delete(sessionId);
     }
   }
 
   function enqueue(entry) {
-    const queue = queueByUser.get(entry.userId) ?? [];
+    const key = entry.sessionId ?? entry.userId;
+    const queue = queueBySession.get(key) ?? [];
     queue.push(entry);
-    queueByUser.set(entry.userId, queue);
-    drainUserQueue(entry.userId).catch((error) => {
+    queueBySession.set(key, queue);
+    drainSessionQueue(key).catch((error) => {
       console.error("[whatsapp] queue processing error:", error.message);
     });
   }
 
   function scheduleIncoming(entry) {
-    const previous = pendingByUser.get(entry.userId);
+    const key = entry.sessionId ?? entry.userId;
+    let previous = pendingBySession.get(key);
+
+    // Reply explícito (quote) → responde o fio anterior e trata este separado
+    if (entry.isReply && previous?.timer) {
+      clearTimeout(previous.timer);
+      const flushed = { ...previous };
+      delete flushed.timer;
+      pendingBySession.delete(key);
+      enqueue(flushed);
+      previous = null;
+    }
+
     if (previous?.timer) clearTimeout(previous.timer);
     const merged = previous
       ? {
           ...entry,
           message: `${previous.message}\n${entry.message}`.trim(),
-          messageKey: entry.messageKey ?? previous.messageKey
+          messageKey: entry.messageKey ?? previous.messageKey,
+          media: entry.media ?? previous.media,
+          quotedMessage: entry.quotedMessage ?? previous.quotedMessage,
+          isReply: entry.isReply || previous.isReply,
+          batchedCount: (previous.batchedCount ?? 1) + 1
         }
-      : entry;
+      : { ...entry, batchedCount: 1 };
+
+    const typingUntil = typingByUser.get(entry.userId) ?? 0;
+    const stillTyping = typingUntil > Date.now();
+    const batchMs = stillTyping
+      ? Math.min(4500, Math.round(timingCfg.batchWindowMs * 2.2))
+      : timingCfg.batchWindowMs;
+
     const timer = setTimeout(() => {
-      pendingByUser.delete(entry.userId);
+      pendingBySession.delete(key);
+      if (merged.batchedCount > 1) {
+        console.log(`[whatsapp] batch ${merged.batchedCount} msgs → 1 reply (${key})`);
+      }
       enqueue(merged);
-    }, USER_BATCH_WINDOW_MS);
-    pendingByUser.set(entry.userId, { ...merged, timer });
+    }, batchMs);
+    pendingBySession.set(key, { ...merged, timer });
   }
 
   function onPresenceUpdate(update = {}) {
@@ -554,14 +610,14 @@ function createConversationOrchestrator(socket, runtime) {
     const userPresence = presences[id] ?? presences[`${userId}@s.whatsapp.net`] ?? null;
     const isTyping = userPresence?.lastKnownPresence === "composing";
     if (isTyping) {
-      typingByUser.set(userId, Date.now() + USER_TYPING_GRACE_MS);
+      typingByUser.set(userId, Date.now() + timingCfg.typingGraceMs);
     }
   }
 
 
   /** Invalidate in-flight replies when user sends a new message (must stay inside closure). */
-  function bumpInterrupt(userId) {
-    interruptByUser.set(userId, Date.now());
+  function bumpInterrupt(sessionId) {
+    interruptBySession.set(sessionId, Date.now());
   }
 
   /** Já recebemos o texto — não esperar grace de "composing" do turno anterior (evita +atraso antes do modelo). */
@@ -573,9 +629,10 @@ function createConversationOrchestrator(socket, runtime) {
 }
 
 export function registerMessageHandler({ socket, runtime, role = "full" }) {
+  const botChatRole =
+    role === "media" && runtime.defaults.whatsappMode === "dual" && runtime.defaults.whatsappMainObserveOnly;
   const orchestrator =
-    role === "media" ? null : createConversationOrchestrator(socket, runtime);
-  const groupContextByUser = new Map();
+    role === "media" && !botChatRole ? null : createConversationOrchestrator(socket, runtime);
   const messageSnapshotById = new Map();
   const commandQueue = new ChatCommandQueue();
   const mediaHistoryStore = new ChatMediaHistoryStore(runtime.defaults.commandMediaHistoryLimit);
@@ -583,10 +640,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     outputDir: runtime.defaults.commandMediaDerivedPath,
     maxStickerBytes: runtime.defaults.tetosStickerMaxBytes
   });
-  const GROUP_CONTEXT_WINDOW_MS = 5 * 60 * 1000;
   const seenMessageIds = new Map();
   const MESSAGE_DEDUPE_TTL_MS = 60 * 1000;
-  const skipVisionEnrichment = role === "media";
+  const skipVisionEnrichment = role === "media" && !botChatRole;
   const waLogPrefix = role === "media" ? "[whatsapp:media]" : "[whatsapp]";
   if (orchestrator) {
     socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
@@ -645,36 +701,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         const outBuffer = output.path ? readFileSync(output.path) : null;
 
-        // #region agent log
-        if (outBuffer && ["sticker", "fsticker", "csticker"].includes(parsedCommand.command)) {
-          const head = outBuffer.subarray(0, Math.min(16, outBuffer.length));
-          const hex = [...head].map((x) => x.toString(16).padStart(2, "0")).join("");
-          fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "99966e" },
-            body: JSON.stringify({
-              sessionId: "99966e",
-              location: "messageHandler.js:handleMediaCommand",
-              message: "buffer before sendMessage sticker",
-              data: {
-                command: parsedCommand.command,
-                outputKind: output.kind,
-                bufferLen: outBuffer.length,
-                magicHex16: hex,
-                looksLikePng: hex.startsWith("89504e470d0a1a0a"),
-                looksLikeWebp:
-                  outBuffer.length >= 12 &&
-                  outBuffer.subarray(0, 4).toString() === "RIFF" &&
-                  outBuffer.subarray(8, 12).toString() === "WEBP",
-                looksLikeMp4: hex.includes("66747970")
-              },
-              timestamp: Date.now(),
-              hypothesisId: "H1-H4",
-              runId: "webp-fix-v1"
-            })
-          }).catch(() => {});
-        }
-        // #endregion
 
         if (parsedCommand.command === "toimg") {
           if (output.kind === "video") {
@@ -689,81 +715,13 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                   ? { seconds: output.toimgPlaybackSeconds }
                   : {})
               };
-              // #region agent log
-              {
-                const head = outBuffer.subarray(0, Math.min(12, outBuffer.length));
-                const hex = [...head].map((x) => x.toString(16).padStart(2, "0")).join("");
-                fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "X-Debug-Session-Id": "99966e"
-                  },
-                  body: JSON.stringify({
-                    sessionId: "99966e",
-                    location: "messageHandler.js:toimg-playback",
-                    message: "toimg animated playback send",
-                    data: {
-                      playbackMime,
-                      seconds: output.toimgPlaybackSeconds ?? null,
-                      bufferLen: outBuffer.length,
-                      magicHex12: hex
-                    },
-                    timestamp: Date.now(),
-                    hypothesisId: "H-toimg-mp4-decode",
-                    runId: "toimg-playback-v1"
-                  })
-                }).catch(() => {});
-              }
-              // #endregion
-              // #region agent log
-              fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
-                body: JSON.stringify({
-                  sessionId: "e69bad",
-                  runId: "toimg-large-gif-v1",
-                  hypothesisId: "H5",
-                  location: "messageHandler.js:handleMediaCommand",
-                  message: "enviando playback toimg para chat",
-                  data: {
-                    playbackMime,
-                    playbackSeconds: output.toimgPlaybackSeconds ?? null,
-                    playbackBytes: outBuffer.length
-                  },
-                  timestamp: Date.now()
-                })
-              }).catch(() => {});
-              // #endregion
+
+
               await socket.sendMessage(remoteJid, playbackPayload);
             }
             const gifDoc = output.toimgGifPath;
             if (gifDoc && existsSync(gifDoc)) {
-              // #region agent log
-              fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
-                body: JSON.stringify({
-                  sessionId: "e69bad",
-                  runId: "toimg-large-gif-v1",
-                  hypothesisId: "H1-H4",
-                  location: "messageHandler.js:handleMediaCommand",
-                  message: "enviando documento gif do toimg",
-                  data: {
-                    mime: "image/gif",
-                    fileName: "sticker-convertido.gif",
-                    gifBytes: (() => {
-                      try {
-                        return readFileSync(gifDoc).length;
-                      } catch {
-                        return -1;
-                      }
-                    })()
-                  },
-                  timestamp: Date.now()
-                })
-              }).catch(() => {});
-              // #endregion
+
               await socket.sendMessage(remoteJid, {
                 document: readFileSync(gifDoc),
                 mimetype: "image/gif",
@@ -779,89 +737,13 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
           }
         } else if (output.kind === "video") {
-          // #region agent log
-          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
-            body: JSON.stringify({
-              sessionId: "ebbfbc",
-              runId: "gif-long-debug-v1",
-              hypothesisId: "H4",
-              location: "messageHandler.js:handleMediaCommand",
-              message: "sending sticker payload from video output",
-              data: {
-                command: parsedCommand.command,
-                inputType: resolved.media?.type ?? null,
-                outputKind: output.kind,
-                bufferLen: outBuffer?.length ?? 0,
-                remoteJid
-              },
-              timestamp: Date.now()
-            })
-          }).catch(() => {});
-          // #endregion
+
           const sendResult = await socket.sendMessage(remoteJid, { sticker: outBuffer });
-          // #region agent log
-          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
-            body: JSON.stringify({
-              sessionId: "ebbfbc",
-              runId: "gif-long-debug-v1",
-              hypothesisId: "H5",
-              location: "messageHandler.js:handleMediaCommand",
-              message: "sticker send acknowledged by socket",
-              data: {
-                command: parsedCommand.command,
-                sentMessageId: sendResult?.key?.id ?? null,
-                remoteJid: sendResult?.key?.remoteJid ?? remoteJid
-              },
-              timestamp: Date.now()
-            })
-          }).catch(() => {});
-          // #endregion
+
         } else {
-          // #region agent log
-          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
-            body: JSON.stringify({
-              sessionId: "ebbfbc",
-              runId: "gif-long-debug-v1",
-              hypothesisId: "H4",
-              location: "messageHandler.js:handleMediaCommand",
-              message: "sending sticker payload from image output",
-              data: {
-                command: parsedCommand.command,
-                inputType: resolved.media?.type ?? null,
-                outputKind: output.kind,
-                bufferLen: outBuffer?.length ?? 0,
-                remoteJid
-              },
-              timestamp: Date.now()
-            })
-          }).catch(() => {});
-          // #endregion
+
           const sendResult = await socket.sendMessage(remoteJid, { sticker: outBuffer });
-          // #region agent log
-          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
-            body: JSON.stringify({
-              sessionId: "ebbfbc",
-              runId: "gif-long-debug-v1",
-              hypothesisId: "H5",
-              location: "messageHandler.js:handleMediaCommand",
-              message: "sticker send acknowledged by socket",
-              data: {
-                command: parsedCommand.command,
-                sentMessageId: sendResult?.key?.id ?? null,
-                remoteJid: sendResult?.key?.remoteJid ?? remoteJid
-              },
-              timestamp: Date.now()
-            })
-          }).catch(() => {});
-          // #endregion
+
         }
 
         const elapsedMs = Date.now() - startedAt;
@@ -981,6 +863,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const text = extractText(unwrappedMessage).trim();
         const links = extractLinks(text);
         const parsedCommand = parseWhatsAppCommand(text, runtime.defaults.commandPrefix);
+        const tetoSlash = parseTetoSlashCommand(text);
         const mediaKind = detectMediaKind(unwrappedMessage);
         const isFromMe = Boolean(incoming.key?.fromMe);
         const hasMediaPayload = Boolean(
@@ -998,8 +881,22 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         if (isGroup && !participantId) {
           continue;
         }
-        const userId = isGroup ? participantId : baseUserId;
-        const sessionId = isGroup && participantId ? `wa-group:${baseUserId}:${participantId}` : `wa-${baseUserId}`;
+        const userId = isGroup ? participantId : canonicalUserId(runtime, baseUserId);
+        const sessionId = isGroup && participantId
+          ? `wa-group:${baseUserId}:${participantId}`
+          : canonicalSessionId(runtime, userId);
+
+        if (tetoSlash && !isFromMe && (role !== "media" || botChatRole)) {
+          const handled = await handleTetoSlashCommand({
+            action: tetoSlash.action,
+            userId,
+            remoteJid,
+            isGroup,
+            activationStore: runtime.tetoActivation,
+            socket
+          });
+          if (handled.handled) continue;
+        }
 
         if (parsedCommand?.command === "help") {
           if (role === "media" || role === "full") {
@@ -1010,7 +907,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           continue;
         }
 
-        if (role === "media") {
+        if (role === "media" && !botChatRole) {
           if (!parsedCommand && !hasMediaPayload) continue;
         }
 
@@ -1024,7 +921,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         let historySnapshot = [];
         let closeDecision = "open";
-        if (role !== "media") {
+        if (role !== "media" || botChatRole) {
           historySnapshot = runtime.shortTerm.getAll(sessionId);
           closeDecision = ChatService.decideClosure(text, historySnapshot);
           logThinking(runtime, {
@@ -1035,25 +932,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
         }
 
-        orchestrator?.bumpInterrupt(userId);
+        orchestrator?.bumpInterrupt(sessionId);
         orchestrator?.clearTypingGrace(userId);
-        const profile = role !== "media" ? runtime.longTerm.getProfile(userId) : {};
         const pushName = incoming.pushName?.trim();
 
-        if (role !== "media") {
-          if (pushName) {
-            runtime.longTerm.updateProfile(userId, {
-              facts: { ...(profile?.facts ?? {}), name: pushName }
-            });
-          }
+        const contextInfo = extractContextInfo(unwrappedMessage);
+        const stanzaId = contextInfo?.stanzaId ?? null;
+        const quotedSnapshot = stanzaId ? messageSnapshotById.get(stanzaId) : null;
+        const botActorIds = new Set(["teto", runtime.defaults.learningTargetUserId || "self"]);
+        const isReplyToBot = Boolean(quotedSnapshot && botActorIds.has(quotedSnapshot.actorId));
 
-          runtime.longTerm.updateProfile(userId, {
-            facts: { ...(profile?.facts ?? {}), lastChannel: isGroup ? "group" : "direct" }
-          });
-        }
-
-        const mentionHint = incoming.message?.extendedTextMessage?.contextInfo?.mentionedJid ?? [];
+        const mentionHint = contextInfo?.mentionedJid ?? [];
         let isDirect = false;
+        let isReply = Boolean(stanzaId);
         if (isGroup && !parsedCommand) {
           const botJid = jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
           const botPhone = extractPhone(botJid);
@@ -1062,26 +953,53 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             mentionHint.includes(`${botPhone}@s.whatsapp.net`) ||
             mentionHint.includes(`${botPhone}@lid`) ||
             mentionHint.includes(`${botPhone}@c.us`);
-          const hasNickname = /(teto|tete|tetozinha)/i.test(text);
-          isDirect = hasMention || hasNickname;
-          const contextKey = `${baseUserId}:${participantId}`;
-          const lastContextAt = groupContextByUser.get(contextKey) ?? 0;
-          const inContext = Date.now() - lastContextAt <= GROUP_CONTEXT_WINDOW_MS;
+          isDirect = isDirectTetoAddress(text, { hasMention, isReplyToBot });
+          if (isReplyToBot) isReply = true;
+
+          const recalled = runtime.groupMemory?.recall?.(remoteJid, text) ?? [];
+          const triggeredRecall = recalled.length > 0;
+          const inContext = triggeredRecall || isReplyToBot;
+
+          runtime.groupMemory?.append?.({
+            channelId: remoteJid,
+            userId,
+            text: text || `[${mediaKind}]`,
+            addressedToTeto: isDirect,
+            ts: new Date().toISOString()
+          });
+
           if (!isDirect && !inContext) {
             logThinking(runtime, {
               phase: "group_filtered",
               userId,
               remoteJid,
-              detail: "sem menção direta e fora de contexto ativo"
+              detail: "registrado em groupMemory; sem resposta (sem menção/recall)"
             });
             continue;
           }
-          groupContextByUser.set(contextKey, Date.now());
+        } else {
+          isReply = Boolean(stanzaId);
         }
 
-        const quotedMessage = unwrappedMessage?.extendedTextMessage?.contextInfo?.quotedMessage
-          ? extractText(unwrappedMessage.extendedTextMessage.contextInfo.quotedMessage).trim()
-          : "";
+        if (role !== "media" || botChatRole) {
+          const profile = runtime.longTerm.getProfile(userId);
+          if (pushName) {
+            runtime.longTerm.updateProfile(userId, {
+              facts: { ...(profile?.facts ?? {}), name: pushName }
+            });
+          }
+          runtime.longTerm.updateProfile(userId, {
+            facts: {
+              ...(profile?.facts ?? {}),
+              lastChannel: isGroup ? "group" : "direct",
+              waRemoteJid: remoteJid
+            }
+          });
+        }
+
+        const quotedMessage = contextInfo?.quotedMessage
+          ? extractText(contextInfo.quotedMessage).trim()
+          : quotedSnapshot?.text ?? "";
 
         let media = null;
         try {
@@ -1258,7 +1176,73 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           if (handled) continue;
         }
 
-        if (role === "media") continue;
+        if (role === "media" && !botChatRole) continue;
+
+        if (role === "main" && runtime.defaults.whatsappMainObserveOnly) {
+          logThinking(runtime, {
+            phase: "observe_only",
+            userId,
+            remoteJid,
+            detail: "sessao principal: aprendizado sem resposta"
+          });
+          continue;
+        }
+
+        const activation = runtime.tetoActivation;
+        if (!isGroup && activation) {
+          activation.touchDm(userId);
+          const dmActive = activation.isDmActive(userId);
+          // #region agent log
+          fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+            body: JSON.stringify({
+              sessionId: "9518ce",
+              location: "messageHandler.js:activation_dm",
+              message: "dm_activation_gate",
+              data: {
+                userId,
+                activationRequired: activation.isActivationRequired(),
+                dmActive
+              },
+              timestamp: Date.now(),
+              hypothesisId: "H1"
+            })
+          }).catch(() => {});
+          // #endregion
+          if (!dmActive) {
+            logThinking(runtime, {
+              phase: "activation_blocked",
+              userId,
+              remoteJid,
+              detail: "dm nao ativado — /teto-ativar"
+            });
+            continue;
+          }
+        }
+        if (isGroup && activation && !activation.isGroupActive(remoteJid)) {
+          // #region agent log
+          fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+            body: JSON.stringify({
+              sessionId: "9518ce",
+              location: "messageHandler.js:activation_group",
+              message: "group_activation_blocked",
+              data: { remoteJid, userId },
+              timestamp: Date.now(),
+              hypothesisId: "H2"
+            })
+          }).catch(() => {});
+          // #endregion
+          logThinking(runtime, {
+            phase: "activation_blocked",
+            userId,
+            remoteJid,
+            detail: "grupo nao ativado — /teto-grupo-ativar"
+          });
+          continue;
+        }
 
         if (!isFromMe) {
           logIncomingAudit(runtime, {
@@ -1399,9 +1383,13 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           sessionId,
           channelId: remoteJid,
           isGroup,
-          participants: isGroup ? [baseUserId, participantId].filter(Boolean) : [userId],
+          participants: (() => {
+            const ch = runtime.channelRegistry.get(remoteJid);
+            if (ch.participants?.length) return ch.participants;
+            return isGroup && participantId ? [participantId] : [userId];
+          })(),
           isDirectMention: isGroup ? isDirect : false,
-          isReply: Boolean(unwrappedMessage?.extendedTextMessage?.contextInfo?.stanzaId),
+          isReply,
           quotedMessage,
           media,
           closeDecision,
@@ -1413,7 +1401,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     }
   });
 
-  if (role !== "media") {
+  if (role !== "media" || botChatRole) {
     socket.ev.on("messages.update", (updates = []) => {
       for (const update of updates) {
         const messageId = update?.key?.id ?? null;

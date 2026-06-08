@@ -1,0 +1,218 @@
+{
+  "sessions": {
+    "direct:test_user_reply": {
+      "utterances": [
+        {
+          "fp": "oi, tudo bem?",
+          "text": "Oi, tudo bem?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T16:48:28.971Z"
+        },
+        {
+          "fp": "oi, tudo bem?",
+          "text": "Oi, tudo bem?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T16:48:41.728Z"
+        },
+        {
+          "fp": "oi, tudo bem?",
+          "text": "Oi, tudo bem?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T17:07:50.703Z"
+        },
+        {
+          "fp": "oi, tudo bem?",
+          "text": "Oi, tudo bem?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:18:09.656Z"
+        }
+      ],
+      "topics": {},
+      "lastUpdated": "2026-06-08T18:18:09.656Z"
+    },
+    "wa-157947506229421": {
+      "utterances": [
+        {
+          "fp": "oi, gabbis!",
+          "text": "Oi, Gabbis!",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:06:52.195Z"
+        },
+        {
+          "fp": "ja me tirou do modo soneca? 😜",
+          "text": "Já me tirou do modo soneca? 😜",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:06:52.196Z"
+        },
+        {
+          "fp": "ainda nao conferi, mas parece que ta tudo certo.",
+          "text": "Ainda não conferi, mas parece que tá tudo certo.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:07:17.417Z"
+        },
+        {
+          "fp": "se deu ruim, culpa tua, nao minha.",
+          "text": "Se deu ruim, culpa tua, não minha.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:07:17.417Z"
+        },
+        {
+          "fp": "beleza entao, gabbis.",
+          "text": "Beleza então, Gabbis.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:08:03.834Z"
+        },
+        {
+          "fp": "qualquer coisa me avisa.",
+          "text": "Qualquer coisa me avisa.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:08:03.834Z"
+        }
+      ],
+      "topics": {},
+      "lastUpdated": "2026-06-08T18:08:03.834Z"
+    },
+    "wa-5516988137617": {
+      "utterances": [
+        {
+          "fp": "estou meio irritada, mas ainda de pe.",
+          "text": "Estou meio irritada, mas ainda de pé.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:04.107Z"
+        },
+        {
+          "fp": "so ouvindo “machine.",
+          "text": "Só ouvindo “Machine.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:04.107Z"
+        },
+        {
+          "fp": "love” aqui.",
+          "text": "Love” aqui.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:04.107Z"
+        },
+        {
+          "fp": "ta tudo bem, nao que eu esteja precisando de elogios.",
+          "text": "Tá tudo bem, não que eu esteja precisando de elogios.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:04.108Z"
+        },
+        {
+          "fp": "porque eu nao to precisando de elogios, ta?",
+          "text": "Porque eu não tô precisando de elogios, tá?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:25.350Z"
+        },
+        {
+          "fp": "so curtindo “machine.",
+          "text": "Só curtindo “Machine.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:25.350Z"
+        },
+        {
+          "fp": "love” aqui.",
+          "text": "Love” aqui.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:25.351Z"
+        },
+        {
+          "fp": "porque voce sempre quer saber tudo, ne?",
+          "text": "Porque você sempre quer saber tudo, né?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:46.686Z"
+        },
+        {
+          "fp": "nao que eu esteja precisando de explicacao, mas ta tudo bem.",
+          "text": "Não que eu esteja precisando de explicação, mas tá tudo bem.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:11:46.686Z"
+        },
+        {
+          "fp": "certo vou parar.",
+          "text": "Certo vou parar.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:12:09.646Z"
+        },
+        {
+          "fp": "to aqui, mas nao que eu tenha ficado esperando, viu?",
+          "text": "Tô aqui, mas não que eu tenha ficado esperando, viu?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:13:07.016Z"
+        },
+        {
+          "fp": "entao, o que voce quer?",
+          "text": "Então, o que você quer?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:13:07.017Z"
+        },
+        {
+          "fp": "to aqui sim.",
+          "text": "Tô aqui sim.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:22:17.187Z"
+        },
+        {
+          "fp": "to bem, mas com uma fome que nao ta brincando kkkk.",
+          "text": "Tô bem, mas com uma fome que não tá brincando kkkk.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:22:17.187Z"
+        },
+        {
+          "fp": "testando o que?",
+          "text": "Testando o quê?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:22:21.018Z"
+        },
+        {
+          "fp": "ja comecou com as coisas estranhas.",
+          "text": "Já começou com as coisas estranhas.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:22:21.019Z"
+        },
+        {
+          "fp": "como assim voce nao sabe? kkkk.",
+          "text": "Como assim você não sabe? kkkk.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:22:48.318Z"
+        },
+        {
+          "fp": "veio testar as coisas e nem sabe o que e, mds.",
+          "text": "Veio testar as coisas e nem sabe o que é, mds.",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-06-08T18:22:48.319Z"
+        }
+      ],
+      "topics": {},
+      "lastUpdated": "2026-06-08T18:22:48.319Z"
+    }
+  }
+}

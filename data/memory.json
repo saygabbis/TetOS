@@ -218,21 +218,23 @@
     "5516988137617": {
       "facts": {
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
-        "lastChannel": "direct"
+        "lastChannel": "direct",
+        "waRemoteJid": "174165839581324@lid"
       },
       "style": {
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "short"
+        "brevity": "medium"
       },
       "counts": {
-        "abbrev": 13,
+        "abbrev": 15,
         "laughter": 32,
         "emoji": 5,
-        "total": 207
+        "total": 215
       },
-      "lastUpdated": "2026-05-29T03:00:44.371Z"
+      "lastUpdated": "2026-06-08T18:23:01.869Z",
+      "channelScope": "direct"
     },
     "120363426815699053:157947506229421": {
       "facts": {
@@ -391,12 +393,23 @@
     },
     "157947506229421": {
       "facts": {
-        "lastChannel": "group",
+        "lastChannel": "direct",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
       },
-      "style": {},
-      "counts": {},
-      "lastUpdated": "2026-06-08T13:24:16.570Z"
+      "style": {
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 0,
+        "laughter": 0,
+        "emoji": 0,
+        "total": 3
+      },
+      "lastUpdated": "2026-06-08T18:08:05.270Z",
+      "channelScope": "direct"
     },
     "131778236952767": {
       "facts": {
@@ -580,11 +593,13 @@
     "174165839581324": {
       "facts": {
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
-        "lastChannel": "direct"
+        "lastChannel": "direct",
+        "waRemoteJid": "174165839581324@lid"
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-06-08T00:51:10.103Z"
+      "lastUpdated": "2026-06-08T18:13:59.897Z",
+      "channelScope": "direct"
     },
     "5516997153084": {
       "facts": {
@@ -750,11 +765,13 @@
     "132813357596880": {
       "facts": {
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
-        "lastChannel": "direct"
+        "lastChannel": "direct",
+        "waRemoteJid": "132813357596880@lid"
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-06-08T01:33:10.048Z"
+      "lastUpdated": "2026-06-08T18:15:41.360Z",
+      "channelScope": "direct"
     },
     "187995030323304": {
       "facts": {
@@ -1773,11 +1790,13 @@
     "242794635518154": {
       "facts": {
         "name": "Luiz",
-        "lastChannel": "direct"
+        "lastChannel": "group",
+        "waRemoteJid": "120363402362643675@g.us"
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-05-09T18:17:09.361Z"
+      "lastUpdated": "2026-06-08T19:09:55.759Z",
+      "channelScope": "direct"
     },
     "5511963261082": {
       "facts": {
@@ -3489,6 +3508,25 @@
       "style": {},
       "counts": {},
       "lastUpdated": "2026-06-07T00:03:32.529Z"
+    },
+    "test_user_reply": {
+      "facts": {
+        "lastChannel": "direct"
+      },
+      "style": {
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 0,
+        "laughter": 0,
+        "emoji": 0,
+        "total": 4
+      },
+      "channelScope": "direct",
+      "lastUpdated": "2026-06-08T18:18:09.659Z"
     }
   },
   "mediumTerm": {
@@ -3576,36 +3614,6 @@
     ],
     "5516988137617": [
       {
-        "summary": "não.. tenta mandar",
-        "timestamp": "2026-04-17T14:58:03.992Z",
-        "channelId": "5516988137617@s.whatsapp.net"
-      },
-      {
-        "summary": "fala comigo",
-        "timestamp": "2026-04-17T17:20:08.244Z",
-        "channelId": "5516988137617@s.whatsapp.net"
-      },
-      {
-        "summary": "fica quieta teto",
-        "timestamp": "2026-04-17T17:20:21.764Z",
-        "channelId": "5516988137617@s.whatsapp.net"
-      },
-      {
-        "summary": "me lembra daqui 20 segundos de comer batata",
-        "timestamp": "2026-04-17T17:22:09.362Z",
-        "channelId": "5516988137617@s.whatsapp.net"
-      },
-      {
-        "summary": "manda sticker",
-        "timestamp": "2026-04-17T17:28:44.213Z",
-        "channelId": "5516988137617@s.whatsapp.net"
-      },
-      {
-        "summary": "A gente se fala depois teto...",
-        "timestamp": "2026-04-17T19:38:25.730Z",
-        "channelId": "5516988137617@s.whatsapp.net"
-      },
-      {
         "summary": "Sticker recebida. Arquivo persistido em data\\media\\3EB07EAB359EE8755B815B-sticker.webp.",
         "timestamp": "2026-04-17T20:20:25.817Z",
         "channelId": "5516988137617@s.whatsapp.net"
@@ -3674,6 +3682,36 @@
         "summary": "Tetooo é voceeee",
         "timestamp": "2026-04-17T20:55:21.322Z",
         "channelId": "5516988137617@s.whatsapp.net"
+      },
+      {
+        "summary": "Como se sente agira trto?",
+        "timestamp": "2026-06-08T18:11:04.109Z",
+        "channelId": "5516988137617@s.whatsapp.net"
+      },
+      {
+        "summary": "Para de alucinar mulher",
+        "timestamp": "2026-06-08T18:12:09.648Z",
+        "channelId": "5516988137617@s.whatsapp.net"
+      },
+      {
+        "summary": "Eai teto tá ai?",
+        "timestamp": "2026-06-08T18:13:07.019Z",
+        "channelId": "5516988137617@s.whatsapp.net"
+      },
+      {
+        "summary": "Oi teto\nTudo bem",
+        "timestamp": "2026-06-08T18:22:17.190Z",
+        "channelId": "157947506229421@lid"
+      },
+      {
+        "summary": "To testando o batch",
+        "timestamp": "2026-06-08T18:22:21.023Z",
+        "channelId": "157947506229421@lid"
+      },
+      {
+        "summary": "Não sei explicar o que é isso",
+        "timestamp": "2026-06-08T18:22:48.321Z",
+        "channelId": "157947506229421@lid"
       }
     ],
     "120363426815699053:157947506229421": [
@@ -3840,6 +3878,13 @@
       {
         "summary": "Pq vcs duas n conversam um pouquinho?",
         "timestamp": "2026-04-10T17:29:29.928Z"
+      }
+    ],
+    "157947506229421": [
+      {
+        "summary": "Funcionou os updates que fiz no seu código?",
+        "timestamp": "2026-06-08T18:07:17.419Z",
+        "channelId": "157947506229421@lid"
       }
     ]
   }

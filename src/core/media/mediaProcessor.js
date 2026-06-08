@@ -106,27 +106,7 @@ async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerB
       const sz = statSync(output).size;
       if (sz > 0 && sz <= maxStickerBytes) {
         const meta = await sharp(output).metadata().catch(() => ({}));
-        // #region agent log
-        fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "99966e" },
-          body: JSON.stringify({
-            sessionId: "99966e",
-            location: "mediaProcessor.js:gifAnimatedToStickerSharp",
-            message: "gif→webp sharp lossless ok",
-            data: {
-              mode,
-              sizeBytes: sz,
-              hasAlpha: meta.hasAlpha,
-              pages: meta.pages
-            },
-            timestamp: Date.now(),
-            hypothesisId: "H-fsticker-gif-sharp",
-            runId: "gif-alpha-v1"
-          })
-        }).catch(() => {});
-        // #endregion
-        return { kind: "image", path: output };
+return { kind: "image", path: output };
       }
     } catch {
       /* lossy */
@@ -149,29 +129,7 @@ async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerB
         const sz = statSync(output).size;
         if (sz > 0 && sz <= maxStickerBytes) {
           const meta = await sharp(output).metadata().catch(() => ({}));
-          // #region agent log
-          fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "99966e" },
-            body: JSON.stringify({
-              sessionId: "99966e",
-              location: "mediaProcessor.js:gifAnimatedToStickerSharp",
-              message: "gif→webp sharp lossy ok",
-              data: {
-                mode,
-                edge,
-                quality,
-                sizeBytes: sz,
-                hasAlpha: meta.hasAlpha,
-                pages: meta.pages
-              },
-              timestamp: Date.now(),
-              hypothesisId: "H-fsticker-gif-sharp",
-              runId: "gif-alpha-v1"
-            })
-          }).catch(() => {});
-          // #endregion
-          return { kind: "image", path: output };
+return { kind: "image", path: output };
         }
       } catch {
         /* próximo */
@@ -204,31 +162,7 @@ async function imageToSticker(inputPath, mode, outputDir, maxStickerBytes) {
   try {
     sizeBytes = statSync(output).size;
   } catch {}
-  // #region agent log
-  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "99966e" },
-    body: JSON.stringify({
-      sessionId: "99966e",
-      location: "mediaProcessor.js:imageToSticker",
-      message: "output after sharp webp (mobile-compatible sticker)",
-      data: {
-        format: meta.format,
-        width: meta.width,
-        height: meta.height,
-        pages: meta.pages,
-        hasAlpha: meta.hasAlpha,
-        sizeBytes,
-        mode,
-        filename: basename(output)
-      },
-      timestamp: Date.now(),
-      hypothesisId: "H1",
-      runId: "webp-fix-v1"
-    })
-  }).catch(() => {});
-  // #endregion
-  return { kind: "image", path: output };
+return { kind: "image", path: output };
 }
 
 function buildVideoStickerVf(mode, fps, edge) {
@@ -288,105 +222,15 @@ async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes) {
         }
         if (lastSize <= maxStickerBytes) {
           const meta = await sharp(output, { animated: true }).metadata().catch(() => ({}));
-          // #region agent log
-          fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
-            body: JSON.stringify({
-              sessionId: "ebbfbc",
-              runId: "gif-long-debug-v1",
-              hypothesisId: "H2",
-              location: "mediaProcessor.js:videoToSticker",
-              message: "video/gif converted to animated webp within configured budget",
-              data: {
-                inputPath: basename(inputPath),
-                outputPath: basename(output),
-                sizeBytes: lastSize,
-                maxStickerBytes,
-                edge,
-                fps,
-                quality,
-                pages: Number(meta?.pages ?? 0),
-                width: Number(meta?.width ?? 0),
-                height: Number(meta?.height ?? 0)
-              },
-              timestamp: Date.now()
-            })
-          }).catch(() => {});
-          // #endregion
-          // #region agent log
-          fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "99966e" },
-            body: JSON.stringify({
-              sessionId: "99966e",
-              location: "mediaProcessor.js:videoToSticker",
-              message: "animated webp sticker within budget",
-              data: {
-                sizeBytes: lastSize,
-                maxStickerBytes,
-                filename: basename(output),
-                mode,
-                edge,
-                fps,
-                quality
-              },
-              timestamp: Date.now(),
-              hypothesisId: "H4",
-              runId: "sticker-budget-v1"
-            })
-          }).catch(() => {});
-          // #endregion
-          return { kind: "image", path: output };
+
+return { kind: "image", path: output };
         }
       }
     }
   }
   const finalMeta = await sharp(output, { animated: true }).metadata().catch(() => ({}));
-  // #region agent log
-  fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
-    body: JSON.stringify({
-      sessionId: "ebbfbc",
-      runId: "gif-long-debug-v1",
-      hypothesisId: "H1",
-      location: "mediaProcessor.js:videoToSticker",
-      message: "video/gif conversion exhausted quality ladder",
-      data: {
-        inputPath: basename(inputPath),
-        outputPath: basename(output),
-        sizeBytes: lastSize,
-        maxStickerBytes,
-        pages: Number(finalMeta?.pages ?? 0),
-        width: Number(finalMeta?.width ?? 0),
-        height: Number(finalMeta?.height ?? 0)
-      },
-      timestamp: Date.now()
-    })
-  }).catch(() => {});
-  // #endregion
-  // #region agent log
-  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "99966e" },
-    body: JSON.stringify({
-      sessionId: "99966e",
-      location: "mediaProcessor.js:videoToSticker",
-      message: "animated webp sticker still over budget (best effort)",
-      data: {
-        sizeBytes: lastSize,
-        maxStickerBytes,
-        filename: basename(output),
-        mode
-      },
-      timestamp: Date.now(),
-      hypothesisId: "H4",
-      runId: "sticker-budget-v1"
-    })
-  }).catch(() => {});
-  // #endregion
-  return { kind: "image", path: output };
+
+return { kind: "image", path: output };
 }
 
 async function staticStickerToImage(inputPath, outputDir) {
@@ -640,34 +484,7 @@ async function animatedStickerToVideo(inputPath, outputDir) {
     })
     .gif({ effort: 8, colours: 256 })
     .toFile(outputGif);
-
-  // #region agent log
-  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
-    body: JSON.stringify({
-      sessionId: "e69bad",
-      runId: "toimg-large-gif-v1",
-      hypothesisId: "H1",
-      location: "mediaProcessor.js:animatedStickerToVideo",
-      message: "gif base gerado para toimg",
-      data: {
-        inputExt: extname(String(inputPath)).toLowerCase(),
-        gifBytes: (() => {
-          try {
-            return statSync(outputGif).size;
-          } catch {
-            return -1;
-          }
-        })(),
-        gifPathBase: basename(outputGif)
-      },
-      timestamp: Date.now()
-    })
-  }).catch(() => {});
-  // #endregion
-
-  if (!looksLikeGifFile(outputGif)) {
+if (!looksLikeGifFile(outputGif)) {
     throw new Error("nao foi possivel gerar gif a partir da figurinha animada");
   }
 
@@ -700,32 +517,7 @@ async function animatedStickerToVideo(inputPath, outputDir) {
     const mp4Probe = mp4OkForToimgPlayback(outputMp4);
     if (mp4Probe.ok) {
       const fin = finalizeToimgPlaybackMp4(outputMp4, mp4Probe);
-      // #region agent log
-      fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
-        body: JSON.stringify({
-          sessionId: "e69bad",
-          runId: "toimg-large-gif-v1",
-          hypothesisId: "H2",
-          location: "mediaProcessor.js:animatedStickerToVideo",
-          message: "mp4 playback valido no primeiro encode",
-          data: {
-            mp4Bytes: (() => {
-              try {
-                return statSync(outputMp4).size;
-              } catch {
-                return -1;
-              }
-            })(),
-            seconds: fin.seconds ?? null,
-            mp4PathBase: basename(outputMp4)
-          },
-          timestamp: Date.now()
-        })
-      }).catch(() => {});
-      // #endregion
-      return withGifDoc(outputMp4, "video/mp4", {
+return withGifDoc(outputMp4, "video/mp4", {
         toimgPlaybackSeconds: fin.seconds
       });
     }
@@ -753,68 +545,11 @@ async function animatedStickerToVideo(inputPath, outputDir) {
       seconds: playbackEnc.seconds
     };
     const fin = finalizeToimgPlaybackMp4(outputMp4, fb);
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
-      body: JSON.stringify({
-        sessionId: "e69bad",
-        runId: "toimg-large-gif-v1",
-        hypothesisId: "H3",
-        location: "mediaProcessor.js:animatedStickerToVideo",
-        message: "mp4 playback valido via fallback agressivo",
-        data: {
-          mp4Bytes: (() => {
-            try {
-              return statSync(outputMp4).size;
-            } catch {
-              return -1;
-            }
-          })(),
-          seconds: fin.seconds ?? null,
-          gifBytes: (() => {
-            try {
-              return statSync(outputGif).size;
-            } catch {
-              return -1;
-            }
-          })()
-        },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
-    return withGifDoc(outputMp4, "video/mp4", {
+return withGifDoc(outputMp4, "video/mp4", {
       toimgPlaybackSeconds: fin.seconds
     });
   }
-
-  // #region agent log
-  fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "e69bad" },
-    body: JSON.stringify({
-      sessionId: "e69bad",
-      runId: "toimg-large-gif-v1",
-      hypothesisId: "H4",
-      location: "mediaProcessor.js:animatedStickerToVideo",
-      message: "sem mp4 reproduzivel; apenas documento gif",
-      data: {
-        gifBytes: (() => {
-          try {
-            return statSync(outputGif).size;
-          } catch {
-            return -1;
-          }
-        })(),
-        outputMp4Base: basename(outputMp4)
-      },
-      timestamp: Date.now()
-    })
-  }).catch(() => {});
-  // #endregion
-
-  return {
+return {
     kind: "video",
     path: null,
     toimgGifPath: outputGif,
@@ -830,28 +565,7 @@ export class MediaProcessor {
 
   async toSticker(input, mode = "stretch") {
     if (!input?.path || !input?.type) throw new Error("invalid media input");
-    // #region agent log
-    fetch("http://127.0.0.1:7693/ingest/6a0c7ac9-39e1-4704-9f64-c5b89f85b933", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "ebbfbc" },
-      body: JSON.stringify({
-        sessionId: "ebbfbc",
-        runId: "gif-long-debug-v1",
-        hypothesisId: "H3",
-        location: "mediaProcessor.js:toSticker",
-        message: "toSticker input classification",
-        data: {
-          inputType: input.type,
-          mode,
-          pathExt: extname(String(input.path)).toLowerCase(),
-          isGifLike: isGifLikeFile(input.path),
-          maxStickerBytes: this.maxStickerBytes
-        },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
-    if (input.type === "image" || input.type === "sticker" || input.type === "document") {
+if (input.type === "image" || input.type === "sticker" || input.type === "document") {
       if (input.type !== "sticker" && isGifLikeFile(input.path)) {
         const meta = await sharp(input.path, { animated: true }).metadata().catch(() => ({}));
         if (Number(meta?.pages ?? 1) > 1) {

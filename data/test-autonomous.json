@@ -1,0 +1,236 @@
+{
+  "soloThoughts": [
+    {
+      "ts": "2026-06-08T16:48:06.898Z",
+      "text": "pensamento gerado pelo worker",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-06-08T16:48:06.899Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "generated": true,
+      "relatedInterest": "interest_1780937286899"
+    },
+    {
+      "ts": "2026-06-08T16:48:29.137Z",
+      "text": "pensamento gerado pelo worker",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-06-08T16:48:29.138Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "generated": true,
+      "relatedInterest": "interest_1780937309138"
+    },
+    {
+      "ts": "2026-06-08T16:48:38.739Z",
+      "text": "pensamento gerado pelo worker",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-06-08T16:48:38.740Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "generated": true,
+      "relatedInterest": "interest_1780937318740"
+    },
+    {
+      "ts": "2026-06-08T17:07:47.264Z",
+      "text": "pensamento gerado pelo worker",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-06-08T17:07:47.265Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "generated": true,
+      "relatedInterest": "interest_1780938467264"
+    },
+    {
+      "ts": "2026-06-08T18:08:05.751Z",
+      "text": "pensamento gerado pelo worker",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-06-08T18:08:05.752Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "generated": true,
+      "relatedInterest": "interest_1780942085752"
+    }
+  ],
+  "horizons": [
+    {
+      "id": "interest_1780937286899",
+      "type": "interest",
+      "dueAt": "2026-06-08T17:48:06.899Z",
+      "topic": "synthv collab"
+    },
+    {
+      "id": "interest_1780937309138",
+      "type": "interest",
+      "dueAt": "2026-06-08T17:48:29.138Z",
+      "topic": "synthv collab"
+    },
+    {
+      "id": "interest_1780937318740",
+      "type": "interest",
+      "dueAt": "2026-06-08T17:48:38.740Z",
+      "topic": "synthv collab"
+    },
+    {
+      "id": "interest_1780938467264",
+      "type": "interest",
+      "dueAt": "2026-06-08T18:07:47.265Z",
+      "topic": "synthv collab"
+    },
+    {
+      "id": "interest_1780942085752",
+      "type": "interest",
+      "dueAt": "2026-06-08T19:08:05.752Z",
+      "topic": "synthv collab"
+    }
+  ],
+  "privateThoughts": [
+    {
+      "ts": "2026-06-08T16:48:06.900Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "interestId": "interest_1780937286899"
+    },
+    {
+      "ts": "2026-06-08T16:48:06.900Z",
+      "text": "descobri algo sobre synthv collab: Kasane Teto news",
+      "topic": "synthv collab",
+      "source": "web_research"
+    },
+    {
+      "ts": "2026-06-08T16:48:29.138Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "interestId": "interest_1780937309138"
+    },
+    {
+      "ts": "2026-06-08T16:48:29.138Z",
+      "text": "descobri algo sobre synthv collab: Kasane Teto news",
+      "topic": "synthv collab",
+      "source": "web_research"
+    },
+    {
+      "ts": "2026-06-08T16:48:38.740Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "interestId": "interest_1780937318740"
+    },
+    {
+      "ts": "2026-06-08T16:48:38.740Z",
+      "text": "descobri algo sobre synthv collab: Kasane Teto news",
+      "topic": "synthv collab",
+      "source": "web_research"
+    },
+    {
+      "ts": "2026-06-08T17:07:47.266Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "interestId": "interest_1780938467264"
+    },
+    {
+      "ts": "2026-06-08T18:08:05.753Z",
+      "text": "ainda penso em synthv collab — talvez faça algo sobre isso",
+      "interestId": "interest_1780942085752"
+    },
+    {
+      "ts": "2026-06-08T18:08:05.753Z",
+      "text": "descobri algo sobre synthv collab: Kasane Teto news",
+      "topic": "synthv collab",
+      "source": "web_research"
+    }
+  ],
+  "plantedInterests": [
+    {
+      "id": "interest_1780937286899",
+      "topic": "synthv collab",
+      "horizon": "1h",
+      "plantedAt": "2026-06-08T16:48:06.899Z",
+      "dueAt": "2026-06-08T17:48:06.899Z",
+      "status": "matured"
+    },
+    {
+      "id": "interest_1780937309138",
+      "topic": "synthv collab",
+      "horizon": "1h",
+      "plantedAt": "2026-06-08T16:48:29.138Z",
+      "dueAt": "2026-06-08T17:48:29.138Z",
+      "status": "matured"
+    },
+    {
+      "id": "interest_1780937318740",
+      "topic": "synthv collab",
+      "horizon": "1h",
+      "plantedAt": "2026-06-08T16:48:38.740Z",
+      "dueAt": "2026-06-08T17:48:38.740Z",
+      "status": "matured"
+    },
+    {
+      "id": "interest_1780938467264",
+      "topic": "synthv collab",
+      "horizon": "1h",
+      "plantedAt": "2026-06-08T17:07:47.265Z",
+      "dueAt": "2026-06-08T18:07:47.265Z",
+      "status": "matured"
+    },
+    {
+      "id": "interest_1780942085752",
+      "topic": "synthv collab",
+      "horizon": "1h",
+      "plantedAt": "2026-06-08T18:08:05.752Z",
+      "dueAt": "2026-06-08T19:08:05.752Z",
+      "status": "matured"
+    }
+  ],
+  "researchNotes": [
+    {
+      "ts": "2026-06-08T16:48:06.900Z",
+      "topic": "synthv collab",
+      "results": [
+        {
+          "title": "Kasane Teto news",
+          "url": "https://example.com"
+        }
+      ],
+      "interestId": "interest_1780937286899"
+    },
+    {
+      "ts": "2026-06-08T16:48:29.138Z",
+      "topic": "synthv collab",
+      "results": [
+        {
+          "title": "Kasane Teto news",
+          "url": "https://example.com"
+        }
+      ],
+      "interestId": "interest_1780937309138"
+    },
+    {
+      "ts": "2026-06-08T16:48:38.740Z",
+      "topic": "synthv collab",
+      "results": [
+        {
+          "title": "Kasane Teto news",
+          "url": "https://example.com"
+        }
+      ],
+      "interestId": "interest_1780937318740"
+    },
+    {
+      "ts": "2026-06-08T18:08:05.753Z",
+      "topic": "synthv collab",
+      "results": [
+        {
+          "title": "Kasane Teto news",
+          "url": "https://example.com"
+        }
+      ],
+      "interestId": "interest_1780942085752"
+    }
+  ],
+  "lastSoloAt": "2026-06-08T18:08:05.752Z"
+}

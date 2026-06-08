@@ -4,13 +4,19 @@ export class BasicLoop {
     chance = 0.15,
     minCooldownMs = 30 * 60 * 1000,
     maxCooldownMs = 120 * 60 * 1000,
-    maxDailyPerUser = 3
+    maxDailyPerUser = 3,
+    brainOrchestrator = null,
+    timeStore = null,
+    userPatterns = null
   } = {}) {
     this.inactiveMs = inactiveMs;
     this.chance = chance;
     this.minCooldownMs = minCooldownMs;
     this.maxCooldownMs = maxCooldownMs;
     this.maxDailyPerUser = maxDailyPerUser;
+    this.brainOrchestrator = brainOrchestrator;
+    this.timeStore = timeStore;
+    this.userPatterns = userPatterns;
     this.lastInteractionAt = new Map();
     this.lastNudgeAt = new Map();
     this.dailyCount = new Map();
@@ -43,19 +49,48 @@ export class BasicLoop {
     return userDaily[dayKey] ?? 0;
   }
 
+  buildBrainInitiation(userId = "default") {
+    if (!this.brainOrchestrator?.timing) return null;
+    const hour = new Date().getHours();
+    const emotion = this.brainOrchestrator.emotion?.getSnapshot?.() ?? {};
+    const plan = this.brainOrchestrator.timing.computePlan({
+      userId,
+      channelScope: "direct",
+      hourOfDay: hour,
+      emotion,
+      lastMessageAt: this.timeStore?.getLastMessage?.(userId) ?? null,
+      userLikelyActive: this.userPatterns?.isLikelyActiveNow?.(userId) ?? true,
+      trustBond: this.brainOrchestrator.enrichTrustForTiming?.(userId, "direct", emotion, hour) ?? null,
+      life: this.brainOrchestrator.life?.getSnapshot?.() ?? {},
+      sleep: this.brainOrchestrator.life?.sleep?.getSnapshot?.() ?? {}
+    });
+    if (!plan.shouldInitiateConversation) return null;
+    return {
+      reason: plan.initiateReason ?? "brain_initiation",
+      intent: `Retomar papo (${plan.initiateReason ?? "social_gap"}). ${plan.distanceContext || ""}`.trim(),
+      timingPlan: plan,
+      brainBlocks: this.brainOrchestrator.narrator?.buildBlocks?.({
+        emotion,
+        life: this.brainOrchestrator.life?.getSnapshot?.() ?? {},
+        trustBond: plan.trustBond,
+        timing: plan
+      }) ?? null
+    };
+  }
+
   chooseIntent(context = {}) {
     if (context?.hasRecentMemory && Math.random() < 0.35) return "memory_recall";
     if (Math.random() < 0.5) return "inactive_user";
     return "curiosity";
   }
 
-  textForIntent(intent) {
+  intentForReason(reason) {
     const byIntent = {
-      inactive_user: "Reconhecer que a pessoa sumiu um pouco e abrir o papo.",
+      inactive_user: "Reconhecer que a pessoa sumiu um pouco e abrir o papo de forma leve.",
       memory_recall: "Mencionar que lembrou da pessoa e abrir uma pergunta leve.",
-      curiosity: "Abrir uma conversa leve pedindo novidade ou como está."
+      curiosity: "Abrir conversa leve pedindo novidade ou como está."
     };
-    return byIntent[intent] ?? byIntent.curiosity;
+    return byIntent[reason] ?? byIntent.curiosity;
   }
 
   maybeNudge(userId = "default", context = {}) {
@@ -76,12 +111,16 @@ export class BasicLoop {
       return null;
     }
 
+    const brainNudge = this.buildBrainInitiation(userId);
+    if (brainNudge) {
+      return { ...brainNudge, text: null };
+    }
+
     if (Math.random() > this.chance) {
       return null;
     }
 
     const reason = this.chooseIntent(context);
-    const text = this.textForIntent(reason);
-    return { reason, text };
+    return { reason, intent: this.intentForReason(reason), text: null };
   }
 }

@@ -65,6 +65,30 @@ export class ChannelRegistry {
     }, userId);
   }
 
+  syncGroupParticipants(remoteJid, participantIds = [], action = "add") {
+    const id = normalizeChannelId(remoteJid);
+    const current = this.get(id);
+    let participants = [...(current.participants ?? [])];
+    const incoming = (Array.isArray(participantIds) ? participantIds : [])
+      .map((p) => String(p ?? "").replace(/@.+$/, "").replace(/:\d+$/, "").trim())
+      .filter(Boolean);
+
+    if (action === "remove") {
+      participants = participants.filter((p) => !incoming.includes(p));
+    } else {
+      for (const p of incoming) {
+        if (!participants.includes(p)) participants.push(p);
+      }
+    }
+
+    return this.upsert(id, {
+      isGroup: true,
+      participants,
+      participantCount: participants.length,
+      mode: participants.length >= this.largeGroupSize ? "passive" : "active"
+    });
+  }
+
   shouldRespond({ channelId, userId = "default", isDirectMention = false, isReply = false, isQuestion = false } = {}) {
     const channel = this.get(channelId, userId);
     if (!channel.authorized || channel.mode === "blocked" || channel.muted) {

@@ -21244,7 +21244,7 @@
       "id": "0c827e6f-c4da-4cd2-b29c-ec239ba4e8b4",
       "userId": "103659153158378",
       "channelId": "103659153158378@lid",
-      "mediaPath": "data/media/2A21853F86764CD93F1C-image.jpg",
+      "mediaPath": "./data/media/_archive/knowledge/9e31b38474ced0718491.jpg",
       "mediaType": "image",
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/2A21853F86764CD93F1C-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
@@ -22769,6 +22769,16 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/AC57A5302D571E34712CAA15485F2529-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-08T11:43:06.005Z"
+    },
+    {
+      "id": "c24a99b5-c830-4071-b8e5-1384605737e5",
+      "userId": "132813357596880",
+      "channelId": "132813357596880@lid",
+      "mediaPath": "data\\media\\AC41B585A947F39B3CD0F20736CC3529-image.jpg",
+      "mediaType": "image",
+      "description": "Imagem: a screenshote app showing the settings and settings of the app",
+      "source": "local_vision",
+      "createdAt": "2026-06-08T18:16:07.118Z"
     }
   ]
 }

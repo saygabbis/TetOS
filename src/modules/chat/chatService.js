@@ -1,10 +1,26 @@
 import { Agent } from "../../core/agent/agent.js";
 
 export class ChatService {
-  constructor(agent, responseProcessor, internalState) {
+  constructor(agent, responseProcessor, internalState, { shortTerm = null } = {}) {
     this.agent = agent;
     this.responseProcessor = responseProcessor;
     this.internalState = internalState;
+    this.shortTerm = shortTerm;
+  }
+
+  getProcessor(meta = {}) {
+    const sessionId = meta?.sessionId ?? "default";
+    if (this.responseProcessor?.forSession) {
+      return this.responseProcessor.forSession(sessionId);
+    }
+    return this.responseProcessor;
+  }
+
+  recordUserTurn(message, meta = {}) {
+    const sessionId = meta?.sessionId ?? "default";
+    if (this.shortTerm?.add) {
+      this.shortTerm.add({ role: "user", content: String(message ?? ""), meta }, sessionId);
+    }
   }
 
   static normalizeLoose(text) {
@@ -44,24 +60,23 @@ export class ChatService {
   }
 
   static deEcho(userMessage, assistantText) {
-    const u = String(userMessage ?? "").toLowerCase();
-    const a = String(assistantText ?? "").toLowerCase();
+    const u = String(userMessage ?? "").toLowerCase().trim();
+    const a = String(assistantText ?? "").toLowerCase().trim();
+    if (!u || !a) return { text: assistantText, needsRegen: false };
 
-    // Targeted fixes for the most common mirror patterns observed.
-    if (/(não entende|nao entende|não entendi|nao entendi|entender direito)/.test(u)) {
-      if (/(não entende|nao entende|não entendi|nao entendi|entender direito)/.test(a)) {
-        return "Entendi sim. O que ficou estranho pra você?";
+    const mirrorPatterns = [
+      /(não entende|nao entende|não entendi|nao entendi|entender direito)/,
+      /\b(respondi tudo|eu respondi|j[áa] falei tudo|falei tudo|eu falei)\b.*\b(falou demais|faltando|incomplet|ficou faltando)\b/
+    ];
+    for (const pattern of mirrorPatterns) {
+      if (pattern.test(u) && pattern.test(a)) {
+        return { text: assistantText, needsRegen: true };
       }
     }
-
-    if (
-      /\b(respondi tudo|eu respondi|j[áa] falei tudo|falei tudo|eu falei)\b/.test(u) &&
-      /\b(falou demais|faltando|incomplet|ficou faltando)\b/.test(a)
-    ) {
-      return "Foi mal, entendi torto. Tudo certo então — bora seguir o papo.";
+    if (u.length > 12 && a.includes(u.slice(0, Math.min(24, u.length)))) {
+      return { text: assistantText, needsRegen: true };
     }
-
-    return assistantText;
+    return { text: assistantText, needsRegen: false };
   }
 
   static containsLoveDeclaration(text) {
@@ -217,9 +232,16 @@ export class ChatService {
   }
 
 
+  async sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async handleMessage(message, meta = {}, history = null, tone = null) {
     const trimmed = String(message ?? "").trim();
-
+    const thinkDelay = meta?.timingPlan?.thinkDelayMs ?? 0;
+    if (thinkDelay > 0 && thinkDelay < 8000) {
+      await this.sleep(Math.min(thinkDelay, 3000));
+    }
 
     if (this.internalState?.updateBefore) {
       this.internalState.updateBefore(message, meta);
@@ -227,6 +249,7 @@ export class ChatService {
 
     const closureDecision = meta?.closeDecision ?? ChatService.decideClosure(trimmed, history);
     if (closureDecision === "silent" || closureDecision === "react") {
+      this.recordUserTurn(trimmed, meta);
       return [];
     }
 
@@ -247,29 +270,28 @@ export class ChatService {
     }
 
 
-    const parts = this.responseProcessor
-      ? this.responseProcessor.process(raw, {
-        tone,
-        userMessage: message,
-        styleHint: meta?.styleHint ?? null,
-        userPronouns: meta?.userPronouns ?? null
-      })
-      : [raw];
+    const processor = this.getProcessor(meta);
+    const safeParts = processor?.processAndGuard
+      ? processor.processAndGuard(raw, {
+          tone,
+          userMessage: message,
+          styleHint: meta?.styleHint ?? null,
+          userPronouns: meta?.userPronouns ?? null
+        })
+      : processor
+        ? processor.process(raw, {
+            tone,
+            userMessage: message,
+            styleHint: meta?.styleHint ?? null,
+            userPronouns: meta?.userPronouns ?? null
+          })
+        : [raw];
 
-    if (!this.responseProcessor) {
+    if (!processor) {
       return raw;
     }
 
-    // Apply repetition guard without breaking multi-message continuity.
-    const safeParts = parts
-      .map((part) => this.responseProcessor.ensureNonRepetitive(part))
-      .map((part) => String(part).replace(/\s{2,}/g, " ").trim())
-      .filter(Boolean);
-
-    const combined = safeParts.join(" ").trim();
-    const safeCombined = this.responseProcessor.ensureNonRepetitive(combined);
-    const normalizedCombined = String(safeCombined).replace(/\s{2,}/g, " ").trim();
-    this.responseProcessor.remember(normalizedCombined);
+    const normalizedCombined = safeParts.join(" ").trim();
 
     if (this.internalState?.updateAfter) {
       this.internalState.updateAfter(normalizedCombined);
@@ -278,10 +300,33 @@ export class ChatService {
     // Multi-message contract: if we have multiple parts, never collapse to one.
     // If repetition guard altered the combined form, keep parts but still remember the combined safe form.
     const baseParts = safeParts.length ? safeParts : [normalizedCombined];
+    let needsDeEchoRegen = false;
     let resultParts = baseParts
-      .map((p) => ChatService.deEcho(message, p))
+      .map((p) => {
+        const echo = ChatService.deEcho(message, p);
+        if (echo.needsRegen) needsDeEchoRegen = true;
+        return echo.text;
+      })
       .map((part) => String(part).replace(/\s{2,}/g, " ").trim())
       .filter(Boolean);
+
+    if (needsDeEchoRegen) {
+      const regen = await this.agent.respond(
+        trimmed,
+        { ...meta, fallback: "ground", deEchoFix: true },
+        history,
+        tone
+      );
+      const regenParts = processor?.processAndGuard
+        ? processor.processAndGuard(regen, {
+            tone,
+            userMessage: message,
+            styleHint: meta?.styleHint ?? null,
+            userPronouns: meta?.userPronouns ?? null
+          })
+        : [regen];
+      resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
+    }
     if (ChatService.containsLoveDeclaration(trimmed) && resultParts.length) {
       const first = resultParts[0].trim();
       if (!/^ufa!/i.test(first)) {
@@ -297,14 +342,21 @@ export class ChatService {
           history,
           tone
         );
-        const regenParts = this.responseProcessor
-          ? this.responseProcessor.process(regen, {
+        const regenParts = processor?.processAndGuard
+          ? processor.processAndGuard(regen, {
               tone,
               userMessage: message,
               styleHint: meta?.styleHint ?? null,
               userPronouns: meta?.userPronouns ?? null
             })
-          : [regen];
+          : processor
+            ? processor.process(regen, {
+                tone,
+                userMessage: message,
+                styleHint: meta?.styleHint ?? null,
+                userPronouns: meta?.userPronouns ?? null
+              })
+            : [regen];
         resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
       }
     }
@@ -319,14 +371,21 @@ export class ChatService {
           history,
           tone
         );
-        const regenParts = this.responseProcessor
-          ? this.responseProcessor.process(regen, {
+        const regenParts = processor?.processAndGuard
+          ? processor.processAndGuard(regen, {
               tone,
               userMessage: message,
               styleHint: meta?.styleHint ?? null,
               userPronouns: meta?.userPronouns ?? null
             })
-          : [regen];
+          : processor
+            ? processor.process(regen, {
+                tone,
+                userMessage: message,
+                styleHint: meta?.styleHint ?? null,
+                userPronouns: meta?.userPronouns ?? null
+              })
+            : [regen];
         resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
       }
     }
@@ -338,7 +397,12 @@ export class ChatService {
       }
     }
 
-    if (ChatService.shouldSilentlyClose(trimmed, history)) {
+    if (!meta?.closeDecision && ChatService.shouldSilentlyClose(trimmed, history)) {
+      this.recordUserTurn(trimmed, meta);
+      const sessionId = meta?.sessionId ?? "default";
+      if (this.shortTerm?.popLastAssistant) {
+        this.shortTerm.popLastAssistant(sessionId);
+      }
       return [];
     }
 

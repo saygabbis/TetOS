@@ -1,0 +1,16 @@
+{
+  "hunger": 0.5100000000000001,
+  "thirst": 0.4200000000000001,
+  "mealRhythm": {
+    "lastMealAt": null,
+    "nextMealEta": null,
+    "skippedMeals": 0
+  },
+  "vices": {
+    "coffee": 0.2,
+    "sweets": 0.15,
+    "scroll": 0.1
+  },
+  "physicalComfort": 0.6400000000000003,
+  "lastTickAt": "2026-06-08T18:08:05.441Z"
+}

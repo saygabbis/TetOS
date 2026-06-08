@@ -1,0 +1,423 @@
+{
+  "currentActivity": "ouvindo Machine Love",
+  "activityStartedAt": "2026-06-08T18:04:11.873Z",
+  "phase": "tarde",
+  "obligations": [
+    {
+      "id": "obligation_1780935846985_421",
+      "type": "obligation",
+      "label": "estudo de mix",
+      "phase": "tarde",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:24:06.985Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780935846985_422",
+      "type": "obligation",
+      "label": "postar preview",
+      "phase": "tarde",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:24:06.985Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936325785_226",
+      "type": "obligation",
+      "label": "café",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:32:05.785Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936325785_227",
+      "type": "obligation",
+      "label": "entregar stem",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:32:05.785Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936383590_226",
+      "type": "obligation",
+      "label": "café",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:33:03.590Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936383591_227",
+      "type": "obligation",
+      "label": "entregar stem",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:33:03.591Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936896820_226",
+      "type": "obligation",
+      "label": "café",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:41:36.820Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936896820_227",
+      "type": "obligation",
+      "label": "entregar stem",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:41:36.820Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936938047_226",
+      "type": "obligation",
+      "label": "café",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:42:18.047Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780936938047_227",
+      "type": "obligation",
+      "label": "entregar stem",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:42:18.047Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780937286700_226",
+      "type": "obligation",
+      "label": "café",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:06.700Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780937286700_227",
+      "type": "obligation",
+      "label": "entregar stem",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:06.700Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780937318536_226",
+      "type": "obligation",
+      "label": "café",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:38.536Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780937318536_227",
+      "type": "obligation",
+      "label": "entregar stem",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:38.536Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780938467065_226",
+      "type": "obligation",
+      "label": "café",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T17:07:47.065Z",
+      "dueAt": null,
+      "priority": 0.7
+    },
+    {
+      "id": "obligation_1780938467065_227",
+      "type": "obligation",
+      "label": "entregar stem",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T17:07:47.065Z",
+      "dueAt": null,
+      "priority": 0.7
+    }
+  ],
+  "hobbies": [
+    {
+      "id": "hobby_1780935846985_421",
+      "type": "hobby",
+      "label": "estudo de mix",
+      "phase": "tarde",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:24:06.985Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780935846985_422",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "tarde",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:24:06.985Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936325785_226",
+      "type": "hobby",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:32:05.785Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936325785_227",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:32:05.785Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936383591_226",
+      "type": "hobby",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:33:03.591Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936383591_227",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:33:03.591Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936896820_226",
+      "type": "hobby",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:41:36.820Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936896820_227",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:41:36.820Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936938047_226",
+      "type": "hobby",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:42:18.047Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780936938047_227",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:42:18.047Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780937286700_226",
+      "type": "hobby",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:06.700Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780937286700_227",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:06.700Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780937318536_226",
+      "type": "hobby",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:38.536Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780937318536_227",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:38.536Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780938467065_226",
+      "type": "hobby",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T17:07:47.065Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "hobby_1780938467065_227",
+      "type": "hobby",
+      "label": "jogar casual",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T17:07:47.065Z",
+      "dueAt": null,
+      "priority": 0.4
+    }
+  ],
+  "chores": [
+    {
+      "id": "chore_1780935846985_421",
+      "type": "chore",
+      "label": "estudo de mix",
+      "phase": "tarde",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:24:06.985Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "chore_1780936325785_226",
+      "type": "chore",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:32:05.785Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "chore_1780936383591_226",
+      "type": "chore",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:33:03.591Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "chore_1780936896820_226",
+      "type": "chore",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:41:36.820Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "chore_1780936938047_226",
+      "type": "chore",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:42:18.047Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "chore_1780937286700_226",
+      "type": "chore",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:06.700Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "chore_1780937318536_226",
+      "type": "chore",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T16:48:38.536Z",
+      "dueAt": null,
+      "priority": 0.4
+    },
+    {
+      "id": "chore_1780938467065_226",
+      "type": "chore",
+      "label": "checar mensagens",
+      "phase": "manha",
+      "status": "pending",
+      "createdAt": "2026-06-08T17:07:47.065Z",
+      "dueAt": null,
+      "priority": 0.4
+    }
+  ],
+  "goals": [],
+  "privateThoughts": [],
+  "sleep": {
+    "state": "awake",
+    "sleepDebt": 0,
+    "lastSleepAt": null,
+    "lastWakeAt": null,
+    "tonightPlan": null,
+    "alarmHistory": []
+  },
+  "lastTickAt": "2026-06-08T19:09:52.480Z",
+  "dayKey": "2026-06-08"
+}

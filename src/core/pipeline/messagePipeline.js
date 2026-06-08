@@ -10,6 +10,8 @@ import { buildMediaContext } from "../media/mediaContext.js";
 import { describeMediaForPrompt } from "../media/mediaHeuristics.js";
 import { buildMultimodalContext } from "../memory/multimodalRetrieval.js";
 import { ChatService } from "../../modules/chat/chatService.js";
+import { detectVulnerability } from "../brain/vulnerabilityDetect.js";
+import { touchUserActivity } from "../channels/userActivity.js";
 
 function clampString(value, max) {
   return typeof value === "string" ? value.slice(0, max) : value;
@@ -30,7 +32,7 @@ function normalizeHistory(messages, safeUserId, safeSessionId, maxHistory, maxCo
     }));
 }
 
-function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime) {
+function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime, safeSessionId) {
   const style = extractStyle(input);
   const repeatedChars = (input.match(/([aeiou])\1{1,}/gi) ?? []).length;
   const burstMessages = input.split("\n").filter(Boolean).length;
@@ -48,7 +50,7 @@ function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime
     isMessyLaughterMessage(input) ||
     /[^\w\s\u00C0-\u024F]{2,}/.test(input);
 
-  const sessionKeyForSpam = normalizedHistory?.[0]?.meta?.sessionId ?? "default";
+  const sessionKeyForSpam = safeSessionId ?? normalizedHistory?.[0]?.meta?.sessionId ?? "default";
   const priorUserTurns = (runtime.shortTerm.getAll(sessionKeyForSpam) ?? [])
     .filter((m) => m?.role === "user")
     .slice(-5)
@@ -102,21 +104,35 @@ export async function runMessagePipeline(runtime, payload = {}) {
     isReply = false,
     quotedMessage = null,
     messageKey = null,
-    media = null
+    media = null,
+    closeDecision = null
   } = payload;
+  const effectiveCloseDecision = closeDecision ?? null;
   const safeUserId = typeof userId === "string" ? userId.slice(0, runtime.defaults.maxIdLength) : userId;
   const safeSessionId = typeof sessionId === "string" ? sessionId.slice(0, runtime.defaults.maxIdLength) : sessionId;
   const safeChannelId = typeof channelId === "string" && channelId.trim()
     ? channelId.slice(0, runtime.defaults.maxIdLength * 3)
     : (isGroup ? `group:${safeSessionId ?? safeUserId ?? "default"}` : `direct:${safeUserId ?? "default"}`);
+  const channelScope = isGroup ? `group:${safeChannelId.replace(/^group:/, "")}` : "direct";
 
-  const normalizedHistory = normalizeHistory(
+  let normalizedHistory = normalizeHistory(
     messages,
     safeUserId,
     safeSessionId,
     runtime.defaults.maxHistory,
     runtime.defaults.maxContentLength
   );
+
+  if (!normalizedHistory?.length && runtime.shortTerm?.getAll) {
+    const fromShort = runtime.shortTerm.getAll(safeSessionId ?? "default");
+    if (fromShort.length) {
+      normalizedHistory = fromShort.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+        meta: { userId: safeUserId, sessionId: safeSessionId }
+      }));
+    }
+  }
 
   const recentHistoryLimit = normalizedHistory?.length ? Math.max(3, Math.min(5, normalizedHistory.length)) : 0;
   const recentHistory = normalizedHistory?.length ? normalizedHistory.slice(-recentHistoryLimit) : null;
@@ -130,9 +146,34 @@ export async function runMessagePipeline(runtime, payload = {}) {
   }
 
   const tone = detectTone(input);
-  const existingProfile = runtime.longTerm.getProfile(safeUserId ?? "default");
+  const existingProfile = runtime.longTerm.getProfile(safeUserId ?? "default", channelScope);
   const resumedAfterClose = Boolean(existingProfile?.conversationClosedAt);
-  const styleHint = buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime);
+  const styleHint = buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime, safeSessionId);
+  const groupMention = ChatService.extractGroupMention(input);
+  const isVulnerable = detectVulnerability(input);
+  const isDirectQuestion = ChatService.isLikelyQuestion(input);
+  const effectiveMention = isDirectMention || Boolean(groupMention);
+
+  let brainTurn = null;
+  if (runtime.brainOrchestrator?.tickTurn) {
+    brainTurn = await runtime.brainOrchestrator.tickTurn({
+      message: input,
+      userId: safeUserId,
+      sessionId: safeSessionId,
+      channelId: safeChannelId,
+      channelScope: isGroup ? `group:${safeChannelId}` : "direct",
+      isGroup,
+      isDirectMention: effectiveMention,
+      isReply,
+      isDirectQuestion,
+      tone,
+      media,
+      isVulnerable,
+      closeDecision: effectiveCloseDecision
+    });
+  }
+
+  const timingPlan = brainTurn?.timingPlan ?? null;
 
   const channelState = runtime.channelRegistry.applyMessageContext({
     channelId: safeChannelId,
@@ -140,14 +181,12 @@ export async function runMessagePipeline(runtime, payload = {}) {
     isGroup,
     participants
   });
-
-  const groupMention = ChatService.extractGroupMention(input);
   const policy = runtime.channelRegistry.shouldRespond({
     channelId: safeChannelId,
     userId: safeUserId ?? "default",
-    isDirectMention: isDirectMention || Boolean(groupMention),
+    isDirectMention: effectiveMention,
     isReply,
-    isQuestion: ChatService.isLikelyQuestion(input)
+    isQuestion: isDirectQuestion
   });
 
   runtime.logger?.log?.("pipeline.policy", {
@@ -168,6 +207,37 @@ export async function runMessagePipeline(runtime, payload = {}) {
       input,
       tone,
       policy
+    };
+  }
+
+  const directSubstantive =
+    !isGroup &&
+    (String(input ?? "").trim().length > 12 ||
+      /[?]/.test(String(input ?? "")) ||
+      /\b(fala|conta|me diz|o que|como|por que|pq)\b/i.test(String(input ?? "")));
+
+  if (
+    timingPlan?.silenceAppropriate &&
+    !effectiveMention &&
+    !isReply &&
+    effectiveCloseDecision !== "respond" &&
+    !directSubstantive
+  ) {
+    runtime.metrics?.increment?.("pipeline.timing.silence");
+    runtime.logger?.log?.("pipeline.timing_silence", {
+      userId: safeUserId,
+      sessionId: safeSessionId,
+      reasons: timingPlan.reasons ?? []
+    });
+    return {
+      replies: [],
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId,
+      input,
+      tone,
+      policy: { ...policy, mode: "timing_silence" },
+      timingPlan
     };
   }
 
@@ -327,6 +397,12 @@ export async function runMessagePipeline(runtime, payload = {}) {
       documentContext,
       reminderContext,
       mediaContext,
+      closeDecision: effectiveCloseDecision,
+      brainBlocks: brainTurn?.blocks ?? null,
+      brainSnapshot: brainTurn?.snapshot ?? null,
+      timingPlan: brainTurn?.timingPlan ?? null,
+      brainOrchestratorEnabled: Boolean(runtime.brainOrchestrator?.enabled),
+      isGroup,
       ...searchMeta,
       ...operationMeta
     },
@@ -334,12 +410,51 @@ export async function runMessagePipeline(runtime, payload = {}) {
     tone
   );
 
-  runtime.basicLoop.touch(safeUserId ?? "default");
-  runtime.timeStore?.markMessage(safeUserId ?? "default");
-  runtime.userPatterns?.recordInteraction(safeUserId ?? "default");
+  if (runtime.brainOrchestrator?.logTurn) {
+    runtime.brainOrchestrator.logTurn({
+      turnId: `${safeSessionId}-${Date.now()}`,
+      input: { message: input, channelId: safeChannelId, isGroup, media },
+      brain: brainTurn?.snapshot ?? {},
+      timingPlan,
+      output: { replies, count: replies.length }
+    });
+  }
+
+  if (replies.length > 0 && runtime.brainOrchestrator?.memory?.recordEpisode) {
+    runtime.brainOrchestrator.memory.recordEpisode({
+      userId: safeUserId ?? "default",
+      channelId: safeChannelId,
+      channelScope: isGroup ? `group:${safeChannelId}` : "direct",
+      summary: input.slice(0, 280),
+      userMessage: input,
+      assistantReplies: replies,
+      tone,
+      ts: new Date().toISOString()
+    });
+    for (const reply of replies) {
+      runtime.brainOrchestrator.recordAssistantOutput?.(safeSessionId, reply, {
+        userId: safeUserId,
+        channelId: safeChannelId
+      });
+    }
+  }
+
+  if (isGroup && runtime.groupMemory?.append && replies.length > 0) {
+    for (const reply of replies) {
+      runtime.groupMemory.append({
+        channelId: safeChannelId,
+        userId: "teto",
+        text: reply,
+        addressedToTeto: true,
+        ts: new Date().toISOString()
+      });
+    }
+  }
+
+  touchUserActivity(runtime, safeUserId ?? "default");
 
   if (replies.length > 0 && resumedAfterClose) {
-    runtime.longTerm.updateProfile(safeUserId ?? "default", { conversationClosedAt: null });
+    runtime.longTerm.updateProfile(safeUserId ?? "default", { conversationClosedAt: null }, channelScope);
   }
 
   const facts = replies.length > 0 ? extractFacts(input) : [];
@@ -350,7 +465,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
         type: fact.type,
         value: fact.value,
         userId: safeUserId ?? "default",
-        channelId: safeChannelId
+        channelId: safeChannelId,
+        channelScope
       });
     }
 
@@ -378,7 +494,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       },
       style: nextStyle,
       counts: { ...nextCounts, total }
-    });
+    }, channelScope);
   }
 
   if (replies.length > 0 && isMeaningful(input)) {
@@ -386,8 +502,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
       summary: input,
       timestamp: new Date().toISOString(),
       channelId: safeChannelId
-    });
-    runtime.longTerm.pruneMediumTerm(safeUserId ?? "default", 20);
+    }, 20, channelScope);
+    runtime.longTerm.pruneMediumTerm(safeUserId ?? "default", 20, channelScope);
   }
 
   const memoryCandidates = replies.length > 0
@@ -410,6 +526,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     runtime.longTerm.save({
       userId: safeUserId ?? "default",
       channelId: safeChannelId,
+      channelScope,
       tags: ["selective_memory"],
       type: "selective_memory",
       content: entry.content,
@@ -440,6 +557,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     channelId: safeChannelId,
     input,
     tone,
-    policy
+    policy,
+    timingPlan
   };
 }

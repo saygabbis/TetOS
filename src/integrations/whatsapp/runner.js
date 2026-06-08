@@ -8,6 +8,16 @@ import { NudgeEngine } from "../../core/autonomy/nudgeEngine.js";
 import { createBaileysClient } from "./baileysClient.js";
 import { registerMessageHandler } from "./messageHandler.js";
 import { DisconnectReason } from "baileys";
+import { isUserRecentlyActive, resolveNudgeRemoteJid, touchUserActivity } from "../../core/channels/userActivity.js";
+
+/** Pausa nudges/presence após 403 de assinatura (evita spam a cada 60s). */
+let presenceLlmPausedUntil = 0;
+let presenceSubscriptionWarned = false;
+
+function isOllamaSubscriptionError(message = "") {
+  const msg = String(message);
+  return /403/.test(msg) && /subscription|upgrade/i.test(msg);
+}
 
 function listKnownUsers(runtime) {
   const ids = new Set();
@@ -22,24 +32,50 @@ function listKnownUsers(runtime) {
 async function runPresence(runtime, socket, nudgeEngine) {
   if (!DEFAULTS.replyEnabled) return;
   if (!DEFAULTS.presenceEnabled) return;
+  if (Date.now() < presenceLlmPausedUntil) return;
   const users = listKnownUsers(runtime);
   for (const userId of users) {
     const profile = runtime.longTerm.getProfile(userId);
     if (profile?.facts?.lastChannel !== "direct") {
       continue;
     }
+    if (runtime.tetoActivation?.isActivationRequired?.() && !runtime.tetoActivation.isDmActive(userId)) {
+      continue;
+    }
+    if (isUserRecentlyActive(runtime, userId, DEFAULTS.presenceInactiveMs)) {
+      continue;
+    }
     const nudge = nudgeEngine?.buildNudge(userId);
-    if (!nudge?.text) continue;
+    if (!nudge?.intent) continue;
     const allowed = runtime.basicLoop.maybeNudge(userId, {});
     if (!allowed) continue;
-    const remoteJid = `${userId}@s.whatsapp.net`;
+    const effectiveNudge = allowed.intent ? allowed : nudge;
+    const remoteJid = resolveNudgeRemoteJid(runtime, userId);
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+      body: JSON.stringify({
+        sessionId: "9518ce",
+        hypothesisId: "H2",
+        location: "runner.js:runPresence:before-llm",
+        message: "presence nudge calling LLM",
+        data: { userId, model: DEFAULTS.model },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
     const replies = await runtime.chatService.handleMessage(
-      nudge.text,
+      "",
       {
         userId,
         sessionId: `presence-${userId}`,
         styleHint: { conversationEnergy: "low" },
-        fallback: "ground"
+        fallback: "ground",
+        timingPlan: effectiveNudge.timingPlan ?? null,
+        brainBlocks: effectiveNudge.brainBlocks ?? null,
+        isNudge: true,
+        nudgeIntent: effectiveNudge.intent ?? allowed.intent
       },
       null,
       "calm"
@@ -47,11 +83,19 @@ async function runPresence(runtime, socket, nudgeEngine) {
     const text = Array.isArray(replies) ? replies[0] : replies;
     if (!text) continue;
     if (!remoteJid.endsWith("@g.us")) {
+      if (typeof socket.sendPresenceUpdate === "function") {
+        try {
+          await socket.sendPresenceUpdate("composing", remoteJid);
+          await new Promise((r) => setTimeout(r, 800 + Math.floor(Math.random() * 600)));
+          await socket.sendPresenceUpdate("paused", remoteJid);
+        } catch {
+          /* ignore */
+        }
+      }
       await socket.sendMessage(remoteJid, { text });
     }
-    runtime.basicLoop.recordOutbound(userId);
+    touchUserActivity(runtime, userId, { markMessage: false });
     runtime.timeStore?.markSeen(userId);
-    runtime.userPatterns?.recordInteraction(userId);
   }
 }
 
@@ -179,6 +223,11 @@ function attachChatLedgerListeners(socket, runtime) {
   });
 
   socket.ev.on("group-participants.update", (payload = {}) => {
+    runtime.channelRegistry?.syncGroupParticipants?.(
+      payload?.id,
+      payload?.participants ?? [],
+      payload?.action === "remove" ? "remove" : "add"
+    );
     runtime.eventLedger?.append?.({
       eventType: "group.participants_update",
       remoteJid: payload?.id ?? null,
@@ -194,7 +243,18 @@ function scheduleAuxiliaryLoops(runtime, nudgeEngine, getSocket, getConnected) {
       const socket = getSocket();
       if (!getConnected() || !socket) return;
       runPresence(runtime, socket, nudgeEngine).catch((error) => {
-        console.error("[presence] error:", error.message);
+        const msg = String(error?.message ?? "");
+        if (isOllamaSubscriptionError(msg)) {
+          presenceLlmPausedUntil = Date.now() + 6 * 60 * 60 * 1000;
+          if (!presenceSubscriptionWarned) {
+            presenceSubscriptionWarned = true;
+            console.error(
+              `[presence] ${DEFAULTS.model} exige Pro na Ollama Cloud (403). Chat também falha com este modelo. Use gpt-oss:20b-cloud no free ou assine Pro. Nudges pausados 6h.`
+            );
+          }
+        } else {
+          console.error("[presence] error:", msg);
+        }
       });
     }, DEFAULTS.presenceCheckMs);
   }
@@ -335,12 +395,18 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         if (connection === "open") {
           mainConnected = true;
           mainReconnecting = false;
-          console.log("[whatsapp] main connected — número que lê chats, aprende e responde.");
+          console.log(
+            DEFAULTS.whatsappMainObserveOnly
+              ? "[whatsapp] main connected — SEU número: lê chats e aprende (sem responder)."
+              : "[whatsapp] main connected — número que lê chats, aprende e responde."
+          );
           notifyMainBootstrapOnline();
         }
         if (update?.qr) {
           console.log(
-            "[whatsapp] 1/2 — QR do número PRINCIPAL (lê mensagens e aprende). Escaneie só este até conectar; o QR dos comandos vem depois."
+            DEFAULTS.whatsappMainObserveOnly
+              ? "[whatsapp] 1/2 — QR do SEU número (só aprendizado). Escaneie com seu WhatsApp pessoal."
+              : "[whatsapp] 1/2 — QR do número PRINCIPAL (lê mensagens e aprende). Escaneie só este até conectar; o QR do bot vem depois."
           );
         }
 
@@ -390,11 +456,17 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         if (connection === "open") {
           mediaConnected = true;
           mediaReconnecting = false;
-          console.log("[whatsapp] media connected — número só para comandos .sticker / .toimg");
+          console.log(
+            DEFAULTS.whatsappMainObserveOnly
+              ? "[whatsapp] bot connected — número da TETO: chat, .sticker e .toimg"
+              : "[whatsapp] media connected — número só para comandos .sticker / .toimg"
+          );
         }
         if (update?.qr) {
           console.log(
-            "[whatsapp] 2/2 — QR do número só COMANDOS DE MÍDIA (.sticker, .toimg). Pode escanear com o segundo telefone/número."
+            DEFAULTS.whatsappMainObserveOnly
+              ? "[whatsapp] 2/2 — QR do número da TETO/BOT. Escaneie com o chip/SIM do bot (não o seu pessoal)."
+              : "[whatsapp] 2/2 — QR do número só COMANDOS DE MÍDIA (.sticker, .toimg). Pode escanear com o segundo telefone/número."
           );
         }
 
@@ -435,11 +507,17 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   await connectMain();
   await mainBootstrapReady;
   console.log(
-    "[whatsapp] Principal online. A iniciar a sessão só de comandos de mídia — o próximo QR é do bot de .sticker / .toimg."
+    DEFAULTS.whatsappMainObserveOnly
+      ? "[whatsapp] Seu número online (aprendizado). Próximo QR = número da TETO para responder no chat."
+      : "[whatsapp] Principal online. A iniciar a sessão só de comandos de mídia — o próximo QR é do bot de .sticker / .toimg."
   );
   await connectMedia();
 
-  scheduleAuxiliaryLoops(runtime, nudgeEngine, () => mainSocket, () => mainConnected);
+  const chatSocket = DEFAULTS.whatsappMainObserveOnly ? () => mediaSocket : () => mainSocket;
+  const chatConnected = DEFAULTS.whatsappMainObserveOnly
+    ? () => mediaConnected
+    : () => mainConnected;
+  scheduleAuxiliaryLoops(runtime, nudgeEngine, chatSocket, chatConnected);
 }
 
 async function main() {
@@ -478,16 +556,23 @@ async function main() {
       );
       process.exit(1);
     }
-    console.log(
-      "[whatsapp] mode=dual — primeiro QR = número que aprende/responde; só depois de conectar aparece o QR do número de .sticker/.toimg."
-    );
+    if (DEFAULTS.whatsappMainObserveOnly) {
+      console.log(
+        "[whatsapp] mode=dual — 1º QR = SEU número (só aprende, não responde); 2º QR = número da TETO/bot (chat + .sticker/.toimg)."
+      );
+    } else {
+      console.log(
+        "[whatsapp] mode=dual — primeiro QR = número que aprende/responde; só depois de conectar aparece o QR do número de .sticker/.toimg."
+      );
+    }
   }
 
   const runtime = createRuntime();
   const nudgeEngine = new NudgeEngine({
     timeStore: runtime.timeStore,
     userPatterns: runtime.userPatterns,
-    internalState: runtime.internalState
+    internalState: runtime.internalState,
+    brainOrchestrator: runtime.brainOrchestrator
   });
 
   if (dual) {

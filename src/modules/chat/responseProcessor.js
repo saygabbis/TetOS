@@ -6,8 +6,9 @@ const META_TALK = /\b(você disse|você perguntou|você falou|sua mensagem|você
 const REMINDER_TALK = /\b(lembra\??!?)\b/gi;
 const TITLE_TALK = /\b(princesa|rainha)\b/gi;
 const AI_DISCLAIMER = /\b(as an ai|as a language model)\b/gi;
-const ENGLISH_FILLERS = /\b(by the way|btw|anyway|anyways|i mean|you know|well(?:\s+then)?|cool|nice|yep|yeah|nope|pls|please|thanks|thank you|pleasant|ok|okay|okey|sorry|lol|im|i'm|ive|i've|id|i'd|dont|don't|cant|can't|wont|won't|youre|you're|your|yours|you)\b/gi;
-const ENGLISH_TOKENS = /\b(working|work|day|distract|weekend|okay|okey|ok|cool|nice|sorry|thanks|thank|pleasant|you|your|yours|youre|you're|dont|don't|cant|can't|wont|won't|im|i'm|ive|i've)\b/gi;
+const ENGLISH_FILLERS = /\b(by the way|btw|anyway|anyways|i mean|you know|well(?:\s+then)?|cool|nice|yep|yeah|nope|pls|please|thanks|thank you|pleasant|sorry|lol|im|i'm|ive|i've|id|i'd|dont|don't|cant|can't|wont|won't|youre|you're|your|yours)\b/gi;
+const ENGLISH_TOKENS = /\b(working|work|distract|weekend|sorry|thanks|thank|pleasant|your|yours|youre|you're|dont|don't|cant|can't|wont|won't|im|i'm|ive|i've)\b/gi;
+const PROPER_NOUNS = new Set(["teto", "kasane", "miku", "gabbis", "whatsapp", "brasil", "são", "paulo", "tokyo", "japão", "japao"]);
 const SOFT_TILDE = /~+/g;
 const MASC_A_WORDS = new Set([
   "dia",
@@ -40,8 +41,11 @@ function fixStrayApostropheArtifacts(text) {
 
 function repairPunctuation(text) {
   return String(text)
-    // split sentences when a new sentence starts mid-line
-    .replace(/([a-záéíóúàâêôãõç])\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ])/g, "$1. $2")
+    // split sentences when a new sentence starts mid-line (skip proper nouns mid-sentence)
+    .replace(/([a-záéíóúàâêôãõç])\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúàâêôãõç]+)/g, (m, before, word) => {
+      if (PROPER_NOUNS.has(word.toLowerCase())) return m;
+      return `${before}. ${word}`;
+    })
     // fix spacing before punctuation
     .replace(/\s+([!?.,…])/g, "$1")
     // collapse ugly punctuation combos introduced by removals
@@ -109,7 +113,7 @@ function stripEnglishIntrusions(text) {
     .replace(/\b[a-z]{3,}\*(?=\s|$)/gi, "")
     .replace(ENGLISH_FILLERS, "")
     .replace(ENGLISH_TOKENS, "")
-    .replace(/\b(so|pleasant\w*|okay|okey|ok|sorry|cool|nice|lol|thank\w*)\b/gi, "")
+    .replace(/\b(so|pleasant\w*|sorry|cool|nice|lol|thank\w*)\b/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -765,7 +769,21 @@ export class ResponseProcessor {
       this.imperfectionEvents.push(Date.now());
       this.imperfectionCooldown = 10;
     }
+    finalParts = this.applyCalibratedImperfection(finalParts, { tone, userMessage });
     return finalParts.length ? finalParts : [capitalize(stripStandaloneLaughter(cleaned))].filter(Boolean);
+  }
+
+  /** Unifica process + anti-repetição + remember para regen. */
+  processAndGuard(rawText, context = {}) {
+    const parts = this.process(rawText, context);
+    const safeParts = parts
+      .map((part) => this.ensureNonRepetitive(part))
+      .map((part) => String(part).replace(/\s{2,}/g, " ").trim())
+      .filter(Boolean);
+    const combined = safeParts.join(" ").trim();
+    const safeCombined = this.ensureNonRepetitive(combined);
+    this.remember(safeCombined);
+    return safeParts.length ? safeParts : [safeCombined].filter(Boolean);
   }
 
   canInjectImperfection({ tone, userMessage }) {

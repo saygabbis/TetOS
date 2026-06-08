@@ -1,0 +1,47 @@
+{
+  "homeBase": "São Paulo, Brasil",
+  "currentLocation": "sp",
+  "tripReason": null,
+  "tripStartedAt": null,
+  "tripEndsAt": null,
+  "lastTripEndedAt": "2026-06-08T18:08:06.192Z",
+  "tripHistory": [
+    {
+      "location": "tokyo",
+      "reason": "passeio",
+      "days": 10,
+      "startedAt": "2026-06-08T17:07:47.738Z",
+      "endsAt": "2026-06-18T17:07:47.738Z",
+      "source": "test",
+      "note": "interesse maduro: quero viajar pro japão aprender cultura"
+    },
+    {
+      "location": "tokyo",
+      "reason": "passeio",
+      "days": 10,
+      "startedAt": "2026-06-08T18:08:06.192Z",
+      "endsAt": "2026-06-18T18:08:06.192Z",
+      "source": "test",
+      "note": "interesse maduro: quero viajar pro japão aprender cultura"
+    }
+  ],
+  "localSeason": "outono",
+  "climateTags": [
+    "urbano",
+    "umido"
+  ],
+  "timezone": "America/Sao_Paulo",
+  "culturalNotes": [
+    {
+      "ts": "2026-06-08T17:07:47.738Z",
+      "location": "tokyo",
+      "text": "quero ver Tóquio de perto — passeio"
+    },
+    {
+      "ts": "2026-06-08T18:08:06.192Z",
+      "location": "tokyo",
+      "text": "quero ver Tóquio de perto — passeio"
+    }
+  ],
+  "lastUpdated": "2026-06-08T18:08:06.192Z"
+}

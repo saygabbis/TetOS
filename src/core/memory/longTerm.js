@@ -1,6 +1,25 @@
 import { readJson, writeJson } from "../../infra/utils/fileStore.js";
 import crypto from "node:crypto";
 
+function fixEncoding(text) {
+  const s = String(text ?? "");
+  if (!/Ã|Â|â€™|Ã©|Ã£/.test(s)) return s;
+  try {
+    return Buffer.from(s, "latin1").toString("utf8");
+  } catch {
+    return s;
+  }
+}
+
+function profileKey(userId = "default", channelScope = "direct") {
+  const uid = String(userId ?? "default");
+  return channelScope && channelScope !== "direct" ? `${uid}::${channelScope}` : uid;
+}
+
+function dedupeKey(entry) {
+  return `${entry.userId ?? "default"}|${String(entry.content ?? entry.value ?? "").toLowerCase().trim()}`;
+}
+
 export class LongTermMemory {
   constructor(path) {
     this.path = path;
@@ -11,12 +30,26 @@ export class LongTermMemory {
 
   save(entry) {
     const normalizedUserId = String(entry?.userId ?? "default");
-    const normalizedContent = String(entry?.content ?? entry?.value ?? "").trim();
+    const normalizedContent = fixEncoding(String(entry?.content ?? entry?.value ?? "").trim());
+    const channelScope = entry?.channelScope ?? "direct";
+
+    const duplicate = this.data.entries.find(
+      (existing) => dedupeKey(existing) === dedupeKey({ userId: normalizedUserId, content: normalizedContent })
+    );
+    if (duplicate) {
+      duplicate.timestamp = new Date().toISOString();
+      if (entry?.tags) duplicate.tags = entry.tags;
+      if (channelScope !== "direct") duplicate.channelScope = channelScope;
+      writeJson(this.path, this.data);
+      return duplicate;
+    }
+
     const payload = {
       id: crypto.randomUUID(),
       ...entry,
       userId: normalizedUserId,
       content: normalizedContent,
+      channelScope,
       timestamp: new Date().toISOString()
     };
 
@@ -29,11 +62,14 @@ export class LongTermMemory {
     return this.data.entries;
   }
 
-  byUser(userId = "default") {
+  byUser(userId = "default", channelScope = null) {
     const normalizedUserId = String(userId ?? "default");
-    return this.data.entries.filter(
-      (entry) => String(entry?.userId ?? "default") === normalizedUserId
-    );
+    return this.data.entries.filter((entry) => {
+      const userMatch = String(entry?.userId ?? "default") === normalizedUserId;
+      if (!userMatch) return false;
+      if (!channelScope || channelScope === "direct") return true;
+      return !entry.channelScope || entry.channelScope === channelScope || entry.channelScope === "direct";
+    });
   }
 
   search({ tag, query }) {
@@ -72,43 +108,65 @@ export class LongTermMemory {
     return removed;
   }
 
-  getProfile(userId = "default") {
-    return this.data.profiles[userId] ?? { facts: {}, style: {}, counts: {} };
+  getProfile(userId = "default", channelScope = "direct") {
+    const key = profileKey(userId, channelScope);
+    return this.data.profiles[key] ?? this.data.profiles[userId] ?? { facts: {}, style: {}, counts: {} };
   }
 
-  updateProfile(userId = "default", patch = {}) {
-    const current = this.getProfile(userId);
+  updateProfile(userId = "default", patch = {}, channelScope = "direct") {
+    const key = profileKey(userId, channelScope);
+    const current = this.getProfile(userId, channelScope);
     const next = {
       ...current,
       ...patch,
       facts: { ...current.facts, ...(patch.facts ?? {}) },
       style: { ...current.style, ...(patch.style ?? {}) },
       counts: { ...current.counts, ...(patch.counts ?? {}) },
+      channelScope,
       lastUpdated: new Date().toISOString()
     };
-    this.data.profiles[userId] = next;
+    this.data.profiles[key] = next;
     writeJson(this.path, this.data);
     return next;
   }
 
-  getMediumTerm(userId = "default") {
-    return this.data.mediumTerm[userId] ?? [];
+  getMediumTerm(userId = "default", channelScope = "direct") {
+    const key = profileKey(userId, channelScope);
+    return this.data.mediumTerm[key] ?? this.data.mediumTerm[userId] ?? [];
   }
 
-  addMediumTerm(userId = "default", entry, limit = 20) {
-    const list = this.getMediumTerm(userId);
+  addMediumTerm(userId = "default", entry, limit = 20, channelScope = "direct") {
+    const key = profileKey(userId, channelScope);
+    const list = this.getMediumTerm(userId, channelScope);
     const next = [...list, entry].slice(-limit);
-    this.data.mediumTerm[userId] = next;
+    this.data.mediumTerm[key] = next;
     writeJson(this.path, this.data);
     return next;
   }
 
-  pruneMediumTerm(userId = "default", limit = 20) {
-    const list = this.getMediumTerm(userId);
+  pruneMediumTerm(userId = "default", limit = 20, channelScope = "direct") {
+    const key = profileKey(userId, channelScope);
+    const list = this.getMediumTerm(userId, channelScope);
     if (list.length <= limit) return list;
     const next = list.slice(-limit);
-    this.data.mediumTerm[userId] = next;
+    this.data.mediumTerm[key] = next;
     writeJson(this.path, this.data);
     return next;
+  }
+
+  dedupeAll() {
+    const seen = new Set();
+    const before = this.data.entries.length;
+    this.data.entries = this.data.entries.filter((entry) => {
+      const key = dedupeKey(entry);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      entry.content = fixEncoding(entry.content ?? entry.value ?? "");
+      return true;
+    });
+    if (this.data.entries.length !== before) {
+      writeJson(this.path, this.data);
+    }
+    return { before, after: this.data.entries.length };
   }
 }

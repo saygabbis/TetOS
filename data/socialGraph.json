@@ -1,0 +1,920 @@
+{
+  "nodes": [
+    {
+      "id": "miku",
+      "name": "Hatsune Miku",
+      "type": "friend",
+      "trust": 0.92,
+      "intimacy": 0.95,
+      "history": [
+        "collabs antigas",
+        "conversa off-screen frequente"
+      ]
+    },
+    {
+      "id": "producer_ken",
+      "name": "Ken (produtor)",
+      "type": "collab",
+      "trust": 0.6,
+      "intimacy": 0.45
+    },
+    {
+      "id": "rival_hater",
+      "name": "Hater anônimo",
+      "type": "rival",
+      "trust": 0.1,
+      "intimacy": 0.05
+    }
+  ],
+  "offscreen": [],
+  "npcs": {
+    "miku": {
+      "name": "Hatsune Miku",
+      "role": "best_friend",
+      "trust": 0.92,
+      "intimacy": 0.88,
+      "affinity": 0.9,
+      "lastContactAt": null,
+      "moodToward": "warm",
+      "history": []
+    },
+    "rin": {
+      "name": "Kagamine Rin",
+      "role": "friend",
+      "trust": 0.65,
+      "intimacy": 0.5,
+      "affinity": 0.6,
+      "lastContactAt": "2026-06-08T16:48:39.283Z",
+      "moodToward": "neutral",
+      "history": [
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:41:35.645Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:41:35.646Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:41:35.649Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:41:35.649Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:02.846Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:02.847Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:16.698Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:16.699Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:16.702Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:16.702Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:17.768Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:42:17.769Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:05.367Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:05.368Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:05.371Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:05.372Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:06.410Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:06.411Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:07.439Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:07.440Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:27.028Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:27.029Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:36.987Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:36.988Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:36.991Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:36.992Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:38.234Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:38.235Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:39.282Z",
+          "summary": "surgiu ideia de collab"
+        },
+        {
+          "type": "collab_idea",
+          "ts": "2026-06-08T16:48:39.283Z",
+          "summary": "surgiu ideia de collab"
+        }
+      ]
+    },
+    "producer_k": {
+      "name": "Produtor K",
+      "role": "collaborator",
+      "trust": 1,
+      "intimacy": 1,
+      "affinity": 0.5,
+      "lastContactAt": "2026-06-08T17:42:48.155Z",
+      "moodToward": "warm",
+      "history": [
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:14:48.040Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:14:48.041Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:16:48.052Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:16:48.053Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:18:48.056Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:18:48.061Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:20:48.067Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:20:48.068Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:22:48.080Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:22:48.084Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:24:48.084Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:24:48.085Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:26:48.093Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:26:48.096Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:28:48.101Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:28:48.103Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:30:48.105Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:30:48.107Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:32:48.110Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:32:48.113Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:34:48.114Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:34:48.119Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:36:48.121Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:36:48.122Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:38:48.122Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:38:48.123Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:40:48.133Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:40:48.138Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:42:48.152Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-08T17:42:48.154Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        }
+      ]
+    },
+    "hater_x": {
+      "name": "Hater anônimo",
+      "role": "rival",
+      "trust": 0.1,
+      "intimacy": 0.05,
+      "affinity": 0.15,
+      "lastContactAt": null,
+      "moodToward": "annoyed",
+      "history": []
+    }
+  },
+  "offscreenEvents": [
+    {
+      "id": "off_1780936895645",
+      "ts": "2026-06-08T16:41:35.645Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936895646",
+      "ts": "2026-06-08T16:41:35.646Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936895649",
+      "ts": "2026-06-08T16:41:35.649Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936895649",
+      "ts": "2026-06-08T16:41:35.649Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936922846",
+      "ts": "2026-06-08T16:42:02.846Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936922847",
+      "ts": "2026-06-08T16:42:02.847Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936936698",
+      "ts": "2026-06-08T16:42:16.698Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936936699",
+      "ts": "2026-06-08T16:42:16.699Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936936702",
+      "ts": "2026-06-08T16:42:16.702Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936936702",
+      "ts": "2026-06-08T16:42:16.702Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936937768",
+      "ts": "2026-06-08T16:42:17.768Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780936937769",
+      "ts": "2026-06-08T16:42:17.769Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937285367",
+      "ts": "2026-06-08T16:48:05.367Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937285368",
+      "ts": "2026-06-08T16:48:05.368Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937285371",
+      "ts": "2026-06-08T16:48:05.371Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937285372",
+      "ts": "2026-06-08T16:48:05.372Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937286410",
+      "ts": "2026-06-08T16:48:06.410Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937286411",
+      "ts": "2026-06-08T16:48:06.411Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937287439",
+      "ts": "2026-06-08T16:48:07.439Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937287440",
+      "ts": "2026-06-08T16:48:07.440Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937307028",
+      "ts": "2026-06-08T16:48:27.028Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937307029",
+      "ts": "2026-06-08T16:48:27.029Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937316987",
+      "ts": "2026-06-08T16:48:36.987Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937316988",
+      "ts": "2026-06-08T16:48:36.988Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937316991",
+      "ts": "2026-06-08T16:48:36.991Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937316992",
+      "ts": "2026-06-08T16:48:36.992Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937318234",
+      "ts": "2026-06-08T16:48:38.234Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937318235",
+      "ts": "2026-06-08T16:48:38.235Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937319282",
+      "ts": "2026-06-08T16:48:39.282Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780937319283",
+      "ts": "2026-06-08T16:48:39.283Z",
+      "npcId": "rin",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1780938465746",
+      "ts": "2026-06-08T17:07:45.746Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938465747",
+      "ts": "2026-06-08T17:07:45.747Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938465750",
+      "ts": "2026-06-08T17:07:45.750Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938465751",
+      "ts": "2026-06-08T17:07:45.751Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938466757",
+      "ts": "2026-06-08T17:07:46.757Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938466759",
+      "ts": "2026-06-08T17:07:46.759Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938467908",
+      "ts": "2026-06-08T17:07:47.908Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938467910",
+      "ts": "2026-06-08T17:07:47.910Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938888040",
+      "ts": "2026-06-08T17:14:48.040Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780938888041",
+      "ts": "2026-06-08T17:14:48.041Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939008052",
+      "ts": "2026-06-08T17:16:48.052Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939008053",
+      "ts": "2026-06-08T17:16:48.053Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939128056",
+      "ts": "2026-06-08T17:18:48.056Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939128061",
+      "ts": "2026-06-08T17:18:48.061Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939248067",
+      "ts": "2026-06-08T17:20:48.067Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939248068",
+      "ts": "2026-06-08T17:20:48.068Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939368080",
+      "ts": "2026-06-08T17:22:48.080Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939368084",
+      "ts": "2026-06-08T17:22:48.084Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939488084",
+      "ts": "2026-06-08T17:24:48.084Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939488085",
+      "ts": "2026-06-08T17:24:48.085Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939608093",
+      "ts": "2026-06-08T17:26:48.093Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939608096",
+      "ts": "2026-06-08T17:26:48.096Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939728101",
+      "ts": "2026-06-08T17:28:48.101Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939728103",
+      "ts": "2026-06-08T17:28:48.103Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939848105",
+      "ts": "2026-06-08T17:30:48.105Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939848107",
+      "ts": "2026-06-08T17:30:48.107Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939968110",
+      "ts": "2026-06-08T17:32:48.110Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780939968113",
+      "ts": "2026-06-08T17:32:48.113Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940088114",
+      "ts": "2026-06-08T17:34:48.114Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940088119",
+      "ts": "2026-06-08T17:34:48.119Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940208121",
+      "ts": "2026-06-08T17:36:48.121Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940208122",
+      "ts": "2026-06-08T17:36:48.122Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940328122",
+      "ts": "2026-06-08T17:38:48.122Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940328123",
+      "ts": "2026-06-08T17:38:48.123Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940448133",
+      "ts": "2026-06-08T17:40:48.133Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940448138",
+      "ts": "2026-06-08T17:40:48.138Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940568152",
+      "ts": "2026-06-08T17:42:48.152Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1780940568154",
+      "ts": "2026-06-08T17:42:48.154Z",
+      "npcId": "producer_k",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    }
+  ]
+}

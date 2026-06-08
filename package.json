@@ -19,7 +19,16 @@
     "test:memory:delete": "node scripts/test-memory-delete.js",
     "test:session:clear": "node scripts/test-session-clear.js",
     "test:all": "node scripts/test-status.js && node scripts/test-chat.js && node scripts/test-memory-save.js && node scripts/test-memory-search.js && node scripts/test-memory-search-post.js && node scripts/test-session-clear.js",
-    "learn:focus": "node src/tools/learningConsole.js"
+    "learn:focus": "node src/tools/learningConsole.js",
+    "life:distill": "node src/tools/distillAbsorbedKnowledge.js",
+    "mind:watch": "node src/tools/mindWatch.js",
+    "data:sanitize": "node src/tools/sanitizeData.js",
+    "wa:clear-sessions": "node scripts/clear-whatsapp-sessions.js",
+    "test:minimax": "node scripts/test-minimax-compare.js",
+    "test:brain": "node scripts/test-brain-tick.js",
+    "test:timing": "node scripts/test-timing-engine.js",
+    "test:trust": "node scripts/test-trust-intimacy.js",
+    "test:brain:all": "node scripts/test-brain-tick.js && node scripts/test-agent-brain-slim.js && node scripts/test-timing-checks-count.js && node scripts/test-sleep-cycle.js && node scripts/test-body-needs.js && node scripts/test-timing-engine.js && node scripts/test-life-creative.js && node scripts/test-memory-channels.js && node scripts/test-context-builder.js && node scripts/test-arbitration.js && node scripts/test-autonomous-evolution.js && node scripts/test-group-memory.js && node scripts/test-group-context.js && node scripts/test-chat-closure.js && node scripts/test-response-processor-sessions.js && node scripts/test-mind-logger.js && node scripts/test-media-learning.js && node scripts/test-absorbed-bridge.js && node scripts/test-social-graph.js && node scripts/test-music-research.js && node scripts/test-trust-intimacy.js && node scripts/test-world-context.js && node scripts/test-world-context-v2.js && node scripts/test-teto-activation.js && node scripts/test-reports-hourly.js && node scripts/test-reply-pipeline.js"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",

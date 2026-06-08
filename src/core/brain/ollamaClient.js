@@ -19,6 +19,20 @@ export class OllamaClient {
   }
 
   async generate(prompt) {
+    // #region agent log
+    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+      body: JSON.stringify({
+        sessionId: "9518ce",
+        hypothesisId: "H1",
+        location: "ollamaClient.js:generate:entry",
+        message: "ollama generate start",
+        data: { model: this.model, baseUrl: this.baseUrl, hasApiKey: Boolean(this.apiKey) },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
     const response = await fetch(`${this.baseUrl}/api/generate`, {
@@ -38,6 +52,24 @@ export class OllamaClient {
 
     if (!response.ok) {
       const text = await response.text();
+      // #region agent log
+      fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+        body: JSON.stringify({
+          sessionId: "9518ce",
+          hypothesisId: "H1",
+          location: "ollamaClient.js:generate:error",
+          message: "ollama generate failed",
+          data: {
+            model: this.model,
+            status: response.status,
+            needsSubscription: /subscription|upgrade/i.test(text)
+          },
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+      // #endregion
       throw new Error(`Ollama error: ${response.status} ${text}`);
     }
 

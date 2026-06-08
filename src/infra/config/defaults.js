@@ -1,3 +1,6 @@
+const llmProviderRaw = (process.env.TETOS_LLM_PROVIDER ?? "ollama").toLowerCase();
+const llmProvider = llmProviderRaw === "minimax" ? "minimax" : "ollama";
+
 const ollamaModeRaw = (process.env.TETOS_OLLAMA_MODE ?? "local").toLowerCase();
 const ollamaMode = ollamaModeRaw === "cloud" ? "cloud" : "local";
 
@@ -8,7 +11,17 @@ const ollamaBaseUrl =
 
 const model =
   process.env.TETOS_MODEL ??
-  (ollamaMode === "cloud" ? "minimax-m2.7:cloud" : "llama3");
+  (llmProvider === "minimax"
+    ? (process.env.TETOS_MINIMAX_MODEL ?? "MiniMax-M2.7")
+    : ollamaMode === "cloud"
+      ? "minimax-m2.7:cloud"
+      : "llama3");
+
+const minimaxApiKey = process.env.TETOS_MINIMAX_API_KEY ?? "";
+const minimaxBaseUrl = process.env.TETOS_MINIMAX_BASE_URL ?? "https://api.minimax.io";
+const minimaxModel = process.env.TETOS_MINIMAX_MODEL ?? "MiniMax-M2.7";
+const minimaxWorkerModel =
+  process.env.TETOS_MINIMAX_WORKER_MODEL ?? "MiniMax-M2.7-highspeed";
 
 const ollamaApiKey =
   process.env.TETOS_OLLAMA_API_KEY ?? process.env.OLLAMA_API_KEY ?? "";
@@ -50,6 +63,11 @@ const responseMaxParts =
       : Infinity;
 
 export const DEFAULTS = {
+  llmProvider,
+  minimaxApiKey,
+  minimaxBaseUrl,
+  minimaxModel,
+  minimaxWorkerModel,
   ollamaMode,
   model,
   ollamaBaseUrl,
@@ -114,9 +132,14 @@ export const DEFAULTS = {
    */
   whatsappMode: (() => {
     const raw = String(process.env.WHATSAPP_MODE ?? "single").trim().toLowerCase();
-    if (raw === "dual" || raw === "multi" || raw === "split") return "dual";
+    if (raw === "dual" || raw === "multi" || raw === "split" || raw === "session-media") {
+      return "dual";
+    }
     return "single";
   })(),
+  /** dual: sessão principal só aprende/observa; sessão secundária (bot) responde como Teto. */
+  whatsappMainObserveOnly:
+    String(process.env.WHATSAPP_MAIN_OBSERVE_ONLY ?? "true").toLowerCase() === "true",
   /** Pasta Baileys do número usado só para comandos de figurinha (apenas WHATSAPP_MODE=dual). */
   whatsappMediaSessionPath: process.env.WHATSAPP_MEDIA_SESSION_PATH ?? "./data/session-media",
   /** dual + sessão principal: texto opcional quando alguém manda comando de figurinha no número errado (vazio = só ignora). */
@@ -159,5 +182,43 @@ export const DEFAULTS = {
   presenceMinCooldownMs: Number(process.env.PRESENCE_MIN_COOLDOWN_MS ?? 1800000),
   presenceMaxCooldownMs: Number(process.env.PRESENCE_MAX_COOLDOWN_MS ?? 7200000),
   presenceMaxDailyPerUser: Number(process.env.PRESENCE_MAX_DAILY_PER_USER ?? 3),
-  presenceInactiveMs: Number(process.env.PRESENCE_INACTIVE_MS ?? 600000)
+  presenceInactiveMs: Number(process.env.PRESENCE_INACTIVE_MS ?? 600000),
+  brainEnabled: String(process.env.TETOS_BRAIN_ENABLED ?? "true").toLowerCase() === "true",
+  lifeProfilePath: process.env.TETOS_LIFE_PATH ?? "./data/tetoLife.json",
+  lifeStatePath: process.env.TETOS_LIFE_STATE_PATH ?? "./data/lifeState.json",
+  lifeJournalPath: process.env.TETOS_LIFE_JOURNAL_PATH ?? "./data/lifeJournal.ndjson",
+  autonomousStatePath: process.env.TETOS_AUTONOMOUS_STATE_PATH ?? "./data/autonomousState.json",
+  emotionStatePath: process.env.TETOS_EMOTION_STATE_PATH ?? "./data/emotionState.json",
+  bodyNeedsPath: process.env.TETOS_BODY_NEEDS_PATH ?? "./data/bodyNeeds.json",
+  healthStatePath: process.env.TETOS_HEALTH_STATE_PATH ?? "./data/healthState.json",
+  socialGraphPath: process.env.TETOS_SOCIAL_GRAPH_PATH ?? "./data/socialGraph.json",
+  trustBondsPath: process.env.TETOS_TRUST_BONDS_PATH ?? "./data/trustBonds.json",
+  worldContextPath: process.env.TETOS_WORLD_CONTEXT_PATH ?? "./data/worldContext.json",
+  musicStatePath: process.env.TETOS_MUSIC_STATE_PATH ?? "./data/musicState.json",
+  musicDiscographyPath: process.env.TETOS_MUSIC_DISCOGRAPHY_PATH ?? "./data/tetoDiscography.json",
+  absorbedPatternsPath: process.env.TETOS_ABSORBED_PATTERNS_PATH ?? "./data/absorbedPatterns.json",
+  groupMemoryPath: process.env.TETOS_GROUP_MEMORY_PATH ?? "./data/groupMemory.ndjson",
+  groupMemoryMaxEntries: Number(process.env.TETOS_GROUP_MEMORY_MAX_ENTRIES ?? 500),
+  episodicMemoryPath: process.env.TETOS_MEMORY_EPISODIC_PATH ?? "./data/episodicMemory.ndjson",
+  mindLogPath: process.env.TETOS_MIND_LOG_PATH ?? "./data/mindLog.ndjson",
+  mindLogEnabled: String(process.env.TETOS_MIND_LOG_ENABLED ?? "true").toLowerCase() === "true",
+  mediaLearningPath: process.env.TETOS_MEDIA_LEARNING_PATH ?? "./data/mediaLearning.json",
+  timingEngineEnabled: String(process.env.TETOS_TIMING_ENGINE_ENABLED ?? "true").toLowerCase() === "true",
+  brainBackgroundTickMs: Number(process.env.TETOS_BRAIN_BACKGROUND_TICK_MS ?? 120000),
+  soloThoughtIntervalMs: Number(process.env.TETOS_SOLO_THOUGHT_INTERVAL_MS ?? 300000),
+  musicResearchIntervalMs: Number(process.env.TETOS_MUSIC_RESEARCH_INTERVAL_MS ?? 86400000),
+  workerLlmModel: process.env.TETOS_WORKER_LLM_MODEL ?? "",
+  workerLlmUrl: process.env.TETOS_WORKER_LLM_URL ?? "",
+  memoryDecayEnabled: String(process.env.TETOS_MEMORY_DECAY_ENABLED ?? "true").toLowerCase() === "true",
+  batchWindowMs: Number(process.env.TETOS_BATCH_WINDOW_MS ?? 650),
+  typingGraceMs: Number(process.env.TETOS_TYPING_GRACE_MS ?? 2400),
+  typingMinDelayMs: Number(process.env.TETOS_TYPING_MIN_DELAY_MS ?? 140),
+  typingMaxDelayMs: Number(process.env.TETOS_TYPING_MAX_DELAY_MS ?? 2400),
+  modelTimeoutMs: Number(process.env.TETOS_MODEL_TIMEOUT_MS ?? 25000),
+  visionAdapter: process.env.TETOS_VISION_ADAPTER ?? "blip",
+  videoAdapter: process.env.TETOS_VIDEO_ADAPTER ?? "ffmpeg_frames",
+  webReaderEnabled: String(process.env.TETOS_WEB_READER_ENABLED ?? "true").toLowerCase() === "true",
+  /** false = responde a qualquer contato (comportamento atual); true = só /teto-ativar e /teto-grupo-ativar */
+  tetoActivationRequired: String(process.env.TETOS_ACTIVATION_REQUIRED ?? "false").toLowerCase() === "true",
+  tetoActivationPath: process.env.TETOS_ACTIVATION_PATH ?? "./data/tetoActivations.json"
 };

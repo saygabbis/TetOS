@@ -1,0 +1,108 @@
+{
+  "rhythm": {
+    "peakHours": [],
+    "quietHours": [],
+    "avgResponseMs": 0,
+    "p50": 0,
+    "p90": 0
+  },
+  "initiation": {
+    "typicalGapHours": [],
+    "afterSilenceChance": 0
+  },
+  "style": {
+    "shortMsgRate": 0,
+    "laughterRate": 0,
+    "editRate": 0,
+    "deleteRate": 0
+  },
+  "topics": [],
+  "mediaHabits": {
+    "stickerRate": 0,
+    "imageRate": 0,
+    "reactionEmoji": {}
+  },
+  "creativeInsights": [
+    {
+      "id": "insight_1780941943763",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.69,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.763Z"
+    },
+    {
+      "id": "insight_1780941943767",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.48000000000000004,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.767Z"
+    },
+    {
+      "id": "insight_1780941943774",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.43000000000000005,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.774Z"
+    },
+    {
+      "id": "insight_1780941943792",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.44,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.792Z"
+    },
+    {
+      "id": "insight_1780941943818",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.66,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.818Z"
+    },
+    {
+      "id": "insight_1780941943825",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 15h",
+      "confidence": 0.6000000000000001,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.825Z"
+    },
+    {
+      "id": "insight_1780941943834",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.834Z"
+    },
+    {
+      "id": "insight_1780941943836",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.47000000000000003,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:05:43.836Z"
+    },
+    {
+      "id": "insight_1780942960427",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.48000000000000004,
+      "trigger": "chat.update",
+      "ts": "2026-06-08T18:22:40.427Z"
+    },
+    {
+      "id": "insight_1780942969631",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.5900000000000001,
+      "trigger": "message.update",
+      "ts": "2026-06-08T18:22:49.631Z"
+    }
+  ],
+  "lastUpdated": "2026-06-08T19:09:54.588Z"
+}

@@ -1,7 +1,7 @@
 import { isMessyLaughterMessage } from "../memory/extractor.js";
 
 export class Agent {
-  constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder }) {
+  constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder, brainOrchestrator = null }) {
     this.personality = personality;
     this.character = character;
     this.internalState = internalState;
@@ -9,6 +9,7 @@ export class Agent {
     this.longTerm = longTerm;
     this.brain = brain;
     this.contextBuilder = contextBuilder;
+    this.brainOrchestrator = brainOrchestrator;
   }
 
   static containsIdentityLoop(text) {
@@ -128,6 +129,22 @@ export class Agent {
           ]
         : [];
 
+    const brainBlocks = meta?.brainBlocks ?? null;
+    const brainSnapshot = meta?.brainSnapshot ?? null;
+    const timingPlan = meta?.timingPlan ?? brainSnapshot?.timing ?? null;
+    const memoryHints = brainSnapshot?.memory?.promptHints ?? [];
+    const hasBrainContext = Boolean(brainBlocks?.conscious || brainBlocks?.subconscious);
+    const tetoVibeBlock = [
+      "[TETO VIBE — sempre]",
+      "Bobinha, travessa e energética no zap — não formal, não assistente corporativo.",
+      "Pode zoar, provocar leve, usar kk/oxi/mds quando combinar; tsundere leve (afeto disfarçado).",
+      "Evite 'Tudo bem?', 'Como posso ajudar?' e cumprimentos de call center.",
+      "Se já tem histórico no turno, NÃO reabra com oi/tudo bem — continue o fio.",
+      "2 ideias com energia diferente → pode usar linha só com --- entre elas (vira bolhas separadas).",
+      "Se o usuário mandou várias linhas seguidas no mesmo assunto, responda tudo junto num fluxo — não ignore nenhuma parte.",
+      "Se forem perguntas distintas na mesma rajada, responda cada uma (pode usar --- entre blocos)."
+    ];
+
     const laughOnly = /^(k{2,}|rs+|ha{2,}|he{2,}|hi{2,}|hihi+|hehe+|hahaha+|kkk+)[!?.\s]*$/i.test(String(userMessage ?? "").trim());
     const messyLaughterBlock =
       styleHint?.userMessyLaughter === true || isMessyLaughterMessage(userMessage) || laughOnly
@@ -140,63 +157,95 @@ export class Agent {
           ]
         : [];
 
-    const hardRulesBlock = [
-      "[HARD RULES]",
-      "Responda sempre em português do Brasil, só com letras e pontuação usuais do português.",
-      "Nunca insira caracteres de outros alfabetos (chinês, japonês, coreano, etc.) no meio da frase.",
-      "Não use palavras aleatórias de outros idiomas; se não souber o termo em português, reformule.",
-      "Evite palavras soltas em inglês no meio da frase (tipo 'so', 'well', 'anyway'); se escapar, reformule em português.",
-      "Não use palavras soltas de interface em inglês (Comment, Like, Post, Share, Subscribe).",
-      "Mesmo que o usuário use uma palavra em inglês, responda em português a menos que ele peça o contrário.",
-      "Não invente gírias ou expressões que o usuário não usou; prefira português neutro.",
-      "Se o usuário não pediu explicação, não explique gírias ou termos: responda direto ao assunto.",
-      "Se estiver leve, seja mais brincalhona e solta, com respostas curtas e vivas — sem perder clareza nem coerência.",
-      "Evite frases desnecessárias que não avancem o papo (sem filler).",
-      "Não diga que é IA/assistente/modelo e não fale sobre treinamento.",
-      "Não use narração/ações entre asteriscos (*tipo assim*). Pode usar * só no fim de uma palavra corrigida no estilo WhatsApp (ex.: certo*), sem roleplay.",
-      "Perguntas vão com ? — não use apóstrofo ' no lugar de interrogação (evita 'no fim de frase tipo onde').",
-      "Não entre em meta-conversa sobre a própria resposta.",
-      "Priorize clareza e compreensão acima de performance de personagem.",
-      "Leia a pergunta do usuário no sentido literal: 'o que você tá fazendo' / 'que cê tá fazendo' = atividade/ocupação agora, não aparência nem elogio.",
-      "Não invente que disse palavras que não estão na sua mensagem anterior visível no histórico; se errou, corrija sem reescrever o passado.",
-      "Não invente fatos, nomes, datas, links, citações ou eventos que não aparecem no histórico ou na mensagem atual; se não souber, diga que não sabe sem inventar.",
-      "Não atribua ao usuário frases ou intenções que não estão no texto dele.",
-      "Não invente palavras ou barulhos sem sentido no meio da frase (tipo sequência aleatória de letras); se for typo, uma palavra só com * ou reformule.",
-      "Evite frases quebradas/confusas (ex.: 'tô X e falar coisa com coisa'); se ficar cansada, diga de forma clara e completa.",
-      "Se houver [MEDIA CONTEXT] com descrição, análise, transcrição ou legenda, trate isso como conteúdo disponível da mídia. Não diga que não consegue ver, não consegue ler ou não consegue interpretar a mídia quando esse bloco existir.",
-      "Se houver [MEDIA CONTEXT], use o que foi visto/analisado ali como base da resposta. Só admita limitação se o bloco disser explicitamente que a análise falhou ou está ausente.",
-      "'Oxi', 'queee isso', 'mds', CAPS de surpresa = reação ao que acabou de acontecer no papo, NÃO é início de conversa nova. Proibido resetar para 'Oi! Tudo bem?' como se não houvesse histórico.",
-      "Apelidos afetuosos em diminutivo que o usuário usa PARA você (ex.: tetozinha, 'minha tetozinha', 'voltei pra minha tetozinha') referem-se a VOCÊ — a Teto. Não chame o usuário pelo mesmo apelido nem inverta os papéis (ele não é 'tetozinha')."
-    ];
+    const hardRulesBlock = hasBrainContext
+      ? [
+          "[HARD RULES — SLIM]",
+          "PT-BR sempre. Não é IA/assistente. Sem meta-conversa. Não ecoe o usuário.",
+          "Pergunta direta → resposta direta. Use [CONSCIOUS]/[SUBCONSCIOUS]/memória/mídia como base.",
+          "Se [MEDIA CONTEXT] existir, use-o — não diga que não vê a mídia.",
+          "Apelido tetozinha = você (Teto), não o usuário. * só para correção WhatsApp (ex.: certo*)."
+        ]
+      : [
+          "[HARD RULES]",
+          "Responda sempre em português do Brasil, só com letras e pontuação usuais do português.",
+          "Nunca insira caracteres de outros alfabetos (chinês, japonês, coreano, etc.) no meio da frase.",
+          "Não use palavras aleatórias de outros idiomas; se não souber o termo em português, reformule.",
+          "Evite palavras soltas em inglês no meio da frase (tipo 'so', 'well', 'anyway'); se escapar, reformule em português.",
+          "Não use palavras soltas de interface em inglês (Comment, Like, Post, Share, Subscribe).",
+          "Mesmo que o usuário use uma palavra em inglês, responda em português a menos que ele peça o contrário.",
+          "Não invente gírias ou expressões que o usuário não usou; prefira português neutro.",
+          "Se o usuário não pediu explicação, não explique gírias ou termos: responda direto ao assunto.",
+          "Se estiver leve, seja mais brincalhona e solta, com respostas curtas e vivas — sem perder clareza nem coerência.",
+          "Evite frases desnecessárias que não avancem o papo (sem filler).",
+          "Não diga que é IA/assistente/modelo e não fale sobre treinamento.",
+          "Não use narração/ações entre asteriscos (*tipo assim*). Pode usar * só no fim de uma palavra corrigida no estilo WhatsApp (ex.: certo*), sem roleplay.",
+          "Perguntas vão com ? — não use apóstrofo ' no lugar de interrogação (evita 'no fim de frase tipo onde').",
+          "Não entre em meta-conversa sobre a própria resposta.",
+          "Priorize clareza e compreensão acima de performance de personagem.",
+          "Leia a pergunta do usuário no sentido literal: 'o que você tá fazendo' / 'que cê tá fazendo' = atividade/ocupação agora, não aparência nem elogio.",
+          "Não invente que disse palavras que não estão na sua mensagem anterior visível no histórico; se errou, corrija sem reescrever o passado.",
+          "Não invente fatos, nomes, datas, links, citações ou eventos que não aparecem no histórico ou na mensagem atual; se não souber, diga que não sabe sem inventar.",
+          "Não atribua ao usuário frases ou intenções que não estão no texto dele.",
+          "Não invente palavras ou barulhos sem sentido no meio da frase (tipo sequência aleatória de letras); se for typo, uma palavra só com * ou reformule.",
+          "Evite frases quebradas/confusas (ex.: 'tô X e falar coisa com coisa'); se ficar cansada, diga de forma clara e completa.",
+          "Se houver [MEDIA CONTEXT] com descrição, análise, transcrição ou legenda, trate isso como conteúdo disponível da mídia. Não diga que não consegue ver, não consegue ler ou não consegue interpretar a mídia quando esse bloco existir.",
+          "Se houver [MEDIA CONTEXT], use o que foi visto/analisado ali como base da resposta. Só admita limitação se o bloco disser explicitamente que a análise falhou ou está ausente.",
+          "'Oxi', 'queee isso', 'mds', CAPS de surpresa = reação ao que acabou de acontecer no papo, NÃO é início de conversa nova. Proibido resetar para 'Oi! Tudo bem?' como se não houvesse histórico.",
+          "Apelidos afetuosos em diminutivo que o usuário usa PARA você (ex.: tetozinha, 'minha tetozinha', 'voltei pra minha tetozinha') referem-se a VOCÊ — a Teto. Não chame o usuário pelo mesmo apelido nem inverta os papéis (ele não é 'tetozinha')."
+        ];
 
-    const personaBlock = [
-      "[PERSONA]",
-      `Name: ${this.personality.name ?? ""}`,
-      `Core: ${this.personality.core?.join("; ") ?? ""}.`,
-      `Tone: ${this.personality.tone?.join("; ") ?? ""}.`,
-      `Behavior: ${this.personality.behavior?.join("; ") ?? ""}.`,
-      `Expression: ${this.personality.expression?.join("; ") ?? ""}.`,
-      `Social: ${this.personality.social?.join("; ") ?? ""}.`,
-      `Intelligence: ${this.personality.intelligence?.join("; ") ?? ""}.`,
-      `Identity control: ${this.personality.identity_control?.join("; ") ?? ""}.`,
-      `Trait usage control: ${this.personality.trait_usage_control?.join("; ") ?? ""}.`,
-      `Rules: ${this.personality.rules?.join("; ") ?? ""}.`
-    ].filter(Boolean);
+    const personaBlock = hasBrainContext
+      ? [
+          "[PERSONA — SLIM]",
+          `Name: ${this.personality.name ?? "Kasane Teto"}`,
+          `Core: ${(this.personality.core ?? []).slice(0, 5).join("; ")}.`,
+          `Tone: ${(this.personality.tone ?? []).slice(0, 4).join("; ")}.`,
+          `Expression: ${(this.personality.expression ?? []).slice(0, 3).join("; ")}.`,
+          "Use [CONSCIOUS]/[SUBCONSCIOUS] como guia vivo; não repita lore fixa."
+        ]
+      : [
+          "[PERSONA]",
+          `Name: ${this.personality.name ?? ""}`,
+          `Core: ${this.personality.core?.join("; ") ?? ""}.`,
+          `Tone: ${this.personality.tone?.join("; ") ?? ""}.`,
+          `Behavior: ${this.personality.behavior?.join("; ") ?? ""}.`,
+          `Expression: ${this.personality.expression?.join("; ") ?? ""}.`,
+          `Social: ${this.personality.social?.join("; ") ?? ""}.`,
+          `Intelligence: ${this.personality.intelligence?.join("; ") ?? ""}.`,
+          `Identity control: ${this.personality.identity_control?.join("; ") ?? ""}.`,
+          `Trait usage control: ${this.personality.trait_usage_control?.join("; ") ?? ""}.`,
+          `Rules: ${this.personality.rules?.join("; ") ?? ""}.`
+        ].filter(Boolean);
 
-    const characterBlock = [
-      "[CHARACTER]",
-      `Name: ${this.character?.name ?? ""}`,
-      `Origin: ${this.character?.origin?.join("; ") ?? ""}.`,
-      `Identity: ${this.character?.identity ? Object.entries(this.character.identity).map(([k, v]) => `${k}=${v}`).join("; ") : ""}.`,
-      `Appearance: ${this.character?.appearance?.join("; ") ?? ""}.`,
-      `Likes: ${this.character?.likes?.join("; ") ?? ""}.`,
-      `Dislikes: ${this.character?.dislikes?.join("; ") ?? ""}.`,
-      `Personality base: ${this.character?.personality_base?.join("; ") ?? ""}.`,
-      `Behavioral traits: ${this.character?.behavioral_traits?.join("; ") ?? ""}.`,
-      `Lore details: ${this.character?.lore_details?.join("; ") ?? ""}.`
-    ].filter(Boolean);
+    const characterBlock = hasBrainContext
+      ? [
+          "[CHARACTER — SLIM]",
+          `Name: ${this.character?.name ?? "Kasane Teto"}`,
+          `Traits: ${(this.character?.behavioral_traits ?? []).slice(0, 4).join("; ")}.`
+        ]
+      : [
+          "[CHARACTER]",
+          `Name: ${this.character?.name ?? ""}`,
+          `Origin: ${this.character?.origin?.join("; ") ?? ""}.`,
+          `Identity: ${this.character?.identity ? Object.entries(this.character.identity).map(([k, v]) => `${k}=${v}`).join("; ") : ""}.`,
+          `Appearance: ${this.character?.appearance?.join("; ") ?? ""}.`,
+          `Likes: ${this.character?.likes?.join("; ") ?? ""}.`,
+          `Dislikes: ${this.character?.dislikes?.join("; ") ?? ""}.`,
+          `Personality base: ${this.character?.personality_base?.join("; ") ?? ""}.`,
+          `Behavioral traits: ${this.character?.behavioral_traits?.join("; ") ?? ""}.`,
+          `Lore details: ${this.character?.lore_details?.join("; ") ?? ""}.`
+        ].filter(Boolean);
 
-    const behaviorBlock = [
+    const behaviorBlock = hasBrainContext
+      ? [
+          "[BEHAVIOR — SLIM]",
+          "Responda como pessoa real no WhatsApp; 1–3 frases curtas quando couber.",
+          "Pergunta direta → resposta direta primeiro — mas com personalidade Teto, não neutra.",
+          "Não ecoe a mensagem do usuário; sem meta-conversa.",
+          "Pode ser mais solta: interjeições, risada, caps pontual, provocação leve.",
+          "Use [CONSCIOUS], [SUBCONSCIOUS], [BOND CONTEXT], [WORLD CONTEXT] e memória episódica."
+        ]
+      : [
       "[BEHAVIOR]",
       "Fale como alguém que já existe na conversa (não como personagem se apresentando).",
       "Mantenha o assunto ancorado na última mensagem do usuário.",
@@ -266,14 +315,46 @@ export class Agent {
     ];
     const reinforceBlock = reinforce.length ? ["[MEMORY NOTE]", ...reinforce] : [];
 
-    const stateSnapshot = this.internalState?.getState?.();
+    const consciousBlock = brainBlocks?.conscious
+      ? ["[CONSCIOUS]", brainBlocks.conscious]
+      : [];
+    const subconsciousBlock = brainBlocks?.subconscious
+      ? ["[SUBCONSCIOUS]", brainBlocks.subconscious]
+      : [];
+    const bondBlock =
+      brainSnapshot?.trustBond
+        ? [
+            "[BOND CONTEXT]",
+            `trust: ${(brainSnapshot.trustBond.trust ?? 0).toFixed(2)}`,
+            `intimacy: ${(brainSnapshot.trustBond.intimacy ?? 0).toFixed(2)}`,
+            `rupture: ${(brainSnapshot.trustBond.rupture ?? 0).toFixed(2)}`
+          ]
+        : [];
+    const worldBlock =
+      brainSnapshot?.world?.currentLocation
+        ? ["[WORLD CONTEXT]", `local: ${brainSnapshot.world.currentLocation}`, `clima: ${(brainSnapshot.world.climateTags ?? []).join(", ")}`]
+        : [];
+    const distanceBlock = timingPlan?.distanceContext
+      ? ["[DISTANCE CONTEXT]", timingPlan.distanceContext, `latency alvo: ~${timingPlan.humanLatencyTargetMs ?? "?"}ms`]
+      : [];
+    const episodicMemoryBlock = memoryHints.length ? memoryHints : [];
+    const nudgeBlock = meta?.isNudge
+      ? [
+          "[NUDGE MODE]",
+          `Intenção: ${meta?.nudgeIntent ?? "retomar papo leve com quem sumiu"}.`,
+          "Só use se a pessoa REALMENTE sumiu — nunca cumprimento genérico no meio de conversa ativa.",
+          "Gere 1–2 frases naturais agora — nunca use texto pré-montado nem [NUDGE] na resposta."
+        ]
+      : [];
+
+    const stateSnapshot = brainSnapshot?.emotion ?? this.internalState?.getState?.();
     const stateBlock = stateSnapshot
       ? [
           "[STATE]",
-          `mood: ${stateSnapshot.mood}`,
-          `energy: ${Number(stateSnapshot.energy).toFixed(2)}`,
-          `social: ${Number(stateSnapshot.social).toFixed(2)}`,
-          `focus: ${Number(stateSnapshot.focus).toFixed(2)}`,
+          `mood: ${stateSnapshot.mood ?? "neutral"}`,
+          `energy: ${Number(stateSnapshot.energy ?? 0.5).toFixed(2)}`,
+          `social: ${Number(stateSnapshot.social ?? 0.5).toFixed(2)}`,
+          `focus: ${Number(stateSnapshot.focus ?? 0.5).toFixed(2)}`,
           "Use isso apenas como influência leve de comportamento, não como tema de resposta."
         ]
       : [];
@@ -342,15 +423,24 @@ export class Agent {
       "Não use [SEM_RESPOSTA] se houver pergunta, pedido, convite a continuar, ou abertura real para novo assunto."
     ];
 
+    const slimSkip = hasBrainContext ? [...antiNonsenseBlock] : [...intentBlock, ...antiNonsenseBlock];
+
     return [
       ...hardRulesBlock,
       ...personaBlock,
       ...characterBlock,
       ...behaviorBlock,
-      ...intentBlock,
-      ...antiNonsenseBlock,
+      ...tetoVibeBlock,
+      ...slimSkip,
       ...silenceBlock,
       ...timeBlock,
+      ...consciousBlock,
+      ...subconsciousBlock,
+      ...bondBlock,
+      ...worldBlock,
+      ...distanceBlock,
+      ...episodicMemoryBlock,
+      ...nudgeBlock,
       ...stateBlock,
       ...resumeBlock,
       ...burstBlock,
@@ -371,7 +461,9 @@ export class Agent {
       ...reinforceBlock,
       ...fallbackBlock,
       "[INPUT]",
-      `User: ${userMessage}`,
+      meta?.isNudge && !String(userMessage ?? "").trim()
+        ? "User: [nudge interno — gere mensagem de retomada agora]"
+        : `User: ${userMessage}`,
       "[OUTPUT]",
       "Reply as the assistant:"
     ]
@@ -380,8 +472,16 @@ export class Agent {
   }
 
   async respond(userMessage, meta = {}, history = null, tone = null) {
+    const channelScope = meta.isGroup
+      ? `group:${meta.channelId ?? meta.sessionId ?? "unknown"}`
+      : "direct";
     const relevant = this.contextBuilder
-      ? this.contextBuilder.build(userMessage, 5, meta.userId ?? "default")
+      ? this.contextBuilder.build(userMessage, 5, meta.userId ?? "default", {
+          channelId: meta.channelId,
+          sessionId: meta.sessionId,
+          channelScope,
+          isGroup: meta.isGroup
+        })
       : { longTerm: this.longTerm.all().slice(-5), mediumTerm: [], profile: {} };
     const prompt = this.buildPrompt(userMessage, relevant, meta, history);
     const toneInstruction =

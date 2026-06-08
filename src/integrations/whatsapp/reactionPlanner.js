@@ -1,7 +1,19 @@
+import { DEFAULTS } from "../../infra/config/defaults.js";
+
 /**
  * Reações na mensagem do usuário (1 emoji por reação no WhatsApp).
- * Esparso + cooldown — o orchestrador incrementa `messagesSinceLastReaction` a cada turno.
+ * Usa afinidades aprendidas do MediaLearningHub quando disponível.
  */
+
+/** @deprecated use planStickerOnly from reactionPlanner — integrado do antigo stickerPlanner */
+export function planStickerOnly({ policy, isGroup = false, hasMedia = false } = {}) {
+  if (!isGroup) return { useSticker: false };
+  if (hasMedia) return { useSticker: false };
+  if (policy?.mode === "react_only" && Math.random() < DEFAULTS.stickerOnlyChance) {
+    return { useSticker: true, stickerKey: "ack" };
+  }
+  return { useSticker: false };
+}
 
 const COOLDOWN_MS = 3.5 * 60 * 1000;
 const MIN_MESSAGES_BETWEEN = 6;
@@ -50,10 +62,10 @@ function pickEmojiForText(t) {
 }
 
 /**
- * @param {{ userText: string, state: { messagesSinceLastReaction?: number, lastReactionAt?: number } }}
+ * @param {{ userText: string, state: { messagesSinceLastReaction?: number, lastReactionAt?: number }, affinities?: { topReactions?: { emoji: string, count: number }[] } }}
  * @returns {{ emoji: string | null }}
  */
-export function planWhatsAppReaction({ userText, state = {} }) {
+export function planWhatsAppReaction({ userText, state = {}, affinities = null }) {
   const now = Date.now();
   const since = Number(state.messagesSinceLastReaction ?? 0);
   const lastAt = Number(state.lastReactionAt ?? 0);
@@ -65,7 +77,11 @@ export function planWhatsAppReaction({ userText, state = {} }) {
     return { emoji: null };
   }
 
-  const emoji = pickEmojiForText(userText);
+  let emoji = pickEmojiForText(userText);
+  const learned = affinities?.topReactions?.[0]?.emoji;
+  if (!emoji && learned && Math.random() < 0.22) {
+    emoji = learned;
+  }
   if (!emoji || Math.random() > BASE_MATCH_CHANCE) {
     return { emoji: null };
   }
