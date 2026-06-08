@@ -389,6 +389,29 @@ function createConversationOrchestrator(socket, runtime) {
               ]);
 
               replies = out?.replies ?? [];
+              // #region agent log
+              fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
+                body: JSON.stringify({
+                  sessionId: "9518ce",
+                  location: "messageHandler.js:reply_parts",
+                  message: "pipeline_reply_parts",
+                  data: {
+                    userId: item.userId,
+                    partCount: replies.length,
+                    parts: replies.map((r) => String(r ?? "").slice(0, 80))
+                  },
+                  timestamp: Date.now(),
+                  hypothesisId: "H1"
+                })
+              }).catch(() => {});
+              // #endregion
+              if (replies.length > 0) {
+                console.log(
+                  `[whatsapp] reply ${replies.length} bolha(s) → ${replies.map((r) => JSON.stringify(String(r ?? "").slice(0, 60))).join(" | ")}`
+                );
+              }
               timingPlan = out?.timingPlan ?? null;
               const targetLatency = (timingPlan?.readDelayMs ?? 0) + (timingPlan?.thinkDelayMs ?? 0);
               const remaining = Math.max(0, targetLatency - (Date.now() - genStart));

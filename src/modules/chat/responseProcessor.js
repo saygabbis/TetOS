@@ -184,6 +184,31 @@ function sanitize(text, meta = {}) {
   );
 }
 
+/** Contrato do agent: linha só com --- separa bolhas explícitas. */
+function splitExplicitBubbles(text) {
+  const s = String(text ?? "").replace(/\r\n/g, "\n").trim();
+  if (!s) return [];
+  const byLine = s.split(/\n\s*---\s*\n/).map((p) => p.trim()).filter(Boolean);
+  if (byLine.length > 1) return byLine;
+  const inline = s.split(/\s+---\s+/).map((p) => p.trim()).filter(Boolean);
+  if (inline.length > 1) return inline;
+  return [s];
+}
+
+/** Quebra de linha do modelo = bolha separada (antes do sanitize juntar tudo). */
+function splitNewlineBubbles(text) {
+  const s = String(text ?? "").replace(/\r\n/g, "\n").trim();
+  if (!s.includes("\n")) return [s];
+  const lines = s.split(/\n+/).map((p) => p.trim()).filter(Boolean);
+  return lines.length > 1 ? lines : [s];
+}
+
+function splitMultiBubbleIntent(text) {
+  const explicit = splitExplicitBubbles(text);
+  if (explicit.length > 1) return explicit;
+  return splitNewlineBubbles(text);
+}
+
 function splitSentences(text) {
   const s = String(text).replace(/\r\n/g, "\n").trim();
   if (!s) return [];
@@ -693,7 +718,24 @@ export class ResponseProcessor {
     return capped;
   }
 
-  process(rawText, { tone = null, userMessage = "", styleHint = null, userPronouns = null } = {}) {
+  process(rawText, { tone = null, userMessage = "", styleHint = null, userPronouns = null, _skipExplicitSplit = false } = {}) {
+    if (!_skipExplicitSplit) {
+      const segments = splitMultiBubbleIntent(rawText);
+      if (segments.length > 1) {
+        return segments
+          .flatMap((segment) =>
+            this.process(segment, {
+              tone,
+              userMessage,
+              styleHint,
+              userPronouns,
+              _skipExplicitSplit: true
+            })
+          )
+          .filter(Boolean);
+      }
+    }
+
     const cleaned = sanitize(rawText, { userPronouns });
     let sentences = splitSentences(cleaned);
 
