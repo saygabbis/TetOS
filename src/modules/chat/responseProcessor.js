@@ -6,6 +6,7 @@ import {
   repairBubbleCoherence
 } from "./coherenceGuards.js";
 import { planBubbleRhythm } from "./bubbleComposer.js";
+import { ChatService } from "./chatService.js";
 
 const ROLEPLAY_MARKERS = /\*[^*]{1,20}\*/g;
 const IDENTITY_LOOPS = /\b(eu sou (a )?kasane teto|eu sou a própria kasane teto|sou kasane teto)\b/gi;
@@ -107,6 +108,34 @@ function trimRedundantKkk(parts, context = {}) {
       return p.replace(/\s+(?:k{2,}|ksks|rs+)\s*$/i, "").trim();
     })
     .filter(Boolean);
+}
+
+/** Segunda bolha só de filler, pergunta extra ou autocorreção * — junta ou descarta. */
+function collapseWeakSecondBubble(parts, context = {}) {
+  if (parts.length !== 2) return parts;
+  const [a, b] = parts;
+  const bTrim = String(b ?? "").trim();
+  if (!bTrim) return [a];
+
+  if (isCorrectionBubble(bTrim) || /^\w+\*$/i.test(bTrim)) {
+    return [a];
+  }
+
+  const filler =
+    /\b(me conta|depois me|se precisar|caf[eé]|highscore|partida rendeu|recarregar|j[aá] aviso|t[oô] de olho|de olho no|sem press[aã]o)\b/i;
+  if (filler.test(bTrim) && String(a ?? "").length >= 12) {
+    return [a];
+  }
+
+  if (/\?/.test(bTrim) && /\?/.test(String(a ?? "")) && bTrim.length < 90) {
+    return [a];
+  }
+
+  if (ChatService.isConversationLull?.(context.userMessage ?? "") && !context.briefFarewell) {
+    return [a];
+  }
+
+  return parts;
 }
 
 /**
@@ -1060,6 +1089,7 @@ export class ResponseProcessor {
 
     const combined = safeParts.join(" ").trim();
     const safeCombined = this.ensureNonRepetitive(combined);
+    safeParts = collapseWeakSecondBubble(safeParts, context);
     this.remember(safeCombined);
     return safeParts.length ? safeParts : [safeCombined].filter(Boolean);
   }
@@ -1081,6 +1111,8 @@ export class ResponseProcessor {
   applyCalibratedImperfection(parts, context = {}) {
     const safeParts = Array.isArray(parts) ? [...parts] : [];
     if (!safeParts.length || !this.canInjectImperfection(context)) return safeParts;
+    if (context.styleHint?.userSkipTypoCorrection) return safeParts;
+    if (/\bk{2,}\b/i.test(String(context.userMessage ?? ""))) return safeParts;
     const first = String(safeParts[0] ?? "");
     if (!first || first.length > 160 || /^\s*\*/.test(first)) return safeParts;
     if (safeParts.length > 1 && isCorrectionBubble(String(safeParts[1] ?? ""))) return safeParts;

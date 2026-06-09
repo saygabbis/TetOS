@@ -70,6 +70,12 @@ export class LifeNarrator {
     if (bond?.rupture > 0.4) lines.push("vínculo: guardada, ainda magoada");
     if (bond?.intimacy > 0.7) lines.push("vínculo: à vontade com essa pessoa");
 
+    const phase = snapshot.conversationPhase;
+    if (phase?.phase && phase.phase !== "active") {
+      lines.push(`conversa: ${phase.phase} (${phase.recommendedAction ?? "respond"})`);
+      if (phase.reasoning) lines.push(phase.reasoning.slice(0, 100));
+    }
+
     if (!lines.length) lines.push("nada urgente no fundo da cabeça");
     return lines.join("\n- ");
   }

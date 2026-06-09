@@ -15,6 +15,7 @@ import { detectTetoInMediaDescription } from "../character/tetoSelfRecognition.j
 import { hasVocativeToTeto } from "../../modules/chat/coherenceGuards.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 import { detectVulnerability } from "../brain/vulnerabilityDetect.js";
+import { mergeBrainCloseDecision } from "../brain/ConversationPhaseEngine.js";
 import { isOwnerContact, touchUserActivity } from "../channels/userActivity.js";
 import { buildGroupRoster } from "../channels/groupRoster.js";
 import {
@@ -280,12 +281,19 @@ export async function runMessagePipeline(runtime, payload = {}) {
       isDirectMention: effectiveMention,
       isReply,
       isDirectQuestion,
+      isDirectTetoCall: ChatService.isDirectTetoCall(input),
+      isVulnerable,
+      resumedAfterClose,
       tone,
       media,
-      isVulnerable,
+      recentHistory: recentHistory ?? [],
       closeDecision: effectiveCloseDecision
     });
   }
+
+  const finalCloseDecision =
+    mergeBrainCloseDecision(effectiveCloseDecision, brainTurn?.snapshot?.conversationPhase) ??
+    effectiveCloseDecision;
 
   const timingPlan = brainTurn?.timingPlan ?? null;
   const enrichedStyleHint = {
@@ -353,7 +361,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     !effectiveMention &&
     !groupEngagementActive &&
     !isReply &&
-    effectiveCloseDecision !== "respond" &&
+    finalCloseDecision !== "respond" &&
     !directSubstantive;
 
   if (timingSilenceSkip) {
@@ -562,7 +570,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       reminderContext,
       mediaContext,
       selfImageDetected: selfImageDetection.isLikelySelf,
-      closeDecision: effectiveCloseDecision,
+      closeDecision: finalCloseDecision,
       brainBlocks: brainTurn?.blocks ?? null,
       brainSnapshot: brainTurn?.snapshot ?? null,
       timingPlan: brainTurn?.timingPlan ?? null,
@@ -637,13 +645,13 @@ export async function runMessagePipeline(runtime, payload = {}) {
     );
     if (
       replies.length === 0 &&
-      (effectiveCloseDecision === "silent" || effectiveCloseDecision === "react")
+      (finalCloseDecision === "silent" || finalCloseDecision === "react")
     ) {
       runtime.initiationEngine?.scheduleFromTurn?.({
         userId: safeUserId,
         sessionId: safeSessionId,
-        mode: effectiveCloseDecision === "react" ? "natural_lull" : "post_close",
-        closeDecision: effectiveCloseDecision,
+        mode: finalCloseDecision === "react" ? "natural_lull" : "post_close",
+        closeDecision: finalCloseDecision,
         history: normalizedHistory,
         brainTurn
       });

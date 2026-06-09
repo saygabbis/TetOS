@@ -88,6 +88,48 @@ export class CandidateArbitrator {
       });
     }
 
+    const conv = snapshot.conversationPhase;
+    if (conv?.phase === "topic_shift" && conv.topicShift?.detected) {
+      candidates.push({
+        source: "conversation",
+        action: "topic_shift",
+        weight: 0.58 + (conv.confidence ?? 0) * 0.18,
+        detail: conv.topicShift.hint ?? "assunto novo"
+      });
+    } else if (conv?.phase === "reopening") {
+      candidates.push({
+        source: "conversation",
+        action: "reengage",
+        weight: 0.64,
+        detail: "pap reaberto"
+      });
+    } else if (conv?.recommendedAction === "brief_farewell") {
+      candidates.push({
+        source: "conversation",
+        action: "brief_farewell",
+        weight: 0.66 + (conv.confidence ?? 0) * 0.2,
+        detail: "despedida curta opcional"
+      });
+    } else if (
+      conv &&
+      ["lull", "natural_end", "winding_down", "hard_close"].includes(conv.phase) &&
+      (conv.recommendedAction === "silent" || conv.recommendedAction === "react")
+    ) {
+      candidates.push({
+        source: "conversation",
+        action: "honor_closure",
+        weight: 0.7 + (conv.confidence ?? 0) * 0.22,
+        detail: conv.phase
+      });
+    } else if (conv?.phase === "pending_answer") {
+      candidates.push({
+        source: "conversation",
+        action: "await_user_answer",
+        weight: 0.54,
+        detail: "pergunta recente sua"
+      });
+    }
+
     return candidates;
   }
 

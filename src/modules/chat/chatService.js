@@ -137,6 +137,7 @@ export class ChatService {
 
   static isPositiveWellbeingReply(text) {
     let t = ChatService.normalizeLoose(text);
+    t = t.replace(/^(k{2,}\s*)+/i, "").trim();
     t = t.replace(/\s+k{2,}\s*$/i, "").trim();
     if (!t) return false;
     if (/^(tudo|td|to bem|tô bem|estou bem|bem|de boa|tranquilo|tranquila|suave)$/.test(t)) {
@@ -146,6 +147,24 @@ export class ChatService {
     if (/^td+o+$/.test(t)) return true;
     if (/^to+ bem$/.test(t)) return true;
     if (/^t[oô]+ b[oô]+m$/.test(t)) return true;
+    return false;
+  }
+
+  /** Papo encerrando: 👍, "de boa", kkk+blz — não pede resposta longa. */
+  static isConversationLull(text) {
+    const raw = String(text ?? "").trim();
+    if (!raw) return false;
+    if (ChatService.isEmojiOnlyMessage(raw)) return true;
+    if (ChatService.isPositiveWellbeingReply(raw)) return true;
+    if (ChatService.isShortAcknowledgement(raw)) return true;
+
+    let t = ChatService.normalizeLoose(raw);
+    t = t.replace(/^(k{2,}\s*)+/i, "").trim();
+    t = t.replace(/\s+k{2,}\s*$/i, "").trim();
+    if (/^(de boa|suave|fechou|blz|beleza|show|a[ií] sim|isso|exato|combinado|fechado)$/.test(t)) {
+      return true;
+    }
+    if (/^k{2,}$/.test(t.replace(/\s/g, ""))) return true;
     return false;
   }
 
@@ -240,12 +259,35 @@ export class ChatService {
   static decideClosure(userText, history = []) {
     const trimmed = String(userText ?? "").trim();
     if (!trimmed) return "none";
-    const isClosure = ChatService.isConversationClosure(trimmed) || ChatService.isShortAcknowledgement(trimmed);
+    if (ChatService.isDirectTetoCall(trimmed)) return "none";
+
+    const isLull = ChatService.isConversationLull(trimmed);
+    const isClosure =
+      ChatService.isConversationClosure(trimmed) ||
+      ChatService.isShortAcknowledgement(trimmed) ||
+      isLull;
     if (!isClosure) return "none";
 
     const source = Array.isArray(history) ? history : [];
     const lastAssistant = [...source].reverse().find((m) => m?.role === "assistant");
-    if (lastAssistant?.content && ChatService.isLikelyQuestion(lastAssistant.content)) {
+    const lastWasQuestion = lastAssistant?.content && ChatService.isLikelyQuestion(lastAssistant.content);
+
+    if (lastWasQuestion && !isLull) {
+      return "respond";
+    }
+
+    if (isLull) {
+      if (ChatService.isEmojiOnlyMessage(trimmed)) {
+        const r = Math.random();
+        if (r < 0.55) return "react";
+        if (r < 0.8) return "silent";
+        if (r < 0.92) return "brief_farewell";
+        return "respond";
+      }
+      const r = Math.random();
+      if (r < 0.3) return "silent";
+      if (r < 0.55) return "react";
+      if (r < 0.76) return "brief_farewell";
       return "respond";
     }
 
@@ -255,19 +297,20 @@ export class ChatService {
       : false;
     const recentClosures = ChatService.countRecentClosures(source);
 
-    let silentChance = 0.15;
-    let reactChance = 0.28;
+    let silentChance = 0.28;
+    let reactChance = 0.42;
     if (assistantClosed) {
-      silentChance = 0.22;
-      reactChance = 0.35;
+      silentChance = 0.38;
+      reactChance = 0.48;
     } else if (recentClosures >= 2) {
-      silentChance = 0.2;
-      reactChance = 0.34;
+      silentChance = 0.35;
+      reactChance = 0.45;
     }
 
     const r = Math.random();
     if (r < silentChance) return "silent";
     if (r < silentChance + reactChance) return "react";
+    if (r < silentChance + reactChance + 0.22) return "brief_farewell";
     return "respond";
   }
 
@@ -364,7 +407,10 @@ export class ChatService {
       brainSnapshot: meta?.brainSnapshot ?? null,
       brainBlocks: meta?.brainBlocks ?? null,
       timingPlan: meta?.timingPlan ?? null,
-      coherenceFix: meta?.coherenceFix === true
+      coherenceFix: meta?.coherenceFix === true,
+      briefFarewell:
+        closureDecision === "brief_farewell" ||
+        meta?.brainSnapshot?.conversationPhase?.recommendedAction === "brief_farewell"
     };
     const safeParts = processor?.processAndGuard
       ? processor.processAndGuard(raw, processorContext)
@@ -490,9 +536,16 @@ export class ChatService {
       if (shortAffirm.test(trimmed) && resultParts.length > 1) {
         resultParts = [resultParts[0]];
       }
+      if (ChatService.isConversationLull(trimmed) && resultParts.length > 1) {
+        resultParts = [resultParts[0]];
+      }
     }
 
-    if (!meta?.closeDecision && ChatService.shouldSilentlyClose(trimmed, history)) {
+    if (
+      !meta?.closeDecision &&
+      closureDecision !== "brief_farewell" &&
+      (ChatService.shouldSilentlyClose(trimmed, history) || ChatService.shouldReactOnly(trimmed, history))
+    ) {
       this.recordUserTurn(trimmed, meta);
       const sessionId = meta?.sessionId ?? "default";
       if (this.shortTerm?.popLastAssistant) {

@@ -107,8 +107,8 @@ export function buildMultiBubbleRhythmBlock(meta = {}) {
     conscious ? `Consciente agora: ${String(conscious).slice(0, 220)}` : null,
     subconscious ? `Subconsciente (não copie literal): ${String(subconscious).slice(0, 220)}` : null,
     "Cada bolha = pensamento FECHADO. Proibido cortar frase, «citação» ou ideia no meio.",
-    "Typo corrigido na bolha seguinte com * no fim — só a palavra certa.",
-    "Quantidade de mensagens: sua decisão criativa — 1 ou muitas; o sistema não impõe teto."
+    "Typo com * na bolha seguinte só em clima neutro — no zap solto/íntimo, não se autocorrige.",
+    "Quantidade de mensagens: 1 é o padrão; várias só se ideias distintas — nunca 2 por hábito."
   ].filter(Boolean);
 }
 

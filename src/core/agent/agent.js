@@ -7,6 +7,7 @@ import {
 import { slimMetaForStorage } from "../memory/slimMeta.js";
 import { formatGroupRosterBlock } from "../channels/groupRoster.js";
 import { buildMultiBubbleRhythmBlock } from "../../modules/chat/bubbleComposer.js";
+import { formatConversationPhaseBlock } from "../brain/ConversationPhaseEngine.js";
 
 export class Agent {
   constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder, brainOrchestrator = null }) {
@@ -722,11 +723,37 @@ export class Agent {
         ]
       : [];
 
+    const conversationPhaseBlock = formatConversationPhaseBlock(brainSnapshot?.conversationPhase);
+    const wantsBriefFarewell =
+      meta?.closeDecision === "brief_farewell" ||
+      brainSnapshot?.conversationPhase?.recommendedAction === "brief_farewell";
+
+    const farewellBlock = wantsBriefFarewell
+      ? [
+          "[DESPEDIDA CURTA — OPCIONAL]",
+          "Pode fechar com 1 bolha bem curta (flw, boa noite, vai lá, se cuida, bons sonhos) se quiser a última palavra.",
+          "Espelhe o tom da pessoa — informal, sem formalidade de carta.",
+          "Se achar que ela já fechou bonito: [SEM_RESPOSTA] também serve. Não tem regra de quem fala por último."
+        ]
+      : [];
+
     const silenceBlock = [
       "[ENCERRAMENTO — PRIORIDADE: JULGAMENTO DINÂMICO]",
-      "Foco: ler o histórico e decidir se o papo já encerrou. Se sim e não couber mais resposta, use só a linha exata [SEM_RESPOSTA].",
-      "Isso vale mais do que qualquer lista fixa de palavras — você interpreta tom, contexto e intenção.",
-      "Não use [SEM_RESPOSTA] se houver pergunta, pedido, convite a continuar, ou abertura real para novo assunto."
+      "Foco: ler o histórico e decidir se o papo já encerrou.",
+      "Três saídas válidas: [SEM_RESPOSTA], reação leve (só se couber no fluxo), ou 1 despedida curtíssima se quiser a última palavra.",
+      "Não tem regra fixa de quem fala por último — você ou a pessoa podem fechar naturalmente.",
+      "O bloco [CONVERSATION PHASE] acima vem do cérebro — siga quando confiança alta.",
+      "Não use [SEM_RESPOSTA] se houver pergunta, pedido, convite a continuar, ou abertura real para novo assunto.",
+      "Sinais de fim: 👍/❤️ só emoji, 'de boa', 'kkk de boa', 'blz', 'fechou' — NÃO estique com café, 'me conta depois' ou nova pergunta.",
+      "Se a pessoa já aceitou ir jogar/dormir/sair e você já se despediu, pode ficar quieto."
+    ];
+
+    const antiExtensionBlock = [
+      "[NÃO ESTICAR O PAPO]",
+      "Padrão: 1 bolha resolve. 2 bolhas SÓ se forem ideias realmente diferentes — proibido segunda msg só com filler.",
+      "Proibido repetir tema (café, partida, highscore, 'me conta depois') se você já disse na msg anterior ou no histórico recente.",
+      "Não faça pergunta extra no fim só para manter conversa — deixa respirar.",
+      "Resposta curta > duas msgs repetitivas."
     ];
 
     const slimSkip = hasBrainContext ? [...antiNonsenseBlock] : [...intentBlock, ...antiNonsenseBlock];
@@ -752,7 +779,10 @@ export class Agent {
       ...messyLaughterBlock,
       ...informalTypingBlock,
       ...slimSkip,
+      ...conversationPhaseBlock,
+      ...farewellBlock,
       ...silenceBlock,
+      ...antiExtensionBlock,
       ...timeBlock,
       ...consciousBlock,
       ...subconsciousBlock,

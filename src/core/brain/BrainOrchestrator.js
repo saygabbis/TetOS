@@ -18,6 +18,7 @@ import { CreativeInsightEngine } from "../learning/CreativeInsightEngine.js";
 import { MindLogger } from "../consciousness/MindLogger.js";
 import { AdapterRegistry } from "../adapters/AdapterRegistry.js";
 import { CandidateArbitrator } from "./CandidateArbitrator.js";
+import { analyzeConversationPhase } from "./ConversationPhaseEngine.js";
 import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
@@ -260,13 +261,31 @@ export class BrainOrchestrator {
       );
     }
 
+    snapshot.conversationPhase = analyzeConversationPhase({
+      message: turnContext.message,
+      history: turnContext.recentHistory ?? [],
+      closeDecisionHint: turnContext.closeDecision,
+      trustBond: snapshot.trustBond,
+      repetition: snapshot.repetition,
+      isDirectQuestion: turnContext.isDirectQuestion,
+      isDirectMention: turnContext.isDirectMention,
+      isDirectTetoCall: turnContext.isDirectTetoCall,
+      isVulnerable: turnContext.isVulnerable,
+      resumedAfterClose: turnContext.resumedAfterClose,
+      tone: turnContext.tone,
+      sessionId: turnContext.sessionId
+    });
+
     const timingCtx = this.buildTimingContext({
       ...turnContext,
       emotion: snapshot.emotion,
       body: snapshot.body,
       health: snapshot.health,
       life: snapshot.life,
-      sleep: snapshot.sleep
+      sleep: snapshot.sleep,
+      closeDecision:
+        snapshot.conversationPhase?.closeDecision ?? turnContext.closeDecision ?? null,
+      conversationPhase: snapshot.conversationPhase
     });
     snapshot.timing = this.timing.computePlan(timingCtx);
     this.bus.emit("timing.delay_computed", { plan: snapshot.timing, sessionId: turnContext.sessionId });

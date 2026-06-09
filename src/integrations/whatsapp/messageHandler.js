@@ -8,6 +8,8 @@ import { persistMedia, fileExtFromDocumentMessage } from "./mediaStore.js";
 import { resolvePassiveModeAction } from "../../core/channels/passiveModeAction.js";
 import { resolveStickerAsset } from "./stickerAssets.js";
 import { ChatService } from "../../modules/chat/chatService.js";
+import { resolveCloseDecision } from "../../core/brain/ConversationPhaseEngine.js";
+import { detectVulnerability } from "../../core/brain/vulnerabilityDetect.js";
 import { ChatCommandQueue } from "./chatCommandQueue.js";
 import { ChatMediaHistoryStore } from "./chatMediaHistoryStore.js";
 import { resolveCommandTarget } from "./commandTargetResolver.js";
@@ -1253,17 +1255,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         let historySnapshot = [];
-        let closeDecision = "open";
         if (role !== "media" || botChatRole) {
           historySnapshot = runtime.shortTerm.getAll(sessionId);
-          closeDecision = ChatService.decideClosure(text, historySnapshot);
-          logThinking(runtime, {
-            phase: "close_decision",
-            userId,
-            remoteJid,
-            detail: `decision=${closeDecision}`
-          });
         }
+        let closeDecision = "open";
 
         if (!isFromMe) {
           orchestrator?.clearTypingGrace(userId);
@@ -1360,6 +1355,34 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
         } else {
           isReply = Boolean(stanzaId);
+        }
+
+        if (role !== "media" || botChatRole) {
+          const channelScope = isGroup ? `group:${remoteJid}` : "direct";
+          const heuristic = ChatService.decideClosure(text, historySnapshot);
+          const trustBond = runtime.brainOrchestrator?.trust?.getBond?.(userId, channelScope) ?? null;
+          const repetition = runtime.brainOrchestrator?.repetition?.getSnapshot?.(sessionId) ?? null;
+          const profileForClose = runtime.longTerm.getProfile(userId, channelScope);
+          const resolved = resolveCloseDecision({
+            message: text,
+            history: historySnapshot,
+            heuristicDecision: heuristic,
+            trustBond,
+            repetition,
+            isDirectTetoCall: ChatService.isDirectTetoCall(text),
+            isDirectQuestion: ChatService.isLikelyQuestion(text),
+            isDirectMention: isGroup ? isDirect : true,
+            isVulnerable: detectVulnerability(text),
+            resumedAfterClose: Boolean(profileForClose?.conversationClosedAt),
+            sessionId
+          });
+          closeDecision = resolved.closeDecision ?? "none";
+          logThinking(runtime, {
+            phase: "close_decision",
+            userId,
+            remoteJid,
+            detail: `decision=${closeDecision} phase=${resolved.analysis?.phase ?? "?"} conf=${(resolved.analysis?.confidence ?? 0).toFixed(2)}`
+          });
         }
 
         if (role !== "media" || botChatRole) {
