@@ -1,3 +1,8 @@
 node_modules
 .env
 .DS_Store
+
+# Estado em runtime — não versionar (cresce muito / credenciais de sessão)
+data/mindLog.ndjson
+data/session/
+data/session-bot/

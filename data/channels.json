@@ -59,7 +59,7 @@
         "157947506229421"
       ],
       "createdAt": "2026-06-08T18:06:46.662Z",
-      "updatedAt": "2026-06-08T18:23:04.002Z",
+      "updatedAt": "2026-06-08T22:41:08.617Z",
       "participantCount": 1
     },
     "direct:test_dm_silence": {
@@ -82,6 +82,43 @@
       "participants": [],
       "createdAt": "2026-06-08T20:48:50.478Z",
       "updatedAt": "2026-06-08T20:48:50.478Z",
+      "participantCount": 0
+    },
+    "120363425913528764@g.us": {
+      "id": "120363425913528764@g.us",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": true,
+      "participants": [
+        "5516994435369"
+      ],
+      "createdAt": "2026-06-08T22:17:06.390Z",
+      "updatedAt": "2026-06-08T22:17:06.390Z",
+      "participantCount": 1
+    },
+    "190546341540031@lid": {
+      "id": "190546341540031@lid",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": false,
+      "participants": [
+        "5516988137617"
+      ],
+      "createdAt": "2026-06-08T22:24:33.974Z",
+      "updatedAt": "2026-06-08T22:37:31.535Z",
+      "participantCount": 1
+    },
+    "120363403135646522@g.us": {
+      "id": "120363403135646522@g.us",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": true,
+      "participants": [],
+      "createdAt": "2026-06-08T23:34:20.831Z",
+      "updatedAt": "2026-06-08T23:34:20.831Z",
       "participantCount": 0
     }
   }

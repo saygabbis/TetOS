@@ -7,14 +7,19 @@
       "deactivatedAt": "2026-06-08T20:00:00.000Z"
     },
     "5516988137617": {
-      "active": false,
-      "autoAdded": true,
-      "activatedAt": "2026-06-08T18:08:47.569Z",
-      "deactivatedAt": "2026-06-08T20:00:00.000Z"
+      "active": true,
+      "activatedAt": "2026-06-08T20:50:37.135Z",
+      "activatedBy": "5516988137617"
     }
   },
-  "groups": {},
+  "groups": {
+    "120363425913528764@g.us": {
+      "active": true,
+      "activatedAt": "2026-06-08T20:54:57.018Z",
+      "activatedBy": "5516988137617"
+    }
+  },
   "meta": {
-    "lastUpdated": "2026-06-08T20:00:00.000Z"
+    "lastUpdated": "2026-06-08T20:54:57.018Z"
   }
 }

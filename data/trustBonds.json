@@ -140,61 +140,111 @@
     "5516988137617::direct": {
       "userId": "5516988137617",
       "channelScope": "direct",
-      "trust": 0.53,
-      "intimacy": 0.41000000000000003,
+      "trust": 0.8870000000000003,
+      "intimacy": 0.6800000000000003,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-06-08T18:23:04.001Z",
+      "lastInteractionAt": "2026-06-08T22:41:05.368Z",
       "notes": [
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:10:57.715Z"
+          "ts": "2026-06-08T22:26:38.718Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:11:19.291Z"
+          "ts": "2026-06-08T22:27:17.039Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:11:40.598Z"
+          "ts": "2026-06-08T22:27:38.226Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:12:03.724Z"
+          "ts": "2026-06-08T22:28:27.968Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:12:58.148Z"
+          "ts": "2026-06-08T22:29:56.587Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:14:06.728Z"
+          "ts": "2026-06-08T22:30:21.626Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:22:11.101Z"
+          "ts": "2026-06-08T22:31:04.272Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:22:17.198Z"
+          "ts": "2026-06-08T22:32:01.232Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:22:42.566Z"
+          "ts": "2026-06-08T22:32:27.029Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-08T18:23:04.001Z"
+          "ts": "2026-06-08T22:33:17.031Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:35:04.531Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:35:30.861Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:35:43.543Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:36:38.160Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:37:10.216Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:38:49.245Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:39:54.454Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:40:06.085Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:40:35.023Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:41:05.368Z"
         }
       ]
     },
@@ -253,6 +303,22 @@
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-06-08T20:48:50.478Z"
+        }
+      ]
+    },
+    "5516994435369::group:120363425913528764@g.us": {
+      "userId": "5516994435369",
+      "channelScope": "group:120363425913528764@g.us",
+      "trust": 0.458,
+      "intimacy": 0.356,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": "2026-06-08T22:17:04.398Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-08T22:17:04.398Z"
         }
       ]
     }
