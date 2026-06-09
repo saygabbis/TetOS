@@ -1,3 +1,5 @@
+import { linkedIdentityIds } from "./waIdentity.js";
+
 /** Normaliza JID/LID para comparação estável (sem sufixo de dispositivo). */
 export function normalizeJidKey(jid = "") {
   return String(jid ?? "").split(":")[0].toLowerCase().trim();
@@ -52,10 +54,9 @@ export function resolveOwnerActorId(runtime) {
   return phone || null;
 }
 
-/** Cada contato é isolado — sem alias entre PVs. */
-export function linkedUserIds(_runtime, userId) {
-  const uid = String(userId ?? "").trim();
-  return uid ? [uid] : ["default"];
+/** Mesmo contato pode aparecer como tel, LID ou dm-* — unifica para memória/atividade. */
+export function linkedUserIds(runtime, userId) {
+  return linkedIdentityIds(runtime, userId);
 }
 
 export function touchUserActivity(runtime, userId, { markMessage = true, sessionId = null } = {}) {

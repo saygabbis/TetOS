@@ -25,6 +25,8 @@ export class ChannelRegistry {
         isGroup: id.includes("@g.us") || id.startsWith("group:"),
         participants: [],
         participantJids: {},
+        /** LID local → telefone (participantPn) */
+        participantPhones: {},
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
@@ -38,6 +40,21 @@ export class ChannelRegistry {
     const current = this.get(channelId);
     const participantJids = { ...(current.participantJids ?? {}), [id]: jid };
     return this.upsert(channelId, { participantJids });
+  }
+
+  /** Vincula LID do grupo ao telefone real quando o Baileys expõe participantPn. */
+  recordParticipantLink(channelId, lidOrLocal = "", phone = "") {
+    const lid = String(lidOrLocal ?? "").trim().replace(/@.+$/, "");
+    const tel = String(phone ?? "").trim().replace(/@.+$/, "");
+    if (!lid || !tel) return this.get(channelId);
+    const current = this.get(channelId);
+    const participantPhones = { ...(current.participantPhones ?? {}), [lid]: tel };
+    const participantJids = {
+      ...(current.participantJids ?? {}),
+      [lid]: `${lid}@lid`,
+      [tel]: `${tel}@s.whatsapp.net`
+    };
+    return this.upsert(channelId, { participantPhones, participantJids });
   }
 
   upsert(channelId, patch = {}, userId = "default") {

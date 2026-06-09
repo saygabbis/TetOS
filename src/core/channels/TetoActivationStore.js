@@ -6,6 +6,18 @@ const DEFAULT_DATA = {
   meta: { lastUpdated: null }
 };
 
+function dmAliasIds(userId = "") {
+  const id = String(userId ?? "").trim();
+  if (!id) return [];
+  const aliases = new Set([id]);
+  if (id.startsWith("dm-")) {
+    aliases.add(id.slice(3));
+  } else if (/^\d+$/.test(id)) {
+    aliases.add(`dm-${id}`);
+  }
+  return [...aliases];
+}
+
 export class TetoActivationStore {
   constructor(path, { activationRequired = false } = {}) {
     this.path = path;
@@ -28,27 +40,34 @@ export class TetoActivationStore {
   activateDm(userId, meta = {}) {
     const id = String(userId ?? "").trim();
     if (!id) return null;
-    this.data.dm[id] = {
+    const entry = {
       active: true,
       activatedAt: new Date().toISOString(),
       activatedBy: meta.activatedBy ?? id,
       ...meta
     };
+    for (const alias of dmAliasIds(id)) {
+      this.data.dm[alias] = { ...entry, aliasOf: id };
+    }
     this.save();
-    return this.data.dm[id];
+    return this.data.dm[id] ?? entry;
   }
 
   deactivateDm(userId) {
     const id = String(userId ?? "").trim();
     if (!id) return false;
-    if (!this.data.dm[id]) return false;
-    this.data.dm[id] = {
-      ...this.data.dm[id],
-      active: false,
-      deactivatedAt: new Date().toISOString()
-    };
-    this.save();
-    return true;
+    let changed = false;
+    for (const alias of dmAliasIds(id)) {
+      if (!this.data.dm[alias]) continue;
+      this.data.dm[alias] = {
+        ...this.data.dm[alias],
+        active: false,
+        deactivatedAt: new Date().toISOString()
+      };
+      changed = true;
+    }
+    if (changed) this.save();
+    return changed;
   }
 
   activateGroup(channelId, meta = {}) {
@@ -79,8 +98,10 @@ export class TetoActivationStore {
 
   isDmActive(userId) {
     if (!this.activationRequired) return true;
-    const id = String(userId ?? "").trim();
-    return Boolean(this.data.dm[id]?.active);
+    for (const alias of dmAliasIds(userId)) {
+      if (this.data.dm[alias]?.active) return true;
+    }
+    return false;
   }
 
   isGroupActive(channelId) {

@@ -16,6 +16,10 @@ import { ChatService } from "../../modules/chat/chatService.js";
 import { detectVulnerability } from "../brain/vulnerabilityDetect.js";
 import { isOwnerContact, touchUserActivity } from "../channels/userActivity.js";
 import { buildGroupRoster } from "../channels/groupRoster.js";
+import {
+  addProfileNicknames,
+  captureTetoNicknamesFromReplies
+} from "../channels/waIdentity.js";
 
 function clampString(value, max) {
   return typeof value === "string" ? value.slice(0, max) : value;
@@ -247,6 +251,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const learnedStyle = updateLearnedStyle(existingProfile?.style ?? {}, input);
   const profileWithLearned = { ...existingProfile, style: learnedStyle };
   runtime.longTerm.updateProfile(safeUserId ?? "default", { style: learnedStyle }, channelScope);
+  if (pushName && safeUserId) {
+    addProfileNicknames(runtime, safeUserId, { pushName }, channelScope);
+  }
   const resumedAfterClose = Boolean(existingProfile?.conversationClosedAt);
   const styleHint = buildStyleHint(input, tone, profileWithLearned, normalizedHistory, runtime, safeSessionId);
   const groupMention = ChatService.extractGroupMention(input);
@@ -656,12 +663,13 @@ export async function runMessagePipeline(runtime, payload = {}) {
       brevity: style.isShort ? "short" : style.isLong ? "long" : "medium"
     };
 
+    const userNameFact = facts.find((f) => f.type === "user_name");
     runtime.longTerm.updateProfile(safeUserId ?? "default", {
       facts: {
-        ...(facts.find((f) => f.type === "user_name")
+        ...(userNameFact
           ? {
-              name: facts.find((f) => f.type === "user_name").value,
-              preferredName: facts.find((f) => f.type === "user_name").value
+              name: userNameFact.value,
+              preferredName: userNameFact.value
             }
           : {}),
         ...(facts.find((f) => f.type === "user_pronouns") ? { pronouns: facts.find((f) => f.type === "user_pronouns").value } : {}),
@@ -670,6 +678,23 @@ export async function runMessagePipeline(runtime, payload = {}) {
       style: nextStyle,
       counts: { ...nextCounts, total }
     }, channelScope);
+    if (userNameFact?.value) {
+      addProfileNicknames(runtime, safeUserId ?? "default", { userNick: userNameFact.value }, channelScope);
+    }
+
+    const profileFacts = runtime.longTerm.getProfile(safeUserId ?? "default", channelScope)?.facts ?? {};
+    const displayName =
+      profileFacts.preferredName || profileFacts.displayName || profileFacts.name || pushName;
+    const prevTetoNicks = new Set((profileFacts.tetoNicknames ?? []).map((n) => String(n).toLowerCase()));
+    const capturedTetoNicks = captureTetoNicknamesFromReplies(replies, {
+      displayName,
+      existing: profileFacts.tetoNicknames ?? []
+    });
+    for (const tetoNick of capturedTetoNicks) {
+      if (!prevTetoNicks.has(String(tetoNick).toLowerCase())) {
+        addProfileNicknames(runtime, safeUserId ?? "default", { tetoNick }, channelScope);
+      }
+    }
   }
 
   if (replies.length > 0 && isMeaningful(input)) {

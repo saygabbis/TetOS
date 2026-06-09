@@ -31,7 +31,14 @@ import {
   isOwnerContact,
   resolveOwnerActorId
 } from "../../core/channels/userActivity.js";
-import { cleanDisplayName } from "../../core/channels/groupRoster.js";
+import {
+  buildIdentityIndex,
+  cleanDisplayName,
+  extractLocalPart,
+  isLikelyPhoneNumber,
+  normalizeIncomingMentions,
+  recordWaIdentity
+} from "../../core/channels/waIdentity.js";
 import { applyWhatsAppMentions } from "./mentionResolver.js";
 
 function extractPhone(remoteJid = "") {
@@ -242,14 +249,28 @@ function inferDocumentAsMedia(unwrappedMessage = {}) {
   return null;
 }
 
-function extractParticipant(incoming) {
+function extractParticipantJid(incoming) {
   const participant =
-    incoming?.key?.participantPn ??
-    incoming?.participantPn ??
     incoming?.key?.participant ??
     incoming?.participant ??
     "";
   return jidNormalizedUser(participant);
+}
+
+function extractParticipantPhone(incoming) {
+  const pn =
+    incoming?.key?.participantPn ??
+    incoming?.participantPn ??
+    "";
+  if (!pn) return "";
+  return extractPhone(jidNormalizedUser(pn));
+}
+
+/** JID do remetente em grupo (LID ou tel); legado — preferir extractParticipantJid. */
+function extractParticipant(incoming) {
+  const phone = extractParticipantPhone(incoming);
+  if (phone) return `${phone}@s.whatsapp.net`;
+  return extractParticipantJid(incoming);
 }
 
 
@@ -261,7 +282,11 @@ function randBetween(min, max) {
   return Math.floor(min + Math.random() * (max - min + 1));
 }
 
-function createConversationOrchestrator(socket, runtime, { chatMessageIndex = null, botJid = "", botPhone = "" } = {}) {
+function createConversationOrchestrator(
+  socket,
+  runtime,
+  { chatMessageIndex = null, botJid = "", botPhone = "", logPrefix = "[whatsapp]" } = {}
+) {
   const timingCfg = resolveTimingConfig(runtime?.defaults ?? {});
   const pendingBySession = new Map();
   const pendingByGroupChannel = new Map();
@@ -284,7 +309,7 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
         if (!content) continue;
         if (interruptBySession.get(sessionId) !== token) {
           console.warn(
-            `[whatsapp] send interrompido bolha ${index + 1}/${replies.length} (interrupt token mismatch)`
+            `${logPrefix} send interrompido bolha ${index + 1}/${replies.length} (interrupt token mismatch)`
           );
           return;
         }
@@ -324,12 +349,12 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
             await sleep(typingDelayMs);
             await socket.sendPresenceUpdate("paused", remoteJid);
           } catch (error) {
-            console.warn(`[whatsapp] typing simulation failed for ${remotePhone}: ${error.message}`);
+            console.warn(`${logPrefix} typing simulation failed for ${remotePhone}: ${error.message}`);
           }
         }
         if (interruptBySession.get(sessionId) !== token) {
           console.warn(
-            `[whatsapp] send interrompido bolha ${index + 1}/${replies.length} após typing (interrupt token mismatch)`
+            `${logPrefix} send interrompido bolha ${index + 1}/${replies.length} após typing (interrupt token mismatch)`
           );
           return;
         }
@@ -342,9 +367,9 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
           participantJid: options?.participantJid ?? null
         });
         if (index === 0 && normalizedQuote?.id) {
-          console.log(`[whatsapp] outgoing quote id=${normalizedQuote.id} → ${remoteJid}`);
+          console.log(`${logPrefix} outgoing quote id=${normalizedQuote.id} → ${remoteJid}`);
         }
-        console.log(`[whatsapp] outgoing ${remoteJid}: ${content}`);
+        console.log(`${logPrefix} outgoing ${remoteJid}: ${content}`);
         const rosterMembers = options?.groupRoster?.members ?? [];
         const { text: mentionText, mentions } = applyWhatsAppMentions(content, rosterMembers);
         const mentionPayload = mentions.length ? { mentions } : {};
@@ -356,7 +381,7 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
           sendTask,
           new Promise((_, reject) => setTimeout(() => reject(new Error("send timeout")), 8000))
         ]).catch((error) => {
-          console.error(`[whatsapp] send failed to ${remoteJid}:`, error.message);
+          console.error(`${logPrefix} send failed to ${remoteJid}:`, error.message);
           return null;
         });
         const sentId = sent?.key?.id ?? sent?.message?.key?.id ?? null;
@@ -405,13 +430,15 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
           lastReactionAt: prevR.lastReactionAt ?? 0
         };
         let replies = [];
-        if (item.closeDecision === "respond") {
-          console.log(`[whatsapp] generating reply for ${item.userId}…`);
+        const shouldGenerate =
+          item.closeDecision !== "silent" && item.closeDecision !== "react";
+        if (shouldGenerate) {
+          console.log(`${logPrefix} generating reply for ${item.userId}…`);
           if (typeof socket.sendPresenceUpdate === "function") {
             try {
               await socket.sendPresenceUpdate("composing", item.remoteJid);
             } catch (e) {
-              console.warn(`[whatsapp] composing (during generation) failed: ${e.message}`);
+              console.warn(`${logPrefix} composing (during generation) failed: ${e.message}`);
             }
           }
         }
@@ -459,7 +486,7 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
               item.groupRoster = out?.groupRoster ?? null;
               if (replies.length > 0) {
                 console.log(
-                  `[whatsapp] reply ${replies.length} bolha(s) → ${replies.map((r) => JSON.stringify(String(r ?? "").slice(0, 140))).join(" | ")}`
+                  `${logPrefix} reply ${replies.length} bolha(s) → ${replies.map((r) => JSON.stringify(String(r ?? "").slice(0, 140))).join(" | ")}`
                 );
               }
               timingPlan = out?.timingPlan ?? null;
@@ -477,11 +504,16 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
             } catch (error) {
               lastError = error;
               if (error.message === "model timeout" && attempt === 0) {
-                console.warn(`[whatsapp] model timeout, retrying for ${item.userId}…`);
+                console.warn(`${logPrefix} model timeout, retrying for ${item.userId}…`);
                 await sleep(400);
                 continue;
               }
-              console.error(`[whatsapp] generation error for ${item.userId}:`, error.message);
+              if (/empty response/i.test(error.message) && attempt === 0) {
+                console.warn(`${logPrefix} LLM resposta vazia, retrying for ${item.userId}…`);
+                await sleep(600);
+                continue;
+              }
+              console.error(`${logPrefix} generation error for ${item.userId}:`, error.message);
               replies = [];
               break;
             }
@@ -508,14 +540,14 @@ function createConversationOrchestrator(socket, runtime, { chatMessageIndex = nu
           Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
         if (!hasOutgoing && shouldRunPipeline && runtime.defaults.replyEnabled) {
           console.warn(
-            `[whatsapp] empty reply for ${item.userId} (close=${item.closeDecision} mode=${item.passiveMode ?? "?"} msg="${String(item.message ?? "").slice(0, 80)}")`
+            `${logPrefix} empty reply for ${item.userId} (close=${item.closeDecision} mode=${item.passiveMode ?? "?"} msg="${String(item.message ?? "").slice(0, 80)}")`
           );
         }
         if (hasOutgoing && typeof socket.sendPresenceUpdate === "function") {
           try {
             await socket.sendPresenceUpdate("composing", item.remoteJid);
           } catch (e) {
-            console.warn(`[whatsapp] composing (during generation) failed: ${e.message}`);
+            console.warn(`${logPrefix} composing (during generation) failed: ${e.message}`);
           }
         }
 
@@ -894,7 +926,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
       : createConversationOrchestrator(socket, runtime, {
           chatMessageIndex,
           botJid: botJidForHandler,
-          botPhone: botPhoneForHandler
+          botPhone: botPhoneForHandler,
+          logPrefix: waLogPrefix
         });
   const messageSnapshotById = new Map();
   const commandQueue = new ChatCommandQueue();
@@ -1071,7 +1104,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
   socket.ev.on("messages.upsert", async ({ messages, type }) => {
     const batch = messages ?? [];
-    touchInboundActivity();
+    const inboundSource =
+      botChatRole || role === "full" ? "bot" : role === "main" ? "main" : "media";
+    touchInboundActivity(inboundSource);
     console.log(`${waLogPrefix} upsert type=${type ?? "?"} count=${batch.length}`);
 
     if (type !== "notify" && type !== "append") {
@@ -1136,7 +1171,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         const isGroup = remoteJid.endsWith("@g.us");
         const unwrappedMessage = unwrapMessage(incoming.message);
-        const text = extractText(unwrappedMessage).trim();
+        let text = extractText(unwrappedMessage).trim();
         const links = extractLinks(text);
         const parsedCommand = parseWhatsAppCommand(text, runtime.defaults.commandPrefix);
         const tetoSlash = parseTetoSlashCommand(text);
@@ -1153,7 +1188,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         console.log(`${waLogPrefix} ${isFromMe ? "outgoing" : "incoming"} ${remoteJid}: ${text || `[${mediaKind}]`}`);
 
         const baseUserId = extractPhone(remoteJid);
-        let participantId = isGroup ? extractPhone(extractParticipant(incoming)) : "";
+        const participantJid = isGroup ? extractParticipantJid(incoming) : "";
+        const participantPhone = isGroup ? extractParticipantPhone(incoming) : "";
+        let participantId = isGroup
+          ? extractLocalPart(participantJid) || participantPhone
+          : "";
         if (isGroup && !participantId) {
           const msgId = incoming.key?.id ?? "";
           participantId = msgId ? `grp_${String(msgId).slice(-12)}` : `grp_${Date.now()}`;
@@ -1166,10 +1205,17 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           ? `wa-group:${baseUserId}:${participantId}`
           : canonicalSessionId(runtime, userId, { remoteJid });
 
-        if (isGroup && participantId && /^\d{8,}$/.test(participantId)) {
-          const rawParticipantJid = extractParticipant(incoming);
-          if (rawParticipantJid) {
+        if (isGroup && participantId) {
+          const rawParticipantJid = participantJid || extractParticipant(incoming);
+          if (rawParticipantJid && /^\d{8,}$/.test(participantId)) {
             runtime.channelRegistry?.recordParticipantJid?.(remoteJid, participantId, rawParticipantJid);
+          }
+          if (participantPhone && participantJid.includes("@lid")) {
+            runtime.channelRegistry?.recordParticipantLink?.(
+              remoteJid,
+              extractLocalPart(participantJid),
+              participantPhone
+            );
           }
         }
 
@@ -1252,6 +1298,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         const mentionHint = contextInfo?.mentionedJid ?? [];
+        const identityIndex = buildIdentityIndex(runtime);
+        if (text && (isGroup || mentionHint.length)) {
+          text = normalizeIncomingMentions(text, identityIndex, mentionHint);
+        }
         let isDirect = false;
         let isReply = Boolean(stanzaId);
         let groupEngagementActive = false;
@@ -1313,6 +1363,16 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         if (role !== "media" || botChatRole) {
+          recordWaIdentity(runtime, {
+            userId,
+            remoteJid,
+            participantJid: isGroup ? participantJid : remoteJid,
+            participantPhone: isGroup ? participantPhone : null,
+            pushName,
+            channelId: remoteJid,
+            isGroup
+          });
+
           const profile = runtime.longTerm.getProfile(userId);
           if (pushName) {
             runtime.longTerm.updateProfile(userId, {
@@ -1328,7 +1388,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               ...(profile?.facts ?? {}),
               lastChannel: isGroup ? "group" : "direct",
               waRemoteJid: remoteJid,
-              ...(/^\d{8,}$/.test(userId) ? { waPhone: userId } : {})
+              ...(isLikelyPhoneNumber(userId) ? { waPhone: userId } : {}),
+              ...(remoteJid.includes("@lid")
+                ? { waLid: extractLocalPart(remoteJid) }
+                : {})
             }
           });
         }
@@ -1531,6 +1594,17 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         const activation = runtime.tetoActivation;
+        if (!isGroup && activation?.isActivationRequired?.() && isOwnerContact(runtime, remoteJid, userId)) {
+          if (!activation.isDmActive(userId)) {
+            activation.activateDm(userId, { activatedBy: userId, autoOwner: true });
+            logThinking(runtime, {
+              phase: "activation_auto",
+              userId,
+              remoteJid,
+              detail: "dona reconhecida — dm ativado automaticamente"
+            });
+          }
+        }
         if (!isGroup && activation) {
           activation.touchDm(userId);
           const dmActive = activation.isDmActive(userId);

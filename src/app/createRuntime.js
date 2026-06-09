@@ -65,7 +65,8 @@ function createLlmClient({ model, temperature, numPredict, worker = false } = {}
     model: model ?? DEFAULTS.model,
     apiKey: DEFAULTS.ollamaApiKey || undefined,
     temperature,
-    numPredict
+    numPredict,
+    timeoutMs: DEFAULTS.modelTimeoutMs
   });
 }
 

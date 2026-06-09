@@ -36,7 +36,7 @@ function startInboundWatchdog({ getConnected, label = "whatsapp" }) {
       resetInboundActivity();
       return;
     }
-    const silentMs = msSinceLastInbound();
+    const silentMs = msSinceLastInbound({ botOnly: label.includes("bot") });
     if (silentMs < staleMs) return;
     console.error(
       `[${label}] socket surdo — conectado mas sem mensagens há ${Math.round(silentMs / 60000)} min. ` +
@@ -116,9 +116,12 @@ async function runPresence(runtime, socket, initiationEngine) {
     const history = runtime.shortTerm?.getAll?.(sessionId)?.slice(-12) ?? [];
     const remoteJid = resolveNudgeRemoteJid(runtime, userId);
     const tone = evaluation.tone ?? "playful";
+    const seedMessage =
+      String(evaluation.impulse ?? evaluation.threadHint ?? "").trim() ||
+      "Manda uma mensagem curta e natural pro usuario (iniciativa da Teto).";
 
     const replies = await runtime.chatService.handleMessage(
-      "",
+      seedMessage,
       {
         userId,
         sessionId,
@@ -602,6 +605,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
       }
     });
 
+    attachChatLedgerListeners(mediaSocket, runtime);
     registerMessageHandler({ socket: mediaSocket, runtime, role: "media" });
   };
 

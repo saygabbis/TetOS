@@ -1,6 +1,8 @@
 const NAME_PATTERNS = [
   /\bmeu nome (?:é|eh)\s+([\p{L}][\p{L}\s'-]{1,40})/iu,
-  /\bme chama\s+([\p{L}][\p{L}\s'-]{1,40})/iu
+  /\bme chama\s+([\p{L}][\p{L}\s'-]{1,40})/iu,
+  /\bpode me chamar de\s+([\p{L}][\p{L}\s'-]{1,40})/iu,
+  /\bme chame de\s+([\p{L}][\p{L}\s'-]{1,40})/iu
 ];
 
 const LIKE_PATTERNS = [

@@ -1,108 +1,28 @@
-import { isOwnerContact } from "./userActivity.js";
-
-/** "Gabbis( ˘ ³˘ )♥" → "Gabbis" */
-export function cleanDisplayName(raw = "") {
-  const s = String(raw ?? "").trim();
-  if (!s) return "";
-  const m = s.match(/^([\p{L}][\p{L}\s'-]{0,28})/u);
-  return (m ? m[1] : s).trim().replace(/\s+/g, " ");
-}
+import {
+  buildIdentityIndex,
+  cleanDisplayName,
+  isLikelyPhoneNumber,
+  resolveIdentityEntry
+} from "./waIdentity.js";
 
 function isPhoneId(id = "") {
-  return /^\d{8,}$/.test(String(id ?? "").trim());
+  return isLikelyPhoneNumber(id);
 }
 
-/** Índice global telefone/userId → melhor nome conhecido (PV + grupo). */
+/** Índice global telefone/userId/LID → melhor nome conhecido (PV + grupo). */
 export function buildContactIndex(runtime) {
-  const index = new Map();
-  const profiles = runtime?.longTerm?.data?.profiles ?? {};
-  const ownerPhone = String(runtime?.defaults?.learningTargetUserId ?? "").trim();
-
-  const put = (id, entry) => {
-    const key = String(id ?? "").trim();
-    if (!key || !entry?.displayName) return;
-    const prev = index.get(key);
-    if (!prev || entry.preferredName || (entry.displayName.length < prev.displayName.length)) {
-      index.set(key, {
-        displayName: entry.displayName,
-        preferredName: entry.preferredName ?? prev?.preferredName ?? null,
-        source: entry.source ?? prev?.source ?? "profile"
-      });
-    }
-  };
-
-  for (const [profileKey, prof] of Object.entries(profiles)) {
-    const facts = prof?.facts ?? {};
-    const preferred = facts.preferredName ? cleanDisplayName(facts.preferredName) : null;
-    const fromName = cleanDisplayName(facts.name);
-    const displayName = preferred || fromName;
-    if (!displayName) continue;
-
-    const entry = {
-      displayName,
-      preferredName: preferred,
-      source: preferred ? "preferred_name" : "push_name"
-    };
-
-    if (isPhoneId(profileKey)) put(profileKey, entry);
-    if (facts.waPhone) put(String(facts.waPhone), entry);
-
-    if (profileKey.startsWith("dm-")) {
-      put(profileKey, entry);
-      const local = profileKey.slice(3).split("@")[0];
-      if (isPhoneId(local)) put(local, entry);
-    }
-  }
-
-  if (ownerPhone) {
-    for (const [profileKey, prof] of Object.entries(profiles)) {
-      if (!isOwnerContact(runtime, null, profileKey)) continue;
-      const facts = prof?.facts ?? {};
-      const displayName =
-        cleanDisplayName(facts.preferredName) ||
-        cleanDisplayName(facts.name) ||
-        "Gabbis";
-      put(ownerPhone, { displayName, preferredName: facts.preferredName ?? null, source: "owner_link" });
-    }
-  }
-
-  return index;
+  return buildIdentityIndex(runtime);
 }
 
-function resolveMemberName(userId, contactIndex, groupMemory, channelId) {
-  const uid = String(userId ?? "").trim();
-  const indexed = contactIndex.get(uid);
-  if (indexed?.displayName) return { ...indexed, userId: uid };
-
-  const fromMemory = (groupMemory?.byChannel?.(channelId, { limit: 80 }) ?? [])
-    .find((e) => e.userId === uid && e.speakerName);
-  if (fromMemory?.speakerName) {
-    return {
-      displayName: cleanDisplayName(fromMemory.speakerName),
-      preferredName: null,
-      source: "group_memory",
-      userId: uid
-    };
-  }
-
-  if (uid.startsWith("dm-")) {
-    const indexedDm = contactIndex.get(uid);
-    if (indexedDm) return { ...indexedDm, userId: uid };
-  }
-
-  return {
-    displayName: isPhoneId(uid) ? `pessoa_${uid.slice(-4)}` : uid.slice(0, 16),
-    preferredName: null,
-    source: "unknown",
-    userId: uid
-  };
-}
-
-function mentionJidFor(userId, channel) {
+function mentionJidFor(userId, channel, identityEntry) {
   const uid = String(userId ?? "").trim();
   const map = channel?.participantJids ?? {};
   if (map[uid]) return map[uid];
+  if (identityEntry?.mentionJid) return identityEntry.mentionJid;
+  if (identityEntry?.waLid) return `${identityEntry.waLid}@lid`;
+  if (identityEntry?.waPhone) return `${identityEntry.waPhone}@s.whatsapp.net`;
   if (isPhoneId(uid)) return `${uid}@s.whatsapp.net`;
+  if (/^\d{12,}$/.test(uid)) return `${uid}@lid`;
   if (uid.includes("@")) return uid;
   return null;
 }
@@ -114,7 +34,8 @@ export function buildGroupRoster(runtime, channelId, { participants = [] } = {})
   if (!channelId) return { members: [], promptLines: [] };
 
   const channel = runtime?.channelRegistry?.get?.(channelId) ?? {};
-  const contactIndex = buildContactIndex(runtime);
+  const identityIndex = buildIdentityIndex(runtime);
+  const phoneLinks = channel.participantPhones ?? {};
   const ids = new Set();
 
   for (const p of participants ?? []) {
@@ -125,34 +46,55 @@ export function buildGroupRoster(runtime, channelId, { participants = [] } = {})
     const id = String(p ?? "").trim();
     if (id) ids.add(id);
   }
+  for (const [lid, phone] of Object.entries(phoneLinks)) {
+    if (lid) ids.add(lid);
+    if (phone) ids.add(phone);
+  }
 
   for (const entry of runtime.groupMemory?.byChannel?.(channelId, { limit: 100 }) ?? []) {
     if (entry.userId) ids.add(String(entry.userId));
   }
 
   const members = [...ids]
-    .filter((id) => id && id !== "teto" && !id.startsWith("grp_"))
+    .filter((id) => id && id !== "teto" && !id.startsWith("grp_") && !id.startsWith("dm-"))
     .map((userId) => {
-      const nameInfo = resolveMemberName(userId, contactIndex, runtime.groupMemory, channelId);
-      const mentionJid = mentionJidFor(userId, channel);
+      const nameInfo = resolveIdentityEntry(userId, identityIndex, runtime.groupMemory, channelId);
+      const linkedPhone = phoneLinks[userId] ?? nameInfo.waPhone ?? null;
+      const linkedLid = nameInfo.waLid ?? (/^\d{14,}$/.test(userId) ? userId : null);
+      const mentionJid = mentionJidFor(userId, channel, nameInfo);
       return {
         userId,
         displayName: nameInfo.displayName,
-        preferredName: nameInfo.preferredName,
+        preferredName: nameInfo.preferredName ?? null,
+        nicknames: nameInfo.nicknames ?? [],
+        tetoNicknames: nameInfo.tetoNicknames ?? [],
         mentionJid,
-        nameSource: nameInfo.source
+        waPhone: linkedPhone,
+        waLid: linkedLid,
+        canonicalUserId: nameInfo.canonicalUserId ?? userId,
+        nameSource: nameInfo.source ?? "profile"
       };
     })
     .filter((m) => m.displayName);
 
   const promptLines = members.map((m) => {
-    const nick =
-      m.preferredName && m.preferredName !== m.displayName
-        ? ` (apelido PV: ${m.preferredName})`
-        : m.nameSource === "owner_link"
-          ? " (contato próximo — use o apelido dela)"
-          : "";
-    return `- ${m.displayName}${nick} — id interno ${m.userId} — para marcar no zap escreva @${m.displayName}`;
+    const nickParts = [];
+    if (m.preferredName && m.preferredName !== m.displayName) {
+      nickParts.push(`prefere: ${m.preferredName}`);
+    }
+    const userNicks = (m.nicknames ?? []).filter(
+      (n) => n !== m.displayName && !(m.tetoNicknames ?? []).includes(n)
+    );
+    if (userNicks.length) nickParts.push(`também: ${userNicks.join(", ")}`);
+    if ((m.tetoNicknames ?? []).length) {
+      nickParts.push(`Teto chama: ${m.tetoNicknames.join(", ")}`);
+    }
+    const nickLine = nickParts.length ? ` (${nickParts.join(" | ")})` : "";
+    const idParts = [];
+    if (m.waLid) idParts.push(`LID ${m.waLid}`);
+    if (m.waPhone) idParts.push(`tel ${m.waPhone}`);
+    if (!idParts.length) idParts.push(`id ${m.userId}`);
+    return `- ${m.displayName}${nickLine} — ${idParts.join(" ↔ ")} — marcar no zap: @${m.displayName}`;
   });
 
   return { members, promptLines };
@@ -163,8 +105,11 @@ export function formatGroupRosterBlock(roster) {
   return [
     "[GRUPO — QUEM ESTÁ AQUI]",
     ...roster.promptLines,
-    "Use SEMPRE o nome/apelido acima — nunca cite número cru (@6283... ou id longo).",
-    "Para marcar alguém de verdade no WhatsApp, escreva @Nome exatamente como listado (ex.: @Gabbis).",
-    "Se conhece apelido do PV com a pessoa, use esse apelido aqui no grupo também."
+    "LID, telefone e apelidos são a MESMA pessoa quando listados juntos — use sempre o NOME.",
+    "Apelidos que a Teto deu (Teto chama: ...) ou que a pessoa pediu (prefere: ...) valem no grupo.",
+    "Nunca cite @187995... ou id numérico cru; diga o nome (ex.: Gabbis, Duda).",
+    "Para marcar alguém de verdade no WhatsApp, escreva @Nome exatamente como listado."
   ];
 }
+
+export { cleanDisplayName } from "./waIdentity.js";

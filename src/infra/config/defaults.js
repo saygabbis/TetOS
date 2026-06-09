@@ -48,6 +48,16 @@ if (rawNumPredict !== undefined && rawNumPredict !== null && String(rawNumPredic
   }
 }
 
+/** gpt-oss e modelos cloud de raciocínio estouram num_predict=400 só no "thinking". */
+const modelLower = String(model).toLowerCase();
+if (
+  rawNumPredict === undefined &&
+  ollamaNumPredict === 400 &&
+  (modelLower.includes("gpt-oss") || modelLower.includes("deepseek-r1"))
+) {
+  ollamaNumPredict = 2000;
+}
+
 const rawResponseMaxParts = process.env.TETOS_RESPONSE_MAX_PARTS;
 const trimmedResponseMaxParts =
   rawResponseMaxParts !== undefined && rawResponseMaxParts !== null
