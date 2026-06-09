@@ -1,5 +1,6 @@
 import { detectTone } from "../memory/toneDetector.js";
 import { extractFacts, extractStyle, isMeaningful, isMessyLaughterMessage, maxConsecutiveKRun } from "../memory/extractor.js";
+import { formatLearnedStyleForPrompt, updateLearnedStyle } from "../memory/userStyleLearner.js";
 import { detectDocumentIntent } from "../../modules/documents/documentIntent.js";
 import { buildDocumentContextPayload } from "../../modules/documents/documentContextBuilder.js";
 import { detectReminderIntent } from "../../modules/reminders/reminderIntent.js";
@@ -9,27 +10,78 @@ import { detectConfirmationReply } from "../operations/confirmationIntent.js";
 import { buildMediaContext } from "../media/mediaContext.js";
 import { describeMediaForPrompt } from "../media/mediaHeuristics.js";
 import { buildMultimodalContext } from "../memory/multimodalRetrieval.js";
+import { detectTetoInMediaDescription } from "../character/tetoSelfRecognition.js";
+import { hasVocativeToTeto } from "../../modules/chat/coherenceGuards.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 import { detectVulnerability } from "../brain/vulnerabilityDetect.js";
-import { touchUserActivity } from "../channels/userActivity.js";
+import { isOwnerContact, touchUserActivity } from "../channels/userActivity.js";
+import { buildGroupRoster } from "../channels/groupRoster.js";
 
 function clampString(value, max) {
   return typeof value === "string" ? value.slice(0, max) : value;
 }
 
+function mentionsMachineLove(text = "") {
+  const t = String(text ?? "");
+  return (
+    /\b(machine\s*love|m[aá]quina\s+love)\b/i.test(t) ||
+    /\b(me\s+ensina\s+a\s+ser\s+real|peito\s+digital|bin[aá]rio\s+o\s+meu\s+coral)\b/i.test(t) ||
+    /\b(jamie\s+paige|revela[cç][aã]o\s+final)\b/i.test(t) ||
+    /canta\s+o\s+peito/i.test(t) ||
+    /v[aã]o\s+te\s+adorar/i.test(t)
+  );
+}
+
 function normalizeHistory(messages, safeUserId, safeSessionId, maxHistory, maxContentLength) {
   const allowedRoles = new Set(["user", "assistant", "system"]);
   if (!Array.isArray(messages)) return null;
+  const cap = Math.max(8, Number(maxHistory) || 24);
   return messages
     .filter((msg) => typeof msg?.content === "string")
     .map((msg) => ({ ...msg, content: msg.content.trim() }))
     .filter((msg) => msg.content)
-    .slice(-Math.max(5, maxHistory))
+    .slice(-cap)
     .map((msg) => ({
       role: allowedRoles.has(msg?.role) ? msg.role : "user",
       content: clampString(msg.content, maxContentLength),
-      meta: { userId: safeUserId, sessionId: safeSessionId }
+      meta: { userId: safeUserId, sessionId: safeSessionId, ...(msg.meta ?? {}) }
     }));
+}
+
+export function groupChannelSessionId(channelId) {
+  return `wa-group-channel:${String(channelId ?? "").trim()}`;
+}
+
+function buildGroupTranscript(runtime, channelId, limit = 16) {
+  const entries = runtime.groupMemory?.byChannel?.(channelId, { limit }) ?? [];
+  return entries
+    .slice()
+    .reverse()
+    .map((entry) => {
+      const who = entry.speakerName || entry.userId || "alguém";
+      const tag = entry.addressedToTeto ? "" : " (off-topic)";
+      return {
+        role: "user",
+        content: `[${who}]${tag}: ${String(entry.text ?? "").trim()}`,
+        meta: { groupTranscript: true, userId: entry.userId }
+      };
+    })
+    .filter((m) => m.content.length > 4);
+}
+
+function shortTermToHistory(rows, safeUserId, safeSessionId, maxHistory, maxContentLength) {
+  if (!rows?.length) return null;
+  return normalizeHistory(
+    rows.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      meta: msg.meta ?? {}
+    })),
+    safeUserId,
+    safeSessionId,
+    maxHistory,
+    maxContentLength
+  );
 }
 
 function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime, safeSessionId) {
@@ -72,8 +124,21 @@ function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime
   const hasCaps = /[A-ZÁÉÍÓÚÂÊÔÃÕÇ]{3,}/.test(normalized);
   const shortClauseCount = normalized.split(/[.!?]/).filter((s) => s.trim().length > 0).length;
 
+  const vocativeToTeto = hasVocativeToTeto(input);
+  const hasPriorTurns = priorUserTurns.length > 0;
+  const learned = existingProfile?.style?.learned ?? {};
+  const stylePrefs = existingProfile?.style ?? {};
+  const preferredLaughter =
+    userKkMaxRun >= 3 ? "kk" : learned.preferredLaughter ?? (stylePrefs.prefersLaughter ? "kk" : null);
+  const learnedStyleLines = formatLearnedStyleForPrompt(learned, stylePrefs, {
+    userKkMaxRun,
+    preferredLaughter
+  });
+
   return {
-    ...(existingProfile?.style ?? {}),
+    ...stylePrefs,
+    userVocativeToTeto: vocativeToTeto,
+    hasConversationHistory: hasPriorTurns,
     userIsShort: style.isShort,
     userIsLong: style.isLong,
     repeatedVowels: repeatedChars,
@@ -87,7 +152,10 @@ function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime
     sparseGreetingFloodCount,
     userCapsBurst: hasCaps,
     userShortClauseCount: shortClauseCount,
-    conversationEnergy: tone === "calm" ? "low" : "playful"
+    conversationEnergy: tone === "calm" ? "low" : "playful",
+    preferredLaughter,
+    learnedStyleLines,
+    learnedExpressions: Object.keys(learned.expressions ?? {}).slice(0, 10)
   };
 }
 
@@ -101,11 +169,21 @@ export async function runMessagePipeline(runtime, payload = {}) {
     isGroup = false,
     participants = [],
     isDirectMention = false,
+    groupEngagementActive = false,
+    groupAddressKind = null,
     isReply = false,
     quotedMessage = null,
+    quotedMessageId = null,
+    replyThreadContext = null,
+    isReplyToBot = false,
     messageKey = null,
     media = null,
-    closeDecision = null
+    closeDecision = null,
+    pushName = null,
+    participantId = null,
+    segmentSpeakers = null,
+    segmentMultiSpeaker = false,
+    isOwner: isOwnerFlag = null
   } = payload;
   const effectiveCloseDecision = closeDecision ?? null;
   const safeUserId = typeof userId === "string" ? userId.slice(0, runtime.defaults.maxIdLength) : userId;
@@ -114,6 +192,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
     ? channelId.slice(0, runtime.defaults.maxIdLength * 3)
     : (isGroup ? `group:${safeSessionId ?? safeUserId ?? "default"}` : `direct:${safeUserId ?? "default"}`);
   const channelScope = isGroup ? `group:${safeChannelId.replace(/^group:/, "")}` : "direct";
+  const isOwner =
+    isOwnerFlag === true ||
+    (isOwnerFlag !== false && isOwnerContact(runtime, safeChannelId, safeUserId));
 
   let normalizedHistory = normalizeHistory(
     messages,
@@ -124,18 +205,34 @@ export async function runMessagePipeline(runtime, payload = {}) {
   );
 
   if (!normalizedHistory?.length && runtime.shortTerm?.getAll) {
-    const fromShort = runtime.shortTerm.getAll(safeSessionId ?? "default");
-    if (fromShort.length) {
-      normalizedHistory = fromShort.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-        meta: { userId: safeUserId, sessionId: safeSessionId }
-      }));
+    const fromUser = runtime.shortTerm.getAll(safeSessionId ?? "default") ?? [];
+    const fromGroupChannel =
+      isGroup && safeChannelId
+        ? runtime.shortTerm.getAll(groupChannelSessionId(safeChannelId)) ?? []
+        : [];
+    if (isGroup && fromGroupChannel.length) {
+      normalizedHistory = shortTermToHistory(
+        fromGroupChannel,
+        safeUserId,
+        safeSessionId,
+        runtime.defaults.maxHistory,
+        runtime.defaults.maxContentLength
+      );
+    } else if (fromUser.length) {
+      normalizedHistory = shortTermToHistory(
+        fromUser,
+        safeUserId,
+        safeSessionId,
+        runtime.defaults.maxHistory,
+        runtime.defaults.maxContentLength
+      );
+    } else if (isGroup && safeChannelId) {
+      normalizedHistory = buildGroupTranscript(runtime, safeChannelId, 14);
     }
   }
 
-  const recentHistoryLimit = normalizedHistory?.length ? Math.max(3, Math.min(5, normalizedHistory.length)) : 0;
-  const recentHistory = normalizedHistory?.length ? normalizedHistory.slice(-recentHistoryLimit) : null;
+  const historyCap = Math.max(8, Number(runtime.defaults.maxHistory) || 24);
+  const recentHistory = normalizedHistory?.length ? normalizedHistory.slice(-historyCap) : null;
   const derivedMediaInput = media?.transcript ?? media?.caption ?? `[${media?.type ?? "media"}]`;
   const input = clampString(message ?? normalizedHistory?.[normalizedHistory.length - 1]?.content ?? derivedMediaInput, runtime.defaults.maxContentLength);
 
@@ -147,8 +244,11 @@ export async function runMessagePipeline(runtime, payload = {}) {
 
   const tone = detectTone(input);
   const existingProfile = runtime.longTerm.getProfile(safeUserId ?? "default", channelScope);
+  const learnedStyle = updateLearnedStyle(existingProfile?.style ?? {}, input);
+  const profileWithLearned = { ...existingProfile, style: learnedStyle };
+  runtime.longTerm.updateProfile(safeUserId ?? "default", { style: learnedStyle }, channelScope);
   const resumedAfterClose = Boolean(existingProfile?.conversationClosedAt);
-  const styleHint = buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime, safeSessionId);
+  const styleHint = buildStyleHint(input, tone, profileWithLearned, normalizedHistory, runtime, safeSessionId);
   const groupMention = ChatService.extractGroupMention(input);
   const isVulnerable = detectVulnerability(input);
   const isDirectQuestion = ChatService.isLikelyQuestion(input);
@@ -186,7 +286,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     userId: safeUserId ?? "default",
     isDirectMention: effectiveMention,
     isReply,
-    isQuestion: isDirectQuestion
+    isQuestion: isDirectQuestion,
+    groupEngagementActive: Boolean(groupEngagementActive)
   });
 
   runtime.logger?.log?.("pipeline.policy", {
@@ -222,6 +323,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     isGroup &&
     timingPlan?.silenceAppropriate &&
     !effectiveMention &&
+    !groupEngagementActive &&
     !isReply &&
     effectiveCloseDecision !== "respond" &&
     !directSubstantive;
@@ -244,28 +346,6 @@ export async function runMessagePipeline(runtime, payload = {}) {
       timingPlan
     };
   }
-
-  // #region agent log
-  if (!isGroup && timingPlan?.silenceAppropriate) {
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
-      body: JSON.stringify({
-        sessionId: "9518ce",
-        location: "messagePipeline.js:dm_timing_bypass",
-        message: "dm_bypassed_timing_silence",
-        data: {
-          userId: safeUserId,
-          inputLen: trimmedInput.length,
-          reasons: timingPlan.reasons ?? []
-        },
-        timestamp: Date.now(),
-        hypothesisId: "H1",
-        runId: "post-fix"
-      })
-    }).catch(() => {});
-  }
-  // #endregion
 
   if (!runtime.defaults.replyEnabled) {
     runtime.logger?.log?.("pipeline.observe_only", {
@@ -359,7 +439,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     ? runtime.operationRouter.execute({
         type: operationIntent.type,
         userId: safeUserId ?? "default",
-        payload: operationIntent.payload
+        payload: operationIntent.payload,
+        isOwner
       })
     : null;
 
@@ -376,13 +457,34 @@ export async function runMessagePipeline(runtime, payload = {}) {
   }
 
   const historicalMultimodalContext = buildMultimodalContext(
-    runtime.multimodalMemory?.list?.(safeUserId ?? "default") ?? [],
+    runtime.multimodalMemory?.list?.(safeUserId ?? "default", safeChannelId, 3) ?? [],
     3
   );
+  const visionText = [
+    media?.transcript,
+    media?.caption,
+    media?.visualDescription
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const selfImageDetection = detectTetoInMediaDescription(visionText, {
+    mediaType: media?.type ?? null
+  });
+
   const mediaContext = [
     describeMediaForPrompt(media, input) ?? buildMediaContext(media),
+    selfImageDetection.isLikelySelf
+      ? "[AUTO-RECONHECIMENTO] A mídia parece representar a Kasane Teto (você)."
+      : null,
     historicalMultimodalContext ? `[RECENT MULTIMODAL MEMORY]\n${historicalMultimodalContext}` : null
-  ].filter(Boolean).join("\n\n") || null;
+  ]
+    .filter(Boolean)
+    .join("\n\n") || null;
+
+  const musicLoreBlock =
+    mentionsMachineLove(input) && runtime.brainOrchestrator?.music?.getMachineLoveLoreBlock
+      ? runtime.brainOrchestrator.music.getMachineLoveLoreBlock()
+      : null;
 
   const primaryOperation = confirmationResult ?? slashCommandResult ?? operationResult;
 
@@ -406,13 +508,21 @@ export async function runMessagePipeline(runtime, payload = {}) {
     runtime.metrics?.increment?.("multimodal.saved");
   }
 
+  const groupRoster = isGroup
+    ? buildGroupRoster(runtime, safeChannelId, { participants })
+    : null;
+
   const replies = await runtime.chatService.handleMessage(
     input,
     {
       userId: safeUserId,
       sessionId: safeSessionId,
       channelId: safeChannelId,
+      groupRoster,
       quotedMessage,
+      quotedMessageId,
+      replyThreadContext,
+      isReplyToBot: Boolean(isReplyToBot),
       messageKey,
       styleHint,
       recentHistoryCount: normalizedHistory?.length ?? 0,
@@ -423,12 +533,21 @@ export async function runMessagePipeline(runtime, payload = {}) {
       documentContext,
       reminderContext,
       mediaContext,
+      selfImageDetected: selfImageDetection.isLikelySelf,
       closeDecision: effectiveCloseDecision,
       brainBlocks: brainTurn?.blocks ?? null,
       brainSnapshot: brainTurn?.snapshot ?? null,
       timingPlan: brainTurn?.timingPlan ?? null,
       brainOrchestratorEnabled: Boolean(runtime.brainOrchestrator?.enabled),
       isGroup,
+      groupEngagementActive: Boolean(groupEngagementActive),
+      groupAddressKind: groupAddressKind || null,
+      speakerName: pushName || null,
+      participantId: participantId || null,
+      segmentSpeakers: Array.isArray(segmentSpeakers) ? segmentSpeakers : null,
+      segmentMultiSpeaker: Boolean(segmentMultiSpeaker),
+      isOwner,
+      musicLoreBlock,
       ...searchMeta,
       ...operationMeta
     },
@@ -477,7 +596,31 @@ export async function runMessagePipeline(runtime, payload = {}) {
     }
   }
 
-  touchUserActivity(runtime, safeUserId ?? "default");
+  touchUserActivity(runtime, safeUserId ?? "default", {
+    markMessage: true,
+    sessionId: safeSessionId
+  });
+
+  if (!isGroup && safeUserId) {
+    runtime.longTerm.updateProfile(
+      safeUserId,
+      { facts: { lastDmSessionId: safeSessionId } },
+      channelScope
+    );
+    if (
+      replies.length === 0 &&
+      (effectiveCloseDecision === "silent" || effectiveCloseDecision === "react")
+    ) {
+      runtime.initiationEngine?.scheduleFromTurn?.({
+        userId: safeUserId,
+        sessionId: safeSessionId,
+        mode: effectiveCloseDecision === "react" ? "natural_lull" : "post_close",
+        closeDecision: effectiveCloseDecision,
+        history: normalizedHistory,
+        brainTurn
+      });
+    }
+  }
 
   if (replies.length > 0 && resumedAfterClose) {
     runtime.longTerm.updateProfile(safeUserId ?? "default", { conversationClosedAt: null }, channelScope);
@@ -497,7 +640,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     }
 
     const style = extractStyle(input);
-    const profile = existingProfile;
+    const profile = profileWithLearned;
     const counts = profile.counts ?? {};
     const nextCounts = {
       abbrev: (counts.abbrev ?? 0) + (style.usesAbbrev ? 1 : 0),
@@ -506,6 +649,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
     const total = Math.max(1, (counts.total ?? 0) + 1);
     const nextStyle = {
+      ...learnedStyle,
       prefersAbbrev: nextCounts.abbrev / total > 0.4,
       prefersLaughter: nextCounts.laughter / total > 0.4,
       prefersEmoji: nextCounts.emoji / total > 0.3,
@@ -514,7 +658,12 @@ export async function runMessagePipeline(runtime, payload = {}) {
 
     runtime.longTerm.updateProfile(safeUserId ?? "default", {
       facts: {
-        ...(facts.find((f) => f.type === "user_name") ? { name: facts.find((f) => f.type === "user_name").value } : {}),
+        ...(facts.find((f) => f.type === "user_name")
+          ? {
+              name: facts.find((f) => f.type === "user_name").value,
+              preferredName: facts.find((f) => f.type === "user_name").value
+            }
+          : {}),
         ...(facts.find((f) => f.type === "user_pronouns") ? { pronouns: facts.find((f) => f.type === "user_pronouns").value } : {}),
         lastChannel: isGroup ? "group" : "direct"
       },
@@ -584,6 +733,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     input,
     tone,
     policy,
-    timingPlan
+    timingPlan,
+    groupRoster
   };
 }

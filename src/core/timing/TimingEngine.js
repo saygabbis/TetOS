@@ -81,7 +81,11 @@ export class TimingEngine {
   }
 
   stageDistanceAnalyzer(plan, ctx, reasons) {
-    const lastAt = ctx.lastMessageAt ? Date.parse(ctx.lastMessageAt) : null;
+    const lastAt = ctx.lastUserMessageAt
+      ? Date.parse(ctx.lastUserMessageAt)
+      : ctx.lastMessageAt
+        ? Date.parse(ctx.lastMessageAt)
+        : null;
     const gapMs = lastAt ? Date.now() - lastAt : null;
     if (gapMs === null) {
       plan.distanceContext = "primeira interação";
@@ -195,22 +199,78 @@ export class TimingEngine {
 
   stageInitiationScorer(plan, ctx, reasons) {
     const trust = ctx.trustBond ?? {};
-    const gapH = ctx.lastMessageAt
-      ? (Date.now() - Date.parse(ctx.lastMessageAt)) / (60 * 60 * 1000)
-      : 48;
-    const seed = contextualSeed([gapH, trust.intimacy, ctx.emotion?.mood]);
+    const gapMs =
+      ctx.gapSinceUserMs ??
+      (ctx.lastUserMessageAt
+        ? Date.now() - Date.parse(ctx.lastUserMessageAt)
+        : ctx.lastMessageAt
+          ? Date.now() - Date.parse(ctx.lastMessageAt)
+          : null);
+    const gapH = gapMs !== null ? gapMs / (60 * 60 * 1000) : 48;
+    const gapMin = gapMs !== null ? gapMs / 60_000 : 999;
+    const seed = contextualSeed([gapH, trust.intimacy, ctx.emotion?.mood, ctx.queuedMode]);
     const social = (ctx.emotion?.social ?? 0.5) + (trust.intimacy ?? 0) * 0.3;
     const subconscious = ctx.subconscious?.includes?.("pendência") ?? false;
+    const energy = ctx.emotion?.energy ?? 0.5;
+    const playful = ctx.emotion?.playfulness ?? ctx.emotion?.mood === "playful" ? 0.7 : 0.4;
+    const trailingBot = ctx.trailingBotTurns ?? ctx.ghosting?.trailingBot ?? 0;
+    const topicClosed = ctx.topicClosed ?? ctx.ghosting?.topicClosed ?? false;
 
-    if (gapH > 6 && social > 0.55 && chance(seed, 0.12 + social * 0.1)) {
-      plan.shouldInitiateConversation = true;
-      plan.initiateReason = subconscious ? "subconscious_pending" : "social_gap";
-      reasons.push("initiate_conversation");
+    if (trailingBot >= 1 && gapMin < 90) {
+      reasons.push("awaiting_user_after_bot");
+      return;
     }
+    if (topicClosed && gapH < 2) {
+      reasons.push("topic_closed_hold");
+      return;
+    }
+
     if (trust.vulnerableReachOut) {
       plan.shouldInitiateConversation = true;
       plan.initiateReason = "vulnerable_reach_out";
       reasons.push("late_night_bond");
+    }
+
+    if (ctx.queuedMode) {
+      plan.shouldInitiateConversation = true;
+      plan.initiateReason = ctx.queuedMode;
+      reasons.push("queued_initiative");
+      return;
+    }
+
+    if (ctx.closeDecision === "silent" || ctx.closeDecision === "react") {
+      if (gapMin > 90 && chance(seed, 0.08 + social * 0.12 + playful * 0.05)) {
+        plan.shouldInitiateConversation = true;
+        plan.initiateReason = "post_close_pull";
+        reasons.push("post_close_initiative");
+      }
+      return;
+    }
+
+    if (ctx.initiationEval && gapMin >= 50 && gapMin < 180 && trailingBot === 0 && social > 0.55 && energy > 0.4) {
+      if (chance(seed, 0.03 + social * 0.04)) {
+        plan.shouldInitiateConversation = true;
+        plan.initiateReason = "mid_lull_spark";
+        reasons.push("mid_conversation_spark");
+      }
+    }
+
+    if (gapH > 1.2 && gapH < 8 && trailingBot === 0 && social > 0.55 && chance(seed, 0.04 + social * 0.06)) {
+      plan.shouldInitiateConversation = true;
+      plan.initiateReason = subconscious ? "subconscious_thread" : "short_absence_pull";
+      reasons.push("flexible_reconnect");
+    }
+
+    if (gapH >= 8 && social > 0.5 && chance(seed, 0.06 + social * 0.08)) {
+      plan.shouldInitiateConversation = true;
+      plan.initiateReason = subconscious ? "subconscious_pending" : "social_gap";
+      reasons.push("initiate_conversation");
+    }
+
+    if ((trust.initiateBoost ?? 0) > 0.45 && gapMin > 120 && chance(seed, 0.08 + trust.initiateBoost * 0.12)) {
+      plan.shouldInitiateConversation = true;
+      plan.initiateReason = "bond_pull";
+      reasons.push("trust_initiative");
     }
   }
 

@@ -1,4 +1,11 @@
 import { isMessyLaughterMessage } from "../../core/memory/extractor.js";
+import {
+  collapseForShortUserPrompt,
+  isIncompleteBubble,
+  normalizeInformalEnding,
+  repairBubbleCoherence
+} from "./coherenceGuards.js";
+import { planBubbleRhythm } from "./bubbleComposer.js";
 
 const ROLEPLAY_MARKERS = /\*[^*]{1,20}\*/g;
 const IDENTITY_LOOPS = /\b(eu sou (a )?kasane teto|eu sou a própria kasane teto|sou kasane teto)\b/gi;
@@ -28,6 +35,32 @@ function normalizeLaughter(text) {
   return text.replace(/k{45,}/gi, (m) => `${m.slice(0, 32)}`);
 }
 
+function preferredKkSample(styleHint = {}) {
+  const run = Number(styleHint?.userKkMaxRun ?? styleHint?.learned?.avgKkRun ?? 0);
+  if (run >= 12) return "kkkkkkk";
+  if (run >= 8) return "kkkkkk";
+  if (run >= 5) return "kkkkk";
+  return "kkk";
+}
+
+/** Risada brasileira no teclado > emoji de riso quando o usuário também usa kkk. */
+function swapEmojiLaughterForKkk(text, styleHint = {}) {
+  const preferKk =
+    styleHint?.preferredLaughter === "kk" ||
+    styleHint?.prefersLaughter ||
+    styleHint?.userLaughterEnergy === "high" ||
+    styleHint?.userLaughterEnergy === "medium" ||
+    Number(styleHint?.userKkMaxRun ?? 0) >= 3;
+  if (!preferKk || !/[\u{1F602}\u{1F923}\u{1F605}\u{1F60A}]/u.test(String(text ?? ""))) {
+    return text;
+  }
+  const sample = preferredKkSample(styleHint);
+  return String(text)
+    .replace(/[😂🤣😹😆😅]+/gu, ` ${sample}`)
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 /**
  * Modelo às vezes solta ' (apóstrofo ASCII) no lugar de ? ou cola ', entre palavras.
  */
@@ -39,8 +72,25 @@ function fixStrayApostropheArtifacts(text) {
     .replace(/\b(onde|cadê|qual|como|quando|que|pq)\s*'(?=\s|[.!?]|$)/gi, "$1?");
 }
 
+/** Travessão/en-dash no zap soa IA — troca por pontuação de conversa. */
+function stripAiDashes(text = "") {
+  let t = String(text ?? "");
+  t = t.replace(/\s+[—–]\s+/g, ", ");
+  t = t.replace(/\s+[—–]/g, ", ");
+  t = t.replace(/[—–]\s+/g, ", ");
+  t = t.replace(/([^\s—–])[—–]([^\s—–])/g, "$1, $2");
+  t = t.replace(/^[—–]+/gm, "");
+  t = t.replace(/,\s*,+/g, ", ");
+  t = t.replace(/\s+,/g, ",");
+  return t.trim();
+}
+
 function repairPunctuation(text) {
   return String(text)
+    .replace(
+      /\b(de boa|boa|bem)\s+(E)\s+(você|voce)(?=\s|[,.!?…]|$)/gi,
+      "$1. $2 $3"
+    )
     // split sentences when a new sentence starts mid-line (skip proper nouns mid-sentence)
     .replace(/([a-záéíóúàâêôãõç])\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúàâêôãõç]+)/g, (m, before, word) => {
       if (PROPER_NOUNS.has(word.toLowerCase())) return m;
@@ -110,7 +160,14 @@ function stripForeignScripts(text) {
 
 function stripEnglishIntrusions(text) {
   return String(text)
-    .replace(/\b[a-z]{3,}\*(?=\s|$)/gi, "")
+    .replace(/\b([a-z]{3,})\*(?=\s|$)/gi, (match, word) => {
+      const w = String(word).toLowerCase();
+      if (ENGLISH_TOKENS.test(w)) return "";
+      if (/^(the|and|you|your|dont|cant|wont|please|thanks|sorry|cool|nice|yeah|yep|nope|lol|working|work|well|okay|okays)$/i.test(w)) {
+        return "";
+      }
+      return match;
+    })
     .replace(ENGLISH_FILLERS, "")
     .replace(ENGLISH_TOKENS, "")
     .replace(/\b(so|pleasant\w*|sorry|cool|nice|lol|thank\w*)\b/gi, "")
@@ -174,24 +231,30 @@ function sanitize(text, meta = {}) {
 
   return fixStrayApostropheArtifacts(
     repairPunctuation(
+      stripAiDashes(
       normalizeLaughter(
         fixGenderedPossessives(cleaned, pronounMode)
           .replace(/\brs\b/gi, "")
           .replace(/[ \t]{2,}/g, " ")
           .trim()
-      )
+      ))
     )
   );
+}
+
+function isBubbleSeparatorOnly(text) {
+  return /^-{2,}$/.test(String(text ?? "").trim());
 }
 
 /** Contrato do agent: linha só com --- separa bolhas explícitas. */
 function splitExplicitBubbles(text) {
   const s = String(text ?? "").replace(/\r\n/g, "\n").trim();
   if (!s) return [];
-  const byLine = s.split(/\n\s*---\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const byLine = s.split(/\n\s*---\s*\n/).map((p) => p.trim()).filter((p) => p && !isBubbleSeparatorOnly(p));
   if (byLine.length > 1) return byLine;
-  const inline = s.split(/\s+---\s+/).map((p) => p.trim()).filter(Boolean);
+  const inline = s.split(/\s+---\s+/).map((p) => p.trim()).filter((p) => p && !isBubbleSeparatorOnly(p));
   if (inline.length > 1) return inline;
+  if (isBubbleSeparatorOnly(s)) return [];
   return [s];
 }
 
@@ -207,6 +270,42 @@ function splitMultiBubbleIntent(text) {
   const explicit = splitExplicitBubbles(text);
   if (explicit.length > 1) return explicit;
   return splitNewlineBubbles(text);
+}
+
+/** Linha única estilo zap: quebra só em conectores claros (evita fatiar palavras comuns). */
+function splitCapitalThoughtBoundaries(text) {
+  const s = String(text ?? "").trim();
+  if (!s || s.length < 12) return [s];
+  if (/\n/.test(s) || /\s---\s/.test(s)) return [s];
+
+  const connectors = [
+    /(?<=[a-záéíóúàâêôãõç])\s+(?=E\s+(?:você|voce)\b)/iu,
+    /(?<=[a-záéíóúàâêôãõç])\s+(?=Mas\s+)/iu,
+    /(?<=[a-záéíóúàâêôãõç])\s+(?=Só\s+)/iu,
+    /(?<=[a-záéíóúàâêôãõç])\s+(?=(?:Aff|Oxi|Ué|Mds|Nossa|Poxa)\s+)/iu
+  ];
+
+  let pieces = [s];
+  for (const re of connectors) {
+    const next = [];
+    for (const chunk of pieces) {
+      const parts = chunk.split(re).map((p) => p.trim()).filter(Boolean);
+      next.push(...(parts.length > 1 ? parts : [chunk]));
+    }
+    pieces = next;
+  }
+
+  return pieces.length >= 2 ? pieces : [s];
+}
+
+function isVocativeNameBubble(text) {
+  const t = String(text ?? "")
+    .trim()
+    .replace(/[.!?…*]+$/, "");
+  const words = t.split(/\s+/).filter(Boolean);
+  if (words.length !== 1) return false;
+  if (words[0].length < 3 || words[0].length > 18) return false;
+  return /^[A-ZÁÉÍÓÚÂÊÔÃÕÇ]/.test(words[0]);
 }
 
 function splitSentences(text) {
@@ -230,8 +329,13 @@ function splitSentences(text) {
 }
 
 function splitByComma(sentence) {
-  const parts = sentence.split(/,\s+/).map((part) => part.trim());
-  return parts.filter((part) => part.length > 2);
+  const raw = String(sentence ?? "").trim();
+  if (!raw) return [];
+  const hadTrailingComma = /,\s*$/.test(raw);
+  const core = hadTrailingComma ? raw.replace(/,\s*$/, "") : raw;
+  const parts = core.split(/,\s+/).map((part) => part.trim()).filter((part) => part.length > 2);
+  if (parts.length <= 1) return [raw];
+  return parts;
 }
 
 /**
@@ -414,7 +518,8 @@ function mergeTinyFragments(parts) {
       cleaned.length < 10 &&
       cleaned.split(/\s+/).length <= 2 &&
       !isInterjectionBubble(cleaned) &&
-      !isCorrectionBubble(cleaned)
+      !isCorrectionBubble(cleaned) &&
+      !isVocativeNameBubble(cleaned)
     ) {
       merged[merged.length - 1] = `${merged[merged.length - 1]} ${cleaned}`.trim();
       continue;
@@ -427,6 +532,28 @@ function mergeTinyFragments(parts) {
 function isSensitiveMessage(text) {
   const t = String(text ?? "").toLowerCase();
   return /\b(ansiedade|depress|luto|morte|suic|trauma|abuso|doen[çc]a|hospital|urgente|socorro)\b/.test(t);
+}
+
+function stripUserEchoParts(parts, userMessage = "") {
+  const u = String(userMessage ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+  if (!u) return parts;
+  const uWords = u.split(/\s+/).filter((w) => w.length > 2);
+  if (uWords.length < 2) return parts;
+
+  return (Array.isArray(parts) ? parts : []).filter((part) => {
+    const p = String(part ?? "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    const chunk = uWords.slice(0, Math.min(5, uWords.length)).join(" ");
+    if (chunk.length >= 8 && p.includes(chunk)) return false;
+    const overlap = uWords.filter((w) => p.includes(w));
+    return overlap.length < Math.max(3, Math.ceil(uWords.length * 0.55));
+  });
 }
 
 function dropMetaQuestions(text) {
@@ -471,14 +598,8 @@ function enforceTerminalPunctuation(text) {
   if (/[*]$/.test(t)) return t;
   if (/[.!?…]$/.test(t)) return t;
   if (isInterjectionBubble(t)) return t;
-  if (t.length < 12) return t;
-  if (/[\u203C-\u3299\uFE0F\u200D]|[\u{1F300}-\u{1FAFF}]|[\u2600-\u27BF]/u.test(t) && /[\u203C-\u3299\uFE0F\u200D]|[\u{1F300}-\u{1FAFF}]|[\u2600-\u27BF]$/u.test(t)) {
-    return t;
-  }
-  if (isLikelyQuestion(t)) return `${t}?`;
-  if (t.length < 18) return t;
-  if (Math.random() > 0.1) return t;
-  return `${t}.`;
+  if (isLikelyQuestion(t) && !/\?$/.test(t)) return `${t}?`;
+  return t;
 }
 
 function capitalize(text) {
@@ -575,6 +696,7 @@ export class ResponseProcessor {
     this.maxImperfectionsPerWindow = 5;
     this.imperfectionWindowMs = 10 * 60 * 1000;
     this.imperfectionCooldown = 0;
+    this.lastBubblePlan = null;
   }
 
   buildNaturalParts(sentences) {
@@ -739,16 +861,17 @@ export class ResponseProcessor {
     const cleaned = sanitize(rawText, { userPronouns });
     let sentences = splitSentences(cleaned);
 
+    const expandSingleLine = (line) => {
+      const byCapital = splitCapitalThoughtBoundaries(line);
+      if (byCapital.length > 1) return byCapital;
+      const split = splitByComma(line);
+      if (split.length > 1) return split;
+      const expanded = splitLongChatLine(line);
+      return expanded.length > 1 ? expanded : [line];
+    };
+
     if (sentences.length === 1) {
-      const split = splitByComma(sentences[0]);
-      if (split.length > 1) {
-        sentences = split;
-      } else {
-        const expanded = splitLongChatLine(sentences[0]);
-        if (expanded.length > 1) {
-          sentences = expanded;
-        }
-      }
+      sentences = expandSingleLine(sentences[0]);
     }
 
     const parts = this.buildNaturalParts(sentences);
@@ -761,7 +884,7 @@ export class ResponseProcessor {
         : this.buildHumanParts(parts, { userMessage });
     let finalParts = mergeShortParts(humanParts.length ? humanParts : parts)
       .map(capitalize)
-      .filter((part) => part.length > 1);
+      .filter((part) => part.length > 1 && !isBubbleSeparatorOnly(part));
 
     // Laughter control (dynamic): allow rarely, avoid back-to-back, never in calm.
     const combinedBefore = finalParts.join(" ");
@@ -770,9 +893,15 @@ export class ResponseProcessor {
       /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(
         String(userMessage)
       ) || isMessyLaughterMessage(userMessage);
+    const userLikesLaughter =
+      userUsesLaughter ||
+      styleHint?.prefersLaughter ||
+      styleHint?.preferredLaughter === "kk" ||
+      styleHint?.userLaughterEnergy === "high" ||
+      styleHint?.userLaughterEnergy === "medium";
     const shouldSuppressLaughter =
       tone === "calm" ||
-      (this.laughterCooldown > 0 && !userUsesLaughter && tone !== "playful");
+      (this.laughterCooldown > 0 && !userLikesLaughter && tone !== "playful");
     if (hasAnyLaughter && shouldSuppressLaughter) {
       finalParts = finalParts.map(stripStandaloneLaughter).filter(Boolean);
     }
@@ -787,15 +916,17 @@ export class ResponseProcessor {
     // Cooldown: avoid laughter in consecutive assistant outputs.
     const combined = finalParts.join(" ");
     const hasKk = /\bkk+\b/i.test(combined);
-    if (this.lastHadLaughter && hasKk) {
+    if (this.lastHadLaughter && hasKk && !userLikesLaughter) {
       finalParts = finalParts.map(stripStandaloneLaughter).filter(Boolean);
     }
     this.lastHadLaughter = /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(finalParts.join(" "));
 
     finalParts = finalParts
+      .map((part) => swapEmojiLaughterForKkk(part, styleHint))
       .map(dropMetaQuestions)
       .map((part) => softenOveractedStart(part))
       .map((part) => removeBreadDerail(part, userMessage))
+      .map(normalizeInformalEnding)
       .filter(Boolean);
     // Keep intensity mirroring very subtle to avoid caricature.
     finalParts = finalParts.map((part) => applyGreetingIntensity(part, userMessage, styleHint));
@@ -805,6 +936,10 @@ export class ResponseProcessor {
     finalParts = dropTrailingFiller(finalParts)
       .map(enforceTerminalPunctuation)
       .map((part) => String(part).replace(/\s{2,}/g, " ").trim());
+    finalParts = stripUserEchoParts(finalParts, userMessage);
+    finalParts = repairBubbleCoherence(finalParts);
+    finalParts = finalParts.filter((part) => !isIncompleteBubble(part));
+    finalParts = collapseForShortUserPrompt(finalParts, userMessage);
     finalParts = filterInvalidCorrectionBubbles(finalParts);
     if (this.canInjectImperfection({ tone, userMessage }) && Math.random() < 0.05) {
       finalParts = injectDynamicTypo(finalParts);
@@ -818,10 +953,28 @@ export class ResponseProcessor {
   /** Unifica process + anti-repetição + remember para regen. */
   processAndGuard(rawText, context = {}) {
     const parts = this.process(rawText, context);
-    const safeParts = parts
+    let safeParts = parts
       .map((part) => this.ensureNonRepetitive(part))
       .map((part) => String(part).replace(/\s{2,}/g, " ").trim())
       .filter(Boolean);
+
+    const skipBrainRhythm =
+      context.coherenceFix === true ||
+      (!context.brainSnapshot && !context.brainBlocks);
+    if (!skipBrainRhythm && safeParts.length) {
+      const plan = planBubbleRhythm(safeParts, {
+        brainSnapshot: context.brainSnapshot,
+        brainBlocks: context.brainBlocks,
+        timingPlan: context.timingPlan,
+        tone: context.tone,
+        emotion: context.brainSnapshot?.emotion
+      });
+      this.lastBubblePlan = plan;
+      safeParts = plan.bubbles;
+    } else {
+      this.lastBubblePlan = { bubbles: safeParts, delays: [], mode: "moderate" };
+    }
+
     const combined = safeParts.join(" ").trim();
     const safeCombined = this.ensureNonRepetitive(combined);
     this.remember(safeCombined);

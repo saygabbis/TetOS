@@ -50,6 +50,7 @@ export class GroupMemoryStore {
       id: entry.id ?? `gm_${Date.now()}`,
       channelId: String(entry.channelId ?? "group:unknown"),
       userId: entry.userId ?? null,
+      speakerName: entry.speakerName ?? null,
       text: String(entry.text ?? "").slice(0, 500),
       ts: entry.ts ?? new Date().toISOString(),
       tags: entry.tags ?? [],

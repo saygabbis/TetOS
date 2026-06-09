@@ -5,7 +5,31 @@
     "image": 1,
     "video": 0,
     "audio": 0,
-    "sticker": 2
+    "sticker": 5
   },
-  "clusters": []
+  "clusters": [],
+  "scopes": {
+    "user:default": {
+      "stickers": {},
+      "reactions": {},
+      "mediaTypes": {
+        "image": 0,
+        "video": 0,
+        "audio": 0,
+        "sticker": 0
+      },
+      "clusters": []
+    },
+    "user:5516988137617": {
+      "stickers": {},
+      "reactions": {},
+      "mediaTypes": {
+        "image": 0,
+        "video": 0,
+        "audio": 0,
+        "sticker": 1
+      },
+      "clusters": []
+    }
+  }
 }

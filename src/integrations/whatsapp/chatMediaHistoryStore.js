@@ -1,25 +1,32 @@
+function scopeKey(chatId, userId) {
+  const chat = String(chatId ?? "unknown");
+  const user = String(userId ?? "").trim();
+  return user ? `${chat}::${user}` : chat;
+}
+
 export class ChatMediaHistoryStore {
   constructor(limit = 30) {
     this.limit = Math.max(5, Number(limit) || 30);
-    this.itemsByChat = new Map();
+    this.itemsByScope = new Map();
   }
 
-  add(chatId, item) {
-    const key = String(chatId ?? "unknown");
-    const list = this.itemsByChat.get(key) ?? [];
+  add(chatId, item, userId = null) {
+    const key = scopeKey(chatId, userId ?? item?.userId);
+    const list = this.itemsByScope.get(key) ?? [];
     list.push({
       ...item,
+      userId: userId ?? item?.userId ?? null,
       ts: item?.ts ?? new Date().toISOString()
     });
     if (list.length > this.limit) {
       list.splice(0, list.length - this.limit);
     }
-    this.itemsByChat.set(key, list);
+    this.itemsByScope.set(key, list);
   }
 
-  latest(chatId) {
-    const key = String(chatId ?? "unknown");
-    const list = this.itemsByChat.get(key) ?? [];
+  latest(chatId, userId = null) {
+    const key = scopeKey(chatId, userId);
+    const list = this.itemsByScope.get(key) ?? [];
     return list.length ? list[list.length - 1] : null;
   }
 }

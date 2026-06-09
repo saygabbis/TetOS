@@ -1,7 +1,8 @@
 /** Constantes de timing — lidas do runtime.defaults (.env). */
 export function resolveTimingConfig(defaults = {}) {
   return {
-    batchWindowMs: Number(defaults.batchWindowMs ?? 650),
+    batchWindowMs: Number(defaults.batchWindowMs ?? 1200),
+    groupBatchWindowMs: Number(defaults.groupBatchWindowMs ?? 2200),
     typingGraceMs: Number(defaults.typingGraceMs ?? 2400),
     typingMinDelayMs: Number(defaults.typingMinDelayMs ?? 140),
     typingMaxDelayMs: Number(defaults.typingMaxDelayMs ?? 2400),

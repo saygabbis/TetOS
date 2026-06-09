@@ -34,9 +34,9 @@ export class MemoryOrchestrator {
     };
 
     if (this.shortTerm?.getAll) {
-      retrieved.working = this.shortTerm.getAll(sessionId).slice(-8);
+      retrieved.working = this.shortTerm.getAll(sessionId).slice(-16);
     } else if (this.shortTerm?.all) {
-      retrieved.working = this.shortTerm.all().slice(-8);
+      retrieved.working = this.shortTerm.all().slice(-16);
     }
 
     if (this.episodicMemory) {
@@ -78,12 +78,12 @@ export class MemoryOrchestrator {
       }
     }
 
-    if (this.multimodalMemory?.latestByUser) {
-      retrieved.multimodal = this.multimodalMemory.latestByUser(userId, 3) ?? [];
+    if (this.multimodalMemory?.list) {
+      retrieved.multimodal = this.multimodalMemory.list(userId, channelId, 3) ?? [];
     }
 
-    if (this.visualAnalyses?.latestByUser) {
-      const visual = this.visualAnalyses.latestByUser(userId, 4) ?? [];
+    if (this.visualAnalyses?.latestByScope) {
+      const visual = this.visualAnalyses.latestByScope(userId, channelId, 4) ?? [];
       retrieved.multimodal = [...retrieved.multimodal, ...visual.map((v) => ({
         type: "visual_analysis",
         summary: v.summary ?? v.description ?? v.tags?.join(", "),
@@ -114,7 +114,16 @@ export class MemoryOrchestrator {
       blocks.push(`[MARCANTES]\n${salient.map((e) => `- ${e.content ?? e.summary}`).join("\n")}`);
     }
     if (retrieved.group?.length) {
-      blocks.push(`[GRUPO — CONTEXTO]\n${retrieved.group.slice(0, 5).map((e) => `- ${e.text}`).join("\n")}`);
+      blocks.push(
+        `[GRUPO — CONTEXTO RECENTE]\n${retrieved.group
+          .slice(0, 12)
+          .map((e) => {
+            const who = e.speakerName || e.userId || "?";
+            const mark = e.addressedToTeto ? "" : " (não era pra você)";
+            return `- ${who}${mark}: ${e.text}`;
+          })
+          .join("\n")}`
+      );
     }
     if (retrieved.reactivated?.length) {
       blocks.push(`[REATIVADO]\n${retrieved.reactivated.map((e) => `- ${e.text ?? e.summary}`).join("\n")}`);

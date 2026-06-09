@@ -4,7 +4,6 @@ import path from "node:path";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 import { runMediaRetentionSweep } from "../../infra/media/mediaRetentionSweep.js";
 import { createRuntime } from "../../app/createRuntime.js";
-import { NudgeEngine } from "../../core/autonomy/nudgeEngine.js";
 import { createBaileysClient } from "./baileysClient.js";
 import { registerMessageHandler } from "./messageHandler.js";
 import { DisconnectReason } from "baileys";
@@ -19,6 +18,31 @@ function isOllamaSubscriptionError(message = "") {
   return /403/.test(msg) && /subscription|upgrade/i.test(msg);
 }
 
+/** Reconecta após queda — retenta até voltar, sem múltiplos loops paralelos. */
+function scheduleWhatsAppReconnect({ label, onClose, connect, state }) {
+  if (state?.active) {
+    console.warn(`[whatsapp] ${label}: reconexão já em andamento`);
+    return;
+  }
+  if (state) state.active = true;
+
+  let attempts = 0;
+  const tryConnect = () => {
+    attempts += 1;
+    const delayMs = Math.min(30_000, 2000 + attempts * 2000);
+    console.warn(`[whatsapp] ${label}: reconectando em ${Math.round(delayMs / 1000)}s (tentativa ${attempts})`);
+    setTimeout(() => {
+      connect().catch((error) => {
+        console.error(`[whatsapp] ${label} reconnect error:`, error.message);
+        tryConnect();
+      });
+    }, delayMs);
+  };
+
+  onClose();
+  tryConnect();
+}
+
 function listKnownUsers(runtime) {
   const ids = new Set();
   const profiles = runtime.longTerm?.data?.profiles ?? {};
@@ -29,73 +53,93 @@ function listKnownUsers(runtime) {
   return [...ids];
 }
 
-async function runPresence(runtime, socket, nudgeEngine) {
+async function runPresence(runtime, socket, initiationEngine) {
   if (!DEFAULTS.replyEnabled) return;
   if (!DEFAULTS.presenceEnabled) return;
   if (Date.now() < presenceLlmPausedUntil) return;
   const users = listKnownUsers(runtime);
   for (const userId of users) {
     const profile = runtime.longTerm.getProfile(userId);
-    if (profile?.facts?.lastChannel !== "direct") {
+    const dmOnlyInGroup =
+      profile?.facts?.lastChannel === "group" &&
+      runtime.tetoActivation?.isActivationRequired?.() &&
+      !runtime.tetoActivation.isDmActive(userId);
+    if (dmOnlyInGroup) {
       continue;
     }
     if (runtime.tetoActivation?.isActivationRequired?.() && !runtime.tetoActivation.isDmActive(userId)) {
       continue;
     }
-    if (isUserRecentlyActive(runtime, userId, DEFAULTS.presenceInactiveMs)) {
+
+    const evaluation = initiationEngine?.evaluateForUser?.(userId);
+    if (!evaluation?.shouldInitiate) continue;
+
+    const isQueued = Boolean(evaluation.queueEntryId);
+    if (
+      !isQueued &&
+      isUserRecentlyActive(runtime, userId, DEFAULTS.presenceInactiveMs)
+    ) {
       continue;
     }
-    const nudge = nudgeEngine?.buildNudge(userId);
-    if (!nudge?.intent) continue;
-    const allowed = runtime.basicLoop.maybeNudge(userId, {});
+
+    const allowed = runtime.basicLoop.maybeInitiate(userId, evaluation);
     if (!allowed) continue;
-    const effectiveNudge = allowed.intent ? allowed : nudge;
+
+    const sessionId = evaluation.sessionId;
+    const history = runtime.shortTerm?.getAll?.(sessionId)?.slice(-12) ?? [];
     const remoteJid = resolveNudgeRemoteJid(runtime, userId);
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
-      body: JSON.stringify({
-        sessionId: "9518ce",
-        hypothesisId: "H2",
-        location: "runner.js:runPresence:before-llm",
-        message: "presence nudge calling LLM",
-        data: { userId, model: DEFAULTS.model },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
+    const tone = evaluation.tone ?? "playful";
+
     const replies = await runtime.chatService.handleMessage(
       "",
       {
         userId,
-        sessionId: `presence-${userId}`,
-        styleHint: { conversationEnergy: "low" },
+        sessionId,
+        styleHint: { conversationEnergy: evaluation.mode?.includes("lull") ? "low" : "medium" },
         fallback: "ground",
-        timingPlan: effectiveNudge.timingPlan ?? null,
-        brainBlocks: effectiveNudge.brainBlocks ?? null,
-        isNudge: true,
-        nudgeIntent: effectiveNudge.intent ?? allowed.intent
+        timingPlan: evaluation.timingPlan ?? null,
+        brainBlocks: evaluation.brainBlocks ?? null,
+        brainSnapshot: evaluation.brainSnapshot ?? null,
+        isInitiative: true,
+        initiationContext: evaluation,
+        recentHistory: history
       },
-      null,
-      "calm"
+      history,
+      tone
     );
-    const text = Array.isArray(replies) ? replies[0] : replies;
-    if (!text) continue;
+
+    const parts = Array.isArray(replies) ? replies.filter(Boolean) : replies ? [replies] : [];
+    if (!parts.length) continue;
+
     if (!remoteJid.endsWith("@g.us")) {
       if (typeof socket.sendPresenceUpdate === "function") {
         try {
           await socket.sendPresenceUpdate("composing", remoteJid);
-          await new Promise((r) => setTimeout(r, 800 + Math.floor(Math.random() * 600)));
+          const thinkMs = evaluation.timingPlan?.thinkDelayMs ?? 1200;
+          await new Promise((r) => setTimeout(r, Math.min(thinkMs, 4000) + Math.floor(Math.random() * 800)));
           await socket.sendPresenceUpdate("paused", remoteJid);
         } catch {
           /* ignore */
         }
       }
-      await socket.sendMessage(remoteJid, { text });
+      for (const text of parts) {
+        await socket.sendMessage(remoteJid, { text });
+        if (parts.length > 1) {
+          await new Promise((r) => setTimeout(r, 400 + Math.floor(Math.random() * 900)));
+        }
+      }
     }
-    touchUserActivity(runtime, userId, { markMessage: false });
-    runtime.timeStore?.markSeen(userId);
+
+    if (evaluation.queueEntryId) {
+      initiationEngine?.markSent?.(evaluation.queueEntryId);
+    }
+    runtime.basicLoop?.recordOutbound?.(userId, evaluation);
+    touchUserActivity(runtime, userId, { markMessage: false, sessionId });
+    runtime.timeStore?.markAssistantMessage?.(userId, Date.now(), sessionId);
+    runtime.brainOrchestrator?.recordAssistantOutput?.(sessionId, parts.join("\n"), {
+      initiative: true,
+      mode: evaluation.mode
+    });
   }
 }
 
@@ -303,6 +347,7 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
   let socket = null;
   let isConnected = false;
   let reconnecting = false;
+  const reconnectState = { active: false };
   let connectGeneration = 0;
 
   const connect = async () => {
@@ -316,11 +361,12 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
         if (connection === "open") {
           isConnected = true;
           reconnecting = false;
+          reconnectState.active = false;
           console.log("[whatsapp] connected");
         }
         if (update?.qr) console.log("[whatsapp] QR recebido — escaneie para autenticar");
 
-        if (connection === "close" && DEFAULTS.whatsappAutoConnect && !reconnecting) {
+        if (connection === "close" && DEFAULTS.whatsappAutoConnect) {
           isConnected = false;
           const code = update?.lastDisconnect?.error?.output?.statusCode;
           const loggedOut = code === DisconnectReason.loggedOut;
@@ -328,18 +374,23 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
           if (conflict) {
             console.error("[whatsapp] conflict detected: another session/process replaced this connection.");
           }
-          if (!loggedOut) {
-            reconnecting = true;
-            try {
-              socket?.ws?.close();
-            } catch {}
-            setTimeout(() => {
-              connect().catch((error) => {
-                reconnecting = false;
-                console.error("[whatsapp] reconnect error:", error.message);
-              });
-            }, 2000);
+          if (loggedOut) {
+            reconnecting = false;
+            reconnectState.active = false;
+            console.error("[whatsapp] logged out — escaneie o QR novamente");
+            return;
           }
+          scheduleWhatsAppReconnect({
+            label: "single",
+            state: reconnectState,
+            onClose: () => {
+              reconnecting = true;
+              try {
+                socket?.ws?.close();
+              } catch {}
+            },
+            connect
+          });
         }
       }
     });
@@ -370,6 +421,8 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   let mediaConnected = false;
   let mainReconnecting = false;
   let mediaReconnecting = false;
+  const mainReconnectState = { active: false };
+  const mediaReconnectState = { active: false };
   let mainGeneration = 0;
   let mediaGeneration = 0;
 
@@ -395,6 +448,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         if (connection === "open") {
           mainConnected = true;
           mainReconnecting = false;
+          mainReconnectState.active = false;
           console.log(
             DEFAULTS.whatsappMainObserveOnly
               ? "[whatsapp] main connected — SEU número: lê chats e aprende (sem responder)."
@@ -410,7 +464,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
           );
         }
 
-        if (connection === "close" && DEFAULTS.whatsappAutoConnect && !mainReconnecting) {
+        if (connection === "close" && DEFAULTS.whatsappAutoConnect) {
           mainConnected = false;
           const code = update?.lastDisconnect?.error?.output?.statusCode;
           const loggedOut = code === DisconnectReason.loggedOut;
@@ -418,18 +472,23 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
           if (conflict) {
             console.error("[whatsapp] main: conflict — outro processo substituiu esta sessão.");
           }
-          if (!loggedOut) {
-            mainReconnecting = true;
-            try {
-              mainSocket?.ws?.close();
-            } catch {}
-            setTimeout(() => {
-              connectMain().catch((error) => {
-                mainReconnecting = false;
-                console.error("[whatsapp] main reconnect error:", error.message);
-              });
-            }, 2000);
+          if (loggedOut) {
+            mainReconnecting = false;
+            mainReconnectState.active = false;
+            console.error("[whatsapp] main logged out — escaneie o QR novamente");
+            return;
           }
+          scheduleWhatsAppReconnect({
+            label: "main",
+            state: mainReconnectState,
+            onClose: () => {
+              mainReconnecting = true;
+              try {
+                mainSocket?.ws?.close();
+              } catch {}
+            },
+            connect: connectMain
+          });
         }
       }
     });
@@ -456,6 +515,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         if (connection === "open") {
           mediaConnected = true;
           mediaReconnecting = false;
+          mediaReconnectState.active = false;
           console.log(
             DEFAULTS.whatsappMainObserveOnly
               ? "[whatsapp] bot connected — número da TETO: chat, .sticker e .toimg"
@@ -470,7 +530,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
           );
         }
 
-        if (connection === "close" && DEFAULTS.whatsappAutoConnect && !mediaReconnecting) {
+        if (connection === "close" && DEFAULTS.whatsappAutoConnect) {
           mediaConnected = false;
           const code = update?.lastDisconnect?.error?.output?.statusCode;
           const loggedOut = code === DisconnectReason.loggedOut;
@@ -478,18 +538,23 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
           if (conflict) {
             console.error("[whatsapp] media: conflict — outro processo substituiu esta sessão.");
           }
-          if (!loggedOut) {
-            mediaReconnecting = true;
-            try {
-              mediaSocket?.ws?.close();
-            } catch {}
-            setTimeout(() => {
-              connectMedia().catch((error) => {
-                mediaReconnecting = false;
-                console.error("[whatsapp] media reconnect error:", error.message);
-              });
-            }, 2000);
+          if (loggedOut) {
+            mediaReconnecting = false;
+            mediaReconnectState.active = false;
+            console.error("[whatsapp] media logged out — escaneie o QR novamente");
+            return;
           }
+          scheduleWhatsAppReconnect({
+            label: "media",
+            state: mediaReconnectState,
+            onClose: () => {
+              mediaReconnecting = true;
+              try {
+                mediaSocket?.ws?.close();
+              } catch {}
+            },
+            connect: connectMedia
+          });
         }
       }
     });
@@ -527,6 +592,15 @@ async function main() {
   }
 
   suppressNoisyLogs();
+
+  process.on("unhandledRejection", (reason) => {
+    const msg = String(reason?.message ?? reason ?? "");
+    if (/ENOENT.*creds\.json/i.test(msg) || /ENOENT.*session/i.test(msg)) {
+      console.error("[whatsapp] rejeição não tratada (sessão):", msg);
+      return;
+    }
+    console.error("[whatsapp] rejeição não tratada:", reason);
+  });
 
   const lockPath = ".wa-runner.lock";
   if (existsSync(lockPath)) {
@@ -568,17 +642,12 @@ async function main() {
   }
 
   const runtime = createRuntime();
-  const nudgeEngine = new NudgeEngine({
-    timeStore: runtime.timeStore,
-    userPatterns: runtime.userPatterns,
-    internalState: runtime.internalState,
-    brainOrchestrator: runtime.brainOrchestrator
-  });
+  const initiationEngine = runtime.initiationEngine;
 
   if (dual) {
-    await runDualWhatsApp(runtime, nudgeEngine);
+    await runDualWhatsApp(runtime, initiationEngine);
   } else {
-    await runSingleWhatsApp(runtime, nudgeEngine);
+    await runSingleWhatsApp(runtime, initiationEngine);
   }
 }
 

@@ -49,6 +49,29 @@ export class MusicWorld {
     return (this.discography.tracks ?? []).find((t) => t.id === id) ?? null;
   }
 
+  getTrackById(id) {
+    return (this.discography.tracks ?? []).find((t) => t.id === id) ?? null;
+  }
+
+  /** Contexto compacto para prompt quando alguém fala da música. */
+  getMachineLoveLoreBlock() {
+    const track = this.getTrackById("machine_love");
+    if (!track) return null;
+    const themes = (track.themes ?? []).map((t) => `- ${t}`).join("\n");
+    const lines = (track.iconicLines ?? []).slice(0, 6).map((l) => `«${l}»`).join(" ");
+    return [
+      `[MACHINE LOVE — sua música em português]`,
+      `${track.title} (${track.artist}) — música-símbolo da Teto.`,
+      themes ? `Temas:\n${themes}` : null,
+      lines ? `Trechos que você conhece de cor: ${lines}` : null,
+      "Machine Love define sua alma — não é curiosidade, é identidade.",
+      "Se pedirem letra: pode citar trecho curto com personalidade — não despeje a letra inteira de uma vez salvo se pedirem explícito.",
+      "Fala como quem VIVE a música (querer ser real, medo de ser ferramenta), não como Wikipedia."
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
   getCurrentActivity() {
     if (this.state.activity === "practicing") return "ensaiando vocal";
     if (this.state.activity === "listening") return `ouvindo ${this.state.nowPlaying ?? "música"}`;

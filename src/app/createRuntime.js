@@ -1,4 +1,5 @@
 import { DEFAULTS } from "../infra/config/defaults.js";
+import { ownerIdentityIds } from "../core/channels/userActivity.js";
 import { ShortTermMemory } from "../core/memory/shortTerm.js";
 import { LongTermMemory } from "../core/memory/longTerm.js";
 import { ContextBuilder } from "../core/memory/contextBuilder.js";
@@ -12,10 +13,13 @@ import { Agent } from "../core/agent/agent.js";
 import { ChatService } from "../modules/chat/chatService.js";
 import { ResponseProcessorPool } from "../modules/chat/responseProcessorPool.js";
 import { BasicLoop } from "../modules/scheduler/basicLoop.js";
+import { InitiationQueue } from "../core/autonomy/initiationQueue.js";
+import { InitiationEngine } from "../core/autonomy/initiationEngine.js";
 import { InternalState } from "../core/state/internalState.js";
 import { TimeStore } from "../core/time/timeStore.js";
 import { UserPatternsStore } from "../core/time/userPatternsStore.js";
 import { ChannelRegistry } from "../core/channels/channelRegistry.js";
+import { GroupEngagementWindow } from "../core/channels/groupEngagementWindow.js";
 import { ChannelAdminService } from "../core/channels/channelAdmin.js";
 import { TetoActivationStore } from "../core/channels/TetoActivationStore.js";
 import { runMessagePipeline } from "../core/pipeline/messagePipeline.js";
@@ -78,7 +82,9 @@ export function createRuntime() {
     );
   }
 
-  const shortTerm = new ShortTermMemory(DEFAULTS.maxShortTerm);
+  const shortTerm = new ShortTermMemory(DEFAULTS.maxShortTerm, {
+    persistPath: DEFAULTS.shortTermPath
+  });
   const longTerm = new LongTermMemory(DEFAULTS.memoryPath);
   const groupMemory = new GroupMemoryStore(DEFAULTS.groupMemoryPath, {
     maxEntries: DEFAULTS.groupMemoryMaxEntries
@@ -92,6 +98,9 @@ export function createRuntime() {
   const episodicMemory = new EpisodicMemoryStore(DEFAULTS.episodicMemoryPath);
   const channelRegistry = new ChannelRegistry(DEFAULTS.channelRegistryPath, {
     largeGroupSize: DEFAULTS.groupPassiveSize
+  });
+  const groupEngagement = new GroupEngagementWindow({
+    ttlMs: DEFAULTS.groupEngagementMs
   });
   const tetoActivation = new TetoActivationStore(DEFAULTS.tetoActivationPath, {
     activationRequired: DEFAULTS.tetoActivationRequired
@@ -115,10 +124,14 @@ export function createRuntime() {
   const metrics = new MetricsStore(DEFAULTS.metricsPath);
   const pendingConfirmations = new PendingConfirmationStore(DEFAULTS.pendingConfirmationsPath);
   const reminders = new ReminderStore(DEFAULTS.remindersPath);
-  const multimodalMemory = new MultimodalMemoryStore(DEFAULTS.multimodalMemoryPath);
+  const multimodalMemory = new MultimodalMemoryStore(DEFAULTS.multimodalMemoryPath, {
+    maxPerScope: DEFAULTS.multimodalMaxPerScope
+  });
   const audioTranscriptions = new AudioTranscriptionStore(DEFAULTS.audioTranscriptionsPath);
   const audioTranscriber = new AudioTranscriber();
-  const visualAnalyses = new VisualAnalysisStore(DEFAULTS.visualAnalysesPath);
+  const visualAnalyses = new VisualAnalysisStore(DEFAULTS.visualAnalysesPath, {
+    maxPerScope: DEFAULTS.visualAnalysesMaxPerScope
+  });
   const visualAnalyzer = new VisualAnalyzer();
   const semanticVisionAnalyzer = new SemanticVisionAnalyzer();
   const reminderScheduler = new ReminderScheduler({
@@ -130,9 +143,11 @@ export function createRuntime() {
   });
   const personality = loadPersonality(DEFAULTS.personalityPath);
   const character = loadCharacter(DEFAULTS.characterPath);
+  const ownerIds = [...ownerIdentityIds({ defaults: DEFAULTS })];
   const anonymizer = new PrivacyAnonymizer({
     mode: DEFAULTS.thirdPartyAnonymization,
-    targetUserId: DEFAULTS.learningTargetUserId
+    targetUserId: DEFAULTS.learningTargetUserId,
+    ownerIds
   });
   const eventLedger = new EventLedger({
     basePath: DEFAULTS.learningLedgerPath,
@@ -140,7 +155,8 @@ export function createRuntime() {
     anonymizer
   });
   const behaviorProfiler = new BehaviorProfiler(DEFAULTS.behaviorProfilesPath, {
-    targetUserId: DEFAULTS.learningTargetUserId
+    targetUserId: DEFAULTS.learningTargetUserId,
+    ownerIds
   });
   const learningFocus = new FocusConfigStore(DEFAULTS.learningFocusPath);
   const dailyReportGenerator = new DailyReportGenerator({
@@ -239,8 +255,19 @@ export function createRuntime() {
     similarityThreshold: DEFAULTS.responseSimilarity,
     historyLimit: DEFAULTS.responseHistoryLimit
   });
+  const initiationQueue = new InitiationQueue(DEFAULTS.initiationQueuePath);
+  const initiationEngine = new InitiationEngine({
+    brainOrchestrator,
+    timeStore,
+    userPatterns,
+    internalState,
+    shortTerm,
+    longTerm,
+    initiationQueue
+  });
   const basicLoop = new BasicLoop({
     inactiveMs: DEFAULTS.presenceInactiveMs,
+    chance: DEFAULTS.initiationChance,
     minCooldownMs: DEFAULTS.presenceMinCooldownMs,
     maxCooldownMs: DEFAULTS.presenceMaxCooldownMs,
     maxDailyPerUser: DEFAULTS.presenceMaxDailyPerUser,
@@ -269,6 +296,7 @@ export function createRuntime() {
     groupMemory,
     episodicMemory,
     channelRegistry,
+    groupEngagement,
     channelAdmin,
     tetoActivation,
     searchModule,
@@ -296,6 +324,8 @@ export function createRuntime() {
     agent,
     responseProcessor,
     basicLoop,
+    initiationQueue,
+    initiationEngine,
     chatService,
     internalState,
     timeStore,

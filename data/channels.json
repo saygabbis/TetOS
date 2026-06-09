@@ -59,7 +59,7 @@
         "157947506229421"
       ],
       "createdAt": "2026-06-08T18:06:46.662Z",
-      "updatedAt": "2026-06-08T22:41:08.617Z",
+      "updatedAt": "2026-06-09T20:55:28.363Z",
       "participantCount": 1
     },
     "direct:test_dm_silence": {
@@ -70,7 +70,7 @@
       "isGroup": false,
       "participants": [],
       "createdAt": "2026-06-08T20:48:48.018Z",
-      "updatedAt": "2026-06-08T20:48:48.018Z",
+      "updatedAt": "2026-06-09T14:04:59.161Z",
       "participantCount": 0
     },
     "120@g.us": {
@@ -81,7 +81,7 @@
       "isGroup": true,
       "participants": [],
       "createdAt": "2026-06-08T20:48:50.478Z",
-      "updatedAt": "2026-06-08T20:48:50.478Z",
+      "updatedAt": "2026-06-09T14:05:02.025Z",
       "participantCount": 0
     },
     "120363425913528764@g.us": {
@@ -94,8 +94,13 @@
         "5516994435369"
       ],
       "createdAt": "2026-06-08T22:17:06.390Z",
-      "updatedAt": "2026-06-08T22:17:06.390Z",
-      "participantCount": 1
+      "updatedAt": "2026-06-09T17:15:24.296Z",
+      "participantCount": 1,
+      "participantJids": {
+        "5516988137617": "5516988137617@s.whatsapp.net",
+        "5516994435369": "5516994435369@s.whatsapp.net",
+        "6283879987068": "6283879987068@s.whatsapp.net"
+      }
     },
     "190546341540031@lid": {
       "id": "190546341540031@lid",
@@ -120,6 +125,39 @@
       "createdAt": "2026-06-08T23:34:20.831Z",
       "updatedAt": "2026-06-08T23:34:20.831Z",
       "participantCount": 0
+    },
+    "131778236952767@lid": {
+      "id": "131778236952767@lid",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": false,
+      "participants": [
+        "5516988137617"
+      ],
+      "createdAt": "2026-06-09T14:38:55.221Z",
+      "updatedAt": "2026-06-09T15:27:58.051Z",
+      "participantCount": 1
+    },
+    "120363342938049353@g.us": {
+      "id": "120363342938049353@g.us",
+      "mode": "active",
+      "authorized": true,
+      "muted": false,
+      "isGroup": true,
+      "participants": [],
+      "participantJids": {
+        "5516988776338": "5516988776338@s.whatsapp.net",
+        "5516994435369": "5516994435369@s.whatsapp.net",
+        "5516996242810": "5516996242810@s.whatsapp.net",
+        "5516997140666": "5516997140666@s.whatsapp.net",
+        "5516988137617": "5516988137617@s.whatsapp.net",
+        "5511958102125": "5511958102125@s.whatsapp.net",
+        "5516999619085": "5516999619085@s.whatsapp.net",
+        "5516997824041": "5516997824041@s.whatsapp.net"
+      },
+      "createdAt": "2026-06-09T17:10:07.227Z",
+      "updatedAt": "2026-06-09T20:56:11.729Z"
     }
   }
 }

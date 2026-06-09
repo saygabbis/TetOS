@@ -30,21 +30,6 @@ export class MiniMaxClient {
   }
 
   async generate(prompt) {
-    // #region agent log
-    fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
-      body: JSON.stringify({
-        sessionId: "9518ce",
-        hypothesisId: "H2",
-        location: "minimaxClient.js:generate:entry",
-        message: "minimax generate start",
-        data: { model: this.model, baseUrl: this.baseUrl, hasApiKey: Boolean(this.apiKey) },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     const body = {
@@ -64,24 +49,6 @@ export class MiniMaxClient {
 
     if (!response.ok) {
       const text = await response.text();
-      // #region agent log
-      fetch("http://127.0.0.1:7350/ingest/5ccc4511-cedf-4c03-a962-2f6ef0a264f8", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9518ce" },
-        body: JSON.stringify({
-          sessionId: "9518ce",
-          hypothesisId: "H2",
-          location: "minimaxClient.js:generate:error",
-          message: "minimax generate failed",
-          data: {
-            model: this.model,
-            status: response.status,
-            insufficientBalance: /balance|insufficient|quota|credit/i.test(text)
-          },
-          timestamp: Date.now()
-        })
-      }).catch(() => {});
-      // #endregion
       throw new Error(`MiniMax error: ${response.status} ${text}`);
     }
 

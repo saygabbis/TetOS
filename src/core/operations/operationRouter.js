@@ -8,16 +8,17 @@ export class OperationRouter {
     this.pendingConfirmations = pendingConfirmations;
   }
 
-  isAdmin(userId) {
+  isAdmin(userId, { isOwner = false } = {}) {
+    if (isOwner) return true;
     if (!this.adminUserId) return true;
     return String(userId ?? "").trim() === this.adminUserId;
   }
 
-  execute({ type, userId, payload = {} } = {}) {
+  execute({ type, userId, payload = {}, isOwner = false } = {}) {
     if (!type) return null;
 
     if (type === "channel_admin") {
-      if (!this.isAdmin(userId)) {
+      if (!this.isAdmin(userId, { isOwner })) {
         return { error: "not authorized" };
       }
       if (!payload?.confirmed && this.pendingConfirmations && shouldRequireConfirmation(type, payload)) {
@@ -40,7 +41,7 @@ export class OperationRouter {
     }
 
     if (type === "document_write") {
-      if (!this.isAdmin(userId)) {
+      if (!this.isAdmin(userId, { isOwner })) {
         return { error: "not authorized" };
       }
       if (!payload?.confirmed && this.pendingConfirmations && shouldRequireConfirmation(type, payload)) {

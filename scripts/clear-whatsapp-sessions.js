@@ -3,8 +3,13 @@ import { existsSync, rmSync } from "node:fs";
 import path from "node:path";
 
 const targets = [
-  process.env.WHATSAPP_SESSION_PATH ?? "./data/session",
-  process.env.WHATSAPP_MEDIA_SESSION_PATH ?? "./data/session-media"
+  ...new Set([
+    process.env.WHATSAPP_SESSION_PATH ?? "./data/session",
+    process.env.WHATSAPP_MEDIA_SESSION_PATH ?? "./data/session-media",
+    "./data/session",
+    "./data/session-media",
+    "./data/session-bot"
+  ])
 ];
 
 for (const target of targets) {

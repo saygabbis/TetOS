@@ -1,5 +1,5 @@
 const ABSENCE_THRESHOLDS = {
-  shortMaxMs: 2 * 60 * 60 * 1000,
+  shortMaxMs: 30 * 60 * 1000,
   mediumMaxMs: 12 * 60 * 60 * 1000,
   longMaxMs: 48 * 60 * 60 * 1000
 };

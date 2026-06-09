@@ -25,11 +25,19 @@ function ensureUser(state, userId) {
 }
 
 export class BehaviorProfiler {
-  constructor(path, { targetUserId = "" } = {}) {
+  constructor(path, { targetUserId = "", ownerIds = [] } = {}) {
     this.path = path;
     this.targetUserId = String(targetUserId ?? "").trim();
+    this.ownerIds = new Set(
+      [this.targetUserId, ...ownerIds].map((id) => String(id ?? "").trim()).filter(Boolean)
+    );
     this.state = readJson(path, DEFAULT_STATE) ?? DEFAULT_STATE;
     this.lastInboundByChat = new Map();
+  }
+
+  isTargetActor(actorId) {
+    const id = String(actorId ?? "").trim();
+    return Boolean(id && this.ownerIds.has(id));
   }
 
   record(event = {}) {
@@ -47,10 +55,10 @@ export class BehaviorProfiler {
     if (event.mediaType) user.totals.media += 1;
     if (Array.isArray(event.links) && event.links.length) user.totals.links += event.links.length;
 
-    if (event.eventType === "message.incoming" && actorId !== this.targetUserId) {
+    if (event.eventType === "message.incoming" && !this.isTargetActor(actorId)) {
       this.lastInboundByChat.set(chatKey, Date.parse(event.ts ?? new Date().toISOString()));
     }
-    if (event.eventType === "message.incoming" && actorId === this.targetUserId) {
+    if (event.eventType === "message.incoming" && this.isTargetActor(actorId)) {
       const lastInbound = this.lastInboundByChat.get(chatKey);
       const at = Date.parse(event.ts ?? new Date().toISOString());
       if (Number.isFinite(lastInbound) && at >= lastInbound) {

@@ -1,11 +1,5 @@
 {
-  "stickers": {
-    "test-hash": {
-      "count": 8,
-      "tags": [],
-      "lastSeen": "2026-06-08T18:08:05.971Z"
-    }
-  },
+  "stickers": {},
   "reactions": {},
   "mediaTypes": {
     "image": 0,
@@ -13,5 +7,41 @@
     "audio": 0,
     "sticker": 8
   },
-  "clusters": []
+  "clusters": [],
+  "scopes": {
+    "__legacy_global__": {
+      "stickers": {
+        "test-hash": {
+          "count": 8,
+          "tags": [],
+          "lastSeen": "2026-06-08T18:08:05.971Z"
+        }
+      },
+      "reactions": {},
+      "mediaTypes": {
+        "image": 0,
+        "video": 0,
+        "audio": 0,
+        "sticker": 0
+      },
+      "clusters": []
+    },
+    "user:u1": {
+      "stickers": {
+        "test-hash": {
+          "count": 1,
+          "tags": [],
+          "lastSeen": "2026-06-09T14:45:16.487Z"
+        }
+      },
+      "reactions": {},
+      "mediaTypes": {
+        "image": 0,
+        "video": 0,
+        "audio": 0,
+        "sticker": 1
+      },
+      "clusters": []
+    }
+  }
 }

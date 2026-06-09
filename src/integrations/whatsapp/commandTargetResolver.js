@@ -27,6 +27,7 @@ function detectMediaType(message = {}) {
 export async function resolveCommandTarget({
   incoming,
   remoteJid,
+  userId = null,
   media,
   historyStore,
   persistMedia,
@@ -86,7 +87,7 @@ export async function resolveCommandTarget({
     }
   }
 
-  const fallback = historyStore.latest(remoteJid);
+  const fallback = historyStore.latest(remoteJid, userId);
   if (fallback?.media?.path) {
     return { source: "history", media: fallback.media };
   }

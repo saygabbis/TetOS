@@ -137,7 +137,8 @@ export class BrainOrchestrator {
     const channelScope = turnContext.channelScope ?? "direct";
     const emotion = turnContext.emotion ?? this.emotion.getSnapshot();
     const behaviorSnap = this.behaviorProfiler?.snapshot?.() ?? {};
-    const lastMessageAt = this.timeStore?.getLastMessage?.(userId) ?? null;
+    const lastMessageAt =
+      this.timeStore?.getLastMessage?.(userId, turnContext.sessionId) ?? null;
     const userLikelyActive = this.userPatterns?.isLikelyActiveNow?.(userId) ?? true;
     const trustBond = turnContext.userId
       ? this.enrichTrustForTiming(userId, channelScope, emotion, hour)

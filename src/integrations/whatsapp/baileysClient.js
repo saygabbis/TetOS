@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 import qrcode from "qrcode-terminal";
 import makeWASocket, {
@@ -6,13 +6,38 @@ import makeWASocket, {
   useMultiFileAuthState
 } from "baileys";
 
+function ensureSessionDir(sessionPath) {
+  if (!existsSync(sessionPath)) {
+    mkdirSync(sessionPath, { recursive: true });
+  }
+}
+
 export async function createBaileysClient({
   sessionPath = DEFAULTS.whatsappSessionPath,
   autoConnect = DEFAULTS.whatsappAutoConnect,
   onConnectionUpdate = null
 } = {}) {
-  mkdirSync(sessionPath, { recursive: true });
-  const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
+  ensureSessionDir(sessionPath);
+  const { state, saveCreds: saveCredsRaw } = await useMultiFileAuthState(sessionPath);
+
+  const saveCreds = async () => {
+    try {
+      ensureSessionDir(sessionPath);
+      await saveCredsRaw();
+    } catch (error) {
+      if (error?.code === "ENOENT") {
+        ensureSessionDir(sessionPath);
+        try {
+          await saveCredsRaw();
+          return;
+        } catch (retryError) {
+          console.error("[whatsapp] falha ao salvar credenciais após recriar pasta:", retryError.message);
+          return;
+        }
+      }
+      console.error("[whatsapp] falha ao salvar credenciais:", error?.message ?? error);
+    }
+  };
   const { version } = await fetchLatestBaileysVersion();
 
   const silentLogger = {

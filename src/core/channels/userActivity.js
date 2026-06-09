@@ -1,25 +1,69 @@
-/** IDs vinculados (ex.: LID do WhatsApp ↔ telefone em LEARNING_TARGET_USER_ID). */
-export function linkedUserIds(runtime, userId) {
-  const uid = String(userId ?? "").trim();
-  if (!uid) return ["default"];
-  const ids = new Set([uid]);
-  const target = String(runtime?.defaults?.learningTargetUserId ?? "").trim();
-  if (target && target !== uid) {
-    const looksLikeLid = uid.length >= 14 || /@lid$/i.test(uid);
-    const looksLikePhone = /^\d{10,13}$/.test(uid);
-    if (looksLikeLid && looksLikePhone === false) ids.add(target);
-    if (uid === target) {
-      // perfil telefone — sem alias automático reverso
-    }
-  }
-  return [...ids];
+/** Normaliza JID/LID para comparação estável (sem sufixo de dispositivo). */
+export function normalizeJidKey(jid = "") {
+  return String(jid ?? "").split(":")[0].toLowerCase().trim();
 }
 
-export function touchUserActivity(runtime, userId, { markMessage = true } = {}) {
+/** ID estável por contato em DM — todos iguais, inclusive a dona. */
+export function dmUserId(remoteJid, baseUserId = "") {
+  const key = normalizeJidKey(remoteJid);
+  if (!key) return `dm-${String(baseUserId ?? "unknown").trim() || "unknown"}`;
+  const local = key.replace(/@.+$/, "");
+  return `dm-${local}`;
+}
+
+/** IDs que identificam a dona (admin/aprendizado) — não colapsam memória de chat. */
+export function ownerIdentityIds(runtime) {
+  const ids = new Set();
+  const phone = String(runtime?.defaults?.learningTargetUserId ?? "").trim();
+  if (phone) ids.add(phone);
+
+  for (const jid of runtime?.defaults?.ownerWaJids ?? []) {
+    const key = normalizeJidKey(jid);
+    if (!key) continue;
+    ids.add(dmUserId(jid));
+    const local = key.replace(/@.+$/, "");
+    if (local) ids.add(local);
+  }
+
+  return ids;
+}
+
+/** Dona do bot — só para permissão e contexto, não para perfil/memória compartilhada. */
+export function isOwnerContact(runtime, remoteJid = null, userId = "") {
+  const ids = ownerIdentityIds(runtime);
+  if (!ids.size) return false;
+
+  const uid = String(userId ?? "").trim();
+  if (uid && ids.has(uid)) return true;
+
+  if (remoteJid) {
+    const dm = dmUserId(remoteJid);
+    if (ids.has(dm)) return true;
+  }
+
+  return false;
+}
+
+/** ID do ator humano dono (mensagens fromMe na sessão de observação). */
+export function resolveOwnerActorId(runtime) {
+  const jids = runtime?.defaults?.ownerWaJids ?? [];
+  if (jids[0]) return dmUserId(jids[0]);
+  const phone = String(runtime?.defaults?.learningTargetUserId ?? "").trim();
+  return phone || null;
+}
+
+/** Cada contato é isolado — sem alias entre PVs. */
+export function linkedUserIds(_runtime, userId) {
+  const uid = String(userId ?? "").trim();
+  return uid ? [uid] : ["default"];
+}
+
+export function touchUserActivity(runtime, userId, { markMessage = true, sessionId = null } = {}) {
   for (const id of linkedUserIds(runtime, userId)) {
     runtime.basicLoop?.touch?.(id);
     if (markMessage) {
-      runtime.timeStore?.markMessage?.(id);
+      runtime.initiationEngine?.cancelForUser?.(id);
+      runtime.timeStore?.markMessage?.(id, Date.now(), sessionId);
     }
     runtime.userPatterns?.recordInteraction?.(id);
   }
@@ -31,7 +75,9 @@ export function isUserRecentlyActive(runtime, userId, inactiveMs) {
   for (const id of linkedUserIds(runtime, userId)) {
     const lastTouch = runtime.basicLoop?.lastInteractionAt?.get?.(id) ?? 0;
     if (now - lastTouch < windowMs) return true;
-    const lastMsg = runtime.timeStore?.getLastMessage?.(id);
+    const lastMsg =
+      runtime.timeStore?.getLastUserMessage?.(id, null) ??
+      runtime.timeStore?.getLastMessage?.(id, null);
     if (lastMsg) {
       const t = new Date(lastMsg).getTime();
       if (Number.isFinite(t) && now - t < windowMs) return true;
@@ -40,26 +86,32 @@ export function isUserRecentlyActive(runtime, userId, inactiveMs) {
   return false;
 }
 
-/** ID canônico para memória/fila — LID do dono vira telefone do LEARNING_TARGET. */
-export function canonicalUserId(runtime, userId) {
+/** Memória/fila — um PV = um userId (dona inclusa, sem telefone canônico). */
+export function canonicalUserId(_runtime, userId, { remoteJid = null } = {}) {
   const uid = String(userId ?? "").trim();
   if (!uid) return "default";
-  const target = String(runtime?.defaults?.learningTargetUserId ?? "").trim();
-  if (target && uid !== target && uid.length >= 14 && !/^\d{10,13}$/.test(uid)) {
-    return target;
+
+  const isGroup = remoteJid && String(remoteJid).endsWith("@g.us");
+  if (!isGroup && remoteJid) {
+    return dmUserId(remoteJid, uid);
   }
+
   return uid;
 }
 
-export function canonicalSessionId(runtime, userId) {
-  return `wa-${canonicalUserId(runtime, userId)}`;
+/** Sessão de chat — um PV = uma sessão isolada (persiste após restart). */
+export function canonicalSessionId(_runtime, userId, { remoteJid = null } = {}) {
+  if (remoteJid && !String(remoteJid).endsWith("@g.us")) {
+    return `wa-dm:${normalizeJidKey(remoteJid)}`;
+  }
+  return `wa-${canonicalUserId(null, userId, { remoteJid })}`;
 }
 
-export function resolveNudgeRemoteJid(runtime, userId) {
-  const profile = runtime.longTerm?.getProfile?.(userId);
-  const stored = profile?.facts?.waRemoteJid;
-  if (stored && String(stored).includes("@")) return stored;
+export function resolveNudgeRemoteJid(_runtime, userId) {
   const uid = String(userId ?? "").trim();
+  if (uid.startsWith("dm-")) {
+    return `${uid.slice(3)}@lid`;
+  }
   if (/@/.test(uid)) return uid;
   return `${uid}@s.whatsapp.net`;
 }

@@ -24,10 +24,20 @@ export class ChannelRegistry {
         muted: false,
         isGroup: id.includes("@g.us") || id.startsWith("group:"),
         participants: [],
+        participantJids: {},
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
     );
+  }
+
+  recordParticipantJid(channelId, phone = "", fullJid = "") {
+    const id = String(phone ?? "").trim();
+    const jid = String(fullJid ?? "").trim();
+    if (!id || !jid || !jid.includes("@")) return this.get(channelId);
+    const current = this.get(channelId);
+    const participantJids = { ...(current.participantJids ?? {}), [id]: jid };
+    return this.upsert(channelId, { participantJids });
   }
 
   upsert(channelId, patch = {}, userId = "default") {
@@ -89,7 +99,14 @@ export class ChannelRegistry {
     });
   }
 
-  shouldRespond({ channelId, userId = "default", isDirectMention = false, isReply = false, isQuestion = false } = {}) {
+  shouldRespond({
+    channelId,
+    userId = "default",
+    isDirectMention = false,
+    isReply = false,
+    isQuestion = false,
+    groupEngagementActive = false
+  } = {}) {
     const channel = this.get(channelId, userId);
     if (!channel.authorized || channel.mode === "blocked" || channel.muted) {
       return { allowed: false, reason: "blocked" };
@@ -99,16 +116,12 @@ export class ChannelRegistry {
       return { allowed: true, reason: channel.mode, mode: "full" };
     }
 
-    if (isDirectMention || isReply) {
-      return { allowed: true, reason: "passive-direct", mode: "full" };
+    if (isDirectMention || isReply || groupEngagementActive) {
+      return { allowed: true, reason: groupEngagementActive ? "passive-engagement" : "passive-direct", mode: "full" };
     }
 
-    if (isQuestion && Math.random() < 0.55) {
-      return {
-        allowed: true,
-        reason: "passive-question",
-        mode: Math.random() < 0.25 ? "react_only" : "full"
-      };
+    if (isQuestion) {
+      return { allowed: true, reason: "passive-question", mode: "full" };
     }
 
     if (Math.random() < 0.18) {

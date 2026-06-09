@@ -1,4 +1,11 @@
 import { Agent } from "../../core/agent/agent.js";
+import {
+  hasCoherenceIssues,
+  isContextBlindReply,
+  repairBubbleCoherence
+} from "./coherenceGuards.js";
+import { slimMetaForStorage } from "../../core/memory/slimMeta.js";
+import { detectTetoNameCall } from "../../integrations/whatsapp/tetoNameDetect.js";
 
 export class ChatService {
   constructor(agent, responseProcessor, internalState, { shortTerm = null } = {}) {
@@ -19,7 +26,10 @@ export class ChatService {
   recordUserTurn(message, meta = {}) {
     const sessionId = meta?.sessionId ?? "default";
     if (this.shortTerm?.add) {
-      this.shortTerm.add({ role: "user", content: String(message ?? ""), meta }, sessionId);
+      this.shortTerm.add(
+        { role: "user", content: String(message ?? ""), meta: slimMetaForStorage(meta) },
+        sessionId
+      );
     }
   }
 
@@ -54,26 +64,67 @@ export class ChatService {
   static extractGroupMention(text) {
     const t = String(text ?? "").toLowerCase();
     if (!t) return null;
-    if (/\b(teto|tete|tetozinha)\b/.test(t)) return "name";
+    if (detectTetoNameCall(text).detected) return "name";
     if (/@\d{4,}/.test(t)) return "mention";
     return null;
   }
 
+  static normalizeForEcho(text = "") {
+    return String(text ?? "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  static isUnjustifiedThanks(userMessage, assistantText) {
+    const a = String(assistantText ?? "").toLowerCase();
+    if (!/\bobrigad/.test(a)) return false;
+    const u = String(userMessage ?? "").toLowerCase();
+    if (/\b(obrigad|valeu|vlw|brigad|parab[eé]ns|mandou bem|me ajudou|ajudou|presente)\b/.test(u)) {
+      return false;
+    }
+    if (/\b(amo|amei|linda|lindo|incr[ií]vel|perfeita|perfeito|maravilh|gostei)\b/.test(u)) return false;
+    if (/\b(fala direito|falando torto|nao parece|não parece|parece (a )?teto)\b/.test(u)) return true;
+    return true;
+  }
+
   static deEcho(userMessage, assistantText) {
-    const u = String(userMessage ?? "").toLowerCase().trim();
-    const a = String(assistantText ?? "").toLowerCase().trim();
+    const u = ChatService.normalizeForEcho(userMessage);
+    const a = ChatService.normalizeForEcho(assistantText);
     if (!u || !a) return { text: assistantText, needsRegen: false };
 
+    if (ChatService.isUnjustifiedThanks(userMessage, assistantText)) {
+      return { text: assistantText, needsRegen: true };
+    }
+
     const mirrorPatterns = [
-      /(não entende|nao entende|não entendi|nao entendi|entender direito)/,
-      /\b(respondi tudo|eu respondi|j[áa] falei tudo|falei tudo|eu falei)\b.*\b(falou demais|faltando|incomplet|ficou faltando)\b/
+      /(nao entende|nao entendi|entender direito)/,
+      /(falando tudo torto|fala direito|falar direito|falando torto)/,
+      /(nao parece a teto|nao parece teto|parece a teto)/,
+      /\b(respondi tudo|eu respondi|ja falei tudo|falei tudo|eu falei)\b.*\b(falou demais|faltando|incomplet|ficou faltando)\b/
     ];
     for (const pattern of mirrorPatterns) {
       if (pattern.test(u) && pattern.test(a)) {
         return { text: assistantText, needsRegen: true };
       }
     }
-    if (u.length > 12 && a.includes(u.slice(0, Math.min(24, u.length)))) {
+
+    const uWords = u.split(" ").filter((w) => w.length > 2);
+    if (uWords.length >= 3) {
+      const chunk = uWords.slice(0, Math.min(6, uWords.length)).join(" ");
+      if (chunk.length >= 10 && a.includes(chunk)) {
+        return { text: assistantText, needsRegen: true };
+      }
+      const overlap = uWords.filter((w) => a.includes(w));
+      if (overlap.length >= Math.max(3, Math.ceil(uWords.length * 0.6))) {
+        return { text: assistantText, needsRegen: true };
+      }
+    }
+
+    if (u.length > 12 && a.includes(u.slice(0, Math.min(28, u.length)))) {
       return { text: assistantText, needsRegen: true };
     }
     return { text: assistantText, needsRegen: false };
@@ -112,6 +163,14 @@ export class ChatService {
   static isPingMessage(text) {
     const t = ChatService.normalizeLoose(text);
     return /^(alou|alo|alou\?|alo\?)$/.test(t);
+  }
+
+  /** Usuário chamou a Teto diretamente — nunca pode virar [SEM_RESPOSTA] ou silêncio. */
+  static isDirectTetoCall(text) {
+    const t = String(text ?? "").trim();
+    if (!t) return false;
+    if (detectTetoNameCall(t).detected) return true;
+    return /\b(oi+|oie+|eae+|hey+|fala|e\s*a[ií])\b/i.test(t) && /\btet[o0]/i.test(t);
   }
 
   /** Só emoji / símbolo (sem palavras) — ex.: ❤️, 😂, combinações curtas. */
@@ -222,10 +281,17 @@ export class ChatService {
 
   static hasMetaDrift(text) {
     const t = String(text ?? "").toLowerCase();
+    if (/\btenta falar direito\b/.test(t) && /\b(sen[aã]o eu corrijo|corrijo pra voc[eê])\b/.test(t)) {
+      return true;
+    }
+    if (/\bfalando tudo torto\b/.test(t)) return true;
+    if (/\bt[aá] achando que n[aã]o falo como a teto\b/.test(t)) return true;
+    if (/\b(quer dizer que t[aá] afim|t[aá] afim de alguma coisa)\b/.test(t)) return true;
     const hits = [
       /\bvoc[eê]\s+t[aá]\s+(procurando|querendo)\b/.test(t),
       /\bquem [ée] que t[aá] perguntando\b/.test(t),
       /\bquer dizer alguma coisa\b/.test(t),
+      /\b(t[aá] afim de alguma coisa|manda logo)\b/.test(t),
       /\beu sou (a )?(kasane|teto)\b/.test(t)
     ].filter(Boolean).length;
     return hits >= 2;
@@ -257,27 +323,51 @@ export class ChatService {
       ? { ...meta, fallback: "ground" }
       : meta;
 
-    const raw = await this.agent.respond(message, metaWithFallback, history, tone);
+    let raw = await this.agent.respond(message, metaWithFallback, history, tone);
+    const rawTrimmed = String(raw ?? "").trim();
+
+    if (!rawTrimmed && ChatService.isDirectTetoCall(trimmed)) {
+      raw = await this.agent.respond(
+        trimmed,
+        { ...metaWithFallback, fallback: "ground", skipUserRecord: true },
+        history,
+        tone
+      );
+    }
 
     if (Agent.isSilentReply(raw)) {
-      const userId = meta?.userId ?? "default";
-      if (this.agent?.longTerm?.updateProfile) {
-        this.agent.longTerm.updateProfile(userId, {
-          conversationClosedAt: new Date().toISOString()
-        });
+      if (ChatService.isDirectTetoCall(trimmed)) {
+        raw = await this.agent.respond(
+          trimmed,
+          { ...metaWithFallback, fallback: "ground", skipUserRecord: true },
+          history,
+          tone
+        );
+      } else {
+        const userId = meta?.userId ?? "default";
+        if (this.agent?.longTerm?.updateProfile) {
+          this.agent.longTerm.updateProfile(userId, {
+            conversationClosedAt: new Date().toISOString()
+          });
+        }
+        return [];
       }
-      return [];
     }
 
 
     const processor = this.getProcessor(meta);
+    const processorContext = {
+      tone,
+      userMessage: message,
+      styleHint: meta?.styleHint ?? null,
+      userPronouns: meta?.userPronouns ?? null,
+      brainSnapshot: meta?.brainSnapshot ?? null,
+      brainBlocks: meta?.brainBlocks ?? null,
+      timingPlan: meta?.timingPlan ?? null,
+      coherenceFix: meta?.coherenceFix === true
+    };
     const safeParts = processor?.processAndGuard
-      ? processor.processAndGuard(raw, {
-          tone,
-          userMessage: message,
-          styleHint: meta?.styleHint ?? null,
-          userPronouns: meta?.userPronouns ?? null
-        })
+      ? processor.processAndGuard(raw, processorContext)
       : processor
         ? processor.process(raw, {
             tone,
@@ -313,19 +403,44 @@ export class ChatService {
     if (needsDeEchoRegen) {
       const regen = await this.agent.respond(
         trimmed,
-        { ...meta, fallback: "ground", deEchoFix: true },
+        { ...meta, fallback: "ground", deEchoFix: true, skipUserRecord: true },
         history,
         tone
       );
       const regenParts = processor?.processAndGuard
-        ? processor.processAndGuard(regen, {
-            tone,
-            userMessage: message,
-            styleHint: meta?.styleHint ?? null,
-            userPronouns: meta?.userPronouns ?? null
-          })
+        ? processor.processAndGuard(regen, { ...processorContext, deEchoFix: true })
         : [regen];
       resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
+    }
+
+    const hasHistory = Array.isArray(history) && history.length > 0;
+    if (isContextBlindReply(resultParts, trimmed, meta)) {
+      const regen = await this.agent.respond(
+        trimmed,
+        { ...meta, fallback: "ground", coherenceFix: true, skipUserRecord: true },
+        history,
+        tone
+      );
+      const regenParts = processor?.processAndGuard
+        ? processor.processAndGuard(regen, { ...processorContext, coherenceFix: true })
+        : [regen];
+      resultParts = repairBubbleCoherence(
+        (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean)
+      );
+    }
+    if (hasCoherenceIssues(resultParts, trimmed, { hasHistory })) {
+      const regen = await this.agent.respond(
+        trimmed,
+        { ...meta, fallback: "ground", coherenceFix: true, skipUserRecord: true },
+        history,
+        tone
+      );
+      const regenParts = processor?.processAndGuard
+        ? processor.processAndGuard(regen, { ...processorContext, coherenceFix: true })
+        : [regen];
+      resultParts = repairBubbleCoherence(
+        (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean)
+      );
     }
     if (ChatService.containsLoveDeclaration(trimmed) && resultParts.length) {
       const first = resultParts[0].trim();
@@ -338,24 +453,14 @@ export class ChatService {
       if (ChatService.hasMetaDrift(first)) {
         const regen = await this.agent.respond(
           trimmed,
-          { ...meta, fallback: "ground" },
+          { ...meta, fallback: "ground", skipUserRecord: true },
           history,
           tone
         );
         const regenParts = processor?.processAndGuard
-          ? processor.processAndGuard(regen, {
-              tone,
-              userMessage: message,
-              styleHint: meta?.styleHint ?? null,
-              userPronouns: meta?.userPronouns ?? null
-            })
+          ? processor.processAndGuard(regen, processorContext)
           : processor
-            ? processor.process(regen, {
-                tone,
-                userMessage: message,
-                styleHint: meta?.styleHint ?? null,
-                userPronouns: meta?.userPronouns ?? null
-              })
+            ? processor.process(regen, processorContext)
             : [regen];
         resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
       }
@@ -367,24 +472,14 @@ export class ChatService {
         const metaWithFallback = { ...meta, fallback: fallback.strategy };
         const regen = await this.agent.respond(
           fallback.hint || trimmed,
-          metaWithFallback,
+          { ...metaWithFallback, skipUserRecord: true },
           history,
           tone
         );
         const regenParts = processor?.processAndGuard
-          ? processor.processAndGuard(regen, {
-              tone,
-              userMessage: message,
-              styleHint: meta?.styleHint ?? null,
-              userPronouns: meta?.userPronouns ?? null
-            })
+          ? processor.processAndGuard(regen, processorContext)
           : processor
-            ? processor.process(regen, {
-                tone,
-                userMessage: message,
-                styleHint: meta?.styleHint ?? null,
-                userPronouns: meta?.userPronouns ?? null
-              })
+            ? processor.process(regen, processorContext)
             : [regen];
         resultParts = (regenParts ?? []).map((part) => String(part).trim()).filter(Boolean);
       }
@@ -404,6 +499,10 @@ export class ChatService {
         this.shortTerm.popLastAssistant(sessionId);
       }
       return [];
+    }
+
+    if (!resultParts.length && ChatService.isDirectTetoCall(trimmed)) {
+      return ["oxi, tô aqui kkk"];
     }
 
     return resultParts;
