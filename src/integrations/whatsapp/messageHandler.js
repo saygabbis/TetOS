@@ -917,6 +917,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
   const botChatRole =
     role === "media" && runtime.defaults.whatsappMode === "dual" && runtime.defaults.whatsappMainObserveOnly;
+  const waLogPrefix = role === "media" ? "[whatsapp:media]" : "[whatsapp]";
   const chatMessageIndex = new ChatMessageIndex({ maxPerChannel: 80 });
   const botJidForHandler = jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
   const botPhoneForHandler = extractPhone(botJidForHandler);
@@ -939,7 +940,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
   const seenMessageIds = new Map();
   const MESSAGE_DEDUPE_TTL_MS = 60 * 1000;
   const skipVisionEnrichment = role === "media" && !botChatRole;
-  const waLogPrefix = role === "media" ? "[whatsapp:media]" : "[whatsapp]";
   console.log(
     `${waLogPrefix} handler ativo${botChatRole ? " (responde chat)" : role === "main" ? " (só aprende)" : ""}`
   );
