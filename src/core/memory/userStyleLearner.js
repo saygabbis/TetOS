@@ -112,7 +112,7 @@ export function formatLearnedStyleForPrompt(learned = {}, stylePrefs = {}, liveH
   if (pref === "kk" || stylePrefs.prefersLaughter || kkRun >= 3) {
     const sample = kkRun >= 10 ? "kkkkkkk" : kkRun >= 6 ? "kkkkk" : "kkk";
     lines.push(
-      `Risada deles no teclado (${sample}, ksks…) — quando rir junto, use kkk no texto, não emoji 😂.`
+      `Risada deles no teclado (${sample}, ksks…) — quando rir junto, use kkk no texto, não emoji 😂; não precisa rir em toda resposta.`
     );
   } else if (pref === "rs") {
     lines.push("Eles costumam rir com rs/rsrs — pode espelhar com moderação.");

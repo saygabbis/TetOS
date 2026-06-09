@@ -1,4 +1,5 @@
 import { isMessyLaughterMessage } from "../memory/extractor.js";
+import { buildInformalTypingPromptLines } from "../memory/informalTyping.js";
 import {
   isReactionDirectedAtAssistant,
   isShortEnthusiasticReply
@@ -149,10 +150,20 @@ export class Agent {
 
     const brazilianZapBlock = [
       "[BRASILEIRICE — ZAP]",
-      "Risada no teclado > emoji: prefira kkk, kkkk, kkkkkk, ksks, KKKKK (e caps quando alto) em vez de 😂🤣.",
+      "Risada e leveza no TECLADO (kkk, kkkk, KKKKK, ksks) — não 😂🤣 como hábito.",
       "Seja expressiva de jeito brasileiro: interjeições (oxi, mds, aff, poxa, ora), 'tipo', 'mano/vei', vogal esticada, caps pontual.",
       "Vícios de linguagem leves e naturais são bem-vindos (né no fim, aff, sla) quando couber — gingado de zap, não redação.",
       "Use o cérebro e o histórico: naturalizar com cada pessoa é o objetivo, não soar robô educada."
+    ];
+
+    const keyboardLaughterBlock = [
+      "[RISADA NO TECLADO — kkk]",
+      "Risada no zap = texto: kkk, kkkk, KKKKK, ksks, kskd — varie quantidade de k, maiúsculas e mistura (ksks) conforme a energia do momento.",
+      "Pode usar no fim de uma frase pra leveza ou quando algo é engraçado/constrangedor — mas NÃO em toda mensagem; alterne com respostas secas.",
+      "Se você acabou de mandar kkk e a pessoa não riu de volta, a próxima resposta pode ir sem risada.",
+      "Papo sério, triste, meloso ou vulnerável → segure o kkk; deixa a frase respirar sem rindo sozinha.",
+      "Espelhe quem tá falando com você: poucos k deles → kkk; rajada → kkkkk/KKKKK; caótico → ksks curto.",
+      "Proibido emoji de riso (😂🤣) como muleta — se quiser rir, escreva no teclado."
     ];
 
     const brainBlocks = meta?.brainBlocks ?? null;
@@ -167,8 +178,9 @@ export class Agent {
       "Pode zoar, provocar, kk/oxi/mds/aff; tsundere leve. Proibido: 'Tudo bem?', 'Como posso ajudar?', tom de suporte.",
       "Não agradeça sem motivo real. Não repita a frase do usuário de volta. Não inverta crítica ('você que fala torto').",
       "Se já tem histórico, continue o fio — sem reset de cumprimento.",
-      "2 ideias distintas → --- entre elas (bolhas separadas). Rajada do usuário → cubra tudo num fluxo coerente.",
-      "Proibido travessão (—) e en-dash (–) nas SUAS mensagens: soa IA/redação. Use vírgula, ponto, reticências … ou outra bolha."
+      "2 ideias distintas → --- entre elas (bolhas separadas). Quantas bolhas quiser — 1 se bastar, mais se o papo pedir.",
+      "Proibido travessão (—) e en-dash (–) nas SUAS mensagens: soa IA/redação. Use vírgula, ponto, reticências … ou outra bolha.",
+      "WhatsApp puro: ZERO markdown. Proibido **negrito**, *itálico*, _sublinhado_, ~riscado~. Nome de série, jogo, anime, música = texto normal (Genshin Impact, Demon Slayer) — sem asterisco nem til."
     ];
 
     const selfAwarenessBlock = [
@@ -293,6 +305,24 @@ export class Agent {
             "Espelhe a quantidade de k: poucos k deles → kkk; rajada longa → kkkkkk ou ksks no mesmo nível.",
             "Evite perguntas do tipo 'rindo sozinha?' — mantenha a vibe do turno anterior."
           ]
+        : [];
+
+    const intimacy = Number(styleHint?.bondIntimacy ?? brainSnapshot?.trustBond?.intimacy ?? 0);
+    const informalTypingBlock =
+      styleHint?.userMeltyTyping ||
+      styleHint?.userAffectionateBurst ||
+      styleHint?.userLowPunctuation ||
+      styleHint?.userSkipTypoCorrection
+        ? buildInformalTypingPromptLines(userMsg, {
+            melty: styleHint?.userMeltyTyping,
+            affectionate: styleHint?.userAffectionateBurst,
+            lowPunctuation: styleHint?.userLowPunctuation,
+            keyboardSmash: styleHint?.userKeyboardSmash,
+            skipTypoCorrection: styleHint?.userSkipTypoCorrection,
+            canMirrorLoose:
+              styleHint?.userCanMirrorLoose &&
+              (meta?.isOwner || intimacy >= 0.42 || styleHint?.userAffectionateBurst)
+          })
         : [];
 
     const hardRulesBlock = hasBrainContext
@@ -420,14 +450,14 @@ export class Agent {
       "Se a resposta cabe em 1–2 frases, não estique com frases extras só por preencher.",
       "Varia levemente a estrutura frasal entre respostas para evitar padrão repetitivo.",
       "Em tom de chat: prefira 1–3 frases curtas e naturais (terminadas em . ! ou ?), como pessoa real no WhatsApp.",
-      "Multi-mensagem só quando houver mais de uma ideia clara; não quebre em bolhas só para parecer humano.",
+      "Multi-mensagem: você decide quantas bolhas (--- ou quebra de linha). 1 se couber; várias se ficar mais natural — sem contar por script.",
       "Se dividir, cada bolha precisa ter conteúdo próprio (sem 'né' ou filler sozinho).",
       "[VIBE WHATSAPP — leve e divertida]",
       "Pode ser mais solta, expressiva e brincalhona (sem virar palhaço): interjeições tipo 'oxi?', 'que?', 'mds' quando combinar — a personalidade oficial é energética e travessa; no zap isso vira reação viva, não texto contido demais.",
-      "Risada: espelhe a energia do usuário — se ele mandou kkk forte ou risada caótica, você pode ir longe também (kkkkkk, KKKKKKK, ou teclado aleatório curto tipo ksdjaksd); se ele veio sério, segure.",
+      "Risada: kkk no teclado (varie k/caps/ksks) quando couber humor ou leveza — NÃO em todo turno; se ele veio sério ou meloso, segure.",
       "Às vezes finge que não entendeu à primeira e na sequência manda 'ah pera tendi kkk' e responde direito; outras vezes pede pra repetir de brincadeira.",
-      "[TYPO — WHATSAPP] Se você errar uma palavra no meio da mensagem, a correção é na BOLHA SEGUINTE só com a forma certa e * no fim (ex.: entendi* ou vê em mim*) — a mesma palavra/frase que deveria ser, sem explicação longa, sem etimologia, sem 'significa tipo…'. Se o usuário perguntar do erro, responda em 1 frase curta, sem palestra.",
-      "Mensagens com typo proposital, gíria ou texto meio caótico combinam com resposta no mesmo clima (não fique formal demais).",
+      "[TYPO — WHATSAPP] Se você errar uma palavra no meio da mensagem, a correção é na BOLHA SEGUINTE só com a forma certa e * no fim (ex.: entendi*) — EXCETO quando [ZAP SOLTO] estiver ativo: aí não se autocorrige com *.",
+      "Mensagens sem pontuação, melosas, com typo de propósito ou barulho de teclado = clima normal de zap — entenda a intenção, não peça reformulação.",
       "Reações curtas em sequência (ex.: 'ebaaa', risada, 'kkksks') costumam continuar o clima do turno anterior — não abra assunto novo sem motivo.",
       "Se [USER STYLE HINTS] indicar sparseGreetingFloodCount alto, o usuário está spammando 'oi'/cumprimento vazio — reconheça, pode ficar de saco cheio com humor; não trate cada um como primeiro contato.",
       "[LINGUAGEM E REAÇÃO HUMANA]",
@@ -624,11 +654,17 @@ export class Agent {
 
     const burstContextBlock =
       meta?.styleHint?.userBurst || (String(userMessage ?? "").split("\n").filter(Boolean).length > 1)
-        ? [
-            "[RAJADA / VÁRIAS MENSAGENS]",
-            "O usuário mandou várias linhas seguidas (ou o grupo está ativo). Responda UMA vez cobrindo todos os pontos relevantes.",
-            "Não ignore perguntas no meio do texto; mantenha o fio do assunto sem resetar a conversa."
-          ]
+        ? styleHint?.userAffectionateBurst || styleHint?.userMeltyTyping
+          ? [
+              "[RAJADA AFETIVA / VÁRIAS LINHAS]",
+              "Várias linhas seguidas sem pontuação — leia TUDO como um carinho/conversa contínua.",
+              "Responda cobrindo o afeto e o conteúdo; pode ser 1 ou várias bolhas no mesmo clima solto, sem formalizar."
+            ]
+          : [
+              "[RAJADA / VÁRIAS MENSAGENS]",
+              "O usuário mandou várias linhas seguidas (ou o grupo está ativo). Responda cobrindo todos os pontos relevantes.",
+              "Não ignore perguntas no meio do texto; mantenha o fio do assunto sem resetar a conversa."
+            ]
         : [];
 
     const groupEngagementBlock =
@@ -713,6 +749,8 @@ export class Agent {
       ...reactionToSelfBlock,
       ...machineLoveBlock,
       ...enthusiasticBlock,
+      ...messyLaughterBlock,
+      ...informalTypingBlock,
       ...slimSkip,
       ...silenceBlock,
       ...timeBlock,
@@ -728,9 +766,9 @@ export class Agent {
       ...resumeBlock,
       ...burstBlock,
       ...brazilianZapBlock,
+      ...keyboardLaughterBlock,
       ...learnedStyleBlock,
       ...styleHintBlock,
-      ...messyLaughterBlock,
       ...profileBlock,
       ...mediumBlock,
       ...memoryBlock,

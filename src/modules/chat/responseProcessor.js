@@ -16,7 +16,32 @@ const AI_DISCLAIMER = /\b(as an ai|as a language model)\b/gi;
 const ENGLISH_FILLERS = /\b(by the way|btw|anyway|anyways|i mean|you know|well(?:\s+then)?|cool|nice|yep|yeah|nope|pls|please|thanks|thank you|pleasant|sorry|lol|im|i'm|ive|i've|id|i'd|dont|don't|cant|can't|wont|won't|youre|you're|your|yours)\b/gi;
 const ENGLISH_TOKENS = /\b(working|work|distract|weekend|sorry|thanks|thank|pleasant|your|yours|youre|you're|dont|don't|cant|can't|wont|won't|im|i'm|ive|i've)\b/gi;
 const PROPER_NOUNS = new Set(["teto", "kasane", "miku", "gabbis", "whatsapp", "brasil", "são", "paulo", "tokyo", "japão", "japao"]);
-const SOFT_TILDE = /~+/g;
+const MID_SENTENCE_CAPITAL = new Set([
+  "então",
+  "entao",
+  "mas",
+  "só",
+  "so",
+  "aí",
+  "ai",
+  "bora",
+  "porém",
+  "porem",
+  "também",
+  "tambem",
+  "daí",
+  "dai",
+  "oxi",
+  "mds",
+  "aff",
+  "ué",
+  "ue",
+  "nossa",
+  "poxa",
+  "ora",
+  "tipo",
+  "enfim"
+]);
 const MASC_A_WORDS = new Set([
   "dia",
   "mapa",
@@ -43,22 +68,45 @@ function preferredKkSample(styleHint = {}) {
   return "kkk";
 }
 
-/** Risada brasileira no teclado > emoji de riso quando o usuário também usa kkk. */
-function swapEmojiLaughterForKkk(text, styleHint = {}) {
-  const preferKk =
-    styleHint?.preferredLaughter === "kk" ||
-    styleHint?.prefersLaughter ||
-    styleHint?.userLaughterEnergy === "high" ||
-    styleHint?.userLaughterEnergy === "medium" ||
-    Number(styleHint?.userKkMaxRun ?? 0) >= 3;
-  if (!preferKk || !/[\u{1F602}\u{1F923}\u{1F605}\u{1F60A}]/u.test(String(text ?? ""))) {
+/** Risada brasileira no teclado > emoji de riso no WhatsApp. */
+function swapEmojiLaughterForKkk(text, styleHint = {}, tone = null) {
+  if (!/[\u{1F602}\u{1F923}\u{1F605}\u{1F60A}]/u.test(String(text ?? ""))) {
     return text;
   }
-  const sample = preferredKkSample(styleHint);
+  let sample = preferredKkSample(styleHint);
+  if (tone === "calm" || styleHint?.userLaughterEnergy === "low") {
+    sample = "kkk";
+  }
   return String(text)
     .replace(/[😂🤣😹😆😅]+/gu, ` ${sample}`)
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+function endsWithKeyboardLaugh(text = "") {
+  return /\s(?:k{2,}|ksks|rs+)\s*$/i.test(String(text ?? "").trim());
+}
+
+/** Evita kkk em toda bolha seguida quando o usuário não riu — mantém no máximo uma. */
+function trimRedundantKkk(parts, context = {}) {
+  const list = (Array.isArray(parts) ? parts : []).map((p) => String(p ?? "").trim()).filter(Boolean);
+  if (list.length <= 1) return list;
+
+  const userLaughs =
+    /\b(k{2,}|ksks|rs+)\b/i.test(String(context.userMessage ?? "")) ||
+    isMessyLaughterMessage(context.userMessage);
+  if (userLaughs || context.styleHint?.userLaughterEnergy === "high") return list;
+
+  const laughIndices = list.map((p, i) => (endsWithKeyboardLaugh(p) ? i : -1)).filter((i) => i >= 0);
+  if (laughIndices.length <= 1) return list;
+
+  const keepIndex = laughIndices[laughIndices.length - 1];
+  return list
+    .map((p, i) => {
+      if (i === keepIndex || !endsWithKeyboardLaugh(p)) return p;
+      return p.replace(/\s+(?:k{2,}|ksks|rs+)\s*$/i, "").trim();
+    })
+    .filter(Boolean);
 }
 
 /**
@@ -94,6 +142,7 @@ function repairPunctuation(text) {
     // split sentences when a new sentence starts mid-line (skip proper nouns mid-sentence)
     .replace(/([a-záéíóúàâêôãõç])\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúàâêôãõç]+)/g, (m, before, word) => {
       if (PROPER_NOUNS.has(word.toLowerCase())) return m;
+      if (MID_SENTENCE_CAPITAL.has(word.toLowerCase())) return m;
       return `${before}. ${word}`;
     })
     // fix spacing before punctuation
@@ -210,14 +259,29 @@ function fixGenderedPossessives(text, pronounMode = "auto") {
   );
 }
 
+/** WhatsApp não renderiza markdown — títulos/nomes saem com ** ou ~ se o modelo usar. */
+function stripChatMarkdown(text = "") {
+  let t = String(text ?? "");
+  t = t.replace(/~([^~\n]+?)~/g, "$1");
+  t = t.replace(/\*\*([^*\n]+?)\*\*/g, "$1");
+  t = t.replace(/__([^_\n]+?)__/g, "$1");
+  t = t.replace(/_([^_\n]+?)_/g, "$1");
+  t = t.replace(/(?<!\w)\*([^*\n]+?)\*(?!\*)/g, "$1");
+  t = t.replace(/\*\*/g, "");
+  t = t.replace(/__/g, "");
+  t = t.replace(/~+/g, "");
+  return t;
+}
+
 function sanitize(text, meta = {}) {
   const cleaned = preserveParagraphBreaks(
-    stripEnglishIntrusions(stripForeignScripts(String(text)))
+    stripChatMarkdown(
+      stripEnglishIntrusions(stripForeignScripts(String(text)))
+    )
       .replace(ROLEPLAY_MARKERS, "")
       .replace(AI_DISCLAIMER, "")
       .replace(/\b(comment|like|share|post|subscribe)\b/gi, "")
       .replace(/[\\]/g, "")
-      .replace(SOFT_TILDE, "~")
       .replace(ENGLISH_TOKENS, "")
       .replace(IDENTITY_LOOPS, "")
       .replace(META_TALK, "")
@@ -683,6 +747,109 @@ function similarityScore(a, b) {
   return overlap / Math.max(setA.size, setB.size);
 }
 
+function shouldSkipTypoPlay(context = {}) {
+  return Boolean(context.styleHint?.userSkipTypoCorrection);
+}
+
+function shouldKeepLoosePunctuation(context = {}) {
+  return Boolean(
+    context.styleHint?.userSkipTypoCorrection ||
+    context.styleHint?.userMeltyTyping ||
+    context.styleHint?.userLowPunctuation
+  );
+}
+
+function processPreservedBubble(rawText, context = {}) {
+  const cleaned = sanitize(rawText, { userPronouns: context.userPronouns });
+  if (!cleaned || cleaned.length <= 1 || isBubbleSeparatorOnly(cleaned)) return null;
+
+  let part = capitalize(cleaned);
+  part = swapEmojiLaughterForKkk(part, context.styleHint, context.tone);
+  part = dropMetaQuestions(part);
+  part = softenOveractedStart(part);
+  part = removeBreadDerail(part, context.userMessage);
+  part = normalizeInformalEnding(part);
+  part = applyGreetingIntensity(part, context.userMessage, context.styleHint);
+  if (context.styleHint?.userCapsBurst) {
+    part = part.replace(/\b(não|nao)\b/gi, (m) => m.toUpperCase());
+  }
+  if (!shouldKeepLoosePunctuation(context)) {
+    part = enforceTerminalPunctuation(String(part).replace(/\s{2,}/g, " ").trim());
+  } else {
+    part = String(part).replace(/\s{2,}/g, " ").trim();
+  }
+  return part || null;
+}
+
+function polishBubbleList(finalParts, context = {}, processor = null) {
+  const { tone = null, userMessage = "", styleHint = null } = context;
+  let parts = (Array.isArray(finalParts) ? finalParts : []).map((p) => String(p).trim()).filter(Boolean);
+  if (!parts.length) return [];
+
+  const combinedBefore = parts.join(" ");
+  const hasAnyLaughter = /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(combinedBefore);
+  const userUsesLaughter =
+    /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(String(userMessage)) ||
+    isMessyLaughterMessage(userMessage);
+  const userLikesLaughter =
+    userUsesLaughter ||
+    styleHint?.prefersLaughter ||
+    styleHint?.preferredLaughter === "kk" ||
+    styleHint?.userLaughterEnergy === "high" ||
+    styleHint?.userLaughterEnergy === "medium";
+  const shouldSuppressLaughter =
+    tone === "calm" || ((processor?.laughterCooldown ?? 0) > 0 && !userLikesLaughter && tone !== "playful");
+  if (hasAnyLaughter && shouldSuppressLaughter) {
+    parts = parts.map(stripStandaloneLaughter).filter(Boolean);
+  }
+  const combinedAfter = parts.join(" ");
+  const stillHasLaughter = /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(combinedAfter);
+  if (processor) {
+    if (stillHasLaughter) {
+      processor.laughterCooldown = 2;
+    } else {
+      processor.laughterCooldown = Math.max(0, processor.laughterCooldown - 1);
+    }
+  }
+
+  const combined = parts.join(" ");
+  const hasKk = /\bkk+\b/i.test(combined);
+  if (processor?.lastHadLaughter && hasKk && !userLikesLaughter) {
+    parts = parts.map(stripStandaloneLaughter).filter(Boolean);
+  }
+  if (processor) {
+    processor.lastHadLaughter = /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(
+      parts.join(" ")
+    );
+  }
+
+  parts = trimRedundantKkk(parts, { userMessage, styleHint, tone });
+
+  parts = dropTrailingFiller(parts);
+  parts = stripUserEchoParts(parts, userMessage);
+  if (context._explicitMultiBubble) {
+    parts = parts.filter(Boolean);
+  } else {
+    parts = repairBubbleCoherence(parts);
+    parts = parts.filter((part) => !isIncompleteBubble(part));
+  }
+  if (!context._explicitMultiBubble) {
+    parts = collapseForShortUserPrompt(parts, userMessage);
+  }
+  parts = filterInvalidCorrectionBubbles(parts);
+  if (!shouldSkipTypoPlay(context)) {
+    if (processor?.canInjectImperfection?.({ tone, userMessage }) && Math.random() < 0.05) {
+      parts = injectDynamicTypo(parts);
+      processor.imperfectionEvents.push(Date.now());
+      processor.imperfectionCooldown = 10;
+    }
+    if (processor?.applyCalibratedImperfection) {
+      parts = processor.applyCalibratedImperfection(parts, { tone, userMessage });
+    }
+  }
+  return parts.filter(Boolean);
+}
+
 export class ResponseProcessor {
   /** maxParts: número finito = teto opcional; Infinity = só o que o texto naturalmente gerar */
   constructor({ maxParts = Infinity, similarityThreshold = 0.75, historyLimit = 5 } = {}) {
@@ -840,114 +1007,30 @@ export class ResponseProcessor {
     return capped;
   }
 
-  process(rawText, { tone = null, userMessage = "", styleHint = null, userPronouns = null, _skipExplicitSplit = false } = {}) {
+  process(rawText, { tone = null, userMessage = "", styleHint = null, userPronouns = null, _skipExplicitSplit = false, _explicitMultiBubble = false } = {}) {
     if (!_skipExplicitSplit) {
       const segments = splitMultiBubbleIntent(rawText);
       if (segments.length > 1) {
-        return segments
-          .flatMap((segment) =>
-            this.process(segment, {
-              tone,
-              userMessage,
-              styleHint,
-              userPronouns,
-              _skipExplicitSplit: true
-            })
-          )
-          .filter(Boolean);
+        const finalParts = polishBubbleList(
+          segments.map((segment) => processPreservedBubble(segment, { tone, userMessage, styleHint, userPronouns })).filter(Boolean),
+          { tone, userMessage, styleHint, _explicitMultiBubble: true },
+          this
+        );
+        return finalParts.length ? finalParts : [];
       }
     }
 
+    const single = processPreservedBubble(rawText, { tone, userMessage, styleHint, userPronouns });
+    const finalParts = polishBubbleList(
+      single ? [single] : [],
+      { tone, userMessage, styleHint, _explicitMultiBubble },
+      this
+    );
+    if (finalParts.length) return finalParts;
+
     const cleaned = sanitize(rawText, { userPronouns });
-    let sentences = splitSentences(cleaned);
-
-    const expandSingleLine = (line) => {
-      const byCapital = splitCapitalThoughtBoundaries(line);
-      if (byCapital.length > 1) return byCapital;
-      const split = splitByComma(line);
-      if (split.length > 1) return split;
-      const expanded = splitLongChatLine(line);
-      return expanded.length > 1 ? expanded : [line];
-    };
-
-    if (sentences.length === 1) {
-      sentences = expandSingleLine(sentences[0]);
-    }
-
-    const parts = this.buildNaturalParts(sentences);
-    const humanParts =
-      parts.length > 1
-        ? parts.flatMap((p) => {
-            const sub = this.buildHumanParts([p], { userMessage });
-            return sub.length ? sub : [p];
-          })
-        : this.buildHumanParts(parts, { userMessage });
-    let finalParts = mergeShortParts(humanParts.length ? humanParts : parts)
-      .map(capitalize)
-      .filter((part) => part.length > 1 && !isBubbleSeparatorOnly(part));
-
-    // Laughter control (dynamic): allow rarely, avoid back-to-back, never in calm.
-    const combinedBefore = finalParts.join(" ");
-    const hasAnyLaughter = /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(combinedBefore);
-    const userUsesLaughter =
-      /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(
-        String(userMessage)
-      ) || isMessyLaughterMessage(userMessage);
-    const userLikesLaughter =
-      userUsesLaughter ||
-      styleHint?.prefersLaughter ||
-      styleHint?.preferredLaughter === "kk" ||
-      styleHint?.userLaughterEnergy === "high" ||
-      styleHint?.userLaughterEnergy === "medium";
-    const shouldSuppressLaughter =
-      tone === "calm" ||
-      (this.laughterCooldown > 0 && !userLikesLaughter && tone !== "playful");
-    if (hasAnyLaughter && shouldSuppressLaughter) {
-      finalParts = finalParts.map(stripStandaloneLaughter).filter(Boolean);
-    }
-    const combinedAfter = finalParts.join(" ");
-    const stillHasLaughter = /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(combinedAfter);
-    if (stillHasLaughter) {
-      this.laughterCooldown = 2;
-    } else {
-      this.laughterCooldown = Math.max(0, this.laughterCooldown - 1);
-    }
-
-    // Cooldown: avoid laughter in consecutive assistant outputs.
-    const combined = finalParts.join(" ");
-    const hasKk = /\bkk+\b/i.test(combined);
-    if (this.lastHadLaughter && hasKk && !userLikesLaughter) {
-      finalParts = finalParts.map(stripStandaloneLaughter).filter(Boolean);
-    }
-    this.lastHadLaughter = /\b((?:k{2,})|(?:rs+)|(?:(?:ha){2,})|(?:(?:he){2,})|(?:(?:hi){2,}))\b/i.test(finalParts.join(" "));
-
-    finalParts = finalParts
-      .map((part) => swapEmojiLaughterForKkk(part, styleHint))
-      .map(dropMetaQuestions)
-      .map((part) => softenOveractedStart(part))
-      .map((part) => removeBreadDerail(part, userMessage))
-      .map(normalizeInformalEnding)
-      .filter(Boolean);
-    // Keep intensity mirroring very subtle to avoid caricature.
-    finalParts = finalParts.map((part) => applyGreetingIntensity(part, userMessage, styleHint));
-    if (styleHint?.userCapsBurst) {
-      finalParts = finalParts.map((part) => part.replace(/\b(não|nao)\b/gi, (m) => m.toUpperCase()));
-    }
-    finalParts = dropTrailingFiller(finalParts)
-      .map(enforceTerminalPunctuation)
-      .map((part) => String(part).replace(/\s{2,}/g, " ").trim());
-    finalParts = stripUserEchoParts(finalParts, userMessage);
-    finalParts = repairBubbleCoherence(finalParts);
-    finalParts = finalParts.filter((part) => !isIncompleteBubble(part));
-    finalParts = collapseForShortUserPrompt(finalParts, userMessage);
-    finalParts = filterInvalidCorrectionBubbles(finalParts);
-    if (this.canInjectImperfection({ tone, userMessage }) && Math.random() < 0.05) {
-      finalParts = injectDynamicTypo(finalParts);
-      this.imperfectionEvents.push(Date.now());
-      this.imperfectionCooldown = 10;
-    }
-    finalParts = this.applyCalibratedImperfection(finalParts, { tone, userMessage });
-    return finalParts.length ? finalParts : [capitalize(stripStandaloneLaughter(cleaned))].filter(Boolean);
+    const fallback = capitalize(stripStandaloneLaughter(cleaned));
+    return fallback ? [fallback] : [];
   }
 
   /** Unifica process + anti-repetição + remember para regen. */

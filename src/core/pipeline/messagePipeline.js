@@ -1,5 +1,6 @@
 import { detectTone } from "../memory/toneDetector.js";
 import { extractFacts, extractStyle, isMeaningful, isMessyLaughterMessage, maxConsecutiveKRun } from "../memory/extractor.js";
+import { analyzeInformalTyping } from "../memory/informalTyping.js";
 import { formatLearnedStyleForPrompt, updateLearnedStyle } from "../memory/userStyleLearner.js";
 import { detectDocumentIntent } from "../../modules/documents/documentIntent.js";
 import { buildDocumentContextPayload } from "../../modules/documents/documentContextBuilder.js";
@@ -138,6 +139,7 @@ function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime
     userKkMaxRun,
     preferredLaughter
   });
+  const informal = analyzeInformalTyping(input);
 
   return {
     ...stylePrefs,
@@ -145,14 +147,19 @@ function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime
     hasConversationHistory: hasPriorTurns,
     userIsShort: style.isShort,
     userIsLong: style.isLong,
-    repeatedVowels: repeatedChars,
-    userGreetingIntensity: /^(oi+|oie+|eae+|hey+)/i.test(normalized) ? repeatedChars : 0,
+    repeatedVowels: Math.max(repeatedChars, informal.stretchedVowels),
+    userGreetingIntensity: /^(oi+|oie+|eae+|hey+)/i.test(normalized) ? Math.max(repeatedChars, informal.stretchedVowels) : 0,
     userBurst: burstMessages > 1,
     userKkMaxRun,
     userLaughterEnergy,
-    userKeyboardSmash,
-    userMessageMessy,
-    userMessyLaughter: isMessyLaughterMessage(input),
+    userKeyboardSmash: userKeyboardSmash || informal.keyboardSmash,
+    userMessageMessy: userMessageMessy || informal.melty,
+    userMessyLaughter: isMessyLaughterMessage(input) || informal.keyboardSmash,
+    userMeltyTyping: informal.melty,
+    userAffectionateBurst: informal.affectionate,
+    userLowPunctuation: informal.lowPunctuation,
+    userSkipTypoCorrection: informal.skipTypoCorrection,
+    userCanMirrorLoose: informal.canMirrorLoose,
     sparseGreetingFloodCount,
     userCapsBurst: hasCaps,
     userShortClauseCount: shortClauseCount,
@@ -281,6 +288,20 @@ export async function runMessagePipeline(runtime, payload = {}) {
   }
 
   const timingPlan = brainTurn?.timingPlan ?? null;
+  const enrichedStyleHint = {
+    ...styleHint,
+    ...(brainTurn?.snapshot?.trustBond
+      ? {
+          bondTrust: brainTurn.snapshot.trustBond.trust,
+          bondIntimacy: brainTurn.snapshot.trustBond.intimacy
+        }
+      : {}),
+    userCanMirrorLoose:
+      styleHint.userCanMirrorLoose &&
+      (isOwner ||
+        (brainTurn?.snapshot?.trustBond?.intimacy ?? 0) >= 0.42 ||
+        styleHint.userAffectionateBurst)
+  };
 
   const channelState = runtime.channelRegistry.applyMessageContext({
     channelId: safeChannelId,
@@ -531,7 +552,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       replyThreadContext,
       isReplyToBot: Boolean(isReplyToBot),
       messageKey,
-      styleHint,
+      styleHint: enrichedStyleHint,
       recentHistoryCount: normalizedHistory?.length ?? 0,
       recentHistory,
       resumedAfterClose,

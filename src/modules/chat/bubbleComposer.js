@@ -85,19 +85,19 @@ export function buildMultiBubbleRhythmBlock(meta = {}) {
 
   const byMode = {
     burst: [
-      "Ritmo AGORA: rajada — 2 a 4 bolhas curtas, como quem digita no impulso.",
-      "Bolha 1 pode ser reação/vocativo (nome, oxi, ué). Bolha 2+ traz o conteúdo.",
+      "Ritmo AGORA: impulso — quantas bolhas VOCÊ achar natural (1 se couber tudo, várias se o papo pedir rajada).",
+      "Bolha 1 pode ser reação/vocativo. Depois solta o conteúdo no ritmo que sentir.",
       "Separe bolhas com linha só contendo --- (não use travessão no texto)."
     ],
     layered: [
-      "Ritmo AGORA: em camadas — consciente na 1ª bolha, subconsciente vaza na 2ª (sem copiar literal).",
-      "Pode parecer que pensou enquanto digitava: primeira msg direta, segunda complementa ou confessa o que sentiu."
+      "Ritmo AGORA: em camadas — solte ideias em quantas bolhas fizerem sentido (consciente primeiro, subconsciente vaza depois).",
+      "Pode parecer que pensou enquanto digitava — sem contar bolhas, conte pensamentos fechados."
     ],
     compact: [
-      "Ritmo AGORA: compacto — 1 bolha, no máximo 2 se a segunda for só correção* ou kk."
+      "Ritmo AGORA: econômico — 1 bolha se a resposta cabe inteira; mais bolhas só se forem ideias realmente distintas."
     ],
     moderate: [
-      "Ritmo AGORA: moderado — 1 ou 2 bolhas; 3 só se ideias realmente distintas."
+      "Ritmo AGORA: você decide — 1 bolha ou quantas precisar; não conte bolhas, conte ideias completas."
     ]
   };
 
@@ -107,7 +107,8 @@ export function buildMultiBubbleRhythmBlock(meta = {}) {
     conscious ? `Consciente agora: ${String(conscious).slice(0, 220)}` : null,
     subconscious ? `Subconsciente (não copie literal): ${String(subconscious).slice(0, 220)}` : null,
     "Cada bolha = pensamento FECHADO. Proibido cortar frase, «citação» ou ideia no meio.",
-    "Typo corrigido na bolha seguinte com * no fim — só a palavra certa."
+    "Typo corrigido na bolha seguinte com * no fim — só a palavra certa.",
+    "Quantidade de mensagens: sua decisão criativa — 1 ou muitas; o sistema não impõe teto."
   ].filter(Boolean);
 }
 
@@ -145,15 +146,6 @@ export function planBubbleRhythm(parts = [], context = {}) {
   });
 
   let bubbles = mergeBrokenPhrases(parts);
-
-  if (mode === "compact" && bubbles.length > 2) {
-    bubbles = [bubbles.slice(0, -1).join(" "), bubbles[bubbles.length - 1]].filter(Boolean);
-  }
-
-  if (mode === "compact" && bubbles.length === 2) {
-    const combined = bubbles.join(" ");
-    if (combined.length < 72) bubbles = [combined];
-  }
 
   const delays = bubbles.map((b, i) =>
     computeBubbleDelay(b, i, { emotion, timingPlan: context.timingPlan, tone: context.tone, mode })
