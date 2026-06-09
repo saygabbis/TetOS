@@ -8,6 +8,8 @@ import { createBaileysClient } from "./baileysClient.js";
 import { registerMessageHandler } from "./messageHandler.js";
 import { DisconnectReason } from "baileys";
 import { isUserRecentlyActive, resolveNudgeRemoteJid, touchUserActivity } from "../../core/channels/userActivity.js";
+import { msSinceLastInbound, resetInboundActivity } from "./inboundLiveness.js";
+import { jidNormalizedUser } from "baileys";
 
 /** Pausa nudges/presence após 403 de assinatura (evita spam a cada 60s). */
 let presenceLlmPausedUntil = 0;
@@ -19,6 +21,31 @@ function isOllamaSubscriptionError(message = "") {
 }
 
 /** Reconecta após queda — retenta até voltar, sem múltiplos loops paralelos. */
+function formatSocketJid(socket) {
+  return jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "") || "?";
+}
+
+/** Baileys pode ficar "surdo": connection=open mas messages.upsert para. Força restart limpo. */
+function startInboundWatchdog({ getConnected, label = "whatsapp" }) {
+  const staleMs = Number(process.env.WHATSAPP_INBOUND_STALE_MS ?? 600000);
+  const checkMs = Number(process.env.WHATSAPP_INBOUND_CHECK_MS ?? 60000);
+  if (!Number.isFinite(staleMs) || staleMs < 60000) return;
+
+  setInterval(() => {
+    if (!getConnected()) {
+      resetInboundActivity();
+      return;
+    }
+    const silentMs = msSinceLastInbound();
+    if (silentMs < staleMs) return;
+    console.error(
+      `[${label}] socket surdo — conectado mas sem mensagens há ${Math.round(silentMs / 60000)} min. ` +
+        "Reinicie o processo (pm2 restart / npm run start:wa). Celular da bot nao pode ter WhatsApp aberto junto."
+    );
+    process.exit(1);
+  }, checkMs);
+}
+
 function scheduleWhatsAppReconnect({ label, onClose, connect, state }) {
   if (state?.active) {
     console.warn(`[whatsapp] ${label}: reconexão já em andamento`);
@@ -362,7 +389,8 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
           isConnected = true;
           reconnecting = false;
           reconnectState.active = false;
-          console.log("[whatsapp] connected");
+          resetInboundActivity();
+          console.log(`[whatsapp] connected — jid=${formatSocketJid(socket)}`);
         }
         if (update?.qr) console.log("[whatsapp] QR recebido — escaneie para autenticar");
 
@@ -412,6 +440,10 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
   await connect();
 
   scheduleAuxiliaryLoops(runtime, nudgeEngine, () => socket, () => isConnected);
+  startInboundWatchdog({
+    label: "whatsapp",
+    getConnected: () => isConnected
+  });
 }
 
 async function runDualWhatsApp(runtime, nudgeEngine) {
@@ -449,10 +481,12 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
           mainConnected = true;
           mainReconnecting = false;
           mainReconnectState.active = false;
+          resetInboundActivity();
+          const jid = formatSocketJid(mainSocket);
           console.log(
             DEFAULTS.whatsappMainObserveOnly
-              ? "[whatsapp] main connected — SEU número: lê chats e aprende (sem responder)."
-              : "[whatsapp] main connected — número que lê chats, aprende e responde."
+              ? `[whatsapp] main connected — jid=${jid} — SEU número: lê chats e aprende (sem responder).`
+              : `[whatsapp] main connected — jid=${jid} — número que lê chats, aprende e responde.`
           );
           notifyMainBootstrapOnline();
         }
@@ -516,10 +550,12 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
           mediaConnected = true;
           mediaReconnecting = false;
           mediaReconnectState.active = false;
+          resetInboundActivity();
+          const jid = formatSocketJid(mediaSocket);
           console.log(
             DEFAULTS.whatsappMainObserveOnly
-              ? "[whatsapp] bot connected — número da TETO: chat, .sticker e .toimg"
-              : "[whatsapp] media connected — número só para comandos .sticker / .toimg"
+              ? `[whatsapp] bot connected — jid=${jid} — número da TETO: chat, .sticker e .toimg`
+              : `[whatsapp] media connected — jid=${jid} — número só para comandos .sticker / .toimg`
           );
         }
         if (update?.qr) {
@@ -583,6 +619,10 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
     ? () => mediaConnected
     : () => mainConnected;
   scheduleAuxiliaryLoops(runtime, nudgeEngine, chatSocket, chatConnected);
+  startInboundWatchdog({
+    label: "whatsapp:bot",
+    getConnected: chatConnected
+  });
 }
 
 async function main() {

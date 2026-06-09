@@ -56,6 +56,8 @@ export async function createBaileysClient({
     version,
     printQRInTerminal: false,
     syncFullHistory: false,
+    markOnlineOnConnect: true,
+    keepAliveIntervalMs: 10_000,
     logger: silentLogger
   });
 

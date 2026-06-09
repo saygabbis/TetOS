@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { withGenerationSlot } from "../../infra/concurrency/generationSlot.js";
+import { touchInboundActivity } from "./inboundLiveness.js";
 import { jidNormalizedUser, downloadContentFromMessage, normalizeMessageContent } from "baileys";
 import { planWhatsAppReaction } from "./reactionPlanner.js";
 import { persistMedia, fileExtFromDocumentMessage } from "./mediaStore.js";
@@ -906,6 +907,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
   const MESSAGE_DEDUPE_TTL_MS = 60 * 1000;
   const skipVisionEnrichment = role === "media" && !botChatRole;
   const waLogPrefix = role === "media" ? "[whatsapp:media]" : "[whatsapp]";
+  console.log(
+    `${waLogPrefix} handler ativo${botChatRole ? " (responde chat)" : role === "main" ? " (só aprende)" : ""}`
+  );
   if (orchestrator) {
     socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
   }
@@ -1066,9 +1070,18 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
   }
 
   socket.ev.on("messages.upsert", async ({ messages, type }) => {
-    if (type !== "notify" && type !== "append") return;
+    const batch = messages ?? [];
+    touchInboundActivity();
+    console.log(`${waLogPrefix} upsert type=${type ?? "?"} count=${batch.length}`);
 
-    for (const incoming of messages ?? []) {
+    if (type !== "notify" && type !== "append") {
+      if (runtime.defaults.thinkingLogsEnabled && batch.length > 0) {
+        console.warn(`${waLogPrefix} upsert ignorado (type=${type}) — msg nao processada`);
+      }
+      return;
+    }
+
+    for (const incoming of batch) {
       try {
         if (!incoming?.message) continue;
         if (incoming?.messageStubType && !incoming.message?.conversation) {
