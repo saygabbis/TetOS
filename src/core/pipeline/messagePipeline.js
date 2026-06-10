@@ -592,13 +592,17 @@ export async function runMessagePipeline(runtime, payload = {}) {
   );
 
   if (runtime.brainOrchestrator?.logTurn) {
-    runtime.brainOrchestrator.logTurn({
-      turnId: `${safeSessionId}-${Date.now()}`,
-      input: { message: input, channelId: safeChannelId, isGroup, media },
-      brain: brainTurn?.snapshot ?? {},
-      timingPlan,
-      output: { replies, count: replies.length }
-    });
+    const shouldLogMind =
+      !runtime.defaults.mindLogOnlyReplies || (Array.isArray(replies) && replies.length > 0);
+    if (shouldLogMind) {
+      runtime.brainOrchestrator.logTurn({
+        turnId: `${safeSessionId}-${Date.now()}`,
+        input: { message: input, channelId: safeChannelId, isGroup, media },
+        brain: brainTurn?.snapshot ?? {},
+        timingPlan,
+        output: { replies, count: replies.length }
+      });
+    }
   }
 
   if (replies.length > 0 && runtime.brainOrchestrator?.memory?.recordEpisode) {

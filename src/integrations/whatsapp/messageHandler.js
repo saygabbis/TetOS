@@ -91,11 +91,6 @@ function logThinking(runtime, payload = {}) {
     detail = ""
   } = payload;
   const detailText = String(detail ?? "").trim();
-  runtime.brainOrchestrator?.mindLogger?.append?.({
-    input: { phase, userId, remoteJid, detail: detailText },
-    brain: { thinking: true },
-    output: {}
-  });
   if (!runtime?.defaults?.thinkingLogsEnabled) return;
   console.log(
     `[thinking] phase=${phase} user=${userId} chat=${remoteJid}${detailText ? ` detail="${detailText}"` : ""}`

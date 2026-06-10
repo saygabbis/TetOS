@@ -215,6 +215,7 @@ export function createRuntime() {
         mediaLearningPath: DEFAULTS.mediaLearningPath,
         mindLogPath: DEFAULTS.mindLogPath,
         mindLogEnabled: DEFAULTS.mindLogEnabled,
+        mindLogMode: DEFAULTS.mindLogMode,
         groupMemoryPath: DEFAULTS.groupMemoryPath,
         episodicMemoryPath: DEFAULTS.episodicMemoryPath,
         timingEnabled: DEFAULTS.timingEngineEnabled,

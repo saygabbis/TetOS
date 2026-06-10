@@ -107,7 +107,7 @@ export class BrainOrchestrator {
     });
     this.narrator = new LifeNarrator({ workerLlm: config.workerLlm });
     this.mindLogger = config.mindLogEnabled
-      ? new MindLogger(config.mindLogPath, { enabled: true })
+      ? new MindLogger(config.mindLogPath, { enabled: true, mode: config.mindLogMode ?? "slim" })
       : null;
     this.adapters = new AdapterRegistry(config.adapters ?? {});
     this.arbitrator = new CandidateArbitrator();

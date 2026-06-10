@@ -224,6 +224,11 @@ export const DEFAULTS = {
   episodicMemoryPath: process.env.TETOS_MEMORY_EPISODIC_PATH ?? "./data/episodicMemory.ndjson",
   mindLogPath: process.env.TETOS_MIND_LOG_PATH ?? "./data/mind-log",
   mindLogEnabled: String(process.env.TETOS_MIND_LOG_ENABLED ?? "true").toLowerCase() === "true",
+  /** slim = snapshot leve (VPS 24/7); full = dump completo (debug). */
+  mindLogMode: String(process.env.TETOS_MIND_LOG_MODE ?? "slim").trim().toLowerCase() === "full" ? "full" : "slim",
+  /** Grava mind log só quando a Teto respondeu (menos ruído). */
+  mindLogOnlyReplies: String(process.env.TETOS_MIND_LOG_ONLY_REPLIES ?? "true").toLowerCase() === "true",
+  mindLogRetentionDays: Number(process.env.TETOS_MIND_LOG_RETENTION_DAYS ?? 14),
   mediaLearningPath: process.env.TETOS_MEDIA_LEARNING_PATH ?? "./data/mediaLearning.json",
   timingEngineEnabled: String(process.env.TETOS_TIMING_ENGINE_ENABLED ?? "true").toLowerCase() === "true",
   brainBackgroundTickMs: Number(process.env.TETOS_BRAIN_BACKGROUND_TICK_MS ?? 120000),

@@ -3,6 +3,7 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 import { runMediaRetentionSweep } from "../../infra/media/mediaRetentionSweep.js";
+import { sweepMindLogRetention } from "../../infra/mindLogRetention.js";
 import { createRuntime } from "../../app/createRuntime.js";
 import { createBaileysClient } from "./baileysClient.js";
 import { registerMessageHandler } from "./messageHandler.js";
@@ -395,6 +396,21 @@ function scheduleAuxiliaryLoops(runtime, nudgeEngine, getSocket, getConnected) {
       });
     setTimeout(sweep, 120_000);
     setInterval(sweep, DEFAULTS.mediaRetentionIntervalMs);
+  }
+
+  if (DEFAULTS.mindLogEnabled && DEFAULTS.mindLogRetentionDays > 0) {
+    const sweepMindLog = () => {
+      try {
+        const result = sweepMindLogRetention(DEFAULTS.mindLogPath, DEFAULTS.mindLogRetentionDays);
+        if (result.removed > 0) {
+          console.log(`[mind-log] retencao: removidos ${result.removed}, mantidos ${result.kept}`);
+        }
+      } catch (error) {
+        console.error("[mind-log] retencao:", error?.message ?? error);
+      }
+    };
+    setTimeout(sweepMindLog, 180_000);
+    setInterval(sweepMindLog, 6 * 60 * 60 * 1000);
   }
 }
 

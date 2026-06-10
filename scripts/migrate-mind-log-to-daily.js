@@ -1,10 +1,13 @@
 #!/usr/bin/env node
-import { appendFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { readNdjsonStream } from "../src/infra/ndjsonReader.js";
+import { appendFileSync, existsSync, mkdirSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { compactMindEntry } from "../src/core/consciousness/mindLogCompact.js";
+import { extractNdjsonDay, forEachNdjsonLine } from "../src/infra/ndjsonReader.js";
 
-const legacyPath = process.argv[2] ?? "./data/mindLog.ndjson";
-const targetDir = process.argv[3] ?? "./data/mind-log";
+const args = process.argv.slice(2);
+const slim = args.includes("--slim");
+const legacyPath = args.find((arg) => !arg.startsWith("--")) ?? "./data/mindLog.ndjson";
+const targetDir = args.filter((arg) => !arg.startsWith("--"))[1] ?? "./data/mind-log";
 
 if (!existsSync(legacyPath)) {
   console.error(`Arquivo legado nao encontrado: ${legacyPath}`);
@@ -13,18 +16,44 @@ if (!existsSync(legacyPath)) {
 
 if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true });
 
-let total = 0;
-const byDay = {};
+const sourceSizeMb = (statSync(legacyPath).size / (1024 * 1024)).toFixed(1);
+console.log(`Migrando ${legacyPath} (${sourceSizeMb} MB) -> ${targetDir}${slim ? " [modo slim]" : ""}`);
 
-readNdjsonStream(legacyPath).forEach((entry) => {
-  const day = String(entry.ts ?? "").slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
+let total = 0;
+let skipped = 0;
+const byDay = {};
+let lastProgressAt = Date.now();
+
+forEachNdjsonLine(legacyPath, (line) => {
+  const day = extractNdjsonDay(line);
+  if (!day) {
+    skipped += 1;
+    return;
+  }
   const path = join(targetDir, `${day}.ndjson`);
-  appendFileSync(path, `${JSON.stringify(entry)}\n`);
+  let payload;
+  if (slim) {
+    try {
+      payload = `${JSON.stringify(compactMindEntry(JSON.parse(line)))}\n`;
+    } catch {
+      skipped += 1;
+      return;
+    }
+  } else {
+    payload = `${line}\n`;
+  }
+  appendFileSync(path, payload);
   byDay[day] = (byDay[day] ?? 0) + 1;
   total += 1;
+  if (total % 500 === 0 || Date.now() - lastProgressAt > 15000) {
+    console.log(`... ${total} linhas processadas`);
+    lastProgressAt = Date.now();
+  }
 });
 
-console.log(`Migradas ${total} entradas de ${legacyPath} -> ${targetDir}`);
-console.log(Object.entries(byDay).map(([day, count]) => `- ${day}: ${count}`).join("\n"));
+console.log(`Migradas ${total} entradas (${skipped} sem ts valido)`);
+console.log(Object.entries(byDay).map(([day, count]) => `- ${day}: ${count}`).join("\n") || "(nenhum dia)");
 console.log(`Atualize TETOS_MIND_LOG_PATH=${targetDir}`);
+if (!slim) {
+  console.log("Dica: rode de novo com --slim para compactar entradas e economizar disco.");
+}
