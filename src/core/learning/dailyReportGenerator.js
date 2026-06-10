@@ -1,5 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { isLegacyMindLogPath, resolveMindLogDailyPath } from "../consciousness/mindLogPaths.js";
+import { readNdjsonFile, readNdjsonStream } from "../../infra/ndjsonReader.js";
 
 function dayKey(date = new Date(), timeZone = "America/Sao_Paulo") {
   return new Intl.DateTimeFormat("en-CA", {
@@ -10,20 +12,13 @@ function dayKey(date = new Date(), timeZone = "America/Sao_Paulo") {
   }).format(date);
 }
 
-function safeReadNdjson(path) {
-  if (!existsSync(path)) return [];
-  const raw = readFileSync(path, "utf8").trim();
-  if (!raw) return [];
-  return raw
-    .split("\n")
-    .map((line) => {
-      try {
-        return JSON.parse(line);
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
+function readMindLogForDay(mindLogPath, day) {
+  if (isLegacyMindLogPath(mindLogPath)) {
+    return readNdjsonStream(mindLogPath, {
+      lineFilter: (line) => line.includes(day)
+    }).filter((entry) => String(entry.ts ?? "").startsWith(day));
+  }
+  return readNdjsonFile(resolveMindLogDailyPath(mindLogPath, day));
 }
 
 export class DailyReportGenerator {
@@ -53,7 +48,7 @@ export class DailyReportGenerator {
       mkdirSync(reportDir, { recursive: true });
     }
     const ledgerPath = join(this.ledger.basePath, `${day}.ndjson`);
-    const events = safeReadNdjson(ledgerPath);
+    const events = readNdjsonFile(ledgerPath);
     const byEvent = {};
     const edits = [];
     const deletions = [];
@@ -145,7 +140,7 @@ export class DailyReportGenerator {
       }
     }
     const mindEntries = this.mindLogPath
-      ? safeReadNdjson(this.mindLogPath).filter((e) => String(e.ts ?? "").startsWith(day))
+      ? readMindLogForDay(this.mindLogPath, day)
       : [];
     const mindSamples = mindEntries.slice(-24);
     const hourlySnapshots = Array.from({ length: 24 }, (_, hour) => {
@@ -287,6 +282,11 @@ export class DailyReportGenerator {
     const minute = referenceDate.getMinutes();
     if (hour !== (hh || 0) || minute !== (mm || 0)) return null;
     if (this.lastGeneratedDay === day) return null;
-    return this.generateForDay(day);
+    try {
+      return this.generateForDay(day);
+    } catch (error) {
+      console.error("[daily-report] falha ao gerar relatorio:", error?.message ?? error);
+      return null;
+    }
   }
 }

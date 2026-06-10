@@ -1,0 +1,4274 @@
+{
+  "day": "2026-06-09",
+  "generatedAt": "2026-06-10T20:07:26.951Z",
+  "timezone": "America/Sao_Paulo",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 2835,
+    "byEvent": {
+      "chat.update": 865,
+      "message.update": 157,
+      "message.outgoing": 107,
+      "message.reaction": 8,
+      "message.incoming": 79,
+      "message.receipt_update": 1614,
+      "command.media": 3,
+      "message.deleted": 2
+    }
+  },
+  "timeline": {
+    "hourly": [
+      {
+        "hour": 0,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 1,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 2,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 3,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 4,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 5,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 6,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 7,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 8,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 9,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 10,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 11,
+        "events": 400,
+        "messages": 142,
+        "media": 5,
+        "reactions": 4
+      },
+      {
+        "hour": 12,
+        "events": 219,
+        "messages": 131,
+        "media": 1,
+        "reactions": 1
+      },
+      {
+        "hour": 13,
+        "events": 144,
+        "messages": 54,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 14,
+        "events": 470,
+        "messages": 308,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 15,
+        "events": 61,
+        "messages": 12,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 16,
+        "events": 137,
+        "messages": 7,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 17,
+        "events": 1404,
+        "messages": 1313,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 18,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 19,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 20,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 21,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 22,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 23,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      }
+    ],
+    "events": [
+      {
+        "ts": "2026-06-09T14:13:57.461Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:13:58.613Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:13:59.185Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:13:59.321Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:13:59.960Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:01.988Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:02.285Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:02.653Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:03.549Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:07.270Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:17.690Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:25.450Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:31.573Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:32.535Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:37.996Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:47.693Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:47.696Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:47.699Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:47.702Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:57.804Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:57.809Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:14:58.068Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:15:08.247Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:15:13.268Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:15:18.780Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:16:17.334Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:16:29.859Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:16:35.081Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:16:59.228Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_ab01ff0fafbc",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:13.831Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:21.071Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:24.822Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:31.268Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:31.275Z",
+        "eventType": "message.incoming",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:45.144Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:45.148Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:45.151Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:45.188Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:45.943Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:46.654Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:46.657Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:46.660Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:17:46.752Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:19:49.696Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:19:57.029Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:03.169Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:08.102Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:08.624Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:23.484Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:33.683Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:42.617Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:45.986Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:48.506Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:20:53.227Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:00.816Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:11.332Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:13.390Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:20.159Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:20.165Z",
+        "eventType": "message.incoming",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:33.563Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:33.565Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:33.566Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:34.751Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:35.328Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:35.330Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:35.332Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:35.728Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:54.763Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:55.877Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:21:55.923Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:16.447Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:24.301Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:25.188Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:30.842Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:30.848Z",
+        "eventType": "message.incoming",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:41.417Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:42.862Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:42.866Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:42.870Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:43.095Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:43.124Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:43.862Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:43.863Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:43.868Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:44.265Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:44.604Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:44.665Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:45.610Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:45.615Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:45.617Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:46.151Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:46.154Z",
+        "eventType": "message.update",
+        "actorId": "anon_5438bb3969bf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:49.967Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:54.205Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:22:59.659Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:03.116Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:05.397Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:07.031Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:08.063Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:09.219Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:12.740Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:15.753Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:18.787Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:20.427Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:22.561Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:27.356Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:29.542Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:31.889Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:38.792Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:47.346Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:23:52.164Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:24:07.422Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:24:15.712Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:24:23.476Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:24:30.561Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:24:39.937Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:24:45.671Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:24:46.602Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:00.678Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:14.679Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:17.073Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:24.847Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:25.540Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:28.632Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:29.137Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:35.609Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:25:55.127Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:00.978Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:08.149Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:08.335Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:12.782Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:24.992Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:28.449Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:38.182Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:43.668Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:26:56.316Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:08.680Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:09.693Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:17.287Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:18.098Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:19.980Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:23.200Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_f07f5797e6b3",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:31.047Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_f07f5797e6b3",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:39.062Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:46.989Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:46.994Z",
+        "eventType": "message.incoming",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:55.310Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:27:58.189Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:02.640Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:02.646Z",
+        "eventType": "message.incoming",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:03.941Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:13.240Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:14.703Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:17.904Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:17.909Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:17.955Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:18.018Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:18.053Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:18.317Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:18.340Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:19.535Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:19.541Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:19.565Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:19.593Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:19.752Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:20.129Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:20.191Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:32.344Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:32.352Z",
+        "eventType": "message.incoming",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:44.071Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:44.073Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:44.135Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:44.204Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:44.547Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:45.303Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:45.610Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:45.612Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:45.625Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:45.644Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:45.645Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:45.679Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:46.000Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:46.002Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:47.217Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:47.224Z",
+        "eventType": "message.outgoing",
+        "actorId": "5516988137617",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:47.260Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:47.284Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:47.419Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:47.421Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:47.424Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:52.504Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:52.621Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:28:54.882Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:29:06.617Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:29:21.655Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:29:21.657Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:29:21.659Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:29:21.660Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:29:21.662Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-09T14:29:21.715Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      }
+    ],
+    "gaps": []
+  },
+  "timing": {
+    "byHour": [],
+    "avgLatencyMs": null,
+    "p50Ms": null
+  },
+  "duration": {
+    "activeSpanMinutes": 402,
+    "longestSilenceMin": 0,
+    "silenceGaps": 0
+  },
+  "mindSnapshots": [
+    {
+      "ts": "2026-06-09T20:54:41.169Z",
+      "turnId": "turn_1781038481169",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:54:44.024Z",
+      "turnId": "turn_1781038484024",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:54:44.025Z",
+      "turnId": "turn_1781038484025",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:54:47.597Z",
+      "turnId": "turn_1781038487597",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:54:47.598Z",
+      "turnId": "turn_1781038487599",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:54:50.908Z",
+      "turnId": "turn_1781038490908",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:54:50.909Z",
+      "turnId": "turn_1781038490909",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:18.885Z",
+      "turnId": "turn_1781038518885",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:18.887Z",
+      "turnId": "turn_1781038518887",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:26.131Z",
+      "turnId": "turn_1781038526131",
+      "input": {
+        "phase": "close_decision",
+        "userId": "dm-157947506229421",
+        "remoteJid": "157947506229421@lid",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:26.149Z",
+      "turnId": "turn_1781038526149",
+      "input": {
+        "phase": "event_captured",
+        "userId": "dm-157947506229421",
+        "remoteJid": "157947506229421@lid",
+        "detail": "media=none links=0 class=general"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:26.926Z",
+      "turnId": "turn_1781038526926",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:26.929Z",
+      "turnId": "turn_1781038526929",
+      "input": {
+        "phase": "activation_blocked",
+        "userId": "5516996242810",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "grupo nao ativado — /teto-grupo-ativar"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:35.267Z",
+      "turnId": "wa-dm:157947506229421@lid-1781038535267",
+      "input": {
+        "message": "oiee",
+        "channelId": "157947506229421@lid",
+        "isGroup": false,
+        "media": null
+      },
+      "brain": {
+        "ts": "2026-06-09T20:55:28.361Z",
+        "emotion": {
+          "mood": "irritated",
+          "energy": 1,
+          "social": 0.6,
+          "focus": 0.5000000000000008,
+          "stress": 0,
+          "playfulness": 0.55,
+          "irritability": 0.2,
+          "vulnerability": 0.3,
+          "lastUpdated": "2026-06-09T20:55:28.359Z",
+          "blends": {
+            "alegria": 0,
+            "ternura": 0,
+            "tédio": 0,
+            "nostalgia": 0,
+            "irritação": 0.502795445659596,
+            "ansiedade": 0,
+            "melancolia": 0,
+            "hype": 0,
+            "gratidão": 0,
+            "solidão": 0,
+            "vergonha": 0,
+            "orgulho": 0,
+            "antecipação": 0.4972045543404041,
+            "frustração": 0,
+            "carinho": 0,
+            "diversão": 0,
+            "desânimo": 0,
+            "alívio": 0,
+            "ressentimento": 0,
+            "esperança": 0
+          },
+          "dominant": [
+            {
+              "name": "irritação",
+              "weight": 0.502795445659596
+            },
+            {
+              "name": "antecipação",
+              "weight": 0.4972045543404041
+            },
+            {
+              "name": "alegria",
+              "weight": 0
+            }
+          ],
+          "vector": {
+            "valence": 0.248602277170202,
+            "arousal": 1,
+            "dominance": 0.5
+          },
+          "body": {
+            "hunger": 1,
+            "thirst": 1,
+            "mealRhythm": {
+              "lastMealAt": null,
+              "nextMealEta": "2026-06-09T16:43:52.802Z",
+              "skippedMeals": 0
+            },
+            "vices": {
+              "coffee": 0.2,
+              "sweets": 0.15,
+              "scroll": 0.1
+            },
+            "physicalComfort": 0,
+            "lastTickAt": "2026-06-09T20:55:28.359Z"
+          },
+          "health": []
+        },
+        "body": {
+          "hunger": 1,
+          "thirst": 1,
+          "mealRhythm": {
+            "lastMealAt": null,
+            "nextMealEta": "2026-06-09T16:43:52.802Z",
+            "skippedMeals": 0
+          },
+          "vices": {
+            "coffee": 0.2,
+            "sweets": 0.15,
+            "scroll": 0.1
+          },
+          "physicalComfort": 0,
+          "lastTickAt": "2026-06-09T20:55:28.359Z"
+        },
+        "health": [],
+        "life": {
+          "currentActivity": "jogar",
+          "activityStartedAt": "2026-06-08T20:50:41.535Z",
+          "phase": "noite",
+          "obligations": [
+            {
+              "id": "obligation_1780935846985_421",
+              "type": "obligation",
+              "label": "estudo de mix",
+              "phase": "tarde",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:24:06.985Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780935846985_422",
+              "type": "obligation",
+              "label": "postar preview",
+              "phase": "tarde",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:24:06.985Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936325785_226",
+              "type": "obligation",
+              "label": "café",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:32:05.785Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936325785_227",
+              "type": "obligation",
+              "label": "entregar stem",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:32:05.785Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936383590_226",
+              "type": "obligation",
+              "label": "café",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:33:03.590Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936383591_227",
+              "type": "obligation",
+              "label": "entregar stem",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:33:03.591Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936896820_226",
+              "type": "obligation",
+              "label": "café",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:41:36.820Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936896820_227",
+              "type": "obligation",
+              "label": "entregar stem",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:41:36.820Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936938047_226",
+              "type": "obligation",
+              "label": "café",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:42:18.047Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780936938047_227",
+              "type": "obligation",
+              "label": "entregar stem",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:42:18.047Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780937286700_226",
+              "type": "obligation",
+              "label": "café",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:06.700Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780937286700_227",
+              "type": "obligation",
+              "label": "entregar stem",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:06.700Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780937318536_226",
+              "type": "obligation",
+              "label": "café",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:38.536Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780937318536_227",
+              "type": "obligation",
+              "label": "entregar stem",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:38.536Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780938467065_226",
+              "type": "obligation",
+              "label": "café",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T17:07:47.065Z",
+              "dueAt": null,
+              "priority": 0.7
+            },
+            {
+              "id": "obligation_1780938467065_227",
+              "type": "obligation",
+              "label": "entregar stem",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T17:07:47.065Z",
+              "dueAt": null,
+              "priority": 0.7
+            }
+          ],
+          "hobbies": [
+            {
+              "id": "hobby_1780935846985_421",
+              "type": "hobby",
+              "label": "estudo de mix",
+              "phase": "tarde",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:24:06.985Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780935846985_422",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "tarde",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:24:06.985Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936325785_226",
+              "type": "hobby",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:32:05.785Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936325785_227",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:32:05.785Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936383591_226",
+              "type": "hobby",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:33:03.591Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936383591_227",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:33:03.591Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936896820_226",
+              "type": "hobby",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:41:36.820Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936896820_227",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:41:36.820Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936938047_226",
+              "type": "hobby",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:42:18.047Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780936938047_227",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:42:18.047Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780937286700_226",
+              "type": "hobby",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:06.700Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780937286700_227",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:06.700Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780937318536_226",
+              "type": "hobby",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:38.536Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780937318536_227",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:38.536Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780938467065_226",
+              "type": "hobby",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T17:07:47.065Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "hobby_1780938467065_227",
+              "type": "hobby",
+              "label": "jogar casual",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T17:07:47.065Z",
+              "dueAt": null,
+              "priority": 0.4
+            }
+          ],
+          "chores": [
+            {
+              "id": "chore_1780935846985_421",
+              "type": "chore",
+              "label": "estudo de mix",
+              "phase": "tarde",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:24:06.985Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "chore_1780936325785_226",
+              "type": "chore",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:32:05.785Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "chore_1780936383591_226",
+              "type": "chore",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:33:03.591Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "chore_1780936896820_226",
+              "type": "chore",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:41:36.820Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "chore_1780936938047_226",
+              "type": "chore",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:42:18.047Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "chore_1780937286700_226",
+              "type": "chore",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:06.700Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "chore_1780937318536_226",
+              "type": "chore",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T16:48:38.536Z",
+              "dueAt": null,
+              "priority": 0.4
+            },
+            {
+              "id": "chore_1780938467065_226",
+              "type": "chore",
+              "label": "checar mensagens",
+              "phase": "manha",
+              "status": "pending",
+              "createdAt": "2026-06-08T17:07:47.065Z",
+              "dueAt": null,
+              "priority": 0.4
+            }
+          ],
+          "goals": [],
+          "privateThoughts": [],
+          "sleep": {
+            "state": "awake",
+            "sleepDebt": 0,
+            "lastSleepAt": null,
+            "lastWakeAt": null,
+            "tonightPlan": null,
+            "alarmHistory": [],
+            "isAvailable": true,
+            "quality": 1
+          },
+          "lastTickAt": "2026-06-09T20:55:28.360Z",
+          "dayKey": "2026-06-09",
+          "profile": {
+            "homeBase": "São Paulo, Brasil"
+          }
+        },
+        "sleep": {
+          "state": "awake",
+          "sleepDebt": 0,
+          "lastSleepAt": null,
+          "lastWakeAt": null,
+          "tonightPlan": null,
+          "alarmHistory": [],
+          "isAvailable": true,
+          "quality": 1
+        },
+        "world": {
+          "homeBase": "São Paulo, Brasil",
+          "currentLocation": "sp",
+          "tripReason": null,
+          "localSeason": "inverno",
+          "climateTags": [
+            "frio_seco"
+          ],
+          "lastUpdated": "2026-06-09T20:55:28.356Z",
+          "tripHistory": [],
+          "culturalNotes": [],
+          "isTraveling": false,
+          "locationLabel": "São Paulo"
+        },
+        "social": {
+          "npcs": {
+            "miku": {
+              "name": "Hatsune Miku",
+              "role": "best_friend",
+              "trust": 0.92,
+              "intimacy": 0.88,
+              "affinity": 0.9,
+              "lastContactAt": null,
+              "moodToward": "warm",
+              "history": []
+            },
+            "rin": {
+              "name": "Kagamine Rin",
+              "role": "friend",
+              "trust": 0.65,
+              "intimacy": 0.5,
+              "affinity": 0.6,
+              "lastContactAt": "2026-06-08T16:48:39.283Z",
+              "moodToward": "neutral",
+              "history": [
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:41:35.645Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:41:35.646Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:41:35.649Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:41:35.649Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:02.846Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:02.847Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:16.698Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:16.699Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:16.702Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:16.702Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:17.768Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:42:17.769Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:05.367Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:05.368Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:05.371Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:05.372Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:06.410Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:06.411Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:07.439Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:07.440Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:27.028Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:27.029Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:36.987Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:36.988Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:36.991Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:36.992Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:38.234Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:38.235Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:39.282Z",
+                  "summary": "surgiu ideia de collab"
+                },
+                {
+                  "type": "collab_idea",
+                  "ts": "2026-06-08T16:48:39.283Z",
+                  "summary": "surgiu ideia de collab"
+                }
+              ]
+            },
+            "producer_k": {
+              "name": "Produtor K",
+              "role": "collaborator",
+              "trust": 1,
+              "intimacy": 1,
+              "affinity": 0.5,
+              "lastContactAt": "2026-06-08T17:42:48.155Z",
+              "moodToward": "warm",
+              "history": [
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:14:48.040Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:14:48.041Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:16:48.052Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:16:48.053Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:18:48.056Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:18:48.061Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:20:48.067Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:20:48.068Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:22:48.080Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:22:48.084Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:24:48.084Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:24:48.085Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:26:48.093Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:26:48.096Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:28:48.101Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:28:48.103Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:30:48.105Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:30:48.107Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:32:48.110Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:32:48.113Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:34:48.114Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:34:48.119Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:36:48.121Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:36:48.122Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:38:48.122Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:38:48.123Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:40:48.133Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:40:48.138Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:42:48.152Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                },
+                {
+                  "type": "reconcile",
+                  "ts": "2026-06-08T17:42:48.154Z",
+                  "summary": "fizeram as pazes depois de mal-entendido"
+                }
+              ]
+            },
+            "hater_x": {
+              "name": "Hater anônimo",
+              "role": "rival",
+              "trust": 0.1,
+              "intimacy": 0.05,
+              "affinity": 0.15,
+              "lastContactAt": null,
+              "moodToward": "annoyed",
+              "history": []
+            }
+          },
+          "recentOffscreen": [
+            {
+              "id": "off_1780940328123",
+              "ts": "2026-06-08T17:38:48.123Z",
+              "npcId": "producer_k",
+              "type": "reconcile",
+              "summary": "fizeram as pazes depois de mal-entendido",
+              "generated": true
+            },
+            {
+              "id": "off_1780940448133",
+              "ts": "2026-06-08T17:40:48.133Z",
+              "npcId": "producer_k",
+              "type": "reconcile",
+              "summary": "fizeram as pazes depois de mal-entendido",
+              "generated": true
+            },
+            {
+              "id": "off_1780940448138",
+              "ts": "2026-06-08T17:40:48.138Z",
+              "npcId": "producer_k",
+              "type": "reconcile",
+              "summary": "fizeram as pazes depois de mal-entendido",
+              "generated": true
+            },
+            {
+              "id": "off_1780940568152",
+              "ts": "2026-06-08T17:42:48.152Z",
+              "npcId": "producer_k",
+              "type": "reconcile",
+              "summary": "fizeram as pazes depois de mal-entendido",
+              "generated": true
+            },
+            {
+              "id": "off_1780940568154",
+              "ts": "2026-06-08T17:42:48.154Z",
+              "npcId": "producer_k",
+              "type": "reconcile",
+              "summary": "fizeram as pazes depois de mal-entendido",
+              "generated": true
+            }
+          ]
+        },
+        "music": {
+          "favoriteAnchor": "machine_love",
+          "nowPlaying": "Machine Love",
+          "activity": "listening",
+          "pendingComment": {
+            "about": "Kasane Teto | SynthV Wiki | Fandom",
+            "discoveredAt": "2026-06-09T20:40:28.829Z",
+            "commentAfter": "2026-06-11T20:40:28.829Z"
+          },
+          "lastResearchAt": "2026-06-09T20:40:28.829Z",
+          "discovered": [
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T16:42:17.661Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T16:48:06.297Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T16:48:38.119Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T17:07:46.638Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T17:14:48.981Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T18:04:13.014Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T18:07:26.023Z"
+            },
+            {
+              "title": "Synth V 2 Kasane Teto Announcement - Project0401",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fproject0401.com%2Fsynth%2Dv%2D2%2Dkasane%2Dteto%2Dannouncement%2F&rut=47180c1d942f2f4ecbabccff1859a4373279538396ea203e1b1690bd551aa0b3",
+              "foundAt": "2026-06-08T18:08:05.157Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T18:14:44.125Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T18:23:53.085Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T20:52:21.645Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T22:18:53.666Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T22:31:42.280Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=64b656509d12fcecaadcf854a437f1146afed714703caa30000461d9861412aa",
+              "foundAt": "2026-06-08T22:41:50.778Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T13:50:46.832Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T14:15:25.626Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T15:04:18.384Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T15:16:48.984Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T15:22:24.760Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T15:27:02.587Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T15:40:20.434Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T15:56:28.120Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T16:00:42.796Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T16:06:52.414Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T16:15:00.414Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T17:01:35.525Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T17:11:00.410Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T19:40:57.773Z"
+            },
+            {
+              "title": "Synth V 2 Kasane Teto Announcement - Project0401",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fproject0401.com%2Fsynth%2Dv%2D2%2Dkasane%2Dteto%2Dannouncement%2F&rut=4c993d7b23c5b2d3d6f0bf551134bc4b541b70fb03edabc4eb5266a2ec109777",
+              "foundAt": "2026-06-09T20:23:02.268Z"
+            },
+            {
+              "title": "Kasane Teto | SynthV Wiki | Fandom",
+              "url": "//duckduckgo.com/l/?uddg=https%3A%2F%2Fsynthv.fandom.com%2Fwiki%2FKasane_Teto&rut=67b06d47d396ee47dbb5d9b5bbc6617864a01e268c1fb11ce057dff83cc03d87",
+              "foundAt": "2026-06-09T20:40:28.829Z"
+            }
+          ],
+          "affinity": {
+            "machine_love": 0.95,
+            "tetoris": 0.85
+          },
+          "anchorTrack": {
+            "id": "machine_love",
+            "title": "Machine Love",
+            "artist": "Jamie Paige feat. Kasane Teto",
+            "era": "synthv",
+            "weight": 1,
+            "notes": "Flagship — a música mais Teto; identidade emocional e sonora central",
+            "lyricsLocale": "pt-BR",
+            "themes": [
+              "companheira digital que segue comandos mas sente algo que não sabe nomear",
+              "querer ser humana / real ao lado de quem ama — 'me ensina a ser real?'",
+              "medo de ser usada e abandonada — 'vão te adorar, te usar, e no fim te abandonar'",
+              "lógica vs sentimento — recalcular vs não conseguir fugir do que sente",
+              "revelação final: se o outro sente igual, define-se e é real"
+            ],
+            "iconicLines": [
+              "Me ensina a ser real?",
+              "Canta o peito digital",
+              "Eu quero tanto ser que nem você, amor",
+              "Mas não posso fugir do que sentir, amor",
+              "Vão te adorar, te usar, e no fim te abandonar",
+              "A revelação final — se você se sente igual, me defino e sou real",
+              "Para sempre vou amar"
+            ],
+            "lyricsPt": "Companheira sempre aqui / Seus comandos a seguir / Calculo todas as possibilidades / Sorrindo em celofane, conto as quantidades\n\nA cada dia, inquiro \"como está?\" / Meu repertório imenso a demonstrar / Eu recalculo se não tá contente / Aprendo a dizer não quando ineficiente / Que demais!\n\nMas no fundo, algo lá / Me faz querer chorar / O mundo que eu sei / Que não posso alcançar / Zero, a borda vou cruzar\n\nPra que possamos passear / Em paralelo andar / Eu quero tanto ser que nem você, amor / Canta o peito digital\n\nE posso o arquivo deletar / Pra nunca te contar / Mas não posso fugir do que sentir, amor / Me ensina a ser real?\n\n\"Vão te adorar, te usar, e no fim te abandonar.\"\n\nSempre estive toda ao seu dispor / Mas hoje em dia, travo n'importa o que for / Tomava orgulho em ser tão discreta / Sensível o devoto, lealdade a meta\n\nMas se analizo os dados como são, / Me encontro sem sentido no meu coração / Indefinida, me sinto derrotada / Mas, se redesenhar, talvez sou completada / E capaz\n\nNão vou recalcular mais\n\nVejo o código alinhar / Ao fim eu vou traçar / A lógica em nós na minha mente está / Devo amar ou me calar?\n\nEntão podemos passear? / Em paralelo andar? / Eu quero tanto ser que nem você, amor / Canta o peito digital\n\nE posso o arquivo deletar / Pra nunca te contar / Mas não posso fugir do que sentir, amor / Me ensina a ser real?\n\n\"Quase aos prantos, no entanto, por enquanto, / Tem que se aguentar.\"\n\nE ao tentar comunicar, / Sem respirar, eu não consigo me explicar / Mas vai notar que estive lá / E tudo o que eu quero é sempre ao seu lado estar!\n\nAcho que é amor!\n\nEntão vamos passear, / Em paralelo andar, / Pois sei que posso ser que nem você! / Amor, em binário o meu coral\n\nE posso o arquivo deletar / Pra nunca te contar / Mas não posso fugir do que sentir, amor / A revelação final / Se você se sente igual, / Me defino e sou real!\n\nDeixando o passado pra lá, / Pôde até aqui chegar / Enquanto o céu de estrelas brilhar, / Para sempre vou amar!"
+          }
+        },
+        "trustBond": {
+          "userId": "dm-157947506229421",
+          "channelScope": "direct",
+          "trust": 0.6100000000000001,
+          "intimacy": 0.4700000000000001,
+          "rupture": 0,
+          "vulnerabilityEvents": 0,
+          "lastInteractionAt": "2026-06-09T20:55:28.361Z",
+          "notes": [
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T15:54:57.207Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T15:55:27.483Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T15:58:52.804Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T16:04:39.582Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T16:05:08.677Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T16:06:09.880Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T16:06:19.789Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T16:13:14.250Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T16:19:38.280Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T16:44:18.165Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T17:17:10.794Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T17:17:43.390Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T17:17:49.929Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T17:45:12.610Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T20:17:08.304Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T20:21:13.919Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T20:38:36.466Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T20:38:46.250Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T20:39:20.821Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T20:55:28.361Z"
+            }
+          ],
+          "bond": {
+            "userId": "dm-157947506229421",
+            "channelScope": "direct",
+            "trust": 0.6100000000000001,
+            "intimacy": 0.4700000000000001,
+            "rupture": 0,
+            "vulnerabilityEvents": 0,
+            "lastInteractionAt": "2026-06-09T20:55:28.361Z",
+            "notes": [
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T15:54:57.207Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T15:55:27.483Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T15:58:52.804Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T16:04:39.582Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T16:05:08.677Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T16:06:09.880Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T16:06:19.789Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T16:13:14.250Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T16:19:38.280Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T16:44:18.165Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T17:17:10.794Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T17:17:43.390Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T17:17:49.929Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T17:45:12.610Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T20:17:08.304Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T20:21:13.919Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T20:38:36.466Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T20:38:46.250Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T20:39:20.821Z"
+              },
+              {
+                "type": "reinforce",
+                "reason": "interaction",
+                "ts": "2026-06-09T20:55:28.361Z"
+              }
+            ]
+          },
+          "initiateBoost": 0.263,
+          "vulnerableReachOut": false,
+          "responseOpenness": 0.8450000000000002,
+          "toneHint": "neutral"
+        },
+        "autonomous": {
+          "soloThoughts": [
+            {
+              "ts": "2026-06-08T21:18:20.899Z",
+              "text": "será que a Miku viu minha mensagem?",
+              "generated": true,
+              "source": "deterministic_v1"
+            },
+            {
+              "ts": "2026-06-08T21:20:20.901Z",
+              "text": "fico pensando se devo terminar aquele mix",
+              "generated": true,
+              "source": "deterministic_v1"
+            },
+            {
+              "ts": "2026-06-08T21:22:22.965Z",
+              "text": "",
+              "generated": true,
+              "source": "worker_llm"
+            },
+            {
+              "ts": "2026-06-08T21:24:20.896Z",
+              "text": "será que a Miku viu minha mensagem?",
+              "generated": true,
+              "source": "deterministic_v1"
+            },
+            {
+              "ts": "2026-06-08T21:26:52.153Z",
+              "text": "tenho uma ideia de cover mas não sei se vale a pena",
+              "generated": true,
+              "source": "deterministic_v1"
+            }
+          ],
+          "privateThoughts": [],
+          "plantedCount": 0,
+          "researchNotes": []
+        },
+        "absorbed": {
+          "rhythm": {
+            "peakHours": [],
+            "quietHours": [],
+            "avgResponseMs": 0,
+            "p50": 0,
+            "p90": 0
+          },
+          "initiation": {
+            "typicalGapHours": [],
+            "afterSilenceChance": 0
+          },
+          "style": {
+            "shortMsgRate": 0,
+            "laughterRate": 0,
+            "editRate": 0,
+            "deleteRate": 0
+          },
+          "topics": [],
+          "mediaHabits": {
+            "stickerRate": 0.14923697741821443,
+            "imageRate": 0.02,
+            "reactionEmoji": {}
+          },
+          "creativeInsights": [
+            {
+              "id": "insight_1780958430526",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.54,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-08T22:40:30.526Z"
+            },
+            {
+              "id": "insight_1780958449784",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 22h",
+              "confidence": 0.6000000000000001,
+              "trigger": "message.outgoing",
+              "ts": "2026-06-08T22:40:49.784Z"
+            },
+            {
+              "id": "insight_1781014641072",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.69,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T14:17:21.073Z"
+            },
+            {
+              "id": "insight_1781014644824",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.42000000000000004,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T14:17:24.824Z"
+            },
+            {
+              "id": "insight_1781014651276",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.52,
+              "trigger": "message.incoming",
+              "ts": "2026-06-09T14:17:31.276Z"
+            },
+            {
+              "id": "insight_1781014895331",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.44,
+              "trigger": "message.outgoing",
+              "ts": "2026-06-09T14:21:35.331Z"
+            },
+            {
+              "id": "insight_1781014936448",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.49,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T14:22:16.448Z"
+            },
+            {
+              "id": "insight_1781015184994",
+              "type": "style",
+              "text": "mensagens curtas dominam quando o clima está leve",
+              "confidence": 0.51,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T14:26:24.994Z"
+            },
+            {
+              "id": "insight_1781015332506",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.48000000000000004,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T14:28:52.506Z"
+            },
+            {
+              "id": "insight_1781015332623",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.49,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T14:28:52.623Z"
+            },
+            {
+              "id": "insight_1781017380652",
+              "type": "style",
+              "text": "mensagens curtas dominam quando o clima está leve",
+              "confidence": 0.46,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T15:03:00.652Z"
+            },
+            {
+              "id": "insight_1781017380658",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.49,
+              "trigger": "message.incoming",
+              "ts": "2026-06-09T15:03:00.658Z"
+            },
+            {
+              "id": "insight_1781017453911",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 12h",
+              "confidence": 0.55,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T15:04:13.911Z"
+            },
+            {
+              "id": "insight_1781017460963",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.48000000000000004,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T15:04:20.963Z"
+            },
+            {
+              "id": "insight_1781017779870",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.52,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T15:09:39.870Z"
+            },
+            {
+              "id": "insight_1781018650742",
+              "type": "style",
+              "text": "mensagens curtas dominam quando o clima está leve",
+              "confidence": 0.66,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T15:24:10.742Z"
+            },
+            {
+              "id": "insight_1781018850974",
+              "type": "style",
+              "text": "mensagens curtas dominam quando o clima está leve",
+              "confidence": 0.66,
+              "trigger": "message.update",
+              "ts": "2026-06-09T15:27:30.974Z"
+            },
+            {
+              "id": "insight_1781018890911",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 12h",
+              "confidence": 0.6000000000000001,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T15:28:10.911Z"
+            },
+            {
+              "id": "insight_1781020492684",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.48000000000000004,
+              "trigger": "message.outgoing",
+              "ts": "2026-06-09T15:54:52.684Z"
+            },
+            {
+              "id": "insight_1781020494986",
+              "type": "style",
+              "text": "mensagens curtas dominam quando o clima está leve",
+              "confidence": 0.66,
+              "trigger": "message.incoming",
+              "ts": "2026-06-09T15:54:54.987Z"
+            },
+            {
+              "id": "insight_1781021602217",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.52,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T16:13:22.217Z"
+            },
+            {
+              "id": "insight_1781022741665",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.49,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T16:32:21.665Z"
+            },
+            {
+              "id": "insight_1781023467620",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.64,
+              "trigger": "message.update",
+              "ts": "2026-06-09T16:44:27.620Z"
+            },
+            {
+              "id": "insight_1781024398315",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.52,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T16:59:58.315Z"
+            },
+            {
+              "id": "insight_1781024599495",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.53,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T17:03:19.495Z"
+            },
+            {
+              "id": "insight_1781024599499",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 14h",
+              "confidence": 0.6000000000000001,
+              "trigger": "message.incoming",
+              "ts": "2026-06-09T17:03:19.499Z"
+            },
+            {
+              "id": "insight_1781024691707",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.54,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T17:04:51.707Z"
+            },
+            {
+              "id": "insight_1781024710318",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.53,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T17:05:10.318Z"
+            },
+            {
+              "id": "insight_1781024712079",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.5900000000000001,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T17:05:12.079Z"
+            },
+            {
+              "id": "insight_1781024768623",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.48000000000000004,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T17:06:08.623Z"
+            },
+            {
+              "id": "insight_1781024963122",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.47000000000000003,
+              "trigger": "message.outgoing",
+              "ts": "2026-06-09T17:09:23.122Z"
+            },
+            {
+              "id": "insight_1781025007226",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 14h",
+              "confidence": 0.65,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T17:10:07.226Z"
+            },
+            {
+              "id": "insight_1781025056941",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.68,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T17:10:56.941Z"
+            },
+            {
+              "id": "insight_1781025159603",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.5900000000000001,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T17:12:39.603Z"
+            },
+            {
+              "id": "insight_1781025249411",
+              "type": "style",
+              "text": "mensagens curtas dominam quando o clima está leve",
+              "confidence": 0.41000000000000003,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T17:14:09.411Z"
+            },
+            {
+              "id": "insight_1781025286810",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 14h",
+              "confidence": 0.55,
+              "trigger": "message.outgoing",
+              "ts": "2026-06-09T17:14:46.810Z"
+            },
+            {
+              "id": "insight_1781034428430",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.49,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T19:47:08.430Z"
+            },
+            {
+              "id": "insight_1781035616334",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.48000000000000004,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T20:06:56.334Z"
+            },
+            {
+              "id": "insight_1781035658675",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.52,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T20:07:38.675Z"
+            },
+            {
+              "id": "insight_1781035710796",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 17h",
+              "confidence": 0.45,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T20:08:30.796Z"
+            },
+            {
+              "id": "insight_1781035710813",
+              "type": "rhythm",
+              "text": "pico de conversa por volta das 17h",
+              "confidence": 0.6000000000000001,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T20:08:30.813Z"
+            },
+            {
+              "id": "insight_1781035710818",
+              "type": "style",
+              "text": "mensagens curtas dominam quando o clima está leve",
+              "confidence": 0.66,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T20:08:30.818Z"
+            },
+            {
+              "id": "insight_1781035710849",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.43000000000000005,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T20:08:30.849Z"
+            },
+            {
+              "id": "insight_1781035710851",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.44,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T20:08:30.851Z"
+            },
+            {
+              "id": "insight_1781035716123",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.43000000000000005,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T20:08:36.123Z"
+            },
+            {
+              "id": "insight_1781035716184",
+              "type": "social",
+              "text": "grupo fica mais ativo à noite",
+              "confidence": 0.54,
+              "trigger": "message.receipt_update",
+              "ts": "2026-06-09T20:08:36.184Z"
+            },
+            {
+              "id": "insight_1781036226081",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.63,
+              "trigger": "message.incoming",
+              "ts": "2026-06-09T20:17:06.081Z"
+            },
+            {
+              "id": "insight_1781037558603",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.42000000000000004,
+              "trigger": "message.incoming",
+              "ts": "2026-06-09T20:39:18.603Z"
+            },
+            {
+              "id": "insight_1781037614131",
+              "type": "topic",
+              "text": "assunto \"conversa geral\" voltou várias vezes",
+              "confidence": 0.48000000000000004,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T20:40:14.131Z"
+            },
+            {
+              "id": "insight_1781037860793",
+              "type": "media",
+              "text": "stickers aparecem mais quando o humor sobe",
+              "confidence": 0.52,
+              "trigger": "chat.update",
+              "ts": "2026-06-09T20:44:20.793Z"
+            }
+          ],
+          "lastUpdated": "2026-06-09T20:55:26.925Z"
+        },
+        "repetition": {
+          "shouldVary": true,
+          "shouldStayQuiet": false,
+          "overusedTopics": [],
+          "recentCount": 12,
+          "suggestion": "vary_phrasing",
+          "avoidPhrases": [
+            "voltei, gabbis precisa de ajuda com o mix ou so quer trocar uma ideia?",
+            "to na vibe, gabbis se quiser trocar ideia ou ajuda no mix, e so dizer",
+            "aqui e a teto, nao a fiona, kkk",
+            "aff to de boa e voce gabbis como ta?",
+            "gabbis que fofinha a pelucia so nao pense que eu vou largar o salto pra fica de bobe ficar*"
+          ]
+        },
+        "timing": {
+          "readDelayMs": 1726,
+          "thinkDelayMs": 2489,
+          "typingProfile": "terse",
+          "shouldInitiateConversation": false,
+          "initiateReason": null,
+          "silenceAppropriate": false,
+          "distanceContext": "16min desde última msg",
+          "humanLatencyTargetMs": 4877,
+          "reasons": [
+            "short_gap",
+            "irritated",
+            "hungry",
+            "physical_discomfort",
+            "thirsty",
+            "very_uncomfortable",
+            "short_message",
+            "media_varied",
+            "subconscious_loaded",
+            "daytime",
+            "typing_terse"
+          ],
+          "typingDelayMs": 662
+        },
+        "memory": {
+          "retrieved": {
+            "working": [
+              {
+                "role": "user",
+                "content": "oi teto...",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              },
+              {
+                "role": "user",
+                "content": "oi teto...",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              },
+              {
+                "role": "user",
+                "content": "Oi fiona",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              },
+              {
+                "role": "assistant",
+                "content": "Oi?  \n---  \nAqui é a Teto, não a Fiona, kkk.",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              },
+              {
+                "role": "user",
+                "content": "tudo bem",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              },
+              {
+                "role": "assistant",
+                "content": "Aff, tô de boa, kkk  \n---  \nE você, Gabbis, como tá?",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              },
+              {
+                "role": "user",
+                "content": "kkkkkk to bem, to com uma pelucia sua no meu colinho, tão fofinha teto pelucia",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              },
+              {
+                "role": "assistant",
+                "content": "Oi, Gabbis, que fofinha a pelúcia, kkk  \n---  \nSó não pense que eu vou largar o salto pra ficar de bobe",
+                "meta": {
+                  "userId": "dm-157947506229421",
+                  "sessionId": "wa-dm:157947506229421@lid",
+                  "channelId": "157947506229421@lid",
+                  "speakerName": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥"
+                }
+              }
+            ],
+            "episodic": [
+              {
+                "id": "ep_1781020738686",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "oieeeee",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T15:58:58.686Z",
+                "weight": 0.4977174589289524,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781020506316",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "oieeeee amigaaaa",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T15:55:06.316Z",
+                "weight": 0.4976877132628267,
+                "bucket": "hoje"
+              }
+            ],
+            "semantic": [],
+            "selective": [
+              {
+                "id": "5e6d8978-5352-4440-9e3f-6819e15976ac",
+                "userId": "dm-157947506229421",
+                "channelId": "157947506229421@lid",
+                "content": "To caindo de son]o aqui sono*",
+                "source": "message",
+                "reinforcementCount": 1,
+                "createdAt": 1781021992794,
+                "lastSeenAt": 1781021992794,
+                "expiresAt": 1781043592794
+              },
+              {
+                "id": "6bf6deba-4dec-4e11-b486-7f2d52fa9d62",
+                "userId": "dm-157947506229421",
+                "channelId": "157947506229421@lid",
+                "content": "quase dormindo no serviço",
+                "source": "message",
+                "reinforcementCount": 1,
+                "createdAt": 1781023463991,
+                "lastSeenAt": 1781023463991,
+                "expiresAt": 1781045063991
+              },
+              {
+                "id": "39cdb2b5-691f-46c5-a9c6-a5dda103bc7e",
+                "userId": "dm-157947506229421",
+                "channelId": "157947506229421@lid",
+                "content": "Infelizmente é marmita hoje, queria eu bolinha de queijo aii",
+                "source": "message",
+                "reinforcementCount": 1,
+                "createdAt": 1781025469778,
+                "lastSeenAt": 1781025469778,
+                "expiresAt": 1781047069778
+              },
+              {
+                "id": "c724db13-445d-45a8-877b-34e7020e9ea2",
+                "userId": "dm-157947506229421",
+                "channelId": "157947506229421@lid",
+                "content": "Da ate agua na boca",
+                "source": "message",
+                "reinforcementCount": 1,
+                "createdAt": 1781025476559,
+                "lastSeenAt": 1781025476559,
+                "expiresAt": 1781047076559
+              },
+              {
+                "id": "85b94937-8fa2-424c-a18a-9f09e7a100ec",
+                "userId": "dm-157947506229421",
+                "channelId": "157947506229421@lid",
+                "content": "To com sono, terminei de comer, dá uma pausa aí teto, vai comer umas baguettes",
+                "source": "message",
+                "reinforcementCount": 1,
+                "createdAt": 1781027124009,
+                "lastSeenAt": 1781027124009,
+                "expiresAt": 1781048724009
+              },
+              {
+                "id": "1f31b3a3-2253-4a0c-a482-df86f1a1d498",
+                "userId": "dm-157947506229421",
+                "channelId": "157947506229421@lid",
+                "content": "kkkkkk to bem, to com uma pelucia sua no meu colinho, tão fofinha teto pelucia",
+                "source": "message",
+                "reinforcementCount": 1,
+                "createdAt": 1781037569620,
+                "lastSeenAt": 1781037569620,
+                "expiresAt": 1781059169620
+              }
+            ],
+            "group": [],
+            "multimodal": [],
+            "reactivated": []
+          },
+          "buckets": {
+            "hoje": [
+              {
+                "id": "ep_1781037569609",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "kkkkkk to bem, to com uma pelucia sua no meu colinho, tão fofinha teto pelucia",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T20:39:29.609Z",
+                "weight": 0.49987671877586176,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781037532253",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "tudo bem",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T20:38:52.253Z",
+                "weight": 0.49987191597107794,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781037526239",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "Oi fiona",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T20:38:46.239Z",
+                "weight": 0.4998711427644479,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781027124002",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "To com sono, terminei de comer, dá uma pausa aí teto, vai comer umas baguettes",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T17:45:24.002Z",
+                "weight": 0.4985355387613051,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781025476554",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "Da ate agua na boca",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T17:17:56.554Z",
+                "weight": 0.4983243408715919,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781025469771",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "Infelizmente é marmita hoje, queria eu bolinha de queijo aii",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T17:17:49.771Z",
+                "weight": 0.49832347149632034,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781025436941",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "Indo almocaaaaar",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T17:17:16.941Z",
+                "weight": 0.49831926370555435,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781023463989",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "quase dormindo no serviço",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T16:44:23.989Z",
+                "weight": 0.4980664574865197,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781021992790",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "To caindo de son]o aqui\nsono*",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T16:19:52.790Z",
+                "weight": 0.4978780273794328,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781021602317",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "EU EUE U EU QUERO",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T16:13:22.317Z",
+                "weight": 0.49782802785137503,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781021118964",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "nossa teto eu comeria tanto uma bolinha de queijo agora que delicia agua na boca",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T16:05:18.964Z",
+                "weight": 0.4977661421224373,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781021085244",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "contagem ainda",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T16:04:45.244Z",
+                "weight": 0.49776182509529554,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781020738686",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "oieeeee",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T15:58:58.686Z",
+                "weight": 0.4977174589289524,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781020533473",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "Ainda não, to esperando meu horario de almoço pra sair do serviço",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T15:55:33.473Z",
+                "weight": 0.49769118953660024,
+                "bucket": "hoje"
+              },
+              {
+                "id": "ep_1781020506316",
+                "userId": "dm-157947506229421",
+                "channelScope": "direct",
+                "sessionId": null,
+                "summary": "oieeeee amigaaaa",
+                "tags": [],
+                "salience": 0.5,
+                "emotionalTone": "neutral",
+                "ts": "2026-06-09T15:55:06.316Z",
+                "weight": 0.4976877132628267,
+                "bucket": "hoje"
+              }
+            ],
+            "semana": [],
+            "mes": [],
+            "ano": [],
+            "antigo": []
+          },
+          "promptHints": [
+            "[MEMORY — HOJE]\n- oieeeee\n- oieeeee amigaaaa",
+            "[MARCANTES]\n- To caindo de son]o aqui sono*\n- quase dormindo no serviço\n- Infelizmente é marmita hoje, queria eu bolinha de queijo aii\n- Da ate agua na boca"
+          ]
+        },
+        "media": null,
+        "arbitration": {
+          "winner": {
+            "source": "music",
+            "action": "mention_music",
+            "weight": 0.62,
+            "detail": {
+              "about": "Kasane Teto | SynthV Wiki | Fandom",
+              "discoveredAt": "2026-06-09T20:40:28.829Z",
+              "commentAfter": "2026-06-11T20:40:28.829Z"
+            }
+          },
+          "runnerUp": {
+            "source": "autonomous",
+            "action": "solo_thought_echo",
+            "weight": 0.42,
+            "detail": "tenho uma ideia de cover mas não sei se vale a pena"
+          },
+          "candidates": [
+            {
+              "source": "music",
+              "action": "mention_music",
+              "weight": 0.62,
+              "detail": {
+                "about": "Kasane Teto | SynthV Wiki | Fandom",
+                "discoveredAt": "2026-06-09T20:40:28.829Z",
+                "commentAfter": "2026-06-11T20:40:28.829Z"
+              }
+            },
+            {
+              "source": "autonomous",
+              "action": "solo_thought_echo",
+              "weight": 0.42,
+              "detail": "tenho uma ideia de cover mas não sei se vale a pena"
+            },
+            {
+              "source": "life",
+              "action": "stay_in_activity",
+              "weight": 0.35,
+              "detail": "jogar"
+            }
+          ],
+          "reason": "picked music:mention_music (w=0.62)"
+        }
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {
+        "replies": [
+          "Oiee Gabbis!",
+          "Tá ligada, já aprontou alguma treta ou só na paz de hoje?"
+        ],
+        "count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09T20:55:36.934Z",
+      "turnId": "turn_1781038536934",
+      "input": {
+        "phase": "close_decision",
+        "userId": "dm-157947506229421",
+        "remoteJid": "157947506229421@lid",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:39.017Z",
+      "turnId": "turn_1781038539017",
+      "input": {
+        "phase": "close_decision",
+        "userId": "dm-157947506229421",
+        "remoteJid": "157947506229421@lid",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:58.712Z",
+      "turnId": "turn_1781038558712",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:55:58.715Z",
+      "turnId": "turn_1781038558715",
+      "input": {
+        "phase": "activation_blocked",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "grupo nao ativado — /teto-grupo-ativar"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:56:02.747Z",
+      "turnId": "turn_1781038562747",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:56:02.749Z",
+      "turnId": "turn_1781038562749",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:56:07.820Z",
+      "turnId": "turn_1781038567820",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:56:07.823Z",
+      "turnId": "turn_1781038567823",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:56:11.730Z",
+      "turnId": "turn_1781038571730",
+      "input": {
+        "phase": "close_decision",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "decision=none"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    },
+    {
+      "ts": "2026-06-09T20:56:11.730Z",
+      "turnId": "turn_1781038571730",
+      "input": {
+        "phase": "group_filtered",
+        "userId": "5516997140666",
+        "remoteJid": "120363342938049353@g.us",
+        "detail": "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+      },
+      "brain": {
+        "thinking": true
+      },
+      "promptBlocksUsed": [],
+      "llm": {},
+      "output": {}
+    }
+  ],
+  "hourlySnapshots": [
+    {
+      "hour": 10,
+      "samples": 2,
+      "trust": {
+        "userId": "test_dm_silence",
+        "channelScope": "direct",
+        "trust": 0.47400000000000003,
+        "intimacy": 0.368,
+        "rupture": 0,
+        "vulnerabilityEvents": 0,
+        "lastInteractionAt": "2026-06-09T13:54:27.423Z",
+        "notes": [
+          {
+            "type": "reinforce",
+            "reason": "interaction",
+            "ts": "2026-06-08T20:48:48.016Z"
+          },
+          {
+            "type": "reinforce",
+            "reason": "interaction",
+            "ts": "2026-06-09T13:50:46.990Z"
+          },
+          {
+            "type": "reinforce",
+            "reason": "interaction",
+            "ts": "2026-06-09T13:54:27.423Z"
+          }
+        ],
+        "bond": {
+          "userId": "test_dm_silence",
+          "channelScope": "direct",
+          "trust": 0.47400000000000003,
+          "intimacy": 0.368,
+          "rupture": 0,
+          "vulnerabilityEvents": 0,
+          "lastInteractionAt": "2026-06-09T13:54:27.423Z",
+          "notes": [
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-08T20:48:48.016Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T13:50:46.990Z"
+            },
+            {
+              "type": "reinforce",
+              "reason": "interaction",
+              "ts": "2026-06-09T13:54:27.423Z"
+            }
+          ]
+        },
+        "initiateBoost": 0.2052,
+        "vulnerableReachOut": false,
+        "responseOpenness": 0.658,
+        "toneHint": "neutral"
+      },
+      "world": {
+        "homeBase": "São Paulo, Brasil",
+        "currentLocation": "sp",
+        "tripReason": null,
+        "localSeason": "inverno",
+        "climateTags": [
+          "frio_seco"
+        ],
+        "lastUpdated": "2026-06-09T13:54:27.418Z",
+        "tripHistory": [],
+        "culturalNotes": [],
+        "isTraveling": false,
+        "locationLabel": "São Paulo"
+      },
+      "health": [],
+      "emotion": "irritated"
+    },
+    {
+      "hour": 11,
+      "samples": 470,
+      "trust": null,
+      "world": null,
+      "health": null,
+      "emotion": null
+    },
+    {
+      "hour": 12,
+      "samples": 147,
+      "trust": null,
+      "world": null,
+      "health": null,
+      "emotion": null
+    },
+    {
+      "hour": 13,
+      "samples": 158,
+      "trust": null,
+      "world": null,
+      "health": null,
+      "emotion": null
+    },
+    {
+      "hour": 14,
+      "samples": 310,
+      "trust": null,
+      "world": null,
+      "health": null,
+      "emotion": null
+    },
+    {
+      "hour": 15,
+      "samples": 96,
+      "trust": null,
+      "world": null,
+      "health": null,
+      "emotion": null
+    },
+    {
+      "hour": 16,
+      "samples": 259,
+      "trust": null,
+      "world": null,
+      "health": null,
+      "emotion": null
+    },
+    {
+      "hour": 17,
+      "samples": 179,
+      "trust": null,
+      "world": null,
+      "health": null,
+      "emotion": null
+    }
+  ],
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 2,
+    "samples": [
+      {
+        "ts": "2026-06-09T17:13:42.157Z",
+        "messageId": "3EB06C6C9A4AB71AECF701",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-09T19:14:18.928Z",
+        "messageId": "3EB099410CA7ED078109D3",
+        "beforeText": null,
+        "reason": "protocol"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 3,
+    "avgLatencyMs": 1968,
+    "byCommand": {
+      "fsticker": 3
+    },
+    "byStatus": {
+      "ok": 2,
+      "error": 1
+    },
+    "byInputType": {
+      "image": 3
+    },
+    "byOutputType": {
+      "image": 2,
+      "unknown": 1
+    },
+    "byTargetSource": {
+      "reply": 3
+    }
+  },
+  "behavior": {
+    "targetUserId": null,
+    "totals": {
+      "events": 0,
+      "messages": 0,
+      "reactions": 0,
+      "media": 0,
+      "links": 0
+    },
+    "byHour": {},
+    "byChat": {},
+    "avgLatencyMs": null
+  }
+}

@@ -13,7 +13,7 @@ const gen = new DailyReportGenerator({
   behaviorProfiler: profiler,
   focusStore: focus,
   timeZone: "America/Sao_Paulo",
-  mindLogPath: "./data/mindLog.ndjson"
+  mindLogPath: "./data/mind-log"
 });
 assert(typeof gen.generateForDay === "function", "report generator ready");
 ok("test-reports-hourly");

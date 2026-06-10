@@ -219,7 +219,7 @@ export const DEFAULTS = {
   groupMemoryPath: process.env.TETOS_GROUP_MEMORY_PATH ?? "./data/groupMemory.ndjson",
   groupMemoryMaxEntries: Number(process.env.TETOS_GROUP_MEMORY_MAX_ENTRIES ?? 500),
   episodicMemoryPath: process.env.TETOS_MEMORY_EPISODIC_PATH ?? "./data/episodicMemory.ndjson",
-  mindLogPath: process.env.TETOS_MIND_LOG_PATH ?? "./data/mindLog.ndjson",
+  mindLogPath: process.env.TETOS_MIND_LOG_PATH ?? "./data/mind-log",
   mindLogEnabled: String(process.env.TETOS_MIND_LOG_ENABLED ?? "true").toLowerCase() === "true",
   mediaLearningPath: process.env.TETOS_MEDIA_LEARNING_PATH ?? "./data/mediaLearning.json",
   timingEngineEnabled: String(process.env.TETOS_TIMING_ENGINE_ENABLED ?? "true").toLowerCase() === "true",

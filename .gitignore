@@ -4,6 +4,7 @@ node_modules
 
 # Estado em runtime — não versionar (cresce muito / credenciais de sessão)
 data/mindLog.ndjson
+data/mind-log/
 data/session/
 data/session-bot/
 data/short-term/

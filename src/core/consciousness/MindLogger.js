@@ -1,12 +1,29 @@
 import { appendFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+import { isLegacyMindLogPath } from "./mindLogPaths.js";
+
+function dayKey(date = new Date(), timeZone = "America/Sao_Paulo") {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
 
 export class MindLogger {
-  constructor(path, { enabled = true } = {}) {
-    this.path = path;
+  constructor(path, { enabled = true, timeZone = "America/Sao_Paulo" } = {}) {
+    this.basePath = path;
     this.enabled = enabled;
-    const dir = dirname(path);
+    this.timeZone = timeZone;
+    this.legacyMode = isLegacyMindLogPath(path);
+    const dir = this.legacyMode ? dirname(path) : path;
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  }
+
+  getDailyPath(timestamp = Date.now()) {
+    if (this.legacyMode) return this.basePath;
+    return join(this.basePath, `${dayKey(new Date(timestamp), this.timeZone)}.ndjson`);
   }
 
   append(entry = {}) {
@@ -20,7 +37,8 @@ export class MindLogger {
       llm: entry.llm ?? {},
       output: entry.output ?? {}
     };
-    appendFileSync(this.path, `${JSON.stringify(record)}\n`);
+    const path = this.getDailyPath(Date.parse(record.ts));
+    appendFileSync(path, `${JSON.stringify(record)}\n`);
     return record;
   }
 
@@ -59,6 +77,11 @@ export class MindLogger {
   }
 
   tick() {
-    return { enabled: this.enabled, path: this.path };
+    return {
+      enabled: this.enabled,
+      path: this.basePath,
+      legacyMode: this.legacyMode,
+      dailyPath: this.getDailyPath()
+    };
   }
 }
