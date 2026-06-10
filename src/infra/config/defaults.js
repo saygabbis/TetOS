@@ -159,6 +159,9 @@ export const DEFAULTS = {
     process.env.WHATSAPP_STICKER_DISABLED_HINT ??
     "",
   whatsappSessionPath: process.env.WHATSAPP_SESSION_PATH ?? "./data/session",
+  /** false = Baileys recebe mensagens com mais estabilidade (linked device). */
+  whatsappMarkOnlineOnConnect:
+    String(process.env.WHATSAPP_MARK_ONLINE_ON_CONNECT ?? "false").toLowerCase() === "true",
   whatsappAutoConnect: String(process.env.WHATSAPP_AUTO_CONNECT ?? "true").toLowerCase() === "true",
   learningModeEnabled: String(process.env.LEARNING_MODE_ENABLED ?? "false").toLowerCase() === "true",
   replyEnabled: String(process.env.REPLY_ENABLED ?? "true").toLowerCase() === "true",

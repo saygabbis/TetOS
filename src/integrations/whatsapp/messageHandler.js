@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { withGenerationSlot } from "../../infra/concurrency/generationSlot.js";
 import { touchInboundActivity } from "./inboundLiveness.js";
+import { waAgentDebugLog } from "./waDebugLog.js";
 import { jidNormalizedUser, downloadContentFromMessage, normalizeMessageContent } from "baileys";
 import { planWhatsAppReaction } from "./reactionPlanner.js";
 import { persistMedia, fileExtFromDocumentMessage } from "./mediaStore.js";
@@ -1109,9 +1110,35 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     const inboundSource =
       botChatRole || role === "full" ? "bot" : role === "main" ? "main" : "media";
     touchInboundActivity(inboundSource);
+    // #region agent log
+    waAgentDebugLog({
+      runId: "wa-inbound",
+      hypothesisId: "H2-H4",
+      location: "messageHandler.js:messages.upsert",
+      message: "upsert received",
+      data: {
+        role,
+        botChatRole,
+        type: type ?? null,
+        count: batch.length,
+        sampleRemoteJid: batch[0]?.key?.remoteJid ?? null,
+        sampleFromMe: batch[0]?.key?.fromMe ?? null,
+        sampleHasMessage: Boolean(batch[0]?.message)
+      }
+    });
+    // #endregion
     console.log(`${waLogPrefix} upsert type=${type ?? "?"} count=${batch.length}`);
 
     if (type !== "notify" && type !== "append") {
+      // #region agent log
+      waAgentDebugLog({
+        runId: "wa-inbound",
+        hypothesisId: "H4",
+        location: "messageHandler.js:messages.upsert",
+        message: "upsert type ignored",
+        data: { role, type: type ?? null, count: batch.length }
+      });
+      // #endregion
       if (runtime.defaults.thinkingLogsEnabled && batch.length > 0) {
         console.warn(`${waLogPrefix} upsert ignorado (type=${type}) — msg nao processada`);
       }

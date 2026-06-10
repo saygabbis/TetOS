@@ -9,6 +9,7 @@ import { registerMessageHandler } from "./messageHandler.js";
 import { DisconnectReason } from "baileys";
 import { isUserRecentlyActive, resolveNudgeRemoteJid, touchUserActivity } from "../../core/channels/userActivity.js";
 import { msSinceLastInbound, resetInboundActivity } from "./inboundLiveness.js";
+import { waAgentDebugLog } from "./waDebugLog.js";
 import { jidNormalizedUser } from "baileys";
 
 /** Pausa nudges/presence após 403 de assinatura (evita spam a cada 60s). */
@@ -25,12 +26,13 @@ function formatSocketJid(socket) {
   return jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "") || "?";
 }
 
-/** Baileys pode ficar "surdo": connection=open mas messages.upsert para. Força restart limpo. */
-function startInboundWatchdog({ getConnected, label = "whatsapp" }) {
-  const staleMs = Number(process.env.WHATSAPP_INBOUND_STALE_MS ?? 600000);
-  const checkMs = Number(process.env.WHATSAPP_INBOUND_CHECK_MS ?? 60000);
+/** Baileys pode ficar "surdo": connection=open mas messages.upsert para. Força restart/reconnect limpo. */
+function startInboundWatchdog({ getConnected, label = "whatsapp", onDeaf = null }) {
+  const staleMs = Number(process.env.WHATSAPP_INBOUND_STALE_MS ?? 180000);
+  const checkMs = Number(process.env.WHATSAPP_INBOUND_CHECK_MS ?? 30000);
   if (!Number.isFinite(staleMs) || staleMs < 60000) return;
 
+  let recovering = false;
   setInterval(() => {
     if (!getConnected()) {
       resetInboundActivity();
@@ -38,10 +40,33 @@ function startInboundWatchdog({ getConnected, label = "whatsapp" }) {
     }
     const silentMs = msSinceLastInbound({ botOnly: label.includes("bot") });
     if (silentMs < staleMs) return;
+    const silentMin = Math.round(silentMs / 60000);
     console.error(
-      `[${label}] socket surdo — conectado mas sem mensagens há ${Math.round(silentMs / 60000)} min. ` +
-        "Reinicie o processo (pm2 restart / npm run start:wa). Celular da bot nao pode ter WhatsApp aberto junto."
+      `[${label}] socket surdo — conectado mas sem mensagens há ${silentMin} min. ` +
+        "Celular da bot nao pode ter WhatsApp aberto junto; reconectando..."
     );
+    // #region agent log
+    waAgentDebugLog({
+      runId: "wa-inbound",
+      hypothesisId: "H1",
+      location: "runner.js:startInboundWatchdog",
+      message: "inbound stale detected",
+      data: { label, silentMs, silentMin, hasOnDeaf: Boolean(onDeaf) }
+    });
+    // #endregion
+    if (typeof onDeaf === "function") {
+      if (recovering) return;
+      recovering = true;
+      Promise.resolve(onDeaf())
+        .catch((error) => {
+          console.error(`[${label}] falha ao reconectar socket surdo:`, error?.message ?? error);
+        })
+        .finally(() => {
+          recovering = false;
+          resetInboundActivity();
+        });
+      return;
+    }
     process.exit(1);
   }, checkMs);
 }
@@ -385,6 +410,7 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
     socket = await createBaileysClient({
       sessionPath: DEFAULTS.whatsappSessionPath,
       autoConnect: DEFAULTS.whatsappAutoConnect,
+      sessionLabel: "single",
       onConnectionUpdate: async (update) => {
         if (generation !== connectGeneration) return;
         const connection = update?.connection;
@@ -477,6 +503,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
     mainSocket = await createBaileysClient({
       sessionPath: DEFAULTS.whatsappSessionPath,
       autoConnect: DEFAULTS.whatsappAutoConnect,
+      sessionLabel: "main",
       onConnectionUpdate: async (update) => {
         if (generation !== mainGeneration) return;
         const connection = update?.connection;
@@ -546,6 +573,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
     mediaSocket = await createBaileysClient({
       sessionPath: DEFAULTS.whatsappMediaSessionPath,
       autoConnect: DEFAULTS.whatsappAutoConnect,
+      sessionLabel: "bot",
       onConnectionUpdate: async (update) => {
         if (generation !== mediaGeneration) return;
         const connection = update?.connection;
@@ -560,6 +588,12 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
               ? `[whatsapp] bot connected — jid=${jid} — número da TETO: chat, .sticker e .toimg`
               : `[whatsapp] media connected — jid=${jid} — número só para comandos .sticker / .toimg`
           );
+          if (DEFAULTS.whatsappMainObserveOnly) {
+            const botPhone = jid.replace(/@.+$/, "").replace(/:\d+$/, "");
+            console.log(
+              `[whatsapp:media] Para acordar a Teto, mande DM para +${botPhone} (não para o seu número pessoal).`
+            );
+          }
         }
         if (update?.qr) {
           console.log(
@@ -625,7 +659,15 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   scheduleAuxiliaryLoops(runtime, nudgeEngine, chatSocket, chatConnected);
   startInboundWatchdog({
     label: "whatsapp:bot",
-    getConnected: chatConnected
+    getConnected: chatConnected,
+    onDeaf: async () => {
+      console.warn("[whatsapp:bot] reconectando sessão da Teto por inatividade de mensagens...");
+      mediaConnected = false;
+      try {
+        mediaSocket?.end?.(new Error("inbound stale reconnect"));
+      } catch {}
+      await connectMedia();
+    }
   });
 }
 
