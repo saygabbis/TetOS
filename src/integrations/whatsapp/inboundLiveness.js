@@ -1,11 +1,11 @@
 let lastInboundAt = Date.now();
 let lastBotInboundAt = Date.now();
 
-export function touchInboundActivity(source = "any") {
-  lastInboundAt = Date.now();
-  if (source === "bot" || source === "full") {
-    lastBotInboundAt = Date.now();
-  }
+export function touchInboundActivity(_source = "any") {
+  const now = Date.now();
+  lastInboundAt = now;
+  // Qualquer sessão Baileys (main/media/full) conta — evita reconnect falso em mode=dual.
+  lastBotInboundAt = now;
 }
 
 export function resetInboundActivity() {

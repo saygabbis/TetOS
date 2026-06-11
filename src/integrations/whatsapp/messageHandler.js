@@ -43,6 +43,7 @@ import {
   recordWaIdentity
 } from "../../core/channels/waIdentity.js";
 import { applyWhatsAppMentions } from "./mentionResolver.js";
+import { createProcessedCommandDeduper } from "./processedCommandDeduper.js";
 
 function extractPhone(remoteJid = "") {
   return String(remoteJid)
@@ -936,7 +937,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     maxStickerBytes: runtime.defaults.tetosStickerMaxBytes
   });
   const seenMessageIds = new Map();
-  const MESSAGE_DEDUPE_TTL_MS = 60 * 1000;
+  const MESSAGE_DEDUPE_TTL_MS = 10 * 60 * 1000;
+  const processedCommandDeduper = createProcessedCommandDeduper();
   const skipVisionEnrichment = role === "media" && !botChatRole;
   console.log(
     `${waLogPrefix} handler ativo${botChatRole ? " (responde chat)" : role === "main" ? " (só aprende)" : ""}`
@@ -1616,6 +1618,35 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         if (parsedCommand) {
+          const commandMessageId = incoming.key?.id ?? null;
+          if (type === "append") {
+            if (runtime.defaults.thinkingLogsEnabled) {
+              console.log(
+                `[audit.command] ${JSON.stringify({
+                  ts: new Date().toISOString(),
+                  status: "skip_append_replay",
+                  commandName: parsedCommand.command,
+                  messageId: commandMessageId,
+                  remoteJid
+                })}`
+              );
+            }
+            continue;
+          }
+          if (!processedCommandDeduper.claim(commandMessageId)) {
+            if (runtime.defaults.thinkingLogsEnabled) {
+              console.log(
+                `[audit.command] ${JSON.stringify({
+                  ts: new Date().toISOString(),
+                  status: "skip_duplicate",
+                  commandName: parsedCommand.command,
+                  messageId: commandMessageId,
+                  remoteJid
+                })}`
+              );
+            }
+            continue;
+          }
           const handled = await handleMediaCommand({
             incoming,
             parsedCommand,
