@@ -645,6 +645,7 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
           );
           if (DEFAULTS.whatsappMainObserveOnly) {
             const botPhone = jid.replace(/@.+$/, "").replace(/:\d+$/, "");
+            runtime.whatsappBotPhoneE164 = botPhone;
             console.log(
               `[whatsapp:media] Para acordar a Teto, mande DM para +${botPhone} (não para o seu número pessoal).`
             );

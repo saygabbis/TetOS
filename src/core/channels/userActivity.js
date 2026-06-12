@@ -17,14 +17,20 @@ export function dmUserId(remoteJid, baseUserId = "") {
 export function ownerIdentityIds(runtime) {
   const ids = new Set();
   const phone = String(runtime?.defaults?.learningTargetUserId ?? "").trim();
-  if (phone) ids.add(phone);
+  if (phone) {
+    ids.add(phone);
+    ids.add(`dm-${phone}`);
+  }
 
   for (const jid of runtime?.defaults?.ownerWaJids ?? []) {
     const key = normalizeJidKey(jid);
     if (!key) continue;
     ids.add(dmUserId(jid));
     const local = key.replace(/@.+$/, "");
-    if (local) ids.add(local);
+    if (local) {
+      ids.add(local);
+      ids.add(`dm-${local}`);
+    }
   }
 
   return ids;
@@ -37,10 +43,15 @@ export function isOwnerContact(runtime, remoteJid = null, userId = "") {
 
   const uid = String(userId ?? "").trim();
   if (uid && ids.has(uid)) return true;
+  if (uid.startsWith("dm-") && ids.has(uid.slice(3))) return true;
+  if (uid && !uid.startsWith("dm-") && ids.has(`dm-${uid}`)) return true;
 
   if (remoteJid) {
     const dm = dmUserId(remoteJid);
     if (ids.has(dm)) return true;
+    const local = normalizeJidKey(remoteJid).replace(/@.+$/, "");
+    if (local && ids.has(local)) return true;
+    if (local && ids.has(`dm-${local}`)) return true;
   }
 
   return false;

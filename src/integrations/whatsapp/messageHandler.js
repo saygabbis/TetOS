@@ -11,6 +11,7 @@ import { resolveStickerAsset } from "./stickerAssets.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 import { resolveCloseDecision } from "../../core/brain/ConversationPhaseEngine.js";
 import { detectWrongBotNameVocative } from "./tetoNameDetect.js";
+import { hasVocativeToTeto } from "../../modules/chat/coherenceGuards.js";
 import { detectVulnerability } from "../../core/brain/vulnerabilityDetect.js";
 import { ChatCommandQueue } from "./chatCommandQueue.js";
 import { ChatMediaHistoryStore } from "./chatMediaHistoryStore.js";
@@ -985,6 +986,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     removeBgModel: runtime.defaults.removeBgModel
   });
   const seenMessageIds = new Map();
+  const ownerRedirectDedupe = new Map();
   const MESSAGE_DEDUPE_TTL_MS = 10 * 60 * 1000;
   const processedCommandDeduper = createProcessedCommandDeduper();
   const skipVisionEnrichment = role === "media" && !botChatRole;
@@ -1266,6 +1268,36 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         return true;
       }
     });
+  }
+
+  async function maybeRedirectOwnerToBotDm({ remoteJid, userId, text, isFromMe, isGroup }) {
+    if (!mainObserveOnly || isFromMe || isGroup) return false;
+    if (!isOwnerContact(runtime, remoteJid, userId)) return false;
+
+    const botPhone = String(runtime.whatsappBotPhoneE164 ?? "").trim();
+    if (!botPhone) return false;
+
+    const wantsChat =
+      hasVocativeToTeto(text) ||
+      /\b(acorda|acordar|oi|ol[aá]|hey|e\s*a[ií])\b/i.test(String(text ?? ""));
+    if (!wantsChat) return false;
+
+    const dedupeKey = `${userId}:bot-redirect`;
+    const lastAt = ownerRedirectDedupe.get(dedupeKey) ?? 0;
+    if (Date.now() - lastAt < 45 * 60 * 1000) return false;
+    ownerRedirectDedupe.set(dedupeKey, Date.now());
+
+    await safeSendMessage(remoteJid, {
+      text:
+        `Neste número eu só aprendo (sessão da dona). Para eu responder no chat, manda mensagem para +${botPhone} — número da Teto.`
+    });
+    logThinking(runtime, {
+      phase: "dual_redirect",
+      userId,
+      remoteJid,
+      detail: `redirecionou dona para +${botPhone}`
+    });
+    return true;
   }
 
   socket.ev.on("messages.upsert", async ({ messages, type }) => {
@@ -1858,6 +1890,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               remoteJid,
               detail: "dm nao ativado — /teto-ativar"
             });
+            if (botChatRole && !isFromMe) {
+              await safeSendMessage(remoteJid, {
+                text: "PV ainda não ativado. Manda /teto-ativar para eu responder aqui."
+              });
+            }
             continue;
           }
         }
@@ -2028,6 +2065,18 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const effectiveMessage = text || media?.transcript || media?.caption || `[${media?.type ?? "media"}]`;
 
         const isOwner = isOwnerContact(runtime, remoteJid, userId);
+
+        if (
+          await maybeRedirectOwnerToBotDm({
+            remoteJid,
+            userId,
+            text,
+            isFromMe,
+            isGroup
+          })
+        ) {
+          continue;
+        }
 
         runtime.brainOrchestrator?.reconcileSleepFromSchedule?.();
         const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
