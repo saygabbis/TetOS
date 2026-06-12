@@ -89,10 +89,11 @@ export function isBoundaryReopening(text = "") {
 }
 
 export function clearUserBoundaryFacts(facts = {}) {
-  const next = { ...facts };
-  delete next.userBoundaryUntil;
-  delete next.userBoundaryReason;
-  delete next.userBoundaryLevel;
-  delete next.userBoundarySetAt;
-  return next;
+  return {
+    ...facts,
+    userBoundaryUntil: null,
+    userBoundaryReason: null,
+    userBoundaryLevel: null,
+    userBoundarySetAt: null
+  };
 }

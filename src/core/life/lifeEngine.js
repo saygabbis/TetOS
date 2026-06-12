@@ -2,6 +2,7 @@ import { LifeProfile } from "./lifeProfile.js";
 import { LifeStateStore } from "./lifeState.js";
 import { SleepCycle } from "./SleepCycle.js";
 import { CreativeRoutineGenerator } from "./CreativeRoutineGenerator.js";
+import { getLocalHour } from "./sleepSchedule.js";
 import { contextualSeed, pick, chance } from "../brain/rng.js";
 
 const PHASE_BY_HOUR = [
@@ -71,13 +72,18 @@ export class LifeEngine {
 
   tick(context = {}) {
     const now = context.now ?? new Date();
-    const hour = now.getHours();
+    const timezone = this.profile.get().timezone ?? "America/Sao_Paulo";
+    const hour = context.hourOfDay ?? getLocalHour(now, timezone);
     const phase = resolvePhase(hour);
     const isWeekend = now.getDay() === 0 || now.getDay() === 6;
     const state = this.store.get();
+    const rhythm = context.rhythm ?? {};
 
     const sleepResult = this.sleep.tick({
       hourOfDay: hour,
+      timezone,
+      rhythm,
+      now,
       energy: context.emotion?.energy ?? 0.5,
       stress: context.emotion?.stress ?? 0.3,
       jetLag: context.world?.climateTags?.includes("jet_lag")

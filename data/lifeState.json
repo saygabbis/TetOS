@@ -1,6 +1,6 @@
 {
-  "currentActivity": "jogar",
-  "activityStartedAt": "2026-06-08T20:50:41.535Z",
+  "currentActivity": "passeio curto",
+  "activityStartedAt": "2026-06-12T17:51:32.328Z",
   "phase": "noite",
   "obligations": [
     {
@@ -411,14 +411,30 @@
   "goals": [],
   "privateThoughts": [],
   "sleep": {
-    "state": "light_sleep",
+    "state": "awake",
     "sleepDebt": 0,
-    "lastSleepAt": "2026-06-12T15:14:30.555Z",
-    "lastWakeAt": null,
-    "tonightPlan": null,
-    "alarmHistory": [],
-    "wakeDelayUntil": null
+    "lastSleepAt": "2026-06-12T16:18:10.923Z",
+    "tonightPlan": {
+      "bedHour": 23,
+      "wakeHour": 7
+    },
+    "alarmHistory": [
+      {
+        "ts": "2026-06-12T16:18:10.922Z",
+        "missedAlarm": false,
+        "quality": 0.68,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-12T16:19:15.012Z",
+        "missedAlarm": false,
+        "quality": 0.68,
+        "state": "awake"
+      }
+    ],
+    "wakeDelayUntil": null,
+    "lastWakeAt": "2026-06-12T16:19:15.012Z"
   },
-  "lastTickAt": "2026-06-12T15:14:30.555Z",
-  "dayKey": "2026-06-09"
+  "lastTickAt": "2026-06-12T20:35:13.609Z",
+  "dayKey": "2026-06-12"
 }

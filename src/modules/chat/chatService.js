@@ -230,6 +230,11 @@ export class ChatService {
     if (/^(valeu|vlw)\s+(amiga|amigo|viu|mesmo|aí|ai)\b/.test(t)) return true;
     if (/^até\s+(logo|mais|amanha|amanhã)\b/.test(t)) return true;
     if (/^tchau\b/.test(t)) return true;
+    if (/\b(tchau|xau|flw|falou)\s+(tchau|xau|flw|falou)\b/i.test(t)) return true;
+    if (/\b(tchau|xau|flw|falou|até mais|ate mais)\b/i.test(t) && /\b(vou|to|tô)\s+(sair|dormir|embora)\b/i.test(t)) {
+      return true;
+    }
+    if (/\b(vou|to|tô)\s+sair\b/i.test(t) && /\b(tchau|xau|flw|falou)\b/i.test(t)) return true;
     if (/^beleza[, ]+então\b/.test(t)) return true;
     if (/^por hoje (é|e) isso\b/.test(t)) return true;
     if (/^resolvido\b/.test(t)) return true;
@@ -322,6 +327,17 @@ export class ChatService {
 
   static shouldReactOnly(userText, history = []) {
     return ChatService.decideClosure(userText, history) === "react";
+  }
+
+  static hasImpossibleContactPrompt(text) {
+    const t = String(text ?? "").toLowerCase();
+    return (
+      /\b(me\s+)?liga(r|me)?\s+(quando|se|depois|pra|para)\b/.test(t) ||
+      /\bme\s+telefon/.test(t) ||
+      /\b(chama|liga)\s+no\s+telefone\b/.test(t) ||
+      /\bdá\s+uma\s+ligad/.test(t) ||
+      /\bda\s+uma\s+ligad/.test(t)
+    );
   }
 
   static hasMetaDrift(text) {
@@ -498,7 +514,7 @@ export class ChatService {
     }
     if (resultParts.length) {
       const first = String(resultParts[0] ?? "");
-      if (ChatService.hasMetaDrift(first)) {
+      if (ChatService.hasMetaDrift(first) || ChatService.hasImpossibleContactPrompt(first)) {
         const regen = await this.agent.respond(
           trimmed,
           { ...meta, fallback: "ground", skipUserRecord: true },
@@ -539,6 +555,14 @@ export class ChatService {
         resultParts = [resultParts[0]];
       }
       if (ChatService.isConversationLull(trimmed) && resultParts.length > 1) {
+        resultParts = [resultParts[0]];
+      }
+      if (
+        (closureDecision === "brief_farewell" ||
+          closureDecision === "silent" ||
+          ChatService.isConversationClosure(trimmed)) &&
+        resultParts.length > 1
+      ) {
         resultParts = [resultParts[0]];
       }
     }

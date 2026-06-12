@@ -20,6 +20,16 @@ function dedupeKey(entry) {
   return `${entry.userId ?? "default"}|${String(entry.content ?? entry.value ?? "").toLowerCase().trim()}`;
 }
 
+/** null no patch remove a chave — necessário para limpar userBoundaryUntil etc. */
+function mergeProfileSection(current = {}, patch = {}) {
+  if (!patch || typeof patch !== "object") return { ...current };
+  const next = { ...current, ...patch };
+  for (const key of Object.keys(patch)) {
+    if (patch[key] === null) delete next[key];
+  }
+  return next;
+}
+
 export class LongTermMemory {
   constructor(path) {
     this.path = path;
@@ -119,9 +129,9 @@ export class LongTermMemory {
     const next = {
       ...current,
       ...patch,
-      facts: { ...current.facts, ...(patch.facts ?? {}) },
-      style: { ...current.style, ...(patch.style ?? {}) },
-      counts: { ...current.counts, ...(patch.counts ?? {}) },
+      facts: mergeProfileSection(current.facts, patch.facts),
+      style: mergeProfileSection(current.style, patch.style),
+      counts: mergeProfileSection(current.counts, patch.counts),
       channelScope,
       lastUpdated: new Date().toISOString()
     };

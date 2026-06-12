@@ -12,8 +12,30 @@ import { basename, extname, join } from "node:path";
 import sharp from "sharp";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import {
+  applyBackgroundToPng,
+  isAnimatedImage,
+  isAnimatedMedia,
+  removeAnimatedBackground,
+  removeImageBackground
+} from "./backgroundRemovalService.js";
+import { probeStickerIsAnimated } from "./stickerAnimation.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+
+/** Animado → pipeline local; estático → pode usar API remove.bg. */
+export async function isAnimatedRemoveBgTarget(input) {
+  if (!input?.path) return false;
+  if (input.type === "video" || input.type === "gif") return true;
+  if (input.isAnimated === true) return true;
+  if (input.type === "sticker") {
+    return probeStickerIsAnimated(input.path, { isAnimatedHint: input.isAnimated });
+  }
+  if (input.type === "image" || input.type === "document") {
+    return isAnimatedMedia(input.path) || (await isAnimatedImage(input.path));
+  }
+  return false;
+}
 
 function ensureDir(path) {
   if (!existsSync(path)) mkdirSync(path, { recursive: true });
@@ -338,8 +360,73 @@ async function optimizeStickerWebp(inputPath, outputDir, maxStickerBytes) {
 
 async function staticStickerToImage(inputPath, outputDir) {
   const output = outPath(outputDir, inputPath, "toimg", "png");
-  await sharp(inputPath).png().toFile(output);
+  try {
+    const meta = await sharp(inputPath, { animated: true }).metadata().catch(() => ({}));
+    const pages = Number(meta?.pages ?? 1);
+    const pipeline = sharp(
+      inputPath,
+      pages > 1 ? { animated: true, pages: 1, limitInputPixels: false } : { limitInputPixels: false }
+    );
+    await pipeline.ensureAlpha().png().toFile(output);
+    if (existsSync(output) && statSync(output).size > 32) {
+      return { kind: "image", path: output };
+    }
+  } catch {
+    /* fallback ffmpeg abaixo */
+  }
+
+  try {
+    await runFfmpeg(
+      ffmpeg(inputPath)
+        .outputOptions(["-frames:v", "1", "-update", "1"])
+        .save(output)
+    );
+    if (existsSync(output) && statSync(output).size > 32) {
+      return { kind: "image", path: output };
+    }
+  } catch {
+    /* tenta sharp sem animated */
+  }
+
+  await sharp(inputPath, { limitInputPixels: false }).ensureAlpha().png().toFile(output);
   return { kind: "image", path: output };
+}
+
+const REMOVEBG_GIF_VF =
+  "fps=12,scale=512:512:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen=reserve_transparent=1:stats_mode=single[p];[s1][p]paletteuse=alpha";
+
+/** GIF com alpha para .removebg — evita MP4 sem transparência do .toimg. */
+async function animatedStickerToGifForRemoveBg(inputPath, outputDir) {
+  const outputGif = outPath(outputDir, inputPath, "removebg-src", "gif");
+  try {
+    await sharp(inputPath, {
+      animated: true,
+      pages: -1,
+      limitInputPixels: false
+    })
+      .resize(512, 512, {
+        fit: "inside",
+        background: { r: 0, g: 0, b: 0, alpha: 0 }
+      })
+      .gif({ effort: 8, colours: 256 })
+      .toFile(outputGif);
+  } catch {
+    /* sharp falhou — ffmpeg abaixo */
+  }
+
+  if (!looksLikeGifFile(outputGif)) {
+    await runFfmpeg(
+      ffmpeg(inputPath)
+        .inputOptions(["-ignore_loop", "0"])
+        .outputOptions(["-an", "-t", "5", "-vf", REMOVEBG_GIF_VF, "-loop", "0"])
+        .save(outputGif)
+    );
+  }
+
+  if (!looksLikeGifFile(outputGif)) {
+    throw new Error("nao foi possivel converter figurinha animada para GIF");
+  }
+  return { kind: "gif", path: outputGif, toimgGifPath: outputGif };
 }
 
 /** MP4 sem `ftyp` ou ridículo de pequeno costuma virar bolha cinza no WhatsApp. */
@@ -661,9 +748,22 @@ return {
 }
 
 export class MediaProcessor {
-  constructor({ outputDir = "./data/media/derived", maxStickerBytes = 950 * 1024 } = {}) {
+  constructor({
+    outputDir = "./data/media/derived",
+    maxStickerBytes = 950 * 1024,
+    removeBgApiKeys = null,
+    removeBgApiKey = "",
+    removeBgModel = "small"
+  } = {}) {
     this.outputDir = outputDir;
     this.maxStickerBytes = maxStickerBytes;
+    if (Array.isArray(removeBgApiKeys) && removeBgApiKeys.length > 0) {
+      this.removeBgApiKeys = removeBgApiKeys.filter(Boolean);
+    } else {
+      const single = String(removeBgApiKey ?? "").trim();
+      this.removeBgApiKeys = single ? [single] : [];
+    }
+    this.removeBgModel = ["small", "medium", "large"].includes(removeBgModel) ? removeBgModel : "small";
   }
 
   async toSticker(input, mode = "stretch", { maxDurationMs } = {}) {
@@ -733,13 +833,85 @@ export class MediaProcessor {
     return optimizeStickerWebp(input.path, this.outputDir, this.maxStickerBytes);
   }
 
-  async toMediaFromSticker(input) {
+  async toMediaFromSticker(input, { forRemoveBg = false } = {}) {
     if (!input?.path) throw new Error("invalid sticker input");
-    const meta = await sharp(input.path, { animated: true }).metadata().catch(() => ({}));
-    const pages = Number(meta?.pages ?? 1);
-    if (pages > 1 || input?.isAnimated) {
+    const animated = await probeStickerIsAnimated(input.path, {
+      isAnimatedHint: input.isAnimated
+    });
+    if (animated) {
+      if (forRemoveBg) {
+        return animatedStickerToGifForRemoveBg(input.path, this.outputDir);
+      }
       return animatedStickerToVideo(input.path, this.outputDir);
     }
     return staticStickerToImage(input.path, this.outputDir);
+  }
+
+  /**
+   * Remove fundo de imagem, GIF, vídeo ou figurinha (converte com .toimg antes).
+   * @param {{ background?: string|null, model?: string }} options
+   */
+  async removeBackground(input, { background = null, model } = {}) {
+    if (!input?.path) throw new Error("invalid media input");
+
+    let workPath = input.path;
+    let animated = false;
+
+    if (input.type === "sticker") {
+      const converted = await this.toMediaFromSticker(input, { forRemoveBg: true });
+      if (!converted?.path) {
+        throw new Error("nao foi possivel preparar figurinha para removebg");
+      }
+      const gifSource = converted.toimgGifPath || converted.path;
+      animated =
+        converted.kind === "gif" ||
+        converted.kind === "video" ||
+        isGifLikeFile(gifSource) ||
+        isAnimatedMedia(gifSource);
+      workPath = gifSource;
+    } else if (input.type === "video" || input.type === "gif") {
+      animated = true;
+    } else if (input.type === "image" || input.type === "document") {
+      animated =
+        isAnimatedMedia(input.path) || (await isAnimatedImage(input.path));
+    } else {
+      throw new Error(`tipo de midia nao suportado para removebg: ${input.type}`);
+    }
+
+    ensureDir(this.outputDir);
+    const effectiveModel =
+      model && ["small", "medium", "large"].includes(model) ? model : this.removeBgModel;
+
+    const bgOpts = {
+      background,
+      removeBgApiKeys: this.removeBgApiKeys.length ? this.removeBgApiKeys : undefined,
+      model: effectiveModel
+    };
+
+    if (animated) {
+      return removeAnimatedBackground(workPath, this.outputDir, {
+        background,
+        model: effectiveModel
+      });
+    }
+
+    const base = basename(workPath, extname(workPath));
+    const transparentPath = join(this.outputDir, `${base}-nobg.png`);
+    const finalPath = join(
+      this.outputDir,
+      `${base}-removebg${background ? "-color" : ""}.png`
+    );
+
+    await removeImageBackground(workPath, transparentPath, bgOpts);
+    await applyBackgroundToPng(transparentPath, finalPath, background);
+
+    return {
+      kind: "image",
+      path: finalPath,
+      mimetype: "image/png",
+      fileName: background ? "sem-fundo-colorido.png" : "sem-fundo.png",
+      documentOnly: true,
+      removeBgModel: effectiveModel
+    };
   }
 }

@@ -4,6 +4,7 @@ import {
   detectTopicClosed
 } from "../autonomy/ghostingPolicy.js";
 import { detectUserBoundary } from "../channels/userBoundaryDetect.js";
+import { detectWrongBotNameVocative } from "../../integrations/whatsapp/tetoNameDetect.js";
 import { contextualSeed, chance } from "./rng.js";
 
 const STOPWORDS = new Set([
@@ -83,7 +84,7 @@ function userAnnouncedDeparture(text = "") {
   const t = normalize(text);
   return (
     detectTopicClosed(text) ||
-    /\b(vou|to|tô)\s+(jogar|dormir|comer|sair|trabalhar|estudar|descansar)\b/.test(t) ||
+    /\b(vou|to|tô)\s+(jogar|dormir|comer|sair|embora|trabalhar|estudar|descansar)\b/.test(t) ||
     /\b(bora|partida|ranked|partida)\b/.test(t)
   );
 }
@@ -170,9 +171,22 @@ export function analyzeConversationPhase(ctx = {}) {
   const prevUser = lastUserMessageInHistory(history);
   const userWasLeaving = prevUser?.content && userAnnouncedDeparture(prevUser.content);
   const assistantBlessed = lastAssistant?.content && assistantSentFarewell(lastAssistant.content);
+  const wrongBotName = ctx.wrongBotName ?? detectWrongBotNameVocative(message);
 
-  if (ctx.isDirectMention || ctx.isVulnerable) {
-    signals.push("chamada_direta_ou_vulnerabilidade");
+  if (isHardClose) {
+    phase = "hard_close";
+    recommendedAction =
+      wrongBotName && !isDirectQuestion
+        ? "brief_farewell"
+        : pickLullAction(message, ctx.sessionId ?? "default", trailingBot, {
+            userHardClose: true,
+            assistantAlreadyFarewelled: assistantBlessed
+          });
+    confidence = wrongBotName ? 0.9 : 0.82;
+    signals.push("despedida_explicita");
+    if (wrongBotName) signals.push(`nome_errado:${wrongBotName}`);
+  } else if (ctx.isVulnerable) {
+    signals.push("vulnerabilidade");
     return {
       phase: "active",
       recommendedAction: "respond",
@@ -180,7 +194,18 @@ export function analyzeConversationPhase(ctx = {}) {
       confidence: 0.88,
       signals,
       topicShift,
-      reasoning: "chamada direta ou vulnerabilidade — não encerrar"
+      reasoning: "vulnerabilidade — não encerrar"
+    };
+  } else if (ctx.isDirectMention) {
+    signals.push("chamada_direta");
+    return {
+      phase: "active",
+      recommendedAction: "respond",
+      closeDecision: "none",
+      confidence: 0.88,
+      signals,
+      topicShift,
+      reasoning: "chamada direta em grupo — não encerrar"
     };
   }
 
@@ -212,14 +237,6 @@ export function analyzeConversationPhase(ctx = {}) {
     recommendedAction = "respond";
     confidence = 0.62;
     signals.push("pergunta_pendente_do_assistente");
-  } else if (isHardClose) {
-    phase = "hard_close";
-    recommendedAction = pickLullAction(message, ctx.sessionId ?? "default", trailingBot, {
-      userHardClose: true,
-      assistantAlreadyFarewelled: assistantBlessed
-    });
-    confidence = 0.82;
-    signals.push("despedida_explicita");
   } else if (userWasLeaving && isLull && assistantBlessed) {
     phase = "winding_down";
     recommendedAction = pickLullAction(message, ctx.sessionId ?? "default", trailingBot, {
@@ -370,10 +387,19 @@ export function formatConversationPhaseBlock(phaseAnalysis) {
     lines.push(`mudança de assunto detectada${phaseAnalysis.topicShift.hint ? `: ${phaseAnalysis.topicShift.hint}` : ""}`);
   }
 
+  const wrongNameSignal = (phaseAnalysis.signals ?? []).find((s) => String(s).startsWith("nome_errado:"));
+  if (wrongNameSignal) {
+    lines.push(
+      "Erraram seu nome na despedida — correção leve numa frase (tipo 'é Teto kkk') e fecha.",
+      "Sem bronca, sem palestra, sem 'volta quando quiser' extra."
+    );
+  }
+
   if (phaseAnalysis.recommendedAction === "brief_farewell" || phaseAnalysis.closeDecision === "brief_farewell") {
     lines.push(
       "Você PODE mandar 1 despedida bem curta (flw, boa noite, vai lá, se cuida, bons sonhos) se quiser a última palavra.",
       "1 bolha só — sem pergunta, sem café, sem esticar.",
+      "Proibido pedir ligação/telefone — só zap por texto.",
       "Se achar que a pessoa já fechou bonito e não precisa: [SEM_RESPOSTA] também vale."
     );
   } else if (["lull", "natural_end", "winding_down", "hard_close"].includes(phaseAnalysis.phase)) {

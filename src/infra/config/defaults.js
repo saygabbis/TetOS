@@ -1,3 +1,5 @@
+import { parseRemoveBgApiKeys } from "../../core/media/removeBgKeyPool.js";
+
 const llmProviderRaw = (process.env.TETOS_LLM_PROVIDER ?? "ollama").toLowerCase();
 const llmProvider = llmProviderRaw === "minimax" ? "minimax" : "ollama";
 
@@ -181,6 +183,15 @@ export const DEFAULTS = {
       if (Number.isFinite(kb) && kb >= 64 && kb <= 1024) return Math.floor(kb * 1024);
     }
     return 950 * 1024;
+  })(),
+  /** Chaves remove.bg (rotação automática; local só quando todas esgotam). */
+  removeBgApiKeys: parseRemoveBgApiKeys(),
+  /** @deprecated use removeBgApiKeys — mantido para compatibilidade. */
+  removeBgApiKey: parseRemoveBgApiKeys()[0] ?? "",
+  /** small | medium | large — modelo local imgly (small = mais rápido). */
+  removeBgModel: (() => {
+    const m = String(process.env.TETOS_REMOVEBG_MODEL ?? "small").toLowerCase();
+    return ["small", "medium", "large"].includes(m) ? m : "small";
   })(),
   dailyReportEnabled: String(process.env.DAILY_REPORT_ENABLED ?? "false").toLowerCase() === "true",
   dailyReportTime: process.env.DAILY_REPORT_TIME ?? "00:00",

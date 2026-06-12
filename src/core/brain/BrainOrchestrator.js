@@ -4,6 +4,7 @@ import { EmotionSystem } from "../emotion/EmotionSystem.js";
 import { BodyNeeds } from "../emotion/BodyNeeds.js";
 import { HealthConditions } from "../emotion/HealthConditions.js";
 import { LifeEngine } from "../life/lifeEngine.js";
+import { getLocalHour } from "../life/sleepSchedule.js";
 import { WorldContext } from "../life/WorldContext.js";
 import { AutonomousEvolution } from "../life/AutonomousEvolution.js";
 import { LifeNarrator } from "../life/LifeNarrator.js";
@@ -117,6 +118,23 @@ export class BrainOrchestrator {
       this._backgroundTimer = setInterval(() => this.tickBackground(), config.backgroundTickMs);
       if (this._backgroundTimer.unref) this._backgroundTimer.unref();
     }
+
+    this.reconcileSleepFromSchedule();
+  }
+
+  reconcileSleepFromSchedule() {
+    const tz = this.life.profile.get().timezone ?? "America/Sao_Paulo";
+    const rhythm = this.absorbed.getPatterns().rhythm ?? {};
+    const result = this.life.sleep.reconcileWithSchedule({
+      timezone: tz,
+      rhythm,
+      now: new Date()
+    });
+    if (result?.state) {
+      console.log(
+        `[life.sleep] reconciliado — acordou (${result.state}) fora da janela de sono`
+      );
+    }
   }
 
   enrichTrustForTiming(userId, channelScope, emotion, hour) {
@@ -213,9 +231,15 @@ export class BrainOrchestrator {
   async tickTurn(turnContext = {}) {
     if (!this.enabled) return { snapshot: {}, blocks: {}, timingPlan: {} };
 
-    const hour = new Date().getHours();
+    const tz = this.life.profile.get().timezone ?? "America/Sao_Paulo";
+    const now = new Date();
+    const hour = turnContext.hourOfDay ?? getLocalHour(now, tz);
+    const rhythm = this.absorbed.getPatterns().rhythm ?? {};
+
+    this.life.sleep.reconcileWithSchedule({ timezone: tz, rhythm, now });
+
     this.world.tick({
-      now: new Date(),
+      now,
       emotion: this.emotion.getSnapshot(),
       life: this.life.getSnapshot()
     });
@@ -232,7 +256,12 @@ export class BrainOrchestrator {
       climateTags: worldSnap.climateTags,
       sleepQuality: this.life.sleep.getSnapshot().quality ?? 0.7
     });
-    this.life.tick({ emotion: this.emotion.getSnapshot(), hour });
+    this.life.tick({
+      now,
+      hourOfDay: hour,
+      rhythm,
+      emotion: this.emotion.getSnapshot()
+    });
     this.social.tick({ emotion: this.emotion.getSnapshot(), availability: this.life.sleep.isAvailable() ? "awake" : "sleeping" });
     this.music.tick({ phase: this.life.getSnapshot().phase, emotion: this.emotion.getSnapshot() });
 
@@ -325,15 +354,23 @@ export class BrainOrchestrator {
 
   async tickBackground() {
     if (!this.enabled) return;
-    const hour = new Date().getHours();
+    const tz = this.life.profile.get().timezone ?? "America/Sao_Paulo";
+    const now = new Date();
+    const hour = getLocalHour(now, tz);
+    const rhythm = this.absorbed.getPatterns().rhythm ?? {};
     const emotion = this.emotion.getSnapshot();
-    const ctx = { hour, hourOfDay: hour, emotion, availability: this.life.sleep.isAvailable() ? "awake" : "sleeping" };
+    const ctx = {
+      now,
+      hourOfDay: hour,
+      rhythm,
+      emotion,
+      availability: this.life.sleep.isAvailable() ? "awake" : "sleeping"
+    };
     this.world.tick({
-      now: new Date(),
+      now,
       emotion,
       life: this.life.getSnapshot()
     });
-    this.life.sleep.tick({ hourOfDay: hour, energy: emotion.energy, stress: emotion.stress });
     this.life.tick(ctx);
     this.social.tick(ctx);
     this.music.tick({ life: this.life.getSnapshot(), emotion });
@@ -344,15 +381,15 @@ export class BrainOrchestrator {
     this.trust.tick({ hoursElapsed: 1 });
     this.memory.tick();
 
-    const now = Date.now();
-    if (now - this._lastMusicResearchAt >= this.musicResearchIntervalMs) {
-      this._lastMusicResearchAt = now;
+    const nowMs = Date.now();
+    if (nowMs - this._lastMusicResearchAt >= this.musicResearchIntervalMs) {
+      this._lastMusicResearchAt = nowMs;
       await this.music.research({ query: "Kasane Teto SynthV new release 2025" }).catch(() => null);
     }
 
     const snapshot = this.buildSnapshot();
-    if (now - this._lastSoloThoughtAt >= this.soloThoughtIntervalMs) {
-      this._lastSoloThoughtAt = now;
+    if (nowMs - this._lastSoloThoughtAt >= this.soloThoughtIntervalMs) {
+      this._lastSoloThoughtAt = nowMs;
       await this.autonomous.tick(snapshot, { useLlm: Boolean(this.autonomous.workerLlm?.generate) });
     } else {
       await this.autonomous.tick(snapshot, { useLlm: false });

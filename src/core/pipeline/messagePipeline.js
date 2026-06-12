@@ -288,7 +288,10 @@ export async function runMessagePipeline(runtime, payload = {}) {
       );
       runtime.initiationEngine?.cancelForUser?.(safeUserId ?? "default");
     }
-  } else if (isBoundaryReopening(input) && isUserBoundaryActive(existingProfile)) {
+  } else if (
+    isUserBoundaryActive(existingProfile) &&
+    (isBoundaryReopening(input) || (isReplyToBot && String(input).trim().length >= 4))
+  ) {
     runtime.longTerm.updateProfile(
       safeUserId ?? "default",
       { facts: clearUserBoundaryFacts(existingProfile?.facts ?? {}) },
@@ -417,7 +420,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     userBoundary.active &&
     userBoundary.level === "hard" &&
     boundaryDetected.level === "none" &&
-    !isBoundaryReopening(input);
+    !isBoundaryReopening(input) &&
+    !(isReplyToBot && trimmedInput.length >= 4);
 
   const mediaOnlyWithoutAddress =
     !isGroup &&

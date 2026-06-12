@@ -10,12 +10,18 @@ import { resolvePassiveModeAction } from "../../core/channels/passiveModeAction.
 import { resolveStickerAsset } from "./stickerAssets.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 import { resolveCloseDecision } from "../../core/brain/ConversationPhaseEngine.js";
+import { detectWrongBotNameVocative } from "./tetoNameDetect.js";
 import { detectVulnerability } from "../../core/brain/vulnerabilityDetect.js";
 import { ChatCommandQueue } from "./chatCommandQueue.js";
 import { ChatMediaHistoryStore } from "./chatMediaHistoryStore.js";
 import { resolveCommandTarget } from "./commandTargetResolver.js";
-import { MediaProcessor } from "../../core/media/mediaProcessor.js";
+import { isAnimatedRemoveBgTarget, MediaProcessor } from "../../core/media/mediaProcessor.js";
+import { probeStickerIsAnimated } from "../../core/media/stickerAnimation.js";
 import { resolveStickerDurationArg } from "../../core/media/stickerDurationParse.js";
+import {
+  REMOVE_BG_MODEL_LABELS,
+  resolveRemoveBgOptions
+} from "../../core/media/removeBgOptionsParse.js";
 import { resolveTimingConfig, estimateTypingDelayMs as estimateTypingFromCfg } from "../../core/timing/timingConfig.js";
 import { ChatMessageIndex } from "./chatMessageIndex.js";
 import {
@@ -210,10 +216,12 @@ function parseWhatsAppCommand(text = "", prefix = ".") {
     comandos: "help",
     commands: "help",
     otimizar: "optimize",
-    optimizar: "optimize"
+    optimizar: "optimize",
+    rmbg: "removebg",
+    "remove-bg": "removebg"
   };
   const normalized = aliases[command] ?? command;
-  if (!["sticker", "fsticker", "csticker", "toimg", "optimize", "help"].includes(normalized)) {
+  if (!["sticker", "fsticker", "csticker", "toimg", "optimize", "removebg", "help"].includes(normalized)) {
     return null;
   }
   return { command: normalized, args };
@@ -231,6 +239,7 @@ function formatWhatsAppHelpText(prefix = ".") {
     `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain). Aceita duração opcional (ex.: ${c("fsticker")} 3s).`,
     `${c("csticker")} — Recorta o centro para caber na figurinha (crop). Aceita duração opcional (ex.: ${c("csticker")} 5000ms).`,
     `${c("optimize")} — Comprime figurinha grande (reply/anexo) sem reduzir FPS; reenvia otimizada (também ${p}otimizar).`,
+    `${c("removebg")} — Remove fundo de imagem ou figurinha estatica (API remove.bg em media/forte). GIF/video/figurinha animada: so modelo local, sem gastar creditos. Fundo transparente (padrao) ou cor: ${c("removebg")} verde. Potencia: leve, media, forte. Envia como documento (PNG/GIF/MP4).`,
     `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`
   ].join("\n");
 }
@@ -938,7 +947,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
   const mediaHistoryStore = new ChatMediaHistoryStore(runtime.defaults.commandMediaHistoryLimit);
   const mediaProcessor = new MediaProcessor({
     outputDir: runtime.defaults.commandMediaDerivedPath,
-    maxStickerBytes: runtime.defaults.tetosStickerMaxBytes
+    maxStickerBytes: runtime.defaults.tetosStickerMaxBytes,
+    removeBgApiKeys: runtime.defaults.removeBgApiKeys,
+    removeBgModel: runtime.defaults.removeBgModel
   });
   const seenMessageIds = new Map();
   const MESSAGE_DEDUPE_TTL_MS = 10 * 60 * 1000;
@@ -949,6 +960,27 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
   );
   if (orchestrator) {
     socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
+  }
+
+  function isWaConnectionError(error) {
+    const msg = String(error?.message ?? error ?? "");
+    return (
+      /connection closed/i.test(msg) ||
+      error?.output?.statusCode === 428 ||
+      error?.output?.payload?.statusCode === 428
+    );
+  }
+
+  async function safeSendMessage(jid, payload) {
+    try {
+      return await socket.sendMessage(jid, payload);
+    } catch (error) {
+      if (isWaConnectionError(error)) {
+        console.warn(`${waLogPrefix} envio abortado (conexao fechada) → ${jid}`);
+        return null;
+      }
+      throw error;
+    }
   }
 
   async function handleMediaCommand({
@@ -971,8 +1003,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         basePath: runtime.defaults.whatsappMediaPath
       });
       if (!resolved?.media?.path) {
-        await socket.sendMessage(remoteJid, {
-          text: "Nao achei midia valida. Use no anexo, reply, ou mande uma midia recente."
+        await safeSendMessage(remoteJid, {
+          text: "Nao achei midia valida. Manda a imagem/GIF no anexo, responde (reply) a uma midia, ou manda a midia e depois o comando."
         });
         runtime.eventLedger?.append?.({
           eventType: "command.media",
@@ -985,13 +1017,36 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         return true;
       }
 
+      if (parsedCommand.command === "removebg") {
+        const bgOptsEarly = resolveRemoveBgOptions(parsedCommand.args);
+        if (!bgOptsEarly.error) {
+          const potencyKey = bgOptsEarly.model ?? runtime.defaults.removeBgModel ?? "small";
+          const potencyLabel = REMOVE_BG_MODEL_LABELS[potencyKey] ?? potencyKey;
+          const animTarget = await isAnimatedRemoveBgTarget(resolved.media);
+          const statusText = animTarget
+            ? `Removendo fundo animado (modelo local — nao gasta creditos remove.bg)... pode demorar bastante.`
+            : `Removendo fundo (${potencyLabel})...`;
+          try {
+            await socket.sendPresenceUpdate?.("composing", remoteJid);
+          } catch {
+            /* opcional */
+          }
+          await safeSendMessage(remoteJid, { text: statusText });
+          try {
+            await socket.sendPresenceUpdate?.("paused", remoteJid);
+          } catch {
+            /* opcional */
+          }
+        }
+      }
+
       try {
         let output = null;
         const stickerCommands = ["sticker", "fsticker", "csticker"];
         if (stickerCommands.includes(parsedCommand.command)) {
           const durationResolved = resolveStickerDurationArg(parsedCommand.args?.[0]);
           if (durationResolved.error) {
-            await socket.sendMessage(remoteJid, { text: durationResolved.error });
+            await safeSendMessage(remoteJid, { text: durationResolved.error });
             return true;
           }
           const mode =
@@ -1005,7 +1060,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
         } else if (parsedCommand.command === "optimize") {
           if (resolved.media.type !== "sticker") {
-            await socket.sendMessage(remoteJid, {
+            await safeSendMessage(remoteJid, {
               text: "O .optimize so funciona com figurinhas. Marque uma figurinha (reply ou anexo) e tente de novo."
             });
             return true;
@@ -1013,11 +1068,21 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           output = await mediaProcessor.optimizeSticker(resolved.media);
           if (output.alreadyOptimized) {
             const kb = Math.round((output.sizeBytes ?? 0) / 1024);
-            await socket.sendMessage(remoteJid, {
+            await safeSendMessage(remoteJid, {
               text: `Essa figurinha ja esta leve o suficiente (${kb} KiB).`
             });
             return true;
           }
+        } else if (parsedCommand.command === "removebg") {
+          const bgOpts = resolveRemoveBgOptions(parsedCommand.args);
+          if (bgOpts.error) {
+            await safeSendMessage(remoteJid, { text: bgOpts.error });
+            return true;
+          }
+          output = await mediaProcessor.removeBackground(resolved.media, {
+            background: bgOpts.background,
+            model: bgOpts.model
+          });
         } else if (parsedCommand.command === "toimg") {
           output = await mediaProcessor.toMediaFromSticker(resolved.media);
         }
@@ -1030,6 +1095,27 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         const outBuffer = output.path ? readFileSync(output.path) : null;
 
+        if (parsedCommand.command === "removebg") {
+          const sent = await safeSendMessage(remoteJid, {
+            document: outBuffer,
+            mimetype: output.mimetype ?? "image/png",
+            fileName: output.fileName ?? "sem-fundo.png"
+          });
+          if (!sent) return true;
+          const elapsedMs = Date.now() - startedAt;
+          runtime.eventLedger?.append?.({
+            eventType: "command.media",
+            commandName: parsedCommand.command,
+            status: "ok",
+            targetSource: resolved.source,
+            inputType: resolved.media.type,
+            outputType: output.kind,
+            remoteJid,
+            actorId: userId,
+            elapsedMs
+          });
+          return true;
+        }
 
         if (parsedCommand.command === "toimg") {
           if (output.kind === "video") {
@@ -1046,20 +1132,20 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               };
 
 
-              await socket.sendMessage(remoteJid, playbackPayload);
+              await safeSendMessage(remoteJid, playbackPayload);
             }
             const gifDoc = output.toimgGifPath;
             if (gifDoc && existsSync(gifDoc)) {
 
-              await socket.sendMessage(remoteJid, {
+              await safeSendMessage(remoteJid, {
                 document: readFileSync(gifDoc),
                 mimetype: "image/gif",
                 fileName: "sticker-convertido.gif"
               });
             }
           } else {
-            await socket.sendMessage(remoteJid, { image: outBuffer });
-            await socket.sendMessage(remoteJid, {
+            await safeSendMessage(remoteJid, { image: outBuffer });
+            await safeSendMessage(remoteJid, {
               document: outBuffer,
               mimetype: "image/png",
               fileName: "sticker-convertido.png"
@@ -1067,11 +1153,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
         } else if (output.kind === "video") {
 
-          const sendResult = await socket.sendMessage(remoteJid, { sticker: outBuffer });
+          await safeSendMessage(remoteJid, { sticker: outBuffer });
 
         } else {
 
-          const sendResult = await socket.sendMessage(remoteJid, { sticker: outBuffer });
+          await safeSendMessage(remoteJid, { sticker: outBuffer });
 
         }
 
@@ -1102,9 +1188,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         });
         return true;
       } catch (error) {
-        await socket.sendMessage(remoteJid, {
-          text: `Falha ao processar ${parsedCommand.command}: ${error.message}`
-        });
+        if (isWaConnectionError(error)) {
+          console.warn(
+            `${waLogPrefix} comando ${parsedCommand.command} interrompido — conexao caiu (${remoteJid})`
+          );
+          return true;
+        }
+        const failText =
+          parsedCommand.command === "removebg"
+            ? resolved.media?.type === "sticker"
+              ? "Nao consegui remover o fundo dessa figurinha. Estatica: reply + .removebg forte. Animada e instavel — tenta uma figurinha estatica."
+              : "Nao consegui remover o fundo desta midia. Imagem/figurinha estatica: .removebg forte. GIF/video animado costuma falhar no modelo local."
+            : `Falha ao processar ${parsedCommand.command}: ${error.message}`;
+        await safeSendMessage(remoteJid, { text: failText });
         runtime.eventLedger?.append?.({
           eventType: "command.media",
           commandName: parsedCommand.command,
@@ -1424,9 +1520,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             repetition,
             isDirectTetoCall: ChatService.isDirectTetoCall(text),
             isDirectQuestion: ChatService.isLikelyQuestion(text),
-            isDirectMention: isGroup ? isDirect : true,
+            isDirectMention: isGroup ? isDirect : false,
             isVulnerable: detectVulnerability(text),
             resumedAfterClose: Boolean(profileForClose?.conversationClosedAt),
+            wrongBotName: detectWrongBotNameVocative(text),
             sessionId
           });
           closeDecision = resolved.closeDecision ?? "none";
@@ -1571,7 +1668,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               id: `${incoming.key.id}-sticker`,
               basePath: runtime.defaults.whatsappMediaPath
             });
-            const isAnimated = Boolean(unwrappedMessage.stickerMessage?.isAnimated);
+            const isAnimated = await probeStickerIsAnimated(path, {
+              isAnimatedHint: unwrappedMessage.stickerMessage?.isAnimated
+            });
             let visualDescription = null;
             if (!skipVisionEnrichment) {
               visualDescription =
@@ -1676,14 +1775,22 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             }
             continue;
           }
-          const handled = await handleMediaCommand({
-            incoming,
-            parsedCommand,
-            remoteJid,
-            userId,
-            media
-          });
-          if (handled) continue;
+          try {
+            const handled = await handleMediaCommand({
+              incoming,
+              parsedCommand,
+              remoteJid,
+              userId,
+              media
+            });
+            if (handled) continue;
+          } catch (error) {
+            if (isWaConnectionError(error)) {
+              console.warn(`${waLogPrefix} comando ${parsedCommand.command} — conexao fechada`);
+              continue;
+            }
+            throw error;
+          }
         }
 
         if (role === "media" && !botChatRole) continue;
@@ -1891,6 +1998,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         const isOwner = isOwnerContact(runtime, remoteJid, userId);
 
+        runtime.brainOrchestrator?.reconcileSleepFromSchedule?.();
         const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
         if (sleepSnap.isAvailable === false && !parsedCommand) {
           logThinking(runtime, {

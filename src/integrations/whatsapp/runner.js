@@ -27,9 +27,13 @@ function formatSocketJid(socket) {
   return jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "") || "?";
 }
 
-/** Baileys pode ficar "surdo": connection=open mas messages.upsert para. Força restart/reconnect limpo. */
+/**
+ * Baileys pode ficar "surdo": connection=open mas messages.upsert para.
+ * Desligado por padrão (0) — idle normal não deve derrubar o bot (vida/cérebro/nudges).
+ * Ative com WHATSAPP_INBOUND_STALE_MS>=60000 se quiser reconnect em socket surdo real.
+ */
 function startInboundWatchdog({ getConnected, label = "whatsapp", onDeaf = null }) {
-  const staleMs = Number(process.env.WHATSAPP_INBOUND_STALE_MS ?? 180000);
+  const staleMs = Number(process.env.WHATSAPP_INBOUND_STALE_MS ?? 0);
   const checkMs = Number(process.env.WHATSAPP_INBOUND_CHECK_MS ?? 30000);
   if (!Number.isFinite(staleMs) || staleMs < 60000) return;
 
@@ -68,7 +72,11 @@ function startInboundWatchdog({ getConnected, label = "whatsapp", onDeaf = null 
         });
       return;
     }
-    process.exit(1);
+    console.warn(
+      `[${label}] socket surdo detectado mas sem handler de reconexao — mantendo processo ativo. ` +
+        "Defina WHATSAPP_INBOUND_STALE_MS=0 para silenciar ou passe onDeaf no runner."
+    );
+    resetInboundActivity();
   }, checkMs);
 }
 
@@ -510,7 +518,15 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
   scheduleAuxiliaryLoops(runtime, nudgeEngine, () => socket, () => isConnected);
   startInboundWatchdog({
     label: "whatsapp",
-    getConnected: () => isConnected
+    getConnected: () => isConnected,
+    onDeaf: async () => {
+      console.warn("[whatsapp] reconectando sessão por possível socket surdo...");
+      isConnected = false;
+      try {
+        socket?.end?.(new Error("inbound stale reconnect"));
+      } catch {}
+      await connect();
+    }
   });
 }
 

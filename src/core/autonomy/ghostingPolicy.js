@@ -1,6 +1,7 @@
 const CLOSURE_PATTERNS = [
   /\b(boa noite|flw|falou|até mais|tchau|vlw)\b/i,
-  /\b(vou|to|tô|indo)\s+(dormir|comer|almocar|almocar|trabalhar|estudar|descansar)\b/i,
+  /\b(vou|to|tô|indo)\s+(dormir|comer|almocar|almocar|trabalhar|estudar|descansar|sair|embora)\b/i,
+  /\b(vou|to|tô)\s+sair\b/i,
   /\b(dormindo|com sono|to com sono|tô com sono|soninho|soneca)\b/i,
   /\b(da uma pausa|dá uma pausa|pausa aí|pausa ai|não me chama|nao me chama)\b/i,
   /\b(depois (eu )?falo|volto depois|mais tarde)\b/i,

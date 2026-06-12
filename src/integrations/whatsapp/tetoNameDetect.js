@@ -48,6 +48,43 @@ export function detectTetoNameCall(text = "") {
   return { detected: false, confidence: 0, variant: null };
 }
 
+const WRONG_BOT_VOCATIVE = [
+  "sophia",
+  "sofia",
+  "sofya",
+  "tetu",
+  "teta",
+  "chatgpt",
+  "alexa",
+  "siri",
+  "cortana",
+  "gpt"
+];
+
+function normalizeVocative(text = "") {
+  return String(text ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Nome errado usado como vocativo (ex.: "tchau sophia" na despedida).
+ * @returns {string|null} nome errado detectado
+ */
+export function detectWrongBotNameVocative(text = "") {
+  const raw = String(text ?? "").trim();
+  if (!raw) return null;
+  const t = normalizeVocative(raw);
+  for (const wrong of WRONG_BOT_VOCATIVE) {
+    if (new RegExp(`\\b${wrong}\\b`, "i").test(t)) return wrong;
+  }
+  return null;
+}
+
 /** Mensagem curta que é só uma tentativa de chamar a Teto. */
 export function isLikelyVocativeNameCall(text = "") {
   const raw = String(text ?? "").trim();

@@ -1,4 +1,5 @@
 import { normalizeMessageContent } from "baileys";
+import { probeStickerIsAnimated } from "../../core/media/stickerAnimation.js";
 import { fileExtFromDocumentMessage } from "./mediaStore.js";
 
 function unwrapMessage(message = {}) {
@@ -35,6 +36,12 @@ export async function resolveCommandTarget({
   basePath
 }) {
   if (media?.path && media?.type) {
+    if (media.type === "sticker") {
+      const isAnimated = await probeStickerIsAnimated(media.path, {
+        isAnimatedHint: media.isAnimated
+      });
+      return { source: "self", media: { ...media, isAnimated } };
+    }
     return { source: "self", media };
   }
 
@@ -73,7 +80,10 @@ export async function resolveCommandTarget({
         decryptMediaAs
       });
       const isStickerAnim =
-        quotedType === "gif" || Boolean(stickerMsg?.isAnimated === true || stickerMsg?.isAnimated === "true");
+        quotedType === "sticker"
+          ? await probeStickerIsAnimated(path, { isAnimatedHint: stickerMsg?.isAnimated })
+          : quotedType === "gif" ||
+            Boolean(stickerMsg?.isAnimated === true || stickerMsg?.isAnimated === "true");
       return {
         source: "reply",
         media: {
@@ -89,6 +99,15 @@ export async function resolveCommandTarget({
 
   const fallback = historyStore.latest(remoteJid, userId);
   if (fallback?.media?.path) {
+    if (fallback.media.type === "sticker") {
+      const isAnimated = await probeStickerIsAnimated(fallback.media.path, {
+        isAnimatedHint: fallback.media.isAnimated
+      });
+      return {
+        source: "history",
+        media: { ...fallback.media, isAnimated }
+      };
+    }
     return { source: "history", media: fallback.media };
   }
 

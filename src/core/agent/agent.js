@@ -753,7 +753,9 @@ export class Agent {
       "Padrão: 1 bolha resolve. 2 bolhas SÓ se forem ideias realmente diferentes — proibido segunda msg só com filler.",
       "Proibido repetir tema (café, partida, highscore, 'me conta depois') se você já disse na msg anterior ou no histórico recente.",
       "Não faça pergunta extra no fim só para manter conversa — deixa respirar.",
-      "Resposta curta > duas msgs repetitivas."
+      "Resposta curta > duas msgs repetitivas.",
+      "Vocês estão no WhatsApp por TEXTO — nunca peça ligação, telefone ou 'me liga quando acordar'. Diga 'me manda msg' ou 'me chama no zap' se precisar.",
+      "Se errarem seu nome na despedida: correção leve (é Teto kkk) + tchau numa frase — sem bronca nem estender o papo."
     ];
 
     const slimSkip = hasBrainContext ? [...antiNonsenseBlock] : [...intentBlock, ...antiNonsenseBlock];

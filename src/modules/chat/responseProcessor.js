@@ -219,6 +219,30 @@ function softenOveractedStart(text) {
     .trim();
 }
 
+/** WhatsApp = texto; modelo às vezes pede ligação como se fosse telefone. */
+function stripImpossibleWhatsappContact(text, userMessage = "") {
+  let t = String(text ?? "");
+  if (!t) return t;
+  t = t.replace(/\b(me\s+)?liga(r|me)?\s+(quando|se|depois|pra|para)\s+[^.!?]+/gi, "me manda msg quando voltar");
+  t = t.replace(/\bme\s+telefon\w*[^.!?]*/gi, "me chama no zap");
+  t = t.replace(/\b(chama|liga)\s+no\s+telefone\b/gi, "chama no zap");
+  t = t.replace(/\b(dá|da)\s+uma\s+ligad\w*[^.!?]*/gi, "manda msg");
+  t = t.replace(/\s{2,}/g, " ").trim();
+  if (
+    (ChatService.isConversationClosure?.(userMessage) ||
+      ChatService.isConversationLull?.(userMessage) ||
+      /\b(tchau|xau|flw|falou|vou sair)\b/i.test(String(userMessage ?? ""))) &&
+    /\b(não|nao)\s+(é|e)\s+(a\s+)?\w+/i.test(t) &&
+    t.length > 72
+  ) {
+    const shortFarewell = t.match(/^[^.!?]+[.!?]?/)?.[0]?.trim();
+    if (shortFarewell && shortFarewell.length >= 8 && shortFarewell.length < t.length) {
+      return shortFarewell;
+    }
+  }
+  return t;
+}
+
 function removeBreadDerail(text, userMessage) {
   const u = String(userMessage ?? "").toLowerCase();
   if (/\b(pão|pao|baguete)\b/.test(u)) return String(text);
@@ -797,6 +821,7 @@ function processPreservedBubble(rawText, context = {}) {
   part = dropMetaQuestions(part);
   part = softenOveractedStart(part);
   part = removeBreadDerail(part, context.userMessage);
+  part = stripImpossibleWhatsappContact(part, context.userMessage);
   part = normalizeInformalEnding(part);
   part = applyGreetingIntensity(part, context.userMessage, context.styleHint);
   if (context.styleHint?.userCapsBurst) {
