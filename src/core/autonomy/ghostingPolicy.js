@@ -3,7 +3,11 @@ const CLOSURE_PATTERNS = [
   /\b(vou|to|tô|indo)\s+(dormir|comer|almocar|almocar|trabalhar|estudar|descansar)\b/i,
   /\b(dormindo|com sono|to com sono|tô com sono|soninho|soneca)\b/i,
   /\b(da uma pausa|dá uma pausa|pausa aí|pausa ai|não me chama|nao me chama)\b/i,
-  /\b(depois (eu )?falo|volto depois|mais tarde)\b/i
+  /\b(depois (eu )?falo|volto depois|mais tarde)\b/i,
+  /\b(nao|não|n)\s*fala\s+(comigo|pra mim|agora)\b/i,
+  /\b(to|tô|estou)\s+(doente|doenta|descansando)\b/i,
+  /\bquero\s+ficar\s+so(\s|zinho|zinha|$)/i,
+  /\bdeixa\s+(eu\s+)?(quieto|descansar|dormir)\b/i
 ];
 
 export function detectTopicClosed(lastUserText = "") {
@@ -44,9 +48,19 @@ export function analyzeGhosting({ history = [], gapSinceUserMs = 0, lastUserText
   };
 }
 
-export function shouldAllowInitiation(ghosting = {}, { mode = null } = {}) {
+export function shouldAllowInitiation(ghosting = {}, { mode = null, userBoundary = null } = {}) {
   const gap = ghosting.gapSinceUserMs ?? 0;
   const trailing = ghosting.trailingBot ?? 0;
+
+  if (userBoundary?.active) {
+    const level = userBoundary.level ?? "hard";
+    if (level === "hard") {
+      return { allow: false, reason: "user_boundary_hard" };
+    }
+    if (gap < 8 * 3600_000) {
+      return { allow: false, reason: "user_boundary_soft" };
+    }
+  }
 
   if (ghosting.level === "heavy") {
     return { allow: false, reason: "heavy_ghosting_backoff" };
@@ -60,7 +74,7 @@ export function shouldAllowInitiation(ghosting = {}, { mode = null } = {}) {
     return { allow: false, reason: "firm_ghosting_cooldown" };
   }
 
-  if (ghosting.topicClosed && gap < 2 * 3600_000 && !String(mode ?? "").includes("reconnect")) {
+  if (ghosting.topicClosed && gap < 8 * 3600_000 && !String(mode ?? "").includes("reconnect")) {
     return { allow: false, reason: "topic_closed_respect" };
   }
 

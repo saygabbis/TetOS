@@ -71,8 +71,8 @@ export class BasicLoop {
 
     const unanswered = this.unansweredOutreach.get(userId) ?? 0;
     const gapMs = evaluation.gapMs ?? 0;
-    if (unanswered >= 2 && gapMs < 4 * 3600_000) return null;
-    if (unanswered >= 1 && gapMs < 50 * 60_000) return null;
+    if (unanswered >= 1 && gapMs < 3 * 3600_000) return null;
+    if (unanswered >= 2 && gapMs < 8 * 3600_000) return null;
 
     const ghosting = evaluation.ghosting ?? null;
     if (ghosting?.level === "firm" && gapMs < 3 * 3600_000) return null;

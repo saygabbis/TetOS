@@ -102,14 +102,14 @@ export class SleepCycle {
     const plan = this.sleep.tonightPlan;
     let event = null;
 
-    if (this.isAsleep() && plan?.wakeHour === hourOfDay) {
+    if (this.isAsleep() && (plan?.wakeHour === hourOfDay || (hourOfDay >= 7 && hourOfDay <= 11))) {
       const missed = chance(seed, 0.05 + stress * 0.03);
       event = this.wake({ quality: clamp01(0.5 + (missed ? -0.2 : 0.1)), missedAlarm: missed });
-    } else if (!this.isAsleep() && plan?.bedHour === hourOfDay) {
-      if (energy > 0.8 && chance(seed, 0.2)) {
+    } else if (!this.isAsleep() && (plan?.bedHour === hourOfDay || hourOfDay >= 23 || hourOfDay < 6)) {
+      if (energy > 0.8 && hourOfDay < 23 && chance(seed, 0.15)) {
         this.store.patch({ sleep: { ...this.sleep, state: "wired" } });
-      } else {
-        this.goToSleep("scheduled");
+      } else if (chance(seed, hourOfDay >= 23 || hourOfDay < 6 ? 0.92 : 0.55)) {
+        this.goToSleep(plan?.bedHour === hourOfDay ? "scheduled" : "night_hours");
       }
     }
 

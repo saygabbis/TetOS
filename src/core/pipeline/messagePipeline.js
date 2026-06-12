@@ -22,6 +22,20 @@ import {
   addProfileNicknames,
   captureTetoNicknamesFromReplies
 } from "../channels/waIdentity.js";
+import {
+  applyUserBoundary,
+  clearUserBoundaryFacts,
+  detectUserBoundary,
+  isBoundaryReopening,
+  isUserBoundaryActive,
+  userBoundarySnapshot
+} from "../channels/userBoundaryDetect.js";
+import { assessActivityFocus } from "../life/activityFocus.js";
+import { contextualSeed, chance } from "../brain/rng.js";
+
+function chanceBusyAck(userId = "default") {
+  return chance(contextualSeed(["busy_ack", userId, new Date().toISOString().slice(0, 13)]), 0.38);
+}
 
 function clampString(value, max) {
   return typeof value === "string" ? value.slice(0, max) : value;
@@ -263,6 +277,49 @@ export async function runMessagePipeline(runtime, payload = {}) {
     addProfileNicknames(runtime, safeUserId, { pushName }, channelScope);
   }
   const resumedAfterClose = Boolean(existingProfile?.conversationClosedAt);
+  const boundaryDetected = detectUserBoundary(input);
+  if (boundaryDetected.level !== "none") {
+    const boundaryFacts = applyUserBoundary(existingProfile?.facts ?? {}, input);
+    if (boundaryFacts) {
+      runtime.longTerm.updateProfile(
+        safeUserId ?? "default",
+        { facts: { ...(existingProfile?.facts ?? {}), ...boundaryFacts } },
+        channelScope
+      );
+      runtime.initiationEngine?.cancelForUser?.(safeUserId ?? "default");
+    }
+  } else if (isBoundaryReopening(input) && isUserBoundaryActive(existingProfile)) {
+    runtime.longTerm.updateProfile(
+      safeUserId ?? "default",
+      { facts: clearUserBoundaryFacts(existingProfile?.facts ?? {}) },
+      channelScope
+    );
+  }
+
+  if (boundaryDetected.level === "hard" && !isGroup) {
+    runtime.metrics?.increment?.("pipeline.boundary.set");
+    runtime.shortTerm?.add?.(
+      { role: "user", content: input, meta: { userId: safeUserId, boundary: true } },
+      safeSessionId ?? "default"
+    );
+    return {
+      replies: [],
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId,
+      input,
+      tone,
+      policy: { allowed: true, mode: "user_boundary_set" },
+      closeDecision: "silent"
+    };
+  }
+
+  const profileAfterBoundary = runtime.longTerm.getProfile(safeUserId ?? "default", channelScope);
+  const userBoundary = userBoundarySnapshot(profileAfterBoundary);
+  const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
+  const lifeSnap = runtime.brainOrchestrator?.life?.getSnapshot?.() ?? {};
+  const activityFocus = assessActivityFocus(lifeSnap);
+
   const styleHint = buildStyleHint(input, tone, profileWithLearned, normalizedHistory, runtime, safeSessionId);
   const groupMention = ChatService.extractGroupMention(input);
   const isVulnerable = detectVulnerability(input);
@@ -354,6 +411,28 @@ export async function runMessagePipeline(runtime, payload = {}) {
       /[?]/.test(trimmedInput) ||
       /\b(fala|conta|me diz|o que|como|por que|pq)\b/i.test(trimmedInput));
 
+  const asleepUnavailable = sleepSnap.isAvailable === false;
+  const boundaryBlocksReply =
+    !isGroup &&
+    userBoundary.active &&
+    userBoundary.level === "hard" &&
+    boundaryDetected.level === "none" &&
+    !isBoundaryReopening(input);
+
+  const mediaOnlyWithoutAddress =
+    !isGroup &&
+    media?.type &&
+    !String(message ?? "").trim() &&
+    !effectiveMention &&
+    !isReply;
+
+  const busyHighFocus =
+    !isGroup &&
+    activityFocus.level === "high" &&
+    !effectiveMention &&
+    !isVulnerable &&
+    !ChatService.isDirectTetoCall(input);
+
   // timing_silence só corta resposta em grupo sem menção; no privado sempre gera reply.
   const timingSilenceSkip =
     isGroup &&
@@ -363,6 +442,79 @@ export async function runMessagePipeline(runtime, payload = {}) {
     !isReply &&
     finalCloseDecision !== "respond" &&
     !directSubstantive;
+
+  if (asleepUnavailable) {
+    runtime.metrics?.increment?.("pipeline.sleep.unavailable");
+    runtime.logger?.log?.("pipeline.sleep_hold", { userId: safeUserId, sleepState: sleepSnap.state });
+    return {
+      replies: [],
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId,
+      input,
+      tone,
+      policy: { ...policy, mode: "sleep_hold" },
+      timingPlan
+    };
+  }
+
+  if (boundaryBlocksReply) {
+    runtime.metrics?.increment?.("pipeline.boundary.hold");
+    return {
+      replies: [],
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId,
+      input,
+      tone,
+      policy: { ...policy, mode: "user_boundary" },
+      closeDecision: "silent",
+      timingPlan
+    };
+  }
+
+  if (mediaOnlyWithoutAddress) {
+    runtime.metrics?.increment?.("pipeline.media.wait");
+    return {
+      replies: [],
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId,
+      input,
+      tone,
+      policy: { ...policy, mode: "media_wait" },
+      timingPlan
+    };
+  }
+
+  if (busyHighFocus && finalCloseDecision !== "respond") {
+    const busyReply = activityFocus.busyRemainingMin
+      ? `pera, tô em ${activityFocus.activity} — já te respondo`
+      : null;
+    if (busyReply && chanceBusyAck(safeUserId)) {
+      return {
+        replies: [busyReply],
+        userId: safeUserId ?? "default",
+        sessionId: safeSessionId ?? "default",
+        channelId: safeChannelId,
+        input,
+        tone,
+        policy: { ...policy, mode: "busy_ack" },
+        timingPlan
+      };
+    }
+    runtime.metrics?.increment?.("pipeline.busy.hold");
+    return {
+      replies: [],
+      userId: safeUserId ?? "default",
+      sessionId: safeSessionId ?? "default",
+      channelId: safeChannelId,
+      input,
+      tone,
+      policy: { ...policy, mode: "busy_hold" },
+      timingPlan
+    };
+  }
 
   if (timingSilenceSkip) {
     runtime.metrics?.increment?.("pipeline.timing.silence");
@@ -649,7 +801,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     );
     if (
       replies.length === 0 &&
-      (finalCloseDecision === "silent" || finalCloseDecision === "react")
+      (finalCloseDecision === "silent" || finalCloseDecision === "react") &&
+      !userBoundary.active
     ) {
       runtime.initiationEngine?.scheduleFromTurn?.({
         userId: safeUserId,

@@ -59,11 +59,17 @@ export class TimingEngine {
 
   stageAvailabilityGate(plan, ctx, reasons) {
     const sleep = ctx.sleep ?? ctx.life?.sleep ?? {};
-    if (["deep_sleep", "light_sleep", "nap"].includes(sleep.state)) {
+    if (sleep.isAvailable === false || ["deep_sleep", "light_sleep", "nap", "drowsy", "insomnia", "restless"].includes(sleep.state)) {
       plan.silenceAppropriate = true;
+      plan.shouldInitiateConversation = false;
       plan.readDelayMs = 0;
       plan.thinkDelayMs = 0;
       reasons.push("sleeping");
+    }
+    if (ctx.userBoundary?.active) {
+      plan.silenceAppropriate = true;
+      plan.shouldInitiateConversation = false;
+      reasons.push("user_boundary");
     }
     if (sleep.wakeDelayUntil && Date.now() < Date.parse(sleep.wakeDelayUntil)) {
       plan.readDelayMs += 60000;
@@ -225,10 +231,9 @@ export class TimingEngine {
       return;
     }
 
-    if (trust.vulnerableReachOut) {
-      plan.shouldInitiateConversation = true;
-      plan.initiateReason = "vulnerable_reach_out";
-      reasons.push("late_night_bond");
+    if (ctx.userBoundary?.active || sleepState(ctx) !== "awake" && sleepState(ctx) !== "wired") {
+      reasons.push("initiation_blocked_unavailable");
+      return;
     }
 
     if (ctx.queuedMode) {

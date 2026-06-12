@@ -3,6 +3,7 @@ import {
   countTrailingAssistantTurns,
   detectTopicClosed
 } from "../autonomy/ghostingPolicy.js";
+import { detectUserBoundary } from "../channels/userBoundaryDetect.js";
 import { contextualSeed, chance } from "./rng.js";
 
 const STOPWORDS = new Set([
@@ -109,9 +110,8 @@ function pickLullAction(message, sessionId, trailingBot = 0, opts = {}) {
   }
 
   if (userHardClose) {
-    if (chance(seed, 0.42)) return "brief_farewell";
-    if (chance(seed + 1, 0.7)) return "silent";
-    if (chance(seed + 2, 0.86)) return "react";
+    if (chance(seed, 0.82)) return "silent";
+    if (chance(seed + 1, 0.94)) return "react";
     return "brief_farewell";
   }
 
@@ -157,7 +157,11 @@ export function analyzeConversationPhase(ctx = {}) {
 
   const isDirectTetoCall = ctx.isDirectTetoCall ?? ChatService.isDirectTetoCall(message);
   const isLull = ChatService.isConversationLull(message);
-  const isHardClose = ChatService.isConversationClosure(message) || detectTopicClosed(message);
+  const boundary = detectUserBoundary(message);
+  const isHardClose =
+    boundary.level === "hard" ||
+    ChatService.isConversationClosure(message) ||
+    detectTopicClosed(message);
   const isDirectQuestion = ctx.isDirectQuestion ?? ChatService.isLikelyQuestion(message);
   const trailingBot = countTrailingAssistantTurns(history);
   const lastAssistant = lastAssistantMessage(history);
@@ -180,7 +184,7 @@ export function analyzeConversationPhase(ctx = {}) {
     };
   }
 
-  if (isDirectTetoCall) {
+  if (isDirectTetoCall && boundary.level !== "hard") {
     signals.push("chamou_teto");
     return {
       phase: "active",

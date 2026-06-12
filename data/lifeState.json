@@ -411,13 +411,14 @@
   "goals": [],
   "privateThoughts": [],
   "sleep": {
-    "state": "awake",
+    "state": "light_sleep",
     "sleepDebt": 0,
-    "lastSleepAt": null,
+    "lastSleepAt": "2026-06-12T15:14:30.555Z",
     "lastWakeAt": null,
     "tonightPlan": null,
-    "alarmHistory": []
+    "alarmHistory": [],
+    "wakeDelayUntil": null
   },
-  "lastTickAt": "2026-06-09T20:55:28.360Z",
+  "lastTickAt": "2026-06-12T15:14:30.555Z",
   "dayKey": "2026-06-09"
 }

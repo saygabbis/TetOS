@@ -6,6 +6,7 @@ import {
 } from "./coherenceGuards.js";
 import { slimMetaForStorage } from "../../core/memory/slimMeta.js";
 import { detectTetoNameCall } from "../../integrations/whatsapp/tetoNameDetect.js";
+import { detectUserBoundary } from "../../core/channels/userBoundaryDetect.js";
 
 export class ChatService {
   constructor(agent, responseProcessor, internalState, { shortTerm = null } = {}) {
@@ -188,6 +189,7 @@ export class ChatService {
   static isDirectTetoCall(text) {
     const t = String(text ?? "").trim();
     if (!t) return false;
+    if (detectUserBoundary(t).level === "hard") return false;
     if (detectTetoNameCall(t).detected) return true;
     return /\b(oi+|oie+|eae+|hey+|fala|e\s*a[ií])\b/i.test(t) && /\btet[o0]/i.test(t);
   }

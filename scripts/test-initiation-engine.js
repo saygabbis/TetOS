@@ -85,7 +85,8 @@ try {
 
   const eval1 = engine.evaluateForUser("dm-test", Date.now() + 3_100_000);
   assert(eval1?.shouldInitiate, "avalia impulso generativo");
-  assert(eval1.impulse.includes("bolinha"), "impulso vem da fila/thread");
+  assert(!eval1.impulse.includes("bolinha"), "impulso evita repetir tema recente do assistente");
+  assert(String(eval1.impulse ?? "").trim().length > 0, "impulso nao vazio");
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }

@@ -71,7 +71,9 @@ export function applyExtendedChecks(plan, ctx, reasons) {
   if (trust.toneHint === "warm") { plan.thinkDelayMs *= 0.92; reasons.push("warm_bond"); }
   if (trust.toneHint === "guarded") { plan.thinkDelayMs += 500; reasons.push("guarded_bond"); }
   if (trust.rupture > 0.5) { plan.thinkDelayMs += 700; reasons.push("rupture_active"); }
-  if (trust.vulnerableReachOut) { plan.shouldInitiateConversation = true; reasons.push("vulnerable_reach_out"); }
+  if (trust.vulnerableReachOut && !ctx.userBoundary?.active && ctx.sleep?.isAvailable !== false) {
+    reasons.push("vulnerable_reach_warmth");
+  }
 
   // Repetição / silêncio
   if (ctx.repetition?.overusedTopics?.length) { plan.thinkDelayMs += 200; reasons.push("topic_fatigue"); }

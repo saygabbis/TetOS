@@ -1862,6 +1862,28 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         const isOwner = isOwnerContact(runtime, remoteJid, userId);
 
+        const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
+        if (sleepSnap.isAvailable === false && !parsedCommand) {
+          logThinking(runtime, {
+            phase: "sleep_hold",
+            userId,
+            remoteJid,
+            detail: `dormindo (${sleepSnap.state ?? "?"}) — sem resposta até acordar`
+          });
+          continue;
+        }
+
+        const mediaOnlyInbound = hasMediaPayload && !String(text ?? "").trim() && !parsedCommand;
+        if (mediaOnlyInbound && !isDirect && !isReplyToBot && !isReply) {
+          logThinking(runtime, {
+            phase: "media_wait",
+            userId,
+            remoteJid,
+            detail: "midia sem legenda/comando — aguardando .sticker ou texto"
+          });
+          continue;
+        }
+
         orchestrator?.scheduleIncoming({
           remoteJid,
           message: effectiveMessage,

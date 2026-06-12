@@ -6,6 +6,8 @@ import {
   lastUserTurn,
   shouldAllowInitiation
 } from "./ghostingPolicy.js";
+import { buildInitiativeImpulse } from "./initiativeImpulse.js";
+import { userBoundarySnapshot } from "../channels/userBoundaryDetect.js";
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -196,13 +198,16 @@ export class InitiationEngine {
       gapSinceUserMs: gapMs,
       lastUserText: lastUser?.content ?? ""
     });
-    const gate = shouldAllowInitiation(ghosting, { mode });
+    const boundary = userBoundarySnapshot(this.longTerm?.getProfile?.(userId));
+    const gate = shouldAllowInitiation(ghosting, { mode, userBoundary: boundary });
     if (!gate.allow) return null;
 
-    const impulse =
-      impulseFromArbitration(brain?.arbitration?.winner, brain?.snapshot) ||
-      openThreadHint(history) ||
-      "algo ficou no ar e bateu vontade de falar";
+    const impulse = buildInitiativeImpulse({
+      brain,
+      history,
+      userId,
+      mode
+    });
 
     const deferMs = computeDeferMs({ mode, social, gapMs, seed, ghosting });
 
@@ -246,12 +251,23 @@ export class InitiationEngine {
     const queued = this.queue?.pendingForUser?.(userId);
     const dueQueued = this.queue?.dueEntries?.(now)?.find((e) => e.userId === userId);
 
+    const boundary = userBoundarySnapshot(this.longTerm?.getProfile?.(userId), now);
+    if (boundary.active && boundary.level === "hard") {
+      return null;
+    }
+
+    const sleepSnap = this.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
+    if (sleepSnap.isAvailable === false) {
+      return null;
+    }
+
     const brain = this.buildBrainTurn(userId, sessionId, {
       queuedMode: dueQueued?.mode ?? queued?.mode ?? null,
       ghosting,
       trailingBotTurns: ghosting.trailingBot,
       topicClosed: ghosting.topicClosed,
-      gapSinceUserMs: gapMs
+      gapSinceUserMs: gapMs,
+      userBoundary: boundary
     });
 
     const social = brain?.emotion?.social ?? this.internalState?.getState?.()?.social ?? 0.55;
@@ -262,31 +278,31 @@ export class InitiationEngine {
     let impulse = "";
     let shouldInitiate = false;
 
-    const gate = shouldAllowInitiation(ghosting, { mode: dueQueued?.mode ?? null });
+    const gate = shouldAllowInitiation(ghosting, {
+      mode: dueQueued?.mode ?? null,
+      userBoundary: boundary
+    });
 
     if (dueQueued) {
       if (gate.allow) {
         shouldInitiate = true;
         mode = dueQueued.mode;
-        impulse = coerceImpulse(dueQueued.impulse) || openThreadHint(history);
+        impulse =
+          buildInitiativeImpulse({ brain, history, userId, mode: dueQueued.mode }) ||
+          coerceImpulse(dueQueued.impulse);
       }
     } else if (brain?.timingPlan?.shouldInitiateConversation && gate.allow) {
       const ghostPenalty =
         ghosting.level === "soft" ? 0.35 : ghosting.topicClosed ? 0.45 : 0;
       shouldInitiate = chance(seed, 0.28 + social * 0.18 - ghostPenalty);
       mode = brain.timingPlan.initiateReason ?? "social_pull";
-      impulse =
-        impulseFromArbitration(brain.arbitration?.winner, brain.snapshot) ||
-        coerceImpulse(brain.blocks?.conscious) ||
-        coerceImpulse(brain.blocks?.subconscious) ||
-        coerceImpulse(brain.timingPlan.distanceContext) ||
-        "";
+      impulse = buildInitiativeImpulse({ brain, history, userId, mode: brain.timingPlan.initiateReason });
     } else if (absence.label !== "short" && social > 0.42 && gate.allow) {
       const p = absence.label === "medium" ? 0.08 : 0.14;
       if (chance(seed, p + intimacy * 0.12)) {
         shouldInitiate = true;
         mode = absence.label === "very_long" ? "reconnect_far" : "reconnect";
-        impulse = coerceImpulse(brain.blocks?.conscious) || coerceImpulse(brain.blocks?.subconscious) || "";
+        impulse = buildInitiativeImpulse({ brain, history, userId, mode });
       }
     } else if (
       ghosting.level === "soft" &&
@@ -303,7 +319,9 @@ export class InitiationEngine {
       if (chance(seed, 0.05 + social * 0.08)) {
         shouldInitiate = true;
         mode = "solo_thought";
-        impulse = coerceImpulse(brain.snapshot?.autonomous?.soloThoughts?.at(-1)?.text);
+        impulse =
+          buildInitiativeImpulse({ brain, history, userId, mode: "solo_thought" }) ||
+          coerceImpulse(brain.snapshot?.autonomous?.soloThoughts?.at(-1)?.text);
       }
     }
 

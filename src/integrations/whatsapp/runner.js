@@ -124,6 +124,16 @@ async function runPresence(runtime, socket, initiationEngine) {
       continue;
     }
 
+    const boundary = runtime.longTerm.getProfile(userId)?.facts ?? {};
+    const boundaryUntil = boundary.userBoundaryUntil ? Date.parse(boundary.userBoundaryUntil) : 0;
+    if (Number.isFinite(boundaryUntil) && boundaryUntil > Date.now()) continue;
+
+    const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
+    if (sleepSnap.isAvailable === false) continue;
+
+    const hour = new Date().getHours();
+    if (hour >= 0 && hour < 7) continue;
+
     const evaluation = initiationEngine?.evaluateForUser?.(userId);
     if (!evaluation?.shouldInitiate) continue;
 
@@ -338,6 +348,19 @@ function attachChatLedgerListeners(socket, runtime) {
 }
 
 function scheduleAuxiliaryLoops(runtime, nudgeEngine, getSocket, getConnected) {
+  const lifeTickMs = Number(process.env.TETOS_LIFE_TICK_MS ?? 900000);
+  if (runtime.brainOrchestrator?.life?.tick && Number.isFinite(lifeTickMs) && lifeTickMs >= 120000) {
+    setInterval(() => {
+      try {
+        runtime.brainOrchestrator.life.tick({
+          emotion: runtime.brainOrchestrator.emotion?.getSnapshot?.() ?? {}
+        });
+      } catch (error) {
+        console.warn("[life] tick error:", error?.message ?? error);
+      }
+    }, lifeTickMs);
+  }
+
   if (DEFAULTS.presenceEnabled) {
     setInterval(() => {
       const socket = getSocket();
