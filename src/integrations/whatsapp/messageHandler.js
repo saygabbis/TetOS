@@ -15,6 +15,7 @@ import { ChatCommandQueue } from "./chatCommandQueue.js";
 import { ChatMediaHistoryStore } from "./chatMediaHistoryStore.js";
 import { resolveCommandTarget } from "./commandTargetResolver.js";
 import { MediaProcessor } from "../../core/media/mediaProcessor.js";
+import { resolveStickerDurationArg } from "../../core/media/stickerDurationParse.js";
 import { resolveTimingConfig, estimateTypingDelayMs as estimateTypingFromCfg } from "../../core/timing/timingConfig.js";
 import { ChatMessageIndex } from "./chatMessageIndex.js";
 import {
@@ -207,10 +208,12 @@ function parseWhatsAppCommand(text = "", prefix = ".") {
     cstiker: "csticker",
     ajuda: "help",
     comandos: "help",
-    commands: "help"
+    commands: "help",
+    otimizar: "optimize",
+    optimizar: "optimize"
   };
   const normalized = aliases[command] ?? command;
-  if (!["sticker", "fsticker", "csticker", "toimg", "help"].includes(normalized)) {
+  if (!["sticker", "fsticker", "csticker", "toimg", "optimize", "help"].includes(normalized)) {
     return null;
   }
   return { command: normalized, args };
@@ -224,9 +227,10 @@ function formatWhatsAppHelpText(prefix = ".") {
     "*Comandos TetOS*",
     "",
     `${c("help")} — Esta lista (também ${p}ajuda).`,
-    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch).`,
-    `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain).`,
-    `${c("csticker")} — Recorta o centro para caber na figurinha (crop).`,
+    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch). Duração opcional: ${c("sticker")} 5000, ${c("sticker")} 5s ou ${c("sticker")} 5000ms.`,
+    `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain). Aceita duração opcional (ex.: ${c("fsticker")} 3s).`,
+    `${c("csticker")} — Recorta o centro para caber na figurinha (crop). Aceita duração opcional (ex.: ${c("csticker")} 5000ms).`,
+    `${c("optimize")} — Comprime figurinha grande (reply/anexo) sem reduzir FPS; reenvia otimizada (também ${p}otimizar).`,
     `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`
   ].join("\n");
 }
@@ -983,12 +987,37 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
       try {
         let output = null;
-        if (parsedCommand.command === "sticker") {
-          output = await mediaProcessor.toSticker(resolved.media, "stretch");
-        } else if (parsedCommand.command === "fsticker") {
-          output = await mediaProcessor.toSticker(resolved.media, "contain");
-        } else if (parsedCommand.command === "csticker") {
-          output = await mediaProcessor.toSticker(resolved.media, "crop");
+        const stickerCommands = ["sticker", "fsticker", "csticker"];
+        if (stickerCommands.includes(parsedCommand.command)) {
+          const durationResolved = resolveStickerDurationArg(parsedCommand.args?.[0]);
+          if (durationResolved.error) {
+            await socket.sendMessage(remoteJid, { text: durationResolved.error });
+            return true;
+          }
+          const mode =
+            parsedCommand.command === "fsticker"
+              ? "contain"
+              : parsedCommand.command === "csticker"
+                ? "crop"
+                : "stretch";
+          output = await mediaProcessor.toSticker(resolved.media, mode, {
+            maxDurationMs: durationResolved.maxDurationMs
+          });
+        } else if (parsedCommand.command === "optimize") {
+          if (resolved.media.type !== "sticker") {
+            await socket.sendMessage(remoteJid, {
+              text: "O .optimize so funciona com figurinhas. Marque uma figurinha (reply ou anexo) e tente de novo."
+            });
+            return true;
+          }
+          output = await mediaProcessor.optimizeSticker(resolved.media);
+          if (output.alreadyOptimized) {
+            const kb = Math.round((output.sizeBytes ?? 0) / 1024);
+            await socket.sendMessage(remoteJid, {
+              text: `Essa figurinha ja esta leve o suficiente (${kb} KiB).`
+            });
+            return true;
+          }
         } else if (parsedCommand.command === "toimg") {
           output = await mediaProcessor.toMediaFromSticker(resolved.media);
         }
