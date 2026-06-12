@@ -58,6 +58,8 @@ export async function createBaileysClient({
     version,
     printQRInTerminal: false,
     syncFullHistory: false,
+    /** linked device: receber mensagens novas sem depender de histórico completo */
+    shouldSyncHistoryMessage: () => false,
     markOnlineOnConnect: DEFAULTS.whatsappMarkOnlineOnConnect,
     keepAliveIntervalMs: 10_000,
     logger: silentLogger

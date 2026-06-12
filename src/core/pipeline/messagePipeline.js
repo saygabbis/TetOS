@@ -209,7 +209,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     participantId = null,
     segmentSpeakers = null,
     segmentMultiSpeaker = false,
-    isOwner: isOwnerFlag = null
+    isOwner: isOwnerFlag = null,
+    mainObserveOnly = false
   } = payload;
   const effectiveCloseDecision = closeDecision ?? null;
   const safeUserId = typeof userId === "string" ? userId.slice(0, runtime.defaults.maxIdLength) : userId;
@@ -539,11 +540,12 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
-  if (!runtime.defaults.replyEnabled) {
+  if (!runtime.defaults.replyEnabled || mainObserveOnly) {
     runtime.logger?.log?.("pipeline.observe_only", {
       userId: safeUserId ?? "default",
       sessionId: safeSessionId ?? "default",
-      channelId: safeChannelId
+      channelId: safeChannelId,
+      mainObserveOnly: Boolean(mainObserveOnly)
     });
     runtime.metrics?.increment?.("pipeline.observe_only");
     return {

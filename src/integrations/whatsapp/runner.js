@@ -713,6 +713,18 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
     : () => mainConnected;
   scheduleAuxiliaryLoops(runtime, nudgeEngine, chatSocket, chatConnected);
   startInboundWatchdog({
+    label: "whatsapp:main",
+    getConnected: () => mainConnected,
+    onDeaf: async () => {
+      console.warn("[whatsapp:main] reconectando sessão principal (aprendizado)...");
+      mainConnected = false;
+      try {
+        mainSocket?.end?.(new Error("inbound stale reconnect"));
+      } catch {}
+      await connectMain();
+    }
+  });
+  startInboundWatchdog({
     label: "whatsapp:bot",
     getConnected: chatConnected,
     onDeaf: async () => {

@@ -17,6 +17,7 @@ import { ChatMediaHistoryStore } from "./chatMediaHistoryStore.js";
 import { resolveCommandTarget } from "./commandTargetResolver.js";
 import { isAnimatedRemoveBgTarget, MediaProcessor } from "../../core/media/mediaProcessor.js";
 import { probeStickerIsAnimated } from "../../core/media/stickerAnimation.js";
+import { enrichMediaVision } from "../../modules/vision/mediaVisionEnrich.js";
 import { resolveStickerDurationArg } from "../../core/media/stickerDurationParse.js";
 import {
   REMOVE_BG_MODEL_LABELS,
@@ -261,6 +262,28 @@ function inferDocumentAsMedia(unwrappedMessage = {}) {
   return null;
 }
 
+async function attachVisionTranscript(
+  runtime,
+  { filePath, mediaType, isAnimated = false, userId, remoteJid, skipVision }
+) {
+  if (skipVision || !filePath) return null;
+  const visualDescription = await enrichMediaVision(runtime, {
+    filePath,
+    mediaType,
+    isAnimated
+  });
+  if (visualDescription) {
+    runtime.visualAnalyses?.save?.({
+      userId,
+      channelId: remoteJid,
+      mediaPath: filePath,
+      mediaType,
+      description: visualDescription
+    });
+  }
+  return visualDescription;
+}
+
 function extractParticipantJid(incoming) {
   const participant =
     incoming?.key?.participant ??
@@ -313,7 +336,7 @@ function createConversationOrchestrator(
 
   async function sendReplies(remoteJid, userId, sessionId, replies = [], token = 0, options = {}) {
     const quoteKey = options?.quoteMessageKey ?? null;
-    if (!runtime.defaults.replyEnabled) return;
+    if (options?.allowReply === false || !runtime.defaults.replyEnabled) return;
     const plan = options?.timingPlan ?? {};
     try {
       for (let index = 0; index < replies.length; index += 1) {
@@ -429,6 +452,7 @@ function createConversationOrchestrator(
   }
 
   async function processQueueItem(item) {
+    const allowReply = runtime.defaults.replyEnabled && !item.mainObserveOnly;
     const sessionId = item.sessionId ?? item.userId;
     const typingUntil = typingByUser.get(item.userId) ?? 0;
         const token = Date.now();
@@ -456,7 +480,9 @@ function createConversationOrchestrator(
         }
         let timingPlan = null;
         const shouldRunPipeline =
-          runtime.defaults.replyEnabled || runtime.defaults.learningModeEnabled;
+          runtime.defaults.replyEnabled ||
+          runtime.defaults.learningModeEnabled ||
+          item.mainObserveOnly;
         if (shouldRunPipeline) {
           let lastError = null;
           for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -486,7 +512,8 @@ function createConversationOrchestrator(
                     participantId: item.participantId ?? null,
                     segmentSpeakers: item.segmentSpeakers ?? null,
                     segmentMultiSpeaker: item.segmentMultiSpeaker ?? false,
-                    isOwner: item.isOwner ?? false
+                    isOwner: item.isOwner ?? false,
+                    mainObserveOnly: item.mainObserveOnly === true
                   })
                 ),
                 new Promise((_, reject) =>
@@ -550,7 +577,7 @@ function createConversationOrchestrator(
 
         const hasOutgoing =
           Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
-        if (!hasOutgoing && shouldRunPipeline && runtime.defaults.replyEnabled) {
+        if (!hasOutgoing && shouldRunPipeline && allowReply) {
           console.warn(
             `${logPrefix} empty reply for ${item.userId} (close=${item.closeDecision} mode=${item.passiveMode ?? "?"} msg="${String(item.message ?? "").slice(0, 80)}")`
           );
@@ -597,7 +624,7 @@ function createConversationOrchestrator(
           participantJid: item.participantJid ?? item.messageKey?.participant ?? null
         });
         const reacted = Boolean(emoji && reactionKey && typeof socket.sendMessage === "function");
-        if (reacted && runtime.defaults.replyEnabled) {
+        if (reacted && allowReply) {
           try {
             await socket.sendMessage(item.remoteJid, {
               react: { text: emoji, key: reactionKey }
@@ -622,7 +649,7 @@ function createConversationOrchestrator(
         const softened = runtime.userPatterns
           ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
           : false;
-        if (!reacted && passiveAction.type === "sticker_only" && runtime.defaults.replyEnabled) {
+        if (!reacted && passiveAction.type === "sticker_only" && allowReply) {
           const stickerAsset = resolveStickerAsset(passiveAction.stickerKey, runtime.defaults.stickersPath);
           if (stickerAsset) {
             try {
@@ -647,7 +674,7 @@ function createConversationOrchestrator(
           }
         }
 
-        if (!reacted && runtime.defaults.replyEnabled) {
+        if (!reacted && allowReply) {
           const hasOutgoing =
             Array.isArray(replies) && replies.some((r) => String(r ?? "").trim().length > 0);
           if (hasOutgoing) {
@@ -675,6 +702,7 @@ function createConversationOrchestrator(
             softened,
             timingPlan,
             bubbleDelays,
+            allowReply,
             groupRoster: item.groupRoster ?? null,
             participantId: item.participantId ?? null,
             participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
@@ -927,9 +955,14 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
   if (socket.__tetosHandlerRegistered) return;
   socket.__tetosHandlerRegistered = true;
 
+  const mainObserveOnly =
+    role === "main" &&
+    runtime.defaults.whatsappMode === "dual" &&
+    runtime.defaults.whatsappMainObserveOnly;
   const botChatRole =
     role === "media" && runtime.defaults.whatsappMode === "dual" && runtime.defaults.whatsappMainObserveOnly;
-  const waLogPrefix = role === "media" ? "[whatsapp:media]" : "[whatsapp]";
+  const waLogPrefix =
+    role === "media" ? "[whatsapp:media]" : role === "main" ? "[whatsapp:main]" : "[whatsapp]";
   const chatMessageIndex = new ChatMessageIndex({ maxPerChannel: 80 });
   const botJidForHandler = jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
   const botPhoneForHandler = extractPhone(botJidForHandler);
@@ -956,7 +989,15 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
   const processedCommandDeduper = createProcessedCommandDeduper();
   const skipVisionEnrichment = role === "media" && !botChatRole;
   console.log(
-    `${waLogPrefix} handler ativo${botChatRole ? " (responde chat)" : role === "main" ? " (só aprende)" : ""}`
+    `${waLogPrefix} handler ativo${
+      botChatRole
+        ? " (responde chat)"
+        : mainObserveOnly
+          ? " (aprende — sem responder)"
+          : role === "main"
+            ? " (principal)"
+            : ""
+    }`
   );
   if (orchestrator) {
     socket.ev.on("presence.update", orchestrator.onPresenceUpdate);
@@ -1589,27 +1630,13 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               id: `${incoming.key.id}-image`,
               basePath: runtime.defaults.whatsappMediaPath
             });
-            let visualDescription = null;
-            if (!skipVisionEnrichment) {
-              visualDescription =
-                (await runtime.semanticVisionAnalyzer?.analyze?.({
-                  filePath: path,
-                  mediaType: "image"
-                })) ??
-                (await runtime.visualAnalyzer?.analyze?.({
-                  filePath: path,
-                  mediaType: "image"
-                }));
-              if (visualDescription) {
-                runtime.visualAnalyses?.save?.({
-                  userId,
-                  channelId: remoteJid,
-                  mediaPath: path,
-                  mediaType: "image",
-                  description: visualDescription
-                });
-              }
-            }
+            const visualDescription = await attachVisionTranscript(runtime, {
+              filePath: path,
+              mediaType: "image",
+              userId,
+              remoteJid,
+              skipVision: skipVisionEnrichment
+            });
             media = {
               type: "image",
               caption: unwrappedMessage.imageMessage?.caption ?? text,
@@ -1617,17 +1644,28 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               path
             };
           } else if (unwrappedMessage?.videoMessage && incoming.key?.id) {
-            media = {
+            const isGif = Boolean(unwrappedMessage.videoMessage?.gifPlayback);
+            const path = await persistMedia({
+              downloadContentFromMessage,
+              content: unwrappedMessage.videoMessage,
               type: "video",
+              id: `${incoming.key.id}-video`,
+              basePath: runtime.defaults.whatsappMediaPath
+            });
+            const visualDescription = await attachVisionTranscript(runtime, {
+              filePath: path,
+              mediaType: isGif ? "gif" : "video",
+              isAnimated: isGif,
+              userId,
+              remoteJid,
+              skipVision: skipVisionEnrichment
+            });
+            media = {
+              type: isGif ? "gif" : "video",
               caption: unwrappedMessage.videoMessage?.caption ?? text,
-              isAnimated: Boolean(unwrappedMessage.videoMessage?.gifPlayback),
-              path: await persistMedia({
-                downloadContentFromMessage,
-                content: unwrappedMessage.videoMessage,
-                type: "video",
-                id: `${incoming.key.id}-video`,
-                basePath: runtime.defaults.whatsappMediaPath
-              })
+              transcript: visualDescription,
+              isAnimated: isGif,
+              path
             };
           } else if (unwrappedMessage?.audioMessage && incoming.key?.id) {
             const path = await persistMedia({
@@ -1671,29 +1709,14 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             const isAnimated = await probeStickerIsAnimated(path, {
               isAnimatedHint: unwrappedMessage.stickerMessage?.isAnimated
             });
-            let visualDescription = null;
-            if (!skipVisionEnrichment) {
-              visualDescription =
-                (await runtime.semanticVisionAnalyzer?.analyze?.({
-                  filePath: path,
-                  mediaType: "sticker",
-                  isAnimated
-                })) ??
-                (await runtime.visualAnalyzer?.analyze?.({
-                  filePath: path,
-                  mediaType: "sticker",
-                  isAnimated
-                }));
-              if (visualDescription) {
-                runtime.visualAnalyses?.save?.({
-                  userId,
-                  channelId: remoteJid,
-                  mediaPath: path,
-                  mediaType: "sticker",
-                  description: visualDescription
-                });
-              }
-            }
+            const visualDescription = await attachVisionTranscript(runtime, {
+              filePath: path,
+              mediaType: "sticker",
+              isAnimated,
+              userId,
+              remoteJid,
+              skipVision: skipVisionEnrichment
+            });
             media = {
               type: "sticker",
               caption: text,
@@ -1715,16 +1738,34 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 decryptMediaAs: "document"
               });
               if (docHint.type === "image") {
+                const visualDescription = await attachVisionTranscript(runtime, {
+                  filePath: path,
+                  mediaType: "image",
+                  userId,
+                  remoteJid,
+                  skipVision: skipVisionEnrichment
+                });
                 media = {
                   type: "image",
                   caption: unwrappedMessage.documentMessage?.caption ?? text,
+                  transcript: visualDescription,
                   path
                 };
               } else {
+                const isGif = docHint.type === "gif";
+                const visualDescription = await attachVisionTranscript(runtime, {
+                  filePath: path,
+                  mediaType: isGif ? "gif" : "video",
+                  isAnimated: isGif,
+                  userId,
+                  remoteJid,
+                  skipVision: skipVisionEnrichment
+                });
                 media = {
-                  type: docHint.type === "gif" ? "gif" : "video",
+                  type: isGif ? "gif" : "video",
                   caption: unwrappedMessage.documentMessage?.caption ?? text,
-                  isAnimated: docHint.type === "gif",
+                  transcript: visualDescription,
+                  isAnimated: isGif,
                   path
                 };
               }
@@ -1794,16 +1835,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         if (role === "media" && !botChatRole) continue;
-
-        if (role === "main" && runtime.defaults.whatsappMainObserveOnly) {
-          logThinking(runtime, {
-            phase: "observe_only",
-            userId,
-            remoteJid,
-            detail: "sessao principal: aprendizado sem resposta"
-          });
-          continue;
-        }
 
         const activation = runtime.tetoActivation;
         if (!isGroup && activation?.isActivationRequired?.() && isOwnerContact(runtime, remoteJid, userId)) {
@@ -2027,6 +2058,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           userId,
           sessionId,
           isOwner,
+          mainObserveOnly,
           channelId: remoteJid,
           isGroup,
           participants: (() => {

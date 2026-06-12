@@ -57,7 +57,15 @@ export class SemanticVisionAnalyzer {
       const caption = normalizeText(result?.caption ?? "");
       const frames = Number(result?.frames ?? 1);
       if (caption) {
-        return normalizeText(`${mediaType === "sticker" ? "Sticker" : "Imagem"}${isAnimated || frames > 1 ? " animada" : ""}: ${caption}`);
+        const kind =
+          mediaType === "sticker"
+            ? "Sticker"
+            : mediaType === "video"
+              ? "Vídeo"
+              : mediaType === "gif"
+                ? "GIF"
+                : "Imagem";
+        return normalizeText(`${kind}${isAnimated || frames > 1 ? " animada" : ""}: ${caption}`);
       }
     } catch {
       // fallback below
