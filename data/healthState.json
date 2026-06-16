@@ -1,9 +1,27 @@
 {
   "active": [],
-  "history": [],
+  "history": [
+    {
+      "id": "resfriado_1781554344674",
+      "type": "resfriado",
+      "status": "recovered",
+      "onsetAt": "2026-06-15T20:12:24.674Z",
+      "severity": 1,
+      "reason": "regional_sp",
+      "region": "sp",
+      "triggers": [
+        "frio_seco"
+      ],
+      "recoveryDays": 4,
+      "chronic": false,
+      "recoveryProgress": 1,
+      "lastFlareAt": "2026-06-15T20:58:20.170Z",
+      "recoveredAt": "2026-06-15T23:00:27.122Z"
+    }
+  ],
   "regionalModifiers": {
     "sp": {
-      "updatedAt": "2026-06-12T20:35:13.607Z"
+      "updatedAt": "2026-06-16T11:29:40.409Z"
     }
   }
 }

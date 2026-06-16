@@ -1,19 +1,21 @@
 {
   "counters": {
-    "pipeline.policy.checked": 192,
-    "pipeline.completed": 164,
-    "pipeline.replied": 162,
-    "whatsapp.incoming": 5949,
-    "whatsapp.media.sticker": 622,
+    "pipeline.policy.checked": 1054,
+    "pipeline.completed": 411,
+    "pipeline.replied": 406,
+    "whatsapp.incoming": 7005,
+    "whatsapp.media.sticker": 632,
     "operations.intent.detected": 2,
     "whatsapp.media.audio": 60,
     "reminders.created": 1,
-    "whatsapp.media.image": 302,
+    "whatsapp.media.image": 306,
     "whatsapp.media.video": 110,
-    "pipeline.timing.silence": 8,
-    "multimodal.saved": 7,
+    "pipeline.timing.silence": 296,
+    "multimodal.saved": 10,
     "pipeline.boundary.set": 1,
-    "pipeline.boundary.hold": 2
+    "pipeline.boundary.hold": 2,
+    "pipeline.observe_only": 327,
+    "whatsapp.media.gif": 2
   },
-  "lastUpdated": "2026-06-12T20:35:27.329Z"
+  "lastUpdated": "2026-06-16T11:29:48.844Z"
 }

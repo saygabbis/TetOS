@@ -1,7 +1,7 @@
 {
-  "currentActivity": "passeio curto",
-  "activityStartedAt": "2026-06-12T17:51:32.328Z",
-  "phase": "noite",
+  "currentActivity": "mixando faixa",
+  "activityStartedAt": "2026-06-16T14:00:28.302Z",
+  "phase": "tarde",
   "obligations": [
     {
       "id": "obligation_1780935846985_421",
@@ -413,7 +413,7 @@
   "sleep": {
     "state": "awake",
     "sleepDebt": 0,
-    "lastSleepAt": "2026-06-12T16:18:10.923Z",
+    "lastSleepAt": "2026-06-16T03:00:27.502Z",
     "tonightPlan": {
       "bedHour": 23,
       "wakeHour": 7
@@ -430,11 +430,35 @@
         "missedAlarm": false,
         "quality": 0.68,
         "state": "awake"
+      },
+      {
+        "ts": "2026-06-13T10:00:22.759Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-14T10:00:24.555Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-15T10:00:26.210Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-16T10:00:28.071Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
       }
     ],
     "wakeDelayUntil": null,
-    "lastWakeAt": "2026-06-12T16:19:15.012Z"
+    "lastWakeAt": "2026-06-16T10:00:28.071Z"
   },
-  "lastTickAt": "2026-06-12T20:35:13.609Z",
-  "dayKey": "2026-06-12"
+  "lastTickAt": "2026-06-16T14:20:28.326Z",
+  "dayKey": "2026-06-16"
 }
