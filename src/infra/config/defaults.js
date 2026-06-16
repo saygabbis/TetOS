@@ -172,9 +172,10 @@ export const DEFAULTS = {
   commandMediaHistoryLimit: Number(process.env.COMMAND_MEDIA_HISTORY_LIMIT ?? 30),
   commandMediaDerivedPath: process.env.COMMAND_MEDIA_DERIVED_PATH ?? "./data/media/derived",
   /**
-   * Teto em KiB para figurinha no WhatsApp (≈1 MiB no cliente; abaixo disso costuma renderizar bem).
-   * Comandos .sticker reencodificam com qualidade/resolução menores até caber (animado e estático lossy).
-   * TETOS_STICKER_MAX_KB em KiB (ex.: 950). Default 950 KiB ≈ 973000 bytes.
+   * Teto em KiB para figurinha no WhatsApp.
+   * Animadas: o pipeline limita a ~500 KiB e 5s (limite real do app).
+   * Estáticas: reencoda até caber (lossy se preciso).
+   * TETOS_STICKER_MAX_KB em KiB (ex.: 500). Default 500 KiB para animadas renderizarem bem.
    */
   tetosStickerMaxBytes: (() => {
     const raw = process.env.TETOS_STICKER_MAX_KB;
@@ -182,7 +183,7 @@ export const DEFAULTS = {
       const kb = Number(String(raw).trim());
       if (Number.isFinite(kb) && kb >= 64 && kb <= 1024) return Math.floor(kb * 1024);
     }
-    return 950 * 1024;
+    return 500 * 1024;
   })(),
   /** Chaves remove.bg (rotação automática; local só quando todas esgotam). */
   removeBgApiKeys: parseRemoveBgApiKeys(),

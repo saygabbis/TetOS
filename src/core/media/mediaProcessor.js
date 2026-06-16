@@ -23,6 +23,35 @@ import { probeStickerIsAnimated } from "./stickerAnimation.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
+/** WhatsApp: figurinha animada ≤5s e ~500 KiB — acima disso costuma virar “fantasma” transparente. */
+const WHATSAPP_ANIMATED_STICKER_MAX_MS = 5000;
+const WHATSAPP_ANIMATED_STICKER_MAX_BYTES = 500 * 1024;
+
+function animatedStickerBudget(maxStickerBytes) {
+  return Math.min(maxStickerBytes, WHATSAPP_ANIMATED_STICKER_MAX_BYTES);
+}
+
+function resolveAnimatedDurationMs(maxDurationMs) {
+  const requested = maxDurationMs ?? WHATSAPP_ANIMATED_STICKER_MAX_MS;
+  return Math.min(requested, WHATSAPP_ANIMATED_STICKER_MAX_MS);
+}
+
+async function isValidAnimatedSticker(filePath, expectedEdge = 512) {
+  try {
+    const meta = await sharp(filePath, { animated: true }).metadata();
+    const pages = Number(meta?.pages ?? 0);
+    const width = Number(meta?.width ?? 0);
+    const pageHeight = Number(meta?.pageHeight ?? 0);
+    if (pages < 1 || width < 1) return false;
+    if (pages === 1) {
+      return width === expectedEdge && Number(meta?.height ?? 0) === expectedEdge;
+    }
+    return width === expectedEdge && pageHeight === expectedEdge;
+  } catch {
+    return false;
+  }
+}
+
 /** Animado → pipeline local; estático → pode usar API remove.bg. */
 export async function isAnimatedRemoveBgTarget(input) {
   if (!input?.path) return false;
@@ -53,6 +82,12 @@ function outPath(baseDir, inputPath, suffix, ext) {
   ensureDir(baseDir);
   const name = basename(inputPath, extname(inputPath));
   return join(baseDir, `${name}-${suffix}.${ext}`);
+}
+
+function outPathUnique(baseDir, inputPath, suffix, ext) {
+  ensureDir(baseDir);
+  const name = basename(inputPath, extname(inputPath));
+  return join(baseDir, `${name}-${suffix}-${Date.now()}.${ext}`);
 }
 
 function runFfmpeg(command) {
@@ -130,9 +165,13 @@ function isGifLikeFile(inputPath) {
  */
 async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs) {
   const output = outPath(outputDir, inputPath, `sticker-${mode}`, "webp");
+  const budgetBytes = animatedStickerBudget(maxStickerBytes);
   const edges = [512, 464, 416, 368];
   const qualities = [86, 78, 68, 58, 48, 38, 30];
-  const animatedInputOpts = await buildSharpAnimatedInputOpts(inputPath, maxDurationMs);
+  const animatedInputOpts = await buildSharpAnimatedInputOpts(
+    inputPath,
+    resolveAnimatedDurationMs(maxDurationMs)
+  );
 
   const resizeFor = (edge) => {
     if (mode === "stretch") {
@@ -165,7 +204,7 @@ async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerB
         .webp({ lossless: true, effort: 6 })
         .toFile(output);
       const sz = statSync(output).size;
-      if (sz > 0 && sz <= maxStickerBytes) {
+      if (sz > 0 && sz <= budgetBytes) {
         const meta = await sharp(output).metadata().catch(() => ({}));
 return { kind: "image", path: output };
       }
@@ -188,7 +227,7 @@ return { kind: "image", path: output };
           })
           .toFile(output);
         const sz = statSync(output).size;
-        if (sz > 0 && sz <= maxStickerBytes) {
+        if (sz > 0 && sz <= budgetBytes) {
           const meta = await sharp(output).metadata().catch(() => ({}));
 return { kind: "image", path: output };
         }
@@ -246,13 +285,39 @@ return { kind: "image", path: output };
 function buildVideoStickerVf(mode, fps, edge) {
   const f = `fps=${fps}`;
   if (mode === "stretch") {
-    return `${f},scale=${edge}:${edge}:flags=lanczos`;
+    return `${f},scale=${edge}:${edge}:flags=lanczos,format=yuv420p`;
   }
   if (mode === "contain") {
     /* RGBA antes do pad: senão YUV trata padding como preto opaco em muitos builds. */
     return `${f},format=rgba,scale=${edge}:${edge}:force_original_aspect_ratio=decrease,pad=${edge}:${edge}:(ow-iw)/2:(oh-ih)/2:color=0x00000000`;
   }
-  return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=increase,crop=${edge}:${edge}`;
+  return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=increase,crop=${edge}:${edge},format=yuv420p`;
+}
+
+async function runVideoStickerEncode(inputPath, output, { mode, edge, fps, quality, durationSec }) {
+  const vf = buildVideoStickerVf(mode, fps, edge);
+  await runFfmpeg(
+    ffmpeg(inputPath)
+      .outputOptions([
+        "-an",
+        "-shortest",
+        "-t",
+        durationSec,
+        "-vf",
+        vf,
+        "-c:v",
+        "libwebp",
+        "-lossless",
+        "0",
+        "-quality",
+        String(quality),
+        "-preset",
+        "default",
+        "-loop",
+        "0"
+      ])
+      .save(output)
+  );
 }
 
 /**
@@ -261,53 +326,52 @@ function buildVideoStickerVf(mode, fps, edge) {
  */
 async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs) {
   const output = outPath(outputDir, inputPath, `sticker-${mode}`, "webp");
-  const qualities = [82, 72, 62, 52, 44, 36, 28];
-  const fpss = [15, 12, 10, 8];
-  const edges = [512, 464, 416, 368];
-  const durationSec = String((maxDurationMs ?? 8000) / 1000);
+  const budgetBytes = animatedStickerBudget(maxStickerBytes);
+  const durationSec = String(resolveAnimatedDurationMs(maxDurationMs) / 1000);
+  const presets = [
+    { edge: 512, fps: 15, quality: 80 },
+    { edge: 512, fps: 15, quality: 68 },
+    { edge: 512, fps: 12, quality: 58 },
+    { edge: 512, fps: 12, quality: 48 },
+    { edge: 512, fps: 10, quality: 40 },
+    { edge: 464, fps: 12, quality: 42 },
+    { edge: 416, fps: 10, quality: 36 },
+    { edge: 368, fps: 8, quality: 30 },
+    { edge: 320, fps: 8, quality: 24 }
+  ];
 
-  let lastSize = 0;
+  let bestPath = null;
+  let bestSize = Number.POSITIVE_INFINITY;
 
-  for (const edge of edges) {
-    for (const fps of fpss) {
-      const vf = buildVideoStickerVf(mode, fps, edge);
-      for (const quality of qualities) {
-        await runFfmpeg(
-          ffmpeg(inputPath)
-            .outputOptions([
-              "-an",
-              "-shortest",
-              "-t",
-              durationSec,
-              "-vf",
-              vf,
-              "-c:v",
-              "libwebp",
-              "-lossless",
-              "0",
-              "-quality",
-              String(quality),
-              "-preset",
-              "default",
-              "-loop",
-              "0"
-            ])
-            .save(output)
-        );
-        try {
-          lastSize = statSync(output).size;
-        } catch {
-          lastSize = 0;
-        }
-        if (lastSize > 0 && lastSize <= maxStickerBytes) {
-          return { kind: "image", path: output };
-        }
+  for (const preset of presets) {
+    await runVideoStickerEncode(inputPath, output, {
+      mode,
+      durationSec,
+      ...preset
+    });
+    const size = stickerOutputSize(output);
+    if (size === 0) continue;
+    if (size <= budgetBytes && (await isValidAnimatedSticker(output, preset.edge))) {
+      return { kind: "image", path: output };
+    }
+    if (size < bestSize) {
+      bestSize = size;
+      bestPath = output;
+    }
+  }
+
+  if (bestPath && bestSize < Number.POSITIVE_INFINITY) {
+    const optimized = await optimizeStickerWebp(bestPath, outputDir, budgetBytes);
+    const finalPath = optimized?.path ?? bestPath;
+    const finalSize = stickerOutputSize(finalPath);
+    if (finalSize > 0 && finalSize <= budgetBytes) {
+      const edgeGuess = presets[presets.length - 1].edge;
+      if (await isValidAnimatedSticker(finalPath, edgeGuess)) {
+        return { kind: "image", path: finalPath };
       }
     }
   }
-  if (stickerOutputSize(output) > 0) {
-    return { kind: "image", path: output };
-  }
+
   throw new Error("falha ao gerar figurinha animada");
 }
 
@@ -380,6 +444,133 @@ async function optimizeStickerWebp(inputPath, outputDir, maxStickerBytes) {
   }
 
   return { kind: "image", path: output, alreadyOptimized: false, sizeBytes };
+}
+
+/**
+ * Um passo de compressão para o comando .optimize — sem teto de KiB.
+ * Cada chamada tenta o preset mais leve que ainda reduz o arquivo; repetir comprime de novo.
+ */
+async function optimizeStickerStep(inputPath, outputDir) {
+  const inputSize = stickerOutputSize(inputPath);
+  if (inputSize === 0) throw new Error("figurinha nao encontrada");
+
+  const meta = await sharp(inputPath, { animated: true }).metadata().catch(() => ({}));
+  const pages = Number(meta?.pages ?? 1);
+  const isAnimated = pages > 1;
+  const output = outPathUnique(outputDir, inputPath, "optimized", "webp");
+  const minGain = 0.97;
+
+  if (!isAnimated) {
+    for (let q = 86; q >= 24; q -= 6) {
+      const buf = await sharp(inputPath).webp({ quality: q, effort: 4 }).toBuffer();
+      if (buf.length > 0 && buf.length < inputSize * minGain) {
+        writeFileSync(output, buf);
+        return {
+          kind: "image",
+          path: output,
+          alreadyOptimized: false,
+          sizeBytes: buf.length,
+          previousSizeBytes: inputSize
+        };
+      }
+    }
+    return { kind: "image", path: inputPath, alreadyOptimized: true, sizeBytes: inputSize };
+  }
+
+  const steps = [
+    { quality: 78 },
+    { quality: 68 },
+    { quality: 58 },
+    { quality: 48 },
+    { quality: 38 },
+    { quality: 28 },
+    { quality: 22 }
+  ];
+
+  for (const { quality } of steps) {
+    try {
+      await sharp(inputPath, { animated: true, limitInputPixels: false })
+        .webp({ lossless: false, quality, effort: 4 })
+        .toFile(output);
+      const size = stickerOutputSize(output);
+      if (size > 0 && size < inputSize * minGain) {
+        return {
+          kind: "image",
+          path: output,
+          alreadyOptimized: false,
+          sizeBytes: size,
+          previousSizeBytes: inputSize
+        };
+      }
+    } catch {
+      /* próximo */
+    }
+  }
+
+  const fpsSteps = [
+    { quality: 40, fps: 12 },
+    { quality: 34, fps: 10 },
+    { quality: 28, fps: 8 },
+    { quality: 22, fps: 8 }
+  ];
+
+  for (const { quality, fps } of fpsSteps) {
+    const opts = [
+      "-an",
+      "-c:v",
+      "libwebp",
+      "-lossless",
+      "0",
+      "-quality",
+      String(quality),
+      "-loop",
+      "0"
+    ];
+    if (fps) opts.push("-vf", `fps=${fps},format=yuv420p`);
+    await runFfmpeg(ffmpeg(inputPath).outputOptions(opts).save(output));
+    const size = stickerOutputSize(output);
+    if (size > 0 && size < inputSize * minGain && (await isValidAnimatedSticker(output, 512))) {
+      return {
+        kind: "image",
+        path: output,
+        alreadyOptimized: false,
+        sizeBytes: size,
+        previousSizeBytes: inputSize
+      };
+    }
+  }
+
+  for (const edge of [464, 416, 368, 320]) {
+    await runFfmpeg(
+      ffmpeg(inputPath)
+        .outputOptions([
+          "-an",
+          "-vf",
+          `scale=${edge}:${edge},format=yuv420p`,
+          "-c:v",
+          "libwebp",
+          "-lossless",
+          "0",
+          "-quality",
+          "30",
+          "-loop",
+          "0"
+        ])
+        .save(output)
+    );
+    const size = stickerOutputSize(output);
+    if (size > 0 && size < inputSize * minGain && (await isValidAnimatedSticker(output, edge))) {
+      return {
+        kind: "image",
+        path: output,
+        alreadyOptimized: false,
+        sizeBytes: size,
+        previousSizeBytes: inputSize
+      };
+    }
+  }
+
+  return { kind: "image", path: inputPath, alreadyOptimized: true, sizeBytes: inputSize };
 }
 
 async function staticStickerToImage(inputPath, outputDir) {
@@ -793,6 +984,7 @@ export class MediaProcessor {
   async toSticker(input, mode = "stretch", { maxDurationMs } = {}) {
     if (!input?.path || !input?.type) throw new Error("invalid media input");
     if (!existsSync(input.path)) throw new Error("arquivo de midia nao encontrado");
+    const animatedDurationMs = resolveAnimatedDurationMs(maxDurationMs);
     let result;
     if (input.type === "image" || input.type === "sticker" || input.type === "document") {
       if (input.type !== "sticker" && isGifLikeFile(input.path)) {
@@ -803,7 +995,7 @@ export class MediaProcessor {
             mode,
             this.outputDir,
             this.maxStickerBytes,
-            maxDurationMs
+            animatedDurationMs
           );
         } else {
           result = await imageToSticker(input.path, mode, this.outputDir, this.maxStickerBytes);
@@ -818,7 +1010,7 @@ export class MediaProcessor {
           mode,
           this.outputDir,
           this.maxStickerBytes,
-          maxDurationMs
+          animatedDurationMs
         );
       } else {
         result = await videoToSticker(
@@ -826,7 +1018,7 @@ export class MediaProcessor {
           mode,
           this.outputDir,
           this.maxStickerBytes,
-          maxDurationMs
+          animatedDurationMs
         );
       }
     } else {
@@ -841,15 +1033,15 @@ export class MediaProcessor {
 
   async autoOptimizeIfNeeded(result) {
     if (!result?.path) return result;
-    let size = 0;
-    try {
-      size = statSync(result.path).size;
-    } catch {
-      return result;
-    }
-    if (size <= this.maxStickerBytes) return result;
+    const size = stickerOutputSize(result.path);
+    if (size === 0) return result;
 
-    const optimized = await optimizeStickerWebp(result.path, this.outputDir, this.maxStickerBytes);
+    const meta = await sharp(result.path, { animated: true }).metadata().catch(() => ({}));
+    const isAnimated = Number(meta?.pages ?? 1) > 1;
+    const budget = isAnimated ? animatedStickerBudget(this.maxStickerBytes) : this.maxStickerBytes;
+    if (size <= budget) return result;
+
+    const optimized = await optimizeStickerWebp(result.path, this.outputDir, budget);
     if (optimized?.path && !optimized.alreadyOptimized) {
       return { ...result, path: optimized.path };
     }
@@ -858,7 +1050,7 @@ export class MediaProcessor {
 
   async optimizeSticker(input) {
     if (!input?.path) throw new Error("invalid sticker input");
-    return optimizeStickerWebp(input.path, this.outputDir, this.maxStickerBytes);
+    return optimizeStickerStep(input.path, this.outputDir);
   }
 
   async toMediaFromSticker(input, { forRemoveBg = false } = {}) {

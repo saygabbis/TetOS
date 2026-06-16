@@ -240,7 +240,7 @@ function formatWhatsAppHelpText(prefix = ".") {
     `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch). Duração opcional: ${c("sticker")} 5000, ${c("sticker")} 5s ou ${c("sticker")} 5000ms.`,
     `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain). Aceita duração opcional (ex.: ${c("fsticker")} 3s).`,
     `${c("csticker")} — Recorta o centro para caber na figurinha (crop). Aceita duração opcional (ex.: ${c("csticker")} 5000ms).`,
-    `${c("optimize")} — Comprime figurinha grande (reply/anexo) sem reduzir FPS; reenvia otimizada (também ${p}otimizar).`,
+    `${c("optimize")} — Comprime figurinha (reply/anexo); cada uso reduz mais um pouco ate nao dar pra comprimir (também ${p}otimizar).`,
     `${c("removebg")} — Remove fundo de imagem ou figurinha estatica (API remove.bg em media/forte). GIF/video/figurinha animada: so modelo local, sem gastar creditos. Fundo transparente (padrao) ou cor: ${c("removebg")} verde. Potencia: leve, media, forte. Envia como documento (PNG/GIF/MP4).`,
     `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`
   ].join("\n");
@@ -1092,6 +1092,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             await safeSendMessage(remoteJid, { text: durationResolved.error });
             return true;
           }
+          try {
+            await socket.sendPresenceUpdate?.("composing", remoteJid);
+          } catch {
+            /* opcional */
+          }
           const mode =
             parsedCommand.command === "fsticker"
               ? "contain"
@@ -1101,6 +1106,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           output = await mediaProcessor.toSticker(resolved.media, mode, {
             maxDurationMs: durationResolved.maxDurationMs
           });
+          try {
+            await socket.sendPresenceUpdate?.("paused", remoteJid);
+          } catch {
+            /* opcional */
+          }
         } else if (parsedCommand.command === "optimize") {
           if (resolved.media.type !== "sticker") {
             await safeSendMessage(remoteJid, {
@@ -1108,11 +1118,21 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
             return true;
           }
+          try {
+            await socket.sendPresenceUpdate?.("composing", remoteJid);
+          } catch {
+            /* opcional */
+          }
           output = await mediaProcessor.optimizeSticker(resolved.media);
+          try {
+            await socket.sendPresenceUpdate?.("paused", remoteJid);
+          } catch {
+            /* opcional */
+          }
           if (output.alreadyOptimized) {
             const kb = Math.round((output.sizeBytes ?? 0) / 1024);
             await safeSendMessage(remoteJid, {
-              text: `Essa figurinha ja esta leve o suficiente (${kb} KiB).`
+              text: `Nao deu pra comprimir mais esta figurinha (${kb} KiB).`
             });
             return true;
           }
@@ -1202,6 +1222,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
           await safeSendMessage(remoteJid, { sticker: outBuffer });
 
+        }
+
+        if (
+          parsedCommand.command === "optimize" &&
+          output.previousSizeBytes &&
+          output.sizeBytes &&
+          output.sizeBytes < output.previousSizeBytes
+        ) {
+          const beforeKb = Math.round(output.previousSizeBytes / 1024);
+          const afterKb = Math.round(output.sizeBytes / 1024);
+          await safeSendMessage(remoteJid, {
+            text: `Figurinha otimizada: ${beforeKb} KiB → ${afterKb} KiB. Pode mandar .optimize de novo pra comprimir mais.`
+          });
         }
 
         const elapsedMs = Date.now() - startedAt;
