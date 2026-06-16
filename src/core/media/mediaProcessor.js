@@ -41,6 +41,14 @@ function ensureDir(path) {
   if (!existsSync(path)) mkdirSync(path, { recursive: true });
 }
 
+function stickerOutputSize(filePath) {
+  try {
+    return statSync(filePath).size;
+  } catch {
+    return 0;
+  }
+}
+
 function outPath(baseDir, inputPath, suffix, ext) {
   ensureDir(baseDir);
   const name = basename(inputPath, extname(inputPath));
@@ -190,7 +198,24 @@ return { kind: "image", path: output };
     }
   }
 
-  return { kind: "image", path: output };
+  if (stickerOutputSize(output) > 0) {
+    return { kind: "image", path: output };
+  }
+  return null;
+}
+
+async function animatedGifToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs) {
+  const sharpResult = await gifAnimatedToStickerSharp(
+    inputPath,
+    mode,
+    outputDir,
+    maxStickerBytes,
+    maxDurationMs
+  );
+  if (sharpResult?.path && stickerOutputSize(sharpResult.path) > 0) {
+    return sharpResult;
+  }
+  return videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs);
 }
 
 async function imageToSticker(inputPath, mode, outputDir, maxStickerBytes) {
@@ -274,17 +299,16 @@ async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDu
         } catch {
           lastSize = 0;
         }
-        if (lastSize <= maxStickerBytes) {
-          const meta = await sharp(output, { animated: true }).metadata().catch(() => ({}));
-
-return { kind: "image", path: output };
+        if (lastSize > 0 && lastSize <= maxStickerBytes) {
+          return { kind: "image", path: output };
         }
       }
     }
   }
-  const finalMeta = await sharp(output, { animated: true }).metadata().catch(() => ({}));
-
-return { kind: "image", path: output };
+  if (stickerOutputSize(output) > 0) {
+    return { kind: "image", path: output };
+  }
+  throw new Error("falha ao gerar figurinha animada");
 }
 
 /**
@@ -768,12 +792,13 @@ export class MediaProcessor {
 
   async toSticker(input, mode = "stretch", { maxDurationMs } = {}) {
     if (!input?.path || !input?.type) throw new Error("invalid media input");
+    if (!existsSync(input.path)) throw new Error("arquivo de midia nao encontrado");
     let result;
     if (input.type === "image" || input.type === "sticker" || input.type === "document") {
       if (input.type !== "sticker" && isGifLikeFile(input.path)) {
         const meta = await sharp(input.path, { animated: true }).metadata().catch(() => ({}));
         if (Number(meta?.pages ?? 1) > 1) {
-          result = await gifAnimatedToStickerSharp(
+          result = await animatedGifToSticker(
             input.path,
             mode,
             this.outputDir,
@@ -788,7 +813,7 @@ export class MediaProcessor {
       }
     } else if (input.type === "video" || input.type === "gif") {
       if (isGifLikeFile(input.path)) {
-        result = await gifAnimatedToStickerSharp(
+        result = await animatedGifToSticker(
           input.path,
           mode,
           this.outputDir,
@@ -808,6 +833,9 @@ export class MediaProcessor {
       throw new Error(`unsupported media type for sticker: ${input.type}`);
     }
 
+    if (!result?.path || stickerOutputSize(result.path) === 0) {
+      throw new Error("falha ao gerar figurinha");
+    }
     return this.autoOptimizeIfNeeded(result);
   }
 
