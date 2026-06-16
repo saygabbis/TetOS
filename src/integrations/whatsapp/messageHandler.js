@@ -237,9 +237,9 @@ function formatWhatsAppHelpText(prefix = ".") {
     "*Comandos TetOS*",
     "",
     `${c("help")} — Esta lista (também ${p}ajuda).`,
-    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch). Duração opcional: ${c("sticker")} 5000, ${c("sticker")} 5s ou ${c("sticker")} 5000ms.`,
-    `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain). Aceita duração opcional (ex.: ${c("fsticker")} 3s).`,
-    `${c("csticker")} — Recorta o centro para caber na figurinha (crop). Aceita duração opcional (ex.: ${c("csticker")} 5000ms).`,
+    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch). Duração opcional até 30s: ${c("sticker")} 10s, ${c("sticker")} 5000ms.`,
+    `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain). Duração opcional até 30s (ex.: ${c("fsticker")} 8s).`,
+    `${c("csticker")} — Recorta o centro para caber na figurinha (crop). Duração opcional até 30s (ex.: ${c("csticker")} 10s).`,
     `${c("optimize")} — Comprime figurinha (reply/anexo); cada uso reduz mais um pouco ate nao dar pra comprimir (também ${p}otimizar).`,
     `${c("removebg")} — Remove fundo de imagem ou figurinha estatica (API remove.bg em media/forte). GIF/video/figurinha animada: so modelo local, sem gastar creditos. Fundo transparente (padrao) ou cor: ${c("removebg")} verde. Potencia: leve, media, forte. Envia como documento (PNG/GIF/MP4).`,
     `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`

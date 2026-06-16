@@ -20,11 +20,12 @@ import {
   removeImageBackground
 } from "./backgroundRemovalService.js";
 import { probeStickerIsAnimated } from "./stickerAnimation.js";
+import { STICKER_DURATION_MAX_MS } from "./stickerDurationParse.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-/** WhatsApp: figurinha animada ≤5s e ~500 KiB — acima disso costuma virar “fantasma” transparente. */
-const WHATSAPP_ANIMATED_STICKER_MAX_MS = 5000;
+/** Sem duração no comando: 5 s (seguro no WhatsApp). Com arg (ex. 10s): até 30 s. */
+const WHATSAPP_ANIMATED_STICKER_DEFAULT_MS = 5000;
 const WHATSAPP_ANIMATED_STICKER_MAX_BYTES = 500 * 1024;
 
 function animatedStickerBudget(maxStickerBytes) {
@@ -32,17 +33,31 @@ function animatedStickerBudget(maxStickerBytes) {
 }
 
 function resolveAnimatedDurationMs(maxDurationMs) {
-  const requested = maxDurationMs ?? WHATSAPP_ANIMATED_STICKER_MAX_MS;
-  return Math.min(requested, WHATSAPP_ANIMATED_STICKER_MAX_MS);
+  if (maxDurationMs == null || maxDurationMs <= 0) {
+    return WHATSAPP_ANIMATED_STICKER_DEFAULT_MS;
+  }
+  return Math.min(maxDurationMs, STICKER_DURATION_MAX_MS);
 }
 
-async function isValidAnimatedSticker(filePath, expectedEdge = 512) {
+function maxAnimatedFramesForDuration(durationMs) {
+  const sec = resolveAnimatedDurationMs(durationMs) / 1000;
+  return Math.ceil(sec * 30) + 10;
+}
+
+function buildVideoTrimPrefix(durationSec) {
+  const d = Number(durationSec);
+  if (!Number.isFinite(d) || d <= 0) return "";
+  return `trim=duration=${d},setpts=PTS-STARTPTS,`;
+}
+
+async function isValidAnimatedSticker(filePath, expectedEdge = 512, durationMs = null) {
   try {
     const meta = await sharp(filePath, { animated: true }).metadata();
     const pages = Number(meta?.pages ?? 0);
     const width = Number(meta?.width ?? 0);
     const pageHeight = Number(meta?.pageHeight ?? 0);
-    if (pages < 1 || width < 1) return false;
+    const maxFrames = durationMs != null ? maxAnimatedFramesForDuration(durationMs) : maxAnimatedFramesForDuration(STICKER_DURATION_MAX_MS);
+    if (pages < 1 || pages > maxFrames || width < 1) return false;
     if (pages === 1) {
       return width === expectedEdge && Number(meta?.height ?? 0) === expectedEdge;
     }
@@ -282,8 +297,9 @@ async function imageToSticker(inputPath, mode, outputDir, maxStickerBytes) {
 return { kind: "image", path: output };
 }
 
-function buildVideoStickerVf(mode, fps, edge) {
-  const f = `fps=${fps}`;
+function buildVideoStickerVf(mode, fps, edge, durationSec) {
+  const trim = buildVideoTrimPrefix(durationSec);
+  const f = `${trim}fps=${fps}`;
   if (mode === "stretch") {
     return `${f},scale=${edge}:${edge}:flags=lanczos,format=yuv420p`;
   }
@@ -294,15 +310,42 @@ function buildVideoStickerVf(mode, fps, edge) {
   return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=increase,crop=${edge}:${edge},format=yuv420p`;
 }
 
-async function runVideoStickerEncode(inputPath, output, { mode, edge, fps, quality, durationSec }) {
-  const vf = buildVideoStickerVf(mode, fps, edge);
+/** Vídeo/MP4 → GIF com corte explícito (fontes longas, ex. 10 s no WhatsApp). */
+function buildVideoToGifVf(mode, fps, edge, durationSec) {
+  const trim = buildVideoTrimPrefix(durationSec);
+  const f = `${trim}fps=${fps}`;
+  const palette =
+    "split[s0][s1];[s0]palettegen=stats_mode=diff:max_colors=256[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3";
+  if (mode === "stretch") {
+    return `${f},scale=${edge}:${edge}:flags=lanczos,${palette}`;
+  }
+  if (mode === "contain") {
+    return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=decrease,pad=${edge}:${edge}:(ow-iw)/2:(oh-ih)/2:color=0x00000000,${palette}`;
+  }
+  return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=increase,crop=${edge}:${edge},${palette}`;
+}
+
+async function videoToGifIntermediate(inputPath, mode, outputDir, maxDurationMs, { fps = 24, edge = 512 } = {}) {
+  const durationMs = resolveAnimatedDurationMs(maxDurationMs);
+  const durationSec = durationMs / 1000;
+  const output = outPath(outputDir, inputPath, `sticker-src-${mode}`, "gif");
+  const vf = buildVideoToGifVf(mode, fps, edge, durationSec);
   await runFfmpeg(
     ffmpeg(inputPath)
+      .inputOptions(["-t", String(durationSec)])
+      .outputOptions(["-an", "-vf", vf, "-loop", "0"])
+      .save(output)
+  );
+  return output;
+}
+
+async function runVideoStickerEncode(inputPath, output, { mode, edge, fps, quality, durationSec }) {
+  const vf = buildVideoStickerVf(mode, fps, edge, durationSec);
+  await runFfmpeg(
+    ffmpeg(inputPath)
+      .inputOptions(["-t", String(durationSec)])
       .outputOptions([
         "-an",
-        "-shortest",
-        "-t",
-        durationSec,
         "-vf",
         vf,
         "-c:v",
@@ -327,17 +370,42 @@ async function runVideoStickerEncode(inputPath, output, { mode, edge, fps, quali
 async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs) {
   const output = outPath(outputDir, inputPath, `sticker-${mode}`, "webp");
   const budgetBytes = animatedStickerBudget(maxStickerBytes);
-  const durationSec = String(resolveAnimatedDurationMs(maxDurationMs) / 1000);
+  const durationMs = resolveAnimatedDurationMs(maxDurationMs);
+  const durationSec = durationMs / 1000;
+
+  try {
+    const gifPath = await videoToGifIntermediate(inputPath, mode, outputDir, durationMs);
+    if (stickerOutputSize(gifPath) > 0) {
+      const sharpResult = await gifAnimatedToStickerSharp(
+        gifPath,
+        mode,
+        outputDir,
+        maxStickerBytes,
+        durationMs
+      );
+      if (
+        sharpResult?.path &&
+        stickerOutputSize(sharpResult.path) > 0 &&
+        stickerOutputSize(sharpResult.path) <= budgetBytes &&
+        (await isValidAnimatedSticker(sharpResult.path, 512, durationMs))
+      ) {
+        return sharpResult;
+      }
+    }
+  } catch {
+    /* fallback libwebp abaixo */
+  }
+
   const presets = [
-    { edge: 512, fps: 15, quality: 80 },
-    { edge: 512, fps: 15, quality: 68 },
-    { edge: 512, fps: 12, quality: 58 },
-    { edge: 512, fps: 12, quality: 48 },
-    { edge: 512, fps: 10, quality: 40 },
-    { edge: 464, fps: 12, quality: 42 },
-    { edge: 416, fps: 10, quality: 36 },
-    { edge: 368, fps: 8, quality: 30 },
-    { edge: 320, fps: 8, quality: 24 }
+    { edge: 512, fps: 30, quality: 78 },
+    { edge: 512, fps: 24, quality: 70 },
+    { edge: 512, fps: 20, quality: 62 },
+    { edge: 512, fps: 15, quality: 54 },
+    { edge: 512, fps: 12, quality: 46 },
+    { edge: 464, fps: 20, quality: 44 },
+    { edge: 416, fps: 15, quality: 38 },
+    { edge: 368, fps: 12, quality: 32 },
+    { edge: 320, fps: 10, quality: 26 }
   ];
 
   let bestPath = null;
@@ -351,7 +419,7 @@ async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDu
     });
     const size = stickerOutputSize(output);
     if (size === 0) continue;
-    if (size <= budgetBytes && (await isValidAnimatedSticker(output, preset.edge))) {
+    if (size <= budgetBytes && (await isValidAnimatedSticker(output, preset.edge, durationMs))) {
       return { kind: "image", path: output };
     }
     if (size < bestSize) {
@@ -366,7 +434,7 @@ async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDu
     const finalSize = stickerOutputSize(finalPath);
     if (finalSize > 0 && finalSize <= budgetBytes) {
       const edgeGuess = presets[presets.length - 1].edge;
-      if (await isValidAnimatedSticker(finalPath, edgeGuess)) {
+      if (await isValidAnimatedSticker(finalPath, edgeGuess, durationMs)) {
         return { kind: "image", path: finalPath };
       }
     }
