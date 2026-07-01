@@ -3,127 +3,127 @@
   "energy": 0,
   "social": 1,
   "focus": 1,
-  "lastInteraction": "2026-07-01T14:13:16.496Z",
+  "lastInteraction": "2026-07-01T15:20:54.255Z",
   "recentInteractions": [
     {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 22,
-      "timestamp": "2026-06-18T18:36:49.257Z"
-    },
-    {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 30,
-      "timestamp": "2026-06-18T18:36:54.748Z"
+      "length": 125,
+      "timestamp": "2026-07-01T14:59:47.224Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 33,
-      "timestamp": "2026-06-18T18:37:07.744Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 50,
-      "timestamp": "2026-06-18T18:37:11.229Z"
+      "length": 2,
+      "timestamp": "2026-07-01T15:00:30.316Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 5,
-      "timestamp": "2026-06-18T18:37:23.800Z"
+      "timestamp": "2026-07-01T15:01:43.581Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 40,
-      "timestamp": "2026-06-18T18:37:26.784Z"
+      "length": 125,
+      "timestamp": "2026-07-01T15:01:46.130Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 37,
-      "timestamp": "2026-06-18T18:37:39.177Z"
+      "length": 1,
+      "timestamp": "2026-07-01T15:02:08.633Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 36,
-      "timestamp": "2026-06-18T18:37:42.274Z"
+      "length": 95,
+      "timestamp": "2026-07-01T15:02:11.033Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 8,
-      "timestamp": "2026-07-01T13:47:15.534Z"
+      "length": 15,
+      "timestamp": "2026-07-01T15:02:18.943Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 16,
-      "timestamp": "2026-07-01T13:47:15.551Z"
+      "length": 127,
+      "timestamp": "2026-07-01T15:02:21.464Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 7,
-      "timestamp": "2026-07-01T13:47:56.911Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 3,
-      "timestamp": "2026-07-01T14:11:49.185Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 3,
-      "timestamp": "2026-07-01T14:12:32.523Z"
+      "length": 13,
+      "timestamp": "2026-07-01T15:02:32.779Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 45,
-      "timestamp": "2026-07-01T14:12:34.846Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 12,
-      "timestamp": "2026-07-01T14:12:50.039Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 9,
-      "timestamp": "2026-07-01T14:12:51.673Z"
+      "length": 52,
+      "timestamp": "2026-07-01T15:02:34.882Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 14,
-      "timestamp": "2026-07-01T14:12:55.337Z"
+      "timestamp": "2026-07-01T15:02:46.976Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 84,
-      "timestamp": "2026-07-01T14:12:56.430Z"
+      "length": 73,
+      "timestamp": "2026-07-01T15:02:48.617Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 7,
-      "timestamp": "2026-07-01T14:13:16.496Z"
+      "length": 20,
+      "timestamp": "2026-07-01T15:03:30.504Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 83,
-      "timestamp": "2026-07-01T14:13:28.907Z"
+      "length": 35,
+      "timestamp": "2026-07-01T15:03:32.924Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 26,
+      "timestamp": "2026-07-01T15:03:39.648Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 80,
+      "timestamp": "2026-07-01T15:03:43.103Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 5,
+      "timestamp": "2026-07-01T15:04:43.065Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 71,
+      "timestamp": "2026-07-01T15:04:44.574Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 10,
+      "timestamp": "2026-07-01T15:20:54.255Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 90,
+      "timestamp": "2026-07-01T15:21:01.686Z"
     }
   ]
 }
