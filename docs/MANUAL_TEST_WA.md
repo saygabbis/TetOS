@@ -1,6 +1,6 @@
-# Teste manual WhatsApp — Teto IA Viva
+# Teste Manual WhatsApp - Teto IA Viva
 
-Rode com o bot ativo e `npm run mind:watch` em outro terminal.
+Rode com o bot ativo e, se quiser observar a mente/logs em tempo real, use `npm run mind:watch` em outro terminal.
 
 ## Preparação
 
@@ -11,35 +11,54 @@ npm run mind:watch
 
 Confirme no `.env`:
 
-- `REPLY_ENABLED=true`
-- `LEARNING_MODE_ENABLED=true`
-- `TETOS_ACTIVATION_REQUIRED=false` (modo aberto — qualquer um conversa)
+```env
+WHATSAPP_ENABLED=true
+REPLY_ENABLED=true
+LEARNING_MODE_ENABLED=true
+TETOS_ACTIVATION_REQUIRED=false
+```
 
-## Checklist DM (5–10 mensagens)
+Com `TETOS_ACTIVATION_REQUIRED=false`, qualquer contato pode conversar. Com `true`, use os comandos de ativação antes dos testes.
 
-1. Mande `oi` — ela responde com delay humano (typing).
-2. Pergunte algo que você já disse antes — memória/contexto aparece na resposta.
-3. Mande `[SEM_RESPOSTA]` mental: peça pra ela encerrar naturalmente — verifique `closeDecision` no log.
-4. `/teto-desativar` → ela confirma (só bloqueia se `TETOS_ACTIVATION_REQUIRED=true`).
-5. `/teto-ativar` → reativa.
+## Checklist DM
 
-## Checklist grupo
+1. Mande `oi` e confirme delay humano/typing.
+2. Pergunte algo que você já disse antes e observe se memória/contexto aparece.
+3. Peça para ela encerrar naturalmente e veja `closeDecision` no log.
+4. Se ativação obrigatória estiver ligada, mande `/teto-desativar` e confirme que para de responder.
+5. Mande `/teto-ativar` e confirme que reativa.
 
-1. `/teto-grupo-ativar` no grupo.
-2. Mensagem sem menção — **sem resposta**, mas entra em `groupMemory`.
-3. Mensagem com `@Teto` ou reply — responde.
-4. `/teto-grupo-desativar` — para de responder (com ativação obrigatória).
+## Checklist Grupo
 
-## O que observar no `mind:watch`
+1. Mande `/teto-grupo-ativar` no grupo se `TETOS_ACTIVATION_REQUIRED=true`.
+2. Envie mensagem sem menção e observe se entra em memória de grupo sem resposta indevida.
+3. Mencione `@Teto`, chame pelo nome ou responda uma mensagem dela e confirme resposta.
+4. Teste a janela de engajamento: depois de uma menção, mande outra mensagem sem `@` dentro de `TETOS_GROUP_ENGAGEMENT_MS`.
+5. Mande `/teto-grupo-desativar` e confirme que para de responder quando ativação obrigatória estiver ligada.
 
-- `reasons[]` no timing (50+ checks agregados).
-- `trustBond` subindo devagar após várias msgs.
-- `worldContext` ocasional se viagem autônoma disparar (raro).
+## Checklist Comandos de Mídia
 
-## Modo só ativação (depois)
+Use o prefixo configurado em `COMMAND_PREFIX` (padrão `.`).
+
+1. Envie imagem/vídeo/GIF e mande `.sticker`.
+2. Responda uma figurinha com `.toimg`.
+3. Teste `.fsticker` para conter sem cortar.
+4. Teste `.csticker` para crop central.
+5. Em imagem ou figurinha estática, teste `.removebg`.
+6. Mande `.help` e confira a lista atual.
+
+## O Que Observar no `mind:watch`
+
+- `reasons[]` no timing.
+- `trustBond` evoluindo gradualmente após várias mensagens.
+- `groupMemory` sendo alimentada em grupo.
+- `closeDecision` quando a conversa pede encerramento.
+- `worldContext` quando viagens/rotinas autônomas dispararem.
+
+## Modo Só Ativação
 
 ```env
 TETOS_ACTIVATION_REQUIRED=true
 ```
 
-Reinicie o bot. Só quem mandou `/teto-ativar` (DM) ou `/teto-grupo-ativar` (grupo) recebe resposta.
+Reinicie o bot. Só quem mandou `/teto-ativar` no DM ou `/teto-grupo-ativar` no grupo recebe resposta.

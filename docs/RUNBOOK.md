@@ -1,50 +1,141 @@
-# TetOS — Runbook (Testar agora)
+# TetOS - Runbook
 
-## 1) Instalar dependências
+Este guia é o caminho curto para instalar, subir e validar o projeto no estado atual.
+
+## 1. Instalar Dependências
+
 ```bash
-cd "C:\Users\jonas\OneDrive\Documentos\GABBIS\BOTS\TetOS"
+cd "C:\Users\Legiao Filmes\Desktop\Kevin\Projetos\Nova pasta\TetOS"
 npm install
 ```
 
-## 2) Instalar Ollama (Windows)
-Baixe e instale: https://ollama.com/download
+## 2. Configurar LLM
 
-Depois reabra o terminal e rode:
+### Ollama local
+
+Instale o Ollama em https://ollama.com/download, reabra o terminal e valide:
+
 ```bash
 ollama --version
-```
-
-## 3) Iniciar Ollama + baixar modelo
-```bash
 ollama serve
 ollama pull llama3
 ```
 
-## 4) (Opcional) Configurar .env
-Copie `.env.example` para `.env` e ajuste:
-- `TETOS_MODEL=llama3`
-- `TETOS_OLLAMA_URL=http://localhost:11434`
+No `.env`:
 
-## 5) Iniciar API
+```env
+TETOS_LLM_PROVIDER=ollama
+TETOS_OLLAMA_MODE=local
+TETOS_OLLAMA_URL=http://localhost:11434
+TETOS_MODEL=llama3
+```
+
+### Ollama Cloud
+
+```env
+TETOS_LLM_PROVIDER=ollama
+TETOS_OLLAMA_MODE=cloud
+TETOS_OLLAMA_API_KEY=<sua chave>
+TETOS_MODEL=minimax-m2.7:cloud
+```
+
+### MiniMax direto
+
+```env
+TETOS_LLM_PROVIDER=minimax
+TETOS_MINIMAX_API_KEY=<sua chave>
+TETOS_MINIMAX_MODEL=MiniMax-M2.7
+```
+
+## 3. Iniciar API
+
 ```bash
 npm start
 ```
 
-## 6) Testes
-Em outro terminal:
+Valide em outro terminal:
+
 ```bash
-node scripts/test-status.js
-node scripts/test-chat.js
-node scripts/test-memory-save.js
-node scripts/test-memory-search.js
-node scripts/test-memory-search-post.js
-node scripts/test-session-clear.js
+npm run test:status
+npm run test:chat
 ```
 
-## 7) (Opcional) Deletar memória por ID
+## 4. Rodar Testes Principais
+
 ```bash
-node scripts/test-memory-delete.js <id>
+npm test
+npm run test:all
+npm run test:brain:all
 ```
 
-## Observação
-Se o /chat retornar erro 500 “fetch failed”, o Ollama não está rodando ou o modelo não está disponível.
+Para fluxos específicos:
+
+```bash
+npm run test:memory:save
+npm run test:memory:search
+npm run test:memory:search:post
+npm run test:session:clear
+npm run test:timing
+npm run test:trust
+```
+
+Para deletar memória por ID:
+
+```bash
+npm run test:memory:delete -- <id>
+```
+
+## 5. Iniciar WhatsApp
+
+Confirme no `.env`:
+
+```env
+WHATSAPP_ENABLED=true
+WHATSAPP_MODE=single
+WHATSAPP_SESSION_PATH=./data/session
+WHATSAPP_AUTO_CONNECT=true
+REPLY_ENABLED=true
+```
+
+Suba:
+
+```bash
+npm run start:wa
+```
+
+No primeiro start, leia o QR Code.
+
+## 6. PM2
+
+```bash
+npm run pm2:start
+npm run pm2:restart
+npm run pm2:stop
+```
+
+## 7. Ferramentas Operacionais
+
+```bash
+npm run mind:watch
+npm run learn:focus
+npm run life:distill
+npm run data:sanitize
+npm run wa:clear-sessions
+```
+
+## 8. Checklist Rápido
+
+- `GET /status` responde.
+- `npm run test:chat` passa com o LLM configurado.
+- `npm run test:brain:all` passa para a malha de comportamento.
+- `npm run start:wa` conecta e recebe mensagens.
+- `/teto-ativar` funciona no DM quando `TETOS_ACTIVATION_REQUIRED=true`.
+- `.help` lista comandos de mídia no WhatsApp.
+
+## Problemas Comuns
+
+- `fetch failed`: Ollama local não está rodando, URL errada ou modelo ausente.
+- `401`: chave cloud/API inválida ou ausente.
+- API não sobe na porta esperada: confira `TETOS_PORT`.
+- WhatsApp não responde: confira `WHATSAPP_ENABLED`, `REPLY_ENABLED`, sessão autenticada e ativação.
+- Figurinhas passivas não saem: `resolveStickerAsset()` procura `ack.webp`, `ok.webp`, `thumbs_up.webp` e `heart.webp` em `TETOS_STICKERS_PATH`.

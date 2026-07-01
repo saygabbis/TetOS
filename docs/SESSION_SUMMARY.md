@@ -1,7 +1,10 @@
-# TetOS — Session Summary (Etapa 1)
+# TetOS - Session Summary (Etapa 1)
 
-## Estrutura criada
-```
+Este arquivo é um registro histórico da primeira etapa do projeto. Para instruções atuais de instalação, uso e endpoints, consulte `README.md` e `docs/RUNBOOK.md`.
+
+## Estrutura Criada na Etapa
+
+```text
 TetOS/
   src/
     core/
@@ -21,54 +24,76 @@ TetOS/
   scripts/
 ```
 
-## Núcleo implementado
-- **Agent** (orquestração): `src/core/agent/agent.js`
-  - Pipeline: memória → prompt → LLM → atualização de memória.
-  - Prompt dividido em blocos `[SYSTEM]`, `[MEMORY]`, `[RECENT CONVERSATION]`, `[META]`, `[INPUT]`.
-  - Short-term por `sessionId`.
-  - Suporte a history via `messages[]`.
+## Núcleo Implementado
 
-- **Personality**: `data/personality.json` + loader `src/core/personality/index.js`
-  - Personalidade Kasane Teto com traços/quirks/estilo/restrições.
+### Agent
 
-- **Memory**:
-  - Short-term: `src/core/memory/shortTerm.js` (por sessão).
-  - Long-term: `src/core/memory/longTerm.js` (JSON, search, delete).
-  - Context builder: `src/core/memory/contextBuilder.js` (tags + recência).
-  - Auto-tagging: `src/core/memory/tagger.js`.
+Arquivo: `src/core/agent/agent.js`
 
-- **Brain (LLM)**: `src/core/brain/ollamaClient.js`
-  - Integração com Ollama `/api/generate`.
+Na etapa inicial, o agente fazia a orquestração base:
 
-## API (Express)
+- memória
+- prompt
+- LLM
+- atualização de memória
+
+O prompt era dividido em blocos como `[SYSTEM]`, `[MEMORY]`, `[RECENT CONVERSATION]`, `[META]` e `[INPUT]`.
+
+### Personality
+
+Arquivos:
+
+- `data/personality.json`
+- `src/core/personality/index.js`
+
+Base de personalidade da Kasane Teto, com traços, quirks, estilo e restrições.
+
+### Memory
+
+Arquivos iniciais:
+
+- `src/core/memory/shortTerm.js`
+- `src/core/memory/longTerm.js`
+- `src/core/memory/contextBuilder.js`
+- `src/core/memory/tagger.js`
+
+A base atual evoluiu além disso e inclui memória seletiva, episódica, multimodal e de grupo.
+
+### Brain
+
+Arquivo inicial:
+
+- `src/core/brain/ollamaClient.js`
+
+O projeto hoje também possui `src/core/brain/minimaxClient.js` e seleção de provider por `TETOS_LLM_PROVIDER`.
+
+## API Inicial
+
 Arquivo: `src/infra/api/server.js`
-Endpoints:
+
+Endpoints documentados na etapa:
+
 - `POST /chat`
-  - Aceita `message` ou `messages[]`
-  - `messages[]` com roles `user|assistant|system` (role inválida → `user`)
-  - Limites: `TETOS_MAX_HISTORY`, `TETOS_MAX_CONTENT`, `TETOS_MAX_ID`
-  - `userId`/`sessionId` limitados
-- `POST /memory/save` (aceita `tag` ou `tags[]` até `TETOS_MAX_TAGS`)
+- `POST /memory/save`
 - `POST /memory/delete`
 - `GET /memory`
-- `GET /memory/search` (tag CSV)
+- `GET /memory/search`
 - `POST /memory/search`
 - `POST /session/clear`
-- `GET /status` (inclui limites ativos)
+- `GET /status`
 
-## Config
-- `.env.example` com:
-  - `TETOS_MODEL`, `TETOS_OLLAMA_URL`, `TETOS_MEMORY_PATH`, `TETOS_MAX_SHORT`, `TETOS_PORT`
-  - `TETOS_PERSONALITY_PATH`, `TETOS_MAX_HISTORY`, `TETOS_MAX_CONTENT`, `TETOS_MAX_ID`, `TETOS_MAX_TAGS`
+Endpoints atuais adicionais estão no `README.md`.
 
-## Scripts de teste
+## Scripts de Teste da Etapa
+
 - `scripts/test-chat.js`
 - `scripts/test-status.js`
 - `scripts/test-session-clear.js`
 - `scripts/test-memory-save.js`
 - `scripts/test-memory-search.js`
 - `scripts/test-memory-search-post.js`
-- `scripts/test-memory-delete.js <id>`
+- `scripts/test-memory-delete.js`
 
-## README
-Atualizado com todos endpoints, envs e exemplos.
+## Observação Atual
+
+Este resumo não substitui a documentação operacional atual. Ele existe para preservar o contexto da primeira etapa.
