@@ -1,7 +1,10 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { isKnownStickerKey, listRepertoireKeys } from "./stickerRepertoire.js";
 
 const FALLBACK_KEYS = ["ack", "ok", "thumbs_up", "heart"];
+
+export { listRepertoireKeys, isKnownStickerKey };
 
 export function resolveStickerAsset(stickerKey, basePath = "./data/stickers") {
   const candidates = [stickerKey, ...FALLBACK_KEYS].filter(Boolean);

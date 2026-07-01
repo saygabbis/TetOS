@@ -17,6 +17,11 @@ import { ChatService } from "../../modules/chat/chatService.js";
 import { detectVulnerability } from "../brain/vulnerabilityDetect.js";
 import { mergeBrainCloseDecision } from "../brain/ConversationPhaseEngine.js";
 import { isOwnerContact, touchUserActivity } from "../channels/userActivity.js";
+import {
+  buildChannelTimelineForPrompt,
+  DEFAULT_CHANNEL_HISTORY_LIMIT,
+  timelineToHistoryRows
+} from "../channels/channelTimeline.js";
 import { buildGroupRoster } from "../channels/groupRoster.js";
 import {
   addProfileNicknames,
@@ -259,8 +264,18 @@ export async function runMessagePipeline(runtime, payload = {}) {
     }
   }
 
-  const historyCap = Math.max(8, Number(runtime.defaults.maxHistory) || 24);
+  const historyCap = Math.max(8, Number(runtime.defaults.maxHistory) || DEFAULT_CHANNEL_HISTORY_LIMIT);
+  const channelTimeline = buildChannelTimelineForPrompt(runtime, {
+    channelId: safeChannelId,
+    limit: historyCap
+  });
+
+  if (channelTimeline.entries.length) {
+    normalizedHistory = timelineToHistoryRows(channelTimeline.entries);
+  }
+
   const recentHistory = normalizedHistory?.length ? normalizedHistory.slice(-historyCap) : null;
+
   const derivedMediaInput = media?.transcript ?? media?.caption ?? `[${media?.type ?? "media"}]`;
   const input = clampString(message ?? normalizedHistory?.[normalizedHistory.length - 1]?.content ?? derivedMediaInput, runtime.defaults.maxContentLength);
 
@@ -652,8 +667,12 @@ export async function runMessagePipeline(runtime, payload = {}) {
   }
 
   const historicalMultimodalContext = buildMultimodalContext(
-    runtime.multimodalMemory?.list?.(safeUserId ?? "default", safeChannelId, 3) ?? [],
-    3
+    runtime.multimodalMemory?.list?.(
+      isGroup ? null : safeUserId ?? "default",
+      safeChannelId,
+      6
+    ) ?? [],
+    6
   );
   const visionText = [
     media?.transcript,
@@ -670,8 +689,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     describeMediaForPrompt(media, input) ?? buildMediaContext(media),
     selfImageDetection.isLikelySelf
       ? "[AUTO-RECONHECIMENTO] A mídia parece representar a Kasane Teto (você)."
-      : null,
-    historicalMultimodalContext ? `[RECENT MULTIMODAL MEMORY]\n${historicalMultimodalContext}` : null
+      : null
   ]
     .filter(Boolean)
     .join("\n\n") || null;
@@ -698,7 +716,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
       userId: safeUserId ?? "default",
       channelId: safeChannelId,
       media,
-      message: input
+      message: visionText || input,
+      messageId: payload?.messageId || messageKey?.id
     });
     runtime.metrics?.increment?.("multimodal.saved");
   }
@@ -720,8 +739,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
       isReplyToBot: Boolean(isReplyToBot),
       messageKey,
       styleHint: enrichedStyleHint,
-      recentHistoryCount: normalizedHistory?.length ?? 0,
+      recentHistoryCount: channelTimeline.entries.length || normalizedHistory?.length || 0,
       recentHistory,
+      channelTimelineText: channelTimeline.text || null,
       resumedAfterClose,
       userPronouns: existingProfile?.facts?.pronouns ?? null,
       channelMode: channelState.mode,
@@ -743,6 +763,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
       segmentMultiSpeaker: Boolean(segmentMultiSpeaker),
       isOwner,
       musicLoreBlock,
+      repertoireModeActive: Boolean(runtime.stickerRepertoireMode?.isActive?.(safeUserId)),
+      stickersPath: runtime.defaults.stickersPath,
+      historicalMultimodalContext,
       ...searchMeta,
       ...operationMeta
     },
@@ -779,18 +802,6 @@ export async function runMessagePipeline(runtime, payload = {}) {
       runtime.brainOrchestrator.recordAssistantOutput?.(safeSessionId, reply, {
         userId: safeUserId,
         channelId: safeChannelId
-      });
-    }
-  }
-
-  if (isGroup && runtime.groupMemory?.append && replies.length > 0) {
-    for (const reply of replies) {
-      runtime.groupMemory.append({
-        channelId: safeChannelId,
-        userId: "teto",
-        text: reply,
-        addressedToTeto: true,
-        ts: new Date().toISOString()
       });
     }
   }

@@ -10,7 +10,6 @@ import { registerMessageHandler } from "./messageHandler.js";
 import { DisconnectReason } from "baileys";
 import { isUserRecentlyActive, resolveNudgeRemoteJid, touchUserActivity } from "../../core/channels/userActivity.js";
 import { msSinceLastInbound, resetInboundActivity } from "./inboundLiveness.js";
-import { waAgentDebugLog } from "./waDebugLog.js";
 import { jidNormalizedUser } from "baileys";
 
 /** Pausa nudges/presence após 403 de assinatura (evita spam a cada 60s). */
@@ -50,15 +49,6 @@ function startInboundWatchdog({ getConnected, label = "whatsapp", onDeaf = null 
       `[${label}] socket surdo — conectado mas sem mensagens há ${silentMin} min. ` +
         "Celular da bot nao pode ter WhatsApp aberto junto; reconectando..."
     );
-    // #region agent log
-    waAgentDebugLog({
-      runId: "wa-inbound",
-      hypothesisId: "H1",
-      location: "runner.js:startInboundWatchdog",
-      message: "inbound stale detected",
-      data: { label, silentMs, silentMin, hasOnDeaf: Boolean(onDeaf) }
-    });
-    // #endregion
     if (typeof onDeaf === "function") {
       if (recovering) return;
       recovering = true;

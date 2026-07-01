@@ -10,6 +10,7 @@ export function slimMetaForStorage(meta = {}) {
   if (meta.speakerName) out.speakerName = String(meta.speakerName).slice(0, 80);
   if (meta.isReplyToBot) out.isReplyToBot = true;
   if (meta.quotedMessageId) out.quotedMessageId = String(meta.quotedMessageId).slice(0, 80);
+  if (meta.messageId) out.messageId = String(meta.messageId).slice(0, 80);
   const q = meta.quotedMessage ?? meta.replyThreadContext?.quoted?.text;
   if (q) out.quotedMessage = String(q).slice(0, 400);
   return out;

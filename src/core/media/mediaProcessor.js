@@ -105,6 +105,45 @@ function outPathUnique(baseDir, inputPath, suffix, ext) {
   return join(baseDir, `${name}-${suffix}-${Date.now()}.${ext}`);
 }
 
+/** Reaproveita figurinha já gerada em derived/ (evita re-encode de 10+ min em GIF/vídeo). */
+async function reuseDerivedStickerIfFresh(
+  inputPath,
+  mode,
+  outputDir,
+  maxStickerBytes,
+  maxDurationMs
+) {
+  const derived = outPath(outputDir, inputPath, `sticker-${mode}`, "webp");
+  if (!existsSync(derived) || stickerOutputSize(derived) === 0) return null;
+
+  try {
+    const srcMtime = statSync(inputPath).mtimeMs;
+    const cacheMtime = statSync(derived).mtimeMs;
+    if (cacheMtime < srcMtime) return null;
+  } catch {
+    return null;
+  }
+
+  const budget = animatedStickerBudget(maxStickerBytes);
+  let finalPath = derived;
+  let size = stickerOutputSize(finalPath);
+  if (size > budget) {
+    const optimized = await optimizeStickerWebp(finalPath, outputDir, budget);
+    finalPath = optimized?.path ?? finalPath;
+    size = stickerOutputSize(finalPath);
+  }
+  if (size === 0 || size > budget) return null;
+
+  const durationMs = resolveAnimatedDurationMs(maxDurationMs);
+  const needsAnimatedCheck =
+    isGifLikeFile(inputPath) || /\.(mp4|webm|mov|mkv|m4v|avi)$/i.test(inputPath);
+  if (needsAnimatedCheck && !(await isValidAnimatedSticker(finalPath, 512, durationMs))) {
+    return null;
+  }
+
+  return { kind: "image", path: finalPath, fromCache: true, sizeBytes: size };
+}
+
 function runFfmpeg(command) {
   return new Promise((resolve, reject) => {
     command
@@ -1053,6 +1092,16 @@ export class MediaProcessor {
     if (!input?.path || !input?.type) throw new Error("invalid media input");
     if (!existsSync(input.path)) throw new Error("arquivo de midia nao encontrado");
     const animatedDurationMs = resolveAnimatedDurationMs(maxDurationMs);
+
+    const cached = await reuseDerivedStickerIfFresh(
+      input.path,
+      mode,
+      this.outputDir,
+      this.maxStickerBytes,
+      animatedDurationMs
+    );
+    if (cached?.path) return cached;
+
     let result;
     if (input.type === "image" || input.type === "sticker" || input.type === "document") {
       if (input.type !== "sticker" && isGifLikeFile(input.path)) {

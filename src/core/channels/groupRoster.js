@@ -62,12 +62,24 @@ export function buildGroupRoster(runtime, channelId, { participants = [] } = {})
       const linkedPhone = phoneLinks[userId] ?? nameInfo.waPhone ?? null;
       const linkedLid = nameInfo.waLid ?? (/^\d{14,}$/.test(userId) ? userId : null);
       const mentionJid = mentionJidFor(userId, channel, nameInfo);
+      const mentionAliases = [
+        ...new Set(
+          [
+            nameInfo.preferredName,
+            ...(nameInfo.nicknames ?? []),
+            ...(nameInfo.tetoNicknames ?? [])
+          ]
+            .map(cleanDisplayName)
+            .filter(Boolean)
+        )
+      ].filter((n) => n !== nameInfo.displayName);
       return {
         userId,
         displayName: nameInfo.displayName,
         preferredName: nameInfo.preferredName ?? null,
         nicknames: nameInfo.nicknames ?? [],
         tetoNicknames: nameInfo.tetoNicknames ?? [],
+        mentionAliases,
         mentionJid,
         waPhone: linkedPhone,
         waLid: linkedLid,
@@ -77,7 +89,22 @@ export function buildGroupRoster(runtime, channelId, { participants = [] } = {})
     })
     .filter((m) => m.displayName);
 
-  const promptLines = members.map((m) => {
+  // Dedup: manter apenas uma entrada por canonicalUserId (a mais informativa)
+  const seen = new Map();
+  for (const m of members) {
+    const key = m.canonicalUserId || m.userId;
+    if (!seen.has(key)) {
+      seen.set(key, m);
+    } else {
+      // Prefere a entrada com waPhone E waLid
+      const prev = seen.get(key);
+      const score = (x) => (x.waPhone ? 1 : 0) + (x.waLid ? 1 : 0) + (x.tetoNicknames?.length ?? 0);
+      if (score(m) > score(prev)) seen.set(key, m);
+    }
+  }
+  const dedupedMembers = [...seen.values()];
+
+  const promptLines = dedupedMembers.map((m) => {
     const nickParts = [];
     if (m.preferredName && m.preferredName !== m.displayName) {
       nickParts.push(`prefere: ${m.preferredName}`);
@@ -94,10 +121,14 @@ export function buildGroupRoster(runtime, channelId, { participants = [] } = {})
     if (m.waLid) idParts.push(`LID ${m.waLid}`);
     if (m.waPhone) idParts.push(`tel ${m.waPhone}`);
     if (!idParts.length) idParts.push(`id ${m.userId}`);
-    return `- ${m.displayName}${nickLine} — ${idParts.join(" ↔ ")} — marcar no zap: @${m.displayName}`;
+    const altTags = (m.mentionAliases ?? []).map((a) => `@${a}`).join(", ");
+    const tagHint = altTags
+      ? ` — marcar: @${m.displayName} ou ${altTags} (mesma pessoa)`
+      : ` — marcar: @${m.displayName}`;
+    return `- ${m.displayName}${nickLine} — ${idParts.join(" ↔ ")}${tagHint}`;
   });
 
-  return { members, promptLines };
+  return { members: dedupedMembers, promptLines };
 }
 
 export function formatGroupRosterBlock(roster) {
@@ -108,7 +139,10 @@ export function formatGroupRosterBlock(roster) {
     "LID, telefone e apelidos são a MESMA pessoa quando listados juntos — use sempre o NOME.",
     "Apelidos que a Teto deu (Teto chama: ...) ou que a pessoa pediu (prefere: ...) valem no grupo.",
     "Nunca cite @187995... ou id numérico cru; diga o nome (ex.: Gabbis, Duda).",
-    "Para marcar alguém de verdade no WhatsApp, escreva @Nome exatamente como listado."
+    "TRADUTOR DE MENÇÕES: você pode escrever @Gabbis ou @gabbis (maiúscula/minúscula) — o sistema traduz para a menção real no WhatsApp.",
+    "Prefixo parcial também vale se for único no grupo: @Kzer pode marcar quem se chama Kzer0 (desde que não haja outra pessoa com nome parecido).",
+    "Apelidos listados (também:, Teto chama:) também funcionam com @ — ex.: @Kzer se for apelido da pessoa.",
+    "Para marcar DE VERDADE (notificação azul), use @ antes do nome; sem @ é só texto comum."
   ];
 }
 

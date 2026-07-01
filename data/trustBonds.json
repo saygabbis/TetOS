@@ -815,11 +815,11 @@
     "dm-190546341540031::direct": {
       "userId": "dm-190546341540031",
       "channelScope": "direct",
-      "trust": 0.49800000000000005,
-      "intimacy": 0.386,
+      "trust": 0.514,
+      "intimacy": 0.398,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-07-01T14:49:03.245Z",
+      "lastInteractionAt": "2026-07-01T19:56:16.855Z",
       "notes": [
         {
           "type": "reinforce",
@@ -850,6 +850,16 @@
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-07-01T14:49:03.245Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-07-01T19:46:12.308Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-07-01T19:56:16.855Z"
         }
       ]
     },
@@ -981,107 +991,107 @@
       "intimacy": 1,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-07-01T15:20:49.396Z",
+      "lastInteractionAt": "2026-07-01T20:51:59.268Z",
       "notes": [
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:54:06.392Z"
+          "ts": "2026-07-01T20:36:22.205Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:54:50.812Z"
+          "ts": "2026-07-01T20:37:07.879Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:56:15.929Z"
+          "ts": "2026-07-01T20:38:36.822Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:57:06.681Z"
+          "ts": "2026-07-01T20:39:22.044Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:57:15.526Z"
+          "ts": "2026-07-01T20:40:59.844Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:57:58.510Z"
+          "ts": "2026-07-01T20:41:30.477Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:58:08.886Z"
+          "ts": "2026-07-01T20:41:42.864Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:58:19.399Z"
+          "ts": "2026-07-01T20:41:53.804Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:59:05.567Z"
+          "ts": "2026-07-01T20:42:37.959Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:59:38.616Z"
+          "ts": "2026-07-01T20:42:48.180Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:00:25.790Z"
+          "ts": "2026-07-01T20:43:12.990Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:01:33.344Z"
+          "ts": "2026-07-01T20:43:24.042Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:02:03.246Z"
+          "ts": "2026-07-01T20:43:53.937Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:02:12.774Z"
+          "ts": "2026-07-01T20:44:06.322Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:02:23.786Z"
+          "ts": "2026-07-01T20:44:17.262Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:02:38.053Z"
+          "ts": "2026-07-01T20:45:40.037Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:03:24.482Z"
+          "ts": "2026-07-01T20:46:52.083Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:03:34.918Z"
+          "ts": "2026-07-01T20:51:15.217Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:04:36.623Z"
+          "ts": "2026-07-01T20:51:30.436Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T15:20:49.396Z"
+          "ts": "2026-07-01T20:51:59.268Z"
         }
       ]
     },
@@ -1320,111 +1330,111 @@
     "157947506229421::group:120363425913528764@g.us": {
       "userId": "157947506229421",
       "channelScope": "group:120363425913528764@g.us",
-      "trust": 0.7920000000000003,
-      "intimacy": 0.6080000000000002,
+      "trust": 1,
+      "intimacy": 0.9080000000000005,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-07-01T14:56:38.071Z",
+      "lastInteractionAt": "2026-07-01T20:46:37.805Z",
       "notes": [
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-12T22:45:42.818Z"
+          "ts": "2026-07-01T18:37:26.813Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-12T22:52:25.022Z"
+          "ts": "2026-07-01T18:37:36.659Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-12T22:52:26.049Z"
+          "ts": "2026-07-01T18:38:21.444Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-12T22:57:10.809Z"
+          "ts": "2026-07-01T18:38:31.498Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-12T22:57:10.875Z"
+          "ts": "2026-07-01T18:40:26.127Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-12T22:58:07.290Z"
+          "ts": "2026-07-01T18:44:29.786Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-12T22:58:12.287Z"
+          "ts": "2026-07-01T18:44:55.170Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T19:00:06.330Z"
+          "ts": "2026-07-01T18:46:05.370Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T19:00:07.852Z"
+          "ts": "2026-07-01T18:46:36.906Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T19:00:55.079Z"
+          "ts": "2026-07-01T18:47:13.511Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T19:00:55.262Z"
+          "ts": "2026-07-01T18:51:14.052Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T19:06:26.467Z"
+          "ts": "2026-07-01T18:51:58.329Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T19:06:26.636Z"
+          "ts": "2026-07-01T18:55:38.195Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T19:09:40.030Z"
+          "ts": "2026-07-01T19:02:48.685Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T20:51:10.266Z"
+          "ts": "2026-07-01T19:03:00.367Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-06-15T20:51:10.411Z"
+          "ts": "2026-07-01T19:03:18.767Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:55:08.064Z"
+          "ts": "2026-07-01T20:45:57.204Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:55:53.822Z"
+          "ts": "2026-07-01T20:46:15.085Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:56:04.527Z"
+          "ts": "2026-07-01T20:46:27.279Z"
         },
         {
           "type": "reinforce",
           "reason": "interaction",
-          "ts": "2026-07-01T14:56:38.071Z"
+          "ts": "2026-07-01T20:46:37.805Z"
         }
       ]
     },

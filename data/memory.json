@@ -281,6 +281,32 @@
       "channelScope": "group:120363425913528764@g.us",
       "content": "Kzer",
       "timestamp": "2026-07-01T15:03:33.741Z"
+    },
+    {
+      "id": "3ec35539-aa59-4d24-99b0-d5c4e7abf99b",
+      "userId": "190546341540031",
+      "channelId": "120363425913528764@g.us",
+      "channelScope": "group:120363425913528764@g.us",
+      "tags": [
+        "selective_memory"
+      ],
+      "type": "selective_memory",
+      "content": "Faz essa fig virar imagem",
+      "value": "Faz essa fig virar imagem",
+      "timestamp": "2026-07-01T20:00:32.625Z"
+    },
+    {
+      "id": "1ad7dd8c-3632-425a-b07f-6db02a295884",
+      "userId": "190546341540031",
+      "channelId": "120363425913528764@g.us",
+      "channelScope": "group:120363425913528764@g.us",
+      "tags": [
+        "selective_memory"
+      ],
+      "type": "selective_memory",
+      "content": "Faz ela virar figurinha de novo",
+      "value": "Faz ela virar figurinha de novo",
+      "timestamp": "2026-07-01T20:13:55.240Z"
     }
   ],
   "profiles": {
@@ -409,7 +435,7 @@
         "emoji": 6,
         "total": 263
       },
-      "lastUpdated": "2026-07-01T14:56:35.490Z",
+      "lastUpdated": "2026-07-01T20:46:21.391Z",
       "channelScope": "direct",
       "conversationClosedAt": null
     },
@@ -509,7 +535,7 @@
         "emoji": 8,
         "total": 24
       },
-      "lastUpdated": "2026-07-01T15:21:07.371Z",
+      "lastUpdated": "2026-07-01T20:52:10.430Z",
       "conversationClosedAt": null,
       "channelScope": "direct"
     },
@@ -517,7 +543,7 @@
       "facts": {
         "name": "Kzer0",
         "lastChannel": "group",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
@@ -544,7 +570,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -552,7 +582,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -560,7 +595,11 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
@@ -576,7 +615,7 @@
         "emoji": 0,
         "total": 2
       },
-      "lastUpdated": "2026-07-01T15:57:30.336Z",
+      "lastUpdated": "2026-07-01T20:51:56.627Z",
       "channelScope": "direct"
     },
     "5516988776338": {
@@ -614,7 +653,7 @@
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-07-01T15:00:11.464Z",
+      "lastUpdated": "2026-07-01T18:02:31.954Z",
       "channelScope": "direct"
     },
     "5516997824041": {
@@ -669,7 +708,7 @@
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-06-27T07:08:18.795Z",
+      "lastUpdated": "2026-07-01T19:48:18.864Z",
       "channelScope": "direct"
     },
     "5516997140666": {
@@ -698,7 +737,7 @@
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-07-01T15:39:17.644Z",
+      "lastUpdated": "2026-07-01T16:19:05.023Z",
       "channelScope": "direct"
     },
     "5511958102125": {
@@ -851,7 +890,7 @@
         "emoji": 0,
         "total": 3
       },
-      "lastUpdated": "2026-07-01T14:56:35.683Z",
+      "lastUpdated": "2026-07-01T20:46:21.683Z",
       "channelScope": "direct"
     },
     "131778236952767": {
@@ -1003,16 +1042,16 @@
         "name": "Kzer0",
         "lastChannel": "group",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "identityAliases": [
           "190546341540031",
           "5516994435369",
           "dm-190546341540031",
-          "120363342938049353",
-          "dm-120363342938049353",
           "120363425913528764",
           "dm-120363425913528764",
+          "120363342938049353",
+          "dm-120363342938049353",
           "120363402362643675",
           "dm-120363402362643675",
           "120363258200906509",
@@ -1027,7 +1066,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "nicknames": [
@@ -1037,7 +1080,11 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -1045,13 +1092,17 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-07-01T15:57:30.488Z",
+      "lastUpdated": "2026-07-01T20:51:56.839Z",
       "channelScope": "direct"
     },
     "5516996221745": {
@@ -1472,7 +1523,7 @@
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-06-27T07:08:18.893Z",
+      "lastUpdated": "2026-07-01T19:48:18.969Z",
       "channelScope": "direct"
     },
     "5516994288293": {
@@ -1601,7 +1652,7 @@
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-07-01T15:00:11.680Z",
+      "lastUpdated": "2026-07-01T18:02:32.116Z",
       "channelScope": "direct"
     },
     "187995030323304": {
@@ -2117,7 +2168,7 @@
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-07-01T15:39:17.715Z",
+      "lastUpdated": "2026-07-01T16:19:05.127Z",
       "channelScope": "direct"
     },
     "554196357888": {
@@ -4416,7 +4467,7 @@
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-07-01T15:21:07.306Z",
+      "lastUpdated": "2026-07-01T20:52:10.364Z",
       "channelScope": "direct"
     },
     "5516988196328": {
@@ -5307,7 +5358,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Se",
@@ -5318,7 +5369,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ]
       },
       "style": {
@@ -5333,7 +5384,7 @@
         "emoji": 6,
         "total": 262
       },
-      "lastUpdated": "2026-07-01T14:56:43.283Z",
+      "lastUpdated": "2026-07-01T20:46:47.502Z",
       "channelScope": "group:120363425913528764@g.us",
       "conversationClosedAt": null
     },
@@ -5368,7 +5419,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -5378,7 +5433,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -5387,7 +5446,11 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
@@ -5403,7 +5466,7 @@
         "emoji": 0,
         "total": 22
       },
-      "lastUpdated": "2026-07-01T15:21:02.766Z",
+      "lastUpdated": "2026-07-01T20:52:05.702Z",
       "channelScope": "group:120363425913528764@g.us"
     },
     "dm-157947506229421": {
@@ -5527,7 +5590,7 @@
         "total": 36
       },
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.495Z"
+      "lastUpdated": "2026-07-01T20:46:21.400Z"
     },
     "dm-5516988137617": {
       "facts": {
@@ -5618,7 +5681,7 @@
       "facts": {
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Luan Savio",
         "name": "Luan Savio",
         "identityAliases": [
@@ -5740,7 +5803,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Aí",
@@ -5752,7 +5818,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Aí",
@@ -5764,20 +5835,24 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.373Z"
+      "lastUpdated": "2026-07-01T20:51:56.674Z"
     },
     "dm-120363402362643675": {
       "facts": {
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Luan Savio",
         "name": "Luan Savio",
         "identityAliases": [
@@ -5899,7 +5974,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Aí",
@@ -5911,7 +5989,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Aí",
@@ -5923,14 +6006,18 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.378Z"
+      "lastUpdated": "2026-07-01T20:51:56.682Z"
     },
     "luan savio": {
       "facts": {
@@ -5985,13 +6072,13 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:39:17.650Z"
+      "lastUpdated": "2026-07-01T16:19:05.031Z"
     },
     "120363342938049353": {
       "facts": {
-        "waPhone": "5516994435369",
-        "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516993061143",
+        "waLid": "58141777641473",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -6082,7 +6169,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Se",
@@ -6098,7 +6188,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Se",
@@ -6114,20 +6209,24 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.349Z"
+      "lastUpdated": "2026-07-01T20:52:10.404Z"
     },
     "dm-120363342938049353": {
       "facts": {
-        "waPhone": "5516994435369",
-        "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516993061143",
+        "waLid": "58141777641473",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -6218,7 +6317,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Se",
@@ -6234,7 +6336,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Se",
@@ -6250,14 +6357,18 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.356Z"
+      "lastUpdated": "2026-07-01T20:52:10.412Z"
     },
     "gustavo vieira": {
       "facts": {
@@ -6285,12 +6396,12 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:39:17.695Z"
+      "lastUpdated": "2026-07-01T16:19:05.101Z"
     },
     "gabbis": {
       "facts": {
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
         "identityAliases": [
@@ -6454,7 +6565,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oiii",
@@ -6478,7 +6592,12 @@
           "Oie",
           "Conheço",
           "Certo",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oiii",
@@ -6502,7 +6621,11 @@
           "Oie",
           "Conheço",
           "Certo",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "preferredName": "Kzer"
@@ -6510,7 +6633,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.409Z"
+      "lastUpdated": "2026-07-01T20:51:56.720Z"
     },
     "oiii": {
       "facts": {
@@ -6599,7 +6722,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.569Z"
+      "lastUpdated": "2026-07-01T20:46:21.519Z"
     },
     "oi": {
       "facts": {
@@ -6681,12 +6804,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.576Z"
+      "lastUpdated": "2026-07-01T20:46:21.527Z"
     },
     "tô": {
       "facts": {
@@ -6708,7 +6832,12 @@
           "Nasci",
           "Quer",
           "Certo",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Tô",
@@ -6728,10 +6857,14 @@
           "Nasci",
           "Quer",
           "Certo",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
         "identityAliases": [
@@ -6777,7 +6910,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "preferredName": "Kzer"
@@ -6785,7 +6921,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.439Z"
+      "lastUpdated": "2026-07-01T20:51:56.751Z"
     },
     "kkk": {
       "facts": {
@@ -6868,7 +7004,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.587Z"
+      "lastUpdated": "2026-07-01T20:46:21.543Z"
     },
     "vai": {
       "facts": {
@@ -6944,12 +7080,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.593Z"
+      "lastUpdated": "2026-07-01T20:46:21.552Z"
     },
     "não": {
       "facts": {
@@ -7023,12 +7160,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.598Z"
+      "lastUpdated": "2026-07-01T20:46:21.560Z"
     },
     "opa": {
       "facts": {
@@ -7100,12 +7238,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.604Z"
+      "lastUpdated": "2026-07-01T20:46:21.568Z"
     },
     "tá": {
       "facts": {
@@ -7121,7 +7260,12 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Tá",
@@ -7135,10 +7279,14 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
         "identityAliases": [
@@ -7184,7 +7332,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "preferredName": "Kzer"
@@ -7192,7 +7343,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.458Z"
+      "lastUpdated": "2026-07-01T20:51:56.768Z"
     },
     "fala": {
       "facts": {
@@ -7260,12 +7411,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.613Z"
+      "lastUpdated": "2026-07-01T20:46:21.589Z"
     },
     "ah": {
       "facts": {
@@ -7336,7 +7488,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.621Z"
+      "lastUpdated": "2026-07-01T20:46:21.597Z"
     },
     "dm-74053859672191": {
       "facts": {
@@ -7370,7 +7522,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:08:18.804Z"
+      "lastUpdated": "2026-07-01T19:48:18.871Z"
     },
     "gustavo caruzo gonçalves": {
       "facts": {
@@ -7398,7 +7550,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:08:18.872Z"
+      "lastUpdated": "2026-07-01T19:48:18.941Z"
     },
     "dm-264841222742022": {
       "facts": {
@@ -7598,7 +7750,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.483Z"
+      "lastUpdated": "2026-07-01T18:02:31.961Z"
     },
     "fulvio": {
       "facts": {
@@ -7634,7 +7786,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.648Z"
+      "lastUpdated": "2026-07-01T18:02:32.088Z"
     },
     "se": {
       "facts": {
@@ -7698,16 +7850,17 @@
           "dm-120363426863669479",
           "120363258200906509",
           "dm-120363258200906509"
-        ]
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.626Z"
+      "lastUpdated": "2026-07-01T20:46:21.606Z"
     },
     "120363425913528764": {
       "facts": {
-        "waPhone": "5516994435369",
+        "waPhone": "5516993061143",
         "identityAliases": [
           "6283879987068",
           "120363342938049353",
@@ -7760,10 +7913,13 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
-        "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waLid": "58141777641473",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "nicknames": [
@@ -7776,7 +7932,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Aí",
@@ -7788,18 +7949,22 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.361Z"
+      "lastUpdated": "2026-07-01T20:52:10.380Z"
     },
     "dm-120363425913528764": {
       "facts": {
-        "waPhone": "5516994435369",
+        "waPhone": "5516993061143",
         "identityAliases": [
           "6283879987068",
           "120363342938049353",
@@ -7852,10 +8017,13 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
-        "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waLid": "58141777641473",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "nicknames": [
@@ -7868,7 +8036,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Aí",
@@ -7880,14 +8053,18 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.366Z"
+      "lastUpdated": "2026-07-01T20:52:10.389Z"
     },
     "aff": {
       "facts": {
@@ -7954,7 +8131,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.631Z"
+      "lastUpdated": "2026-07-01T20:46:21.615Z"
     },
     "um": {
       "facts": {
@@ -8014,12 +8191,13 @@
           "dm-120363426863669479",
           "120363258200906509",
           "dm-120363258200906509"
-        ]
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.636Z"
+      "lastUpdated": "2026-07-01T20:46:21.623Z"
     },
     "dm-174165839581324": {
       "facts": {
@@ -8115,7 +8293,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.641Z"
+      "lastUpdated": "2026-07-01T20:46:21.632Z"
     },
     "kasane teto": {
       "facts": {
@@ -8147,9 +8325,9 @@
     "dm-190546341540031": {
       "facts": {
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
-        "name": "Sellye",
-        "displayName": "Sellye",
+        "waRemoteJid": "120363425913528764@g.us",
+        "name": "Kzer0",
+        "displayName": "Kzer",
         "nicknames": [
           "Gabbis",
           "Kzer",
@@ -8159,7 +8337,11 @@
           "Certo",
           "Tá",
           "Que",
-          "Sellye"
+          "Sellye",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -8167,7 +8349,11 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "identityAliases": [
           "dm-190546341540031",
@@ -8191,7 +8377,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "lastChannel": "direct",
         "waPhone": "5516994435369",
@@ -8209,26 +8399,26 @@
           },
           "preferredLaughter": "kk",
           "habits": {},
-          "avgKkRun": 0
+          "avgKkRun": 0.3
         },
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "short"
+        "brevity": "medium"
       },
       "counts": {
         "abbrev": 0,
         "laughter": 0,
         "emoji": 0,
-        "total": 5
+        "total": 7
       },
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.344Z"
+      "lastUpdated": "2026-07-01T20:51:56.636Z"
     },
     "kzer": {
       "facts": {
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -8253,7 +8443,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "nicknames": [
@@ -8262,7 +8456,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -8270,14 +8469,18 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.416Z"
+      "lastUpdated": "2026-07-01T20:51:56.728Z"
     },
     "dm-65197804912879": {
       "facts": {
@@ -8846,7 +9049,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "nicknames": [
@@ -8857,7 +9064,11 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -8866,28 +9077,34 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {
         "learned": {
           "expressions": {
-            "ta": 6,
-            "carai": 1
+            "ta": 8,
+            "aff": 2,
+            "carai": 2,
+            "blz": 1
           },
           "laughterModes": {
-            "kk": 4,
+            "kk": 8,
             "rs": 0,
             "ha": 0,
             "emoji": 0
           },
           "preferredLaughter": "kk",
           "habits": {
-            "usesAbbrev": 26,
-            "usesCaps": 5
+            "usesAbbrev": 48,
+            "usesCaps": 12
           },
-          "avgKkRun": 0.5
+          "avgKkRun": 13.7
         },
         "prefersAbbrev": false,
         "prefersLaughter": false,
@@ -8895,20 +9112,20 @@
         "brevity": "short"
       },
       "counts": {
-        "abbrev": 7,
-        "laughter": 6,
-        "emoji": 0,
-        "total": 55
+        "abbrev": 22,
+        "laughter": 11,
+        "emoji": 1,
+        "total": 179
       },
-      "lastUpdated": "2026-07-01T15:21:02.757Z",
+      "lastUpdated": "2026-07-01T20:52:05.695Z",
       "channelScope": "group:120363425913528764@g.us"
     },
     "dm-190546341540031::group:120363425913528764@g.us": {
       "facts": {
         "waLid": "190546341540031",
         "waRemoteJid": "120363425913528764@g.us",
-        "name": "Sellye",
-        "displayName": "Sellye",
+        "name": "Kzer0",
+        "displayName": "Kzer",
         "nicknames": [
           "Gabbis",
           "Kzer",
@@ -8919,7 +9136,11 @@
           "Tá",
           "Que",
           "Sellye",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -8928,7 +9149,11 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "identityAliases": [
           "dm-190546341540031",
@@ -8952,7 +9177,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "lastChannel": "direct",
         "waPhone": "5516994435369",
@@ -8962,7 +9191,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.775Z"
+      "lastUpdated": "2026-07-01T20:52:05.710Z"
     },
     "120363425913528764::group:120363425913528764@g.us": {
       "facts": {
@@ -9019,7 +9248,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "waLid": "190546341540031",
         "waRemoteJid": "120363425913528764@g.us",
@@ -9037,7 +9269,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Aí",
@@ -9050,14 +9286,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.782Z"
+      "lastUpdated": "2026-07-01T20:52:05.717Z"
     },
     "dm-120363425913528764::group:120363425913528764@g.us": {
       "facts": {
@@ -9114,7 +9354,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "waLid": "190546341540031",
         "waRemoteJid": "120363425913528764@g.us",
@@ -9132,7 +9375,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Aí",
@@ -9145,14 +9392,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.789Z"
+      "lastUpdated": "2026-07-01T20:52:05.726Z"
     },
     "120363342938049353::group:120363425913528764@g.us": {
       "facts": {
@@ -9249,7 +9500,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Se",
@@ -9267,7 +9521,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Se",
@@ -9284,14 +9542,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.798Z"
+      "lastUpdated": "2026-07-01T20:52:05.733Z"
     },
     "dm-120363342938049353::group:120363425913528764@g.us": {
       "facts": {
@@ -9388,7 +9650,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Se",
@@ -9406,7 +9671,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Se",
@@ -9423,14 +9692,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.805Z"
+      "lastUpdated": "2026-07-01T20:52:05.741Z"
     },
     "gabbis::group:120363425913528764@g.us": {
       "facts": {
@@ -9599,7 +9872,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oiii",
@@ -9625,7 +9901,11 @@
           "Certo",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oiii",
@@ -9650,7 +9930,11 @@
           "Conheço",
           "Certo",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "waPhone": "5516994435369",
         "preferredName": "Kzer"
@@ -9658,7 +9942,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.885Z"
+      "lastUpdated": "2026-07-01T20:52:05.795Z"
     },
     "kzer::group:120363425913528764@g.us": {
       "facts": {
@@ -9688,7 +9972,11 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "nicknames": [
@@ -9699,7 +9987,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -9708,14 +10000,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.892Z"
+      "lastUpdated": "2026-07-01T20:52:05.804Z"
     },
     "tô::group:120363425913528764@g.us": {
       "facts": {
@@ -9739,7 +10035,11 @@
           "Certo",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Tô",
@@ -9760,7 +10060,11 @@
           "Quer",
           "Certo",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "waLid": "190546341540031",
         "waRemoteJid": "120363425913528764@g.us",
@@ -9809,7 +10113,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "preferredName": "Kzer"
@@ -9817,7 +10124,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.928Z"
+      "lastUpdated": "2026-07-01T20:52:05.827Z"
     },
     "se::group:120363425913528764@g.us": {
       "facts": {
@@ -9830,7 +10137,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Se",
@@ -9841,7 +10148,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -9883,12 +10190,13 @@
           "dm-120363426863669479",
           "120363258200906509",
           "dm-120363258200906509"
-        ]
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.394Z"
+      "lastUpdated": "2026-07-01T20:46:47.708Z"
     },
     "dm-58141777641473": {
       "facts": {
@@ -9912,7 +10220,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:21:07.312Z"
+      "lastUpdated": "2026-07-01T20:52:10.372Z"
     },
     "mostarch": {
       "facts": {
@@ -9936,7 +10244,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:21:07.332Z"
+      "lastUpdated": "2026-07-01T20:52:10.397Z"
     },
     "58141777641473::group:120363425913528764@g.us": {
       "facts": {
@@ -10263,7 +10571,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Aff",
@@ -10273,7 +10581,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -10320,21 +10628,21 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.399Z"
+      "lastUpdated": "2026-07-01T20:46:47.716Z"
     },
     "mas::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Mas"
+          "mas"
         ],
         "tetoNicknames": [
-          "Mas"
+          "mas"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:58:18.334Z"
+      "lastUpdated": "2026-07-01T18:51:32.080Z"
     },
     "157947506229421::group:120363425913528764@g.us": {
       "facts": {
@@ -10399,7 +10707,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Oiii",
@@ -10420,7 +10728,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617"
       },
@@ -10428,34 +10736,36 @@
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "short",
+        "brevity": "medium",
         "learned": {
           "expressions": {
-            "ta": 5,
+            "ta": 7,
             "aff": 4,
-            "to": 1
+            "to": 2,
+            "tipo": 1,
+            "mds": 1
           },
           "laughterModes": {
-            "kk": 8,
+            "kk": 9,
             "rs": 0,
             "ha": 0,
-            "emoji": 0
+            "emoji": 1
           },
           "preferredLaughter": "kk",
           "habits": {
-            "usesAbbrev": 7,
+            "usesAbbrev": 16,
             "usesCaps": 4
           },
-          "avgKkRun": 0.1
+          "avgKkRun": 6.2
         }
       },
       "counts": {
-        "abbrev": 2,
-        "laughter": 3,
-        "emoji": 0,
-        "total": 21
+        "abbrev": 6,
+        "laughter": 4,
+        "emoji": 3,
+        "total": 46
       },
-      "lastUpdated": "2026-07-01T14:56:43.278Z",
+      "lastUpdated": "2026-07-01T20:46:47.494Z",
       "channelScope": "group:120363425913528764@g.us"
     },
     "dm-157947506229421::group:120363425913528764@g.us": {
@@ -10486,7 +10796,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Oiii",
@@ -10507,7 +10817,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "identityAliases": [
           "dm-157947506229421",
@@ -10581,7 +10891,7 @@
         "total": 28
       },
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.292Z"
+      "lastUpdated": "2026-07-01T20:46:47.511Z"
     },
     "oiii::group:120363425913528764@g.us": {
       "facts": {
@@ -10604,7 +10914,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Oiii",
@@ -10625,7 +10935,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -10672,7 +10982,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.352Z"
+      "lastUpdated": "2026-07-01T20:46:47.626Z"
     },
     "oi::group:120363425913528764@g.us": {
       "facts": {
@@ -10694,7 +11004,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Oi",
@@ -10714,7 +11024,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -10756,12 +11066,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.356Z"
+      "lastUpdated": "2026-07-01T20:46:47.634Z"
     },
     "kkk::group:120363425913528764@g.us": {
       "facts": {
@@ -10781,7 +11092,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Kkk",
@@ -10799,7 +11110,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -10846,7 +11157,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.364Z"
+      "lastUpdated": "2026-07-01T20:46:47.650Z"
     },
     "vai::group:120363425913528764@g.us": {
       "facts": {
@@ -10864,7 +11175,8 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Vai",
@@ -10880,7 +11192,8 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -10922,12 +11235,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:02:49.513Z"
+      "lastUpdated": "2026-07-01T20:46:47.659Z"
     },
     "não::group:120363425913528764@g.us": {
       "facts": {
@@ -10945,7 +11259,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Não",
@@ -10961,7 +11275,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -11003,12 +11317,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.372Z"
+      "lastUpdated": "2026-07-01T20:46:47.667Z"
     },
     "opa::group:120363425913528764@g.us": {
       "facts": {
@@ -11025,7 +11340,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Opa",
@@ -11040,7 +11355,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -11082,12 +11397,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.376Z"
+      "lastUpdated": "2026-07-01T20:46:47.675Z"
     },
     "tá::group:120363425913528764@g.us": {
       "facts": {
@@ -11105,7 +11421,11 @@
           "Quer",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Tá",
@@ -11120,7 +11440,11 @@
           "Nasci",
           "Quer",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "waLid": "190546341540031",
         "waRemoteJid": "120363425913528764@g.us",
@@ -11169,7 +11493,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "preferredName": "Kzer"
@@ -11177,7 +11504,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.956Z"
+      "lastUpdated": "2026-07-01T20:52:05.843Z"
     },
     "fala::group:120363425913528764@g.us": {
       "facts": {
@@ -11191,7 +11518,8 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Fala",
@@ -11203,7 +11531,8 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -11245,12 +11574,13 @@
           "120363258200906509",
           "dm-120363258200906509"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516988137617",
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:02:12.043Z"
+      "lastUpdated": "2026-07-01T20:46:47.692Z"
     },
     "ah::group:120363425913528764@g.us": {
       "facts": {
@@ -11263,7 +11593,8 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Ah",
@@ -11274,7 +11605,8 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Kkkkkkk"
         ],
         "waLid": "157947506229421",
         "waRemoteJid": "120363425913528764@g.us",
@@ -11321,7 +11653,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:58:08.146Z"
+      "lastUpdated": "2026-07-01T20:46:47.700Z"
     },
     "um::group:120363425913528764@g.us": {
       "facts": {
@@ -11332,7 +11664,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Um",
@@ -11341,7 +11673,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -11383,12 +11715,13 @@
           "dm-120363426863669479",
           "120363258200906509",
           "dm-120363258200906509"
-        ]
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.403Z"
+      "lastUpdated": "2026-07-01T20:46:47.724Z"
     },
     "ooooi::group:120363425913528764@g.us": {
       "facts": {
@@ -11398,7 +11731,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Ooooi",
@@ -11406,7 +11739,7 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -11453,7 +11786,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.408Z"
+      "lastUpdated": "2026-07-01T20:46:47.733Z"
     },
     "oxí::group:120363425913528764@g.us": {
       "facts": {
@@ -11509,7 +11842,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-12T22:37:18.843Z"
+      "lastUpdated": "2026-07-01T18:47:26.704Z"
     },
     "aquele::group:120363425913528764@g.us": {
       "facts": {
@@ -11640,44 +11973,85 @@
     "me::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Me"
+          "Kzer",
+          "me"
         ],
         "tetoNicknames": [
-          "Me"
-        ]
+          "me"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-12T22:40:13.553Z"
+      "lastUpdated": "2026-07-01T18:49:34.653Z"
     },
     "uai::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Uai"
+          "Kzer",
+          "uai"
         ],
         "tetoNicknames": [
-          "Uai"
-        ]
+          "uai"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-16T11:12:30.048Z"
+      "lastUpdated": "2026-07-01T20:43:35.534Z"
     },
     "vou::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Vou"
+          "Kzer",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
-          "Vou"
+          "vou",
+          "Ceeeeeeeeertoooo"
+        ],
+        "preferredName": "Kzer",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "120363425913528764@g.us",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá",
+          "que",
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-15T22:06:04.670Z"
+      "lastUpdated": "2026-07-01T20:52:05.890Z"
     },
     "de::group:120363425913528764@g.us": {
       "facts": {
@@ -11786,16 +12160,17 @@
     "calma::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Calma"
+          "calma"
         ],
         "tetoNicknames": [
-          "Calma"
-        ]
+          "calma"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-15T22:16:13.287Z"
+      "lastUpdated": "2026-07-01T19:02:56.700Z"
     },
     "vish::group:120363425913528764@g.us": {
       "facts": {
@@ -11828,16 +12203,18 @@
     "já::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Já"
+          "Kzer",
+          "já"
         ],
         "tetoNicknames": [
-          "Já"
-        ]
+          "já"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-16T11:29:36.059Z"
+      "lastUpdated": "2026-07-01T20:11:41.576Z"
     },
     "fofíssimo::group:120363425913528764@g.us": {
       "facts": {
@@ -11958,13 +12335,21 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
@@ -11993,14 +12378,18 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.940Z"
+      "lastUpdated": "2026-07-01T20:52:05.835Z"
     },
     "mmm::group:120363425913528764@g.us": {
       "facts": {
@@ -12217,7 +12606,7 @@
       "facts": {
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -12275,7 +12664,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -12283,7 +12675,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -12291,20 +12688,24 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.383Z"
+      "lastUpdated": "2026-07-01T20:51:56.689Z"
     },
     "dm-120363258200906509": {
       "facts": {
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -12362,7 +12763,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -12370,7 +12774,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -12378,14 +12787,18 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.388Z"
+      "lastUpdated": "2026-07-01T20:51:56.696Z"
     },
     "180753866477690": {
       "facts": {
@@ -12737,8 +13150,8 @@
     },
     "120363289474967524": {
       "facts": {
-        "waPhone": "5516997140666",
-        "waLid": "81544400130175",
+        "waPhone": "5516988776338",
+        "waLid": "132813357596880",
         "waRemoteJid": "120363342938049353@g.us",
         "displayName": "Higão",
         "name": "Higão",
@@ -12797,12 +13210,12 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:39:17.678Z"
+      "lastUpdated": "2026-07-01T18:02:31.985Z"
     },
     "dm-120363289474967524": {
       "facts": {
-        "waPhone": "5516997140666",
-        "waLid": "81544400130175",
+        "waPhone": "5516988776338",
+        "waLid": "132813357596880",
         "waRemoteJid": "120363342938049353@g.us",
         "displayName": "Higão",
         "name": "Higão",
@@ -12861,7 +13274,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:39:17.683Z"
+      "lastUpdated": "2026-07-01T18:02:31.991Z"
     },
     "higão": {
       "facts": {
@@ -13837,7 +14250,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.647Z"
+      "lastUpdated": "2026-07-01T20:46:21.640Z"
     },
     "227263933087990": {
       "facts": {
@@ -13969,7 +14382,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -13979,7 +14395,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -13988,14 +14408,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.829Z"
+      "lastUpdated": "2026-07-01T20:52:05.764Z"
     },
     "dm-120363258200906509::group:120363425913528764@g.us": {
       "facts": {
@@ -14059,7 +14483,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -14069,7 +14496,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -14078,14 +14509,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.841Z"
+      "lastUpdated": "2026-07-01T20:52:05.772Z"
     },
     "120363402362643675::group:120363425913528764@g.us": {
       "facts": {
@@ -14213,7 +14648,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Aí",
@@ -14227,7 +14665,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Aí",
@@ -14240,14 +14682,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.810Z"
+      "lastUpdated": "2026-07-01T20:52:05.748Z"
     },
     "dm-120363402362643675::group:120363425913528764@g.us": {
       "facts": {
@@ -14375,7 +14821,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Aí",
@@ -14389,7 +14838,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Aí",
@@ -14402,14 +14855,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.819Z"
+      "lastUpdated": "2026-07-01T20:52:05.755Z"
     },
     "aí::group:120363425913528764@g.us": {
       "facts": {
@@ -14418,14 +14875,14 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Aí",
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -14472,7 +14929,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.412Z"
+      "lastUpdated": "2026-07-01T20:46:47.742Z"
     },
     "dm-6283879987068::group:120363425913528764@g.us": {
       "facts": {
@@ -14933,7 +15390,8 @@
           "120363418986572470",
           "dm-120363418986572470",
           "ana"
-        ]
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
@@ -14978,7 +15436,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -14987,7 +15449,11 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
@@ -15016,14 +15482,18 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.904Z"
+      "lastUpdated": "2026-07-01T20:52:05.812Z"
     },
     "vamos::group:120363425913528764@g.us": {
       "facts": {
@@ -15084,16 +15554,18 @@
     "eu::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Eu"
+          "Kzer",
+          "eu"
         ],
         "tetoNicknames": [
-          "Eu"
-        ]
+          "eu"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:12.020Z"
+      "lastUpdated": "2026-07-01T20:43:23.489Z"
     },
     "primeira::group:120363425913528764@g.us": {
       "facts": {
@@ -15182,30 +15654,34 @@
     "agora::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Agora"
+          "Kzer",
+          "agora"
         ],
         "tetoNicknames": [
-          "Agora"
-        ]
+          "agora"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:51:37.100Z"
+      "lastUpdated": "2026-07-01T19:40:11.222Z"
     },
     "nome::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
+          "Kzer",
           "nome"
         ],
         "tetoNicknames": [
           "nome"
-        ]
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-15T22:02:27.405Z"
+      "lastUpdated": "2026-07-01T17:49:04.833Z"
     },
     "chego::group:120363425913528764@g.us": {
       "facts": {
@@ -15280,16 +15756,18 @@
     "sei::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Sei"
+          "Kzer",
+          "sei"
         ],
         "tetoNicknames": [
-          "Sei"
-        ]
+          "sei"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-15T22:05:00.160Z"
+      "lastUpdated": "2026-07-01T19:38:51.611Z"
     },
     "fechou::group:120363425913528764@g.us": {
       "facts": {
@@ -15336,16 +15814,16 @@
     "mando::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Mando"
+          "mando"
         ],
         "tetoNicknames": [
-          "Mando"
+          "mando"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-15T22:08:09.855Z"
+      "lastUpdated": "2026-07-01T18:38:52.045Z"
     },
     "sonho::group:120363425913528764@g.us": {
       "facts": {
@@ -15544,16 +16022,55 @@
     "pode::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Pode"
+          "Kzer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
-          "Pode"
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
+        ],
+        "preferredName": "Kzer",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "120363425913528764@g.us",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá",
+          "que",
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-06-15T22:17:44.869Z"
+      "lastUpdated": "2026-07-01T20:52:05.883Z"
     },
     "sobrenome::group:120363425913528764@g.us": {
       "facts": {
@@ -16054,7 +16571,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.553Z"
+      "lastUpdated": "2026-07-01T20:46:21.494Z"
     },
     "dm-120363426014160691": {
       "facts": {
@@ -16122,7 +16639,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.558Z"
+      "lastUpdated": "2026-07-01T20:46:21.503Z"
     },
     "174165839581324::group:120363426014160691@g.us": {
       "facts": {
@@ -18849,7 +19366,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.652Z"
+      "lastUpdated": "2026-07-01T20:46:21.648Z"
     },
     "nasci": {
       "facts": {
@@ -18906,18 +19423,25 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.657Z"
+      "lastUpdated": "2026-07-01T20:46:21.655Z"
     },
     "quer": {
       "facts": {
         "nicknames": [
-          "Quer"
+          "Quer",
+          "Kzer",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
-          "Quer"
+          "Quer",
+          "quer",
+          "pode",
+          "vou"
         ],
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
         "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
@@ -18955,13 +19479,26 @@
           "120363426863669479",
           "dm-120363426863669479",
           "120363258200906509",
-          "dm-120363258200906509"
-        ]
+          "dm-120363258200906509",
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "kzer",
+          "oie",
+          "conheço",
+          "certo",
+          "que",
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T14:56:35.664Z"
+      "lastUpdated": "2026-07-01T20:51:56.804Z"
     },
     "dm-5517991664082": {
       "facts": {
@@ -22561,7 +23098,7 @@
       "facts": {
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -22651,7 +23188,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -22659,7 +23199,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -22667,20 +23212,24 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.397Z"
+      "lastUpdated": "2026-07-01T20:51:56.704Z"
     },
     "dm-120363426863669479": {
       "facts": {
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -22770,7 +23319,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -22778,7 +23330,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -22786,14 +23343,18 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.402Z"
+      "lastUpdated": "2026-07-01T20:51:56.712Z"
     },
     "dm-150242334867642": {
       "facts": {
@@ -23875,7 +24436,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.609Z"
+      "lastUpdated": "2026-07-01T18:02:32.058Z"
     },
     "dm-120363408453210191": {
       "facts": {
@@ -23915,7 +24476,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.620Z"
+      "lastUpdated": "2026-07-01T18:02:32.064Z"
     },
     "dm-10338019860504": {
       "facts": {
@@ -24086,7 +24647,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.589Z"
+      "lastUpdated": "2026-07-01T18:02:32.044Z"
     },
     "dm-120363408554575864": {
       "facts": {
@@ -24126,7 +24687,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.599Z"
+      "lastUpdated": "2026-07-01T18:02:32.051Z"
     },
     "5516992942672": {
       "facts": {
@@ -24152,8 +24713,8 @@
     },
     "5516996228023-1617627661": {
       "facts": {
-        "waPhone": "5516988776338",
-        "waLid": "132813357596880",
+        "waPhone": "5516996242810",
+        "waLid": "74053859672191",
         "waRemoteJid": "120363342938049353@g.us",
         "displayName": "Gustavo Caruzo Gonçalves",
         "name": "Gustavo Caruzo Gonçalves",
@@ -24188,12 +24749,12 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.553Z"
+      "lastUpdated": "2026-07-01T19:48:18.911Z"
     },
     "dm-5516996228023-1617627661": {
       "facts": {
-        "waPhone": "5516988776338",
-        "waLid": "132813357596880",
+        "waPhone": "5516996242810",
+        "waLid": "74053859672191",
         "waRemoteJid": "120363342938049353@g.us",
         "displayName": "Gustavo Caruzo Gonçalves",
         "name": "Gustavo Caruzo Gonçalves",
@@ -24228,7 +24789,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:00:11.562Z"
+      "lastUpdated": "2026-07-01T19:48:18.918Z"
     },
     "dm-9281743114312": {
       "facts": {
@@ -24464,7 +25025,12 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Oie",
@@ -24472,11 +25038,15 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -24501,14 +25071,18 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.423Z"
+      "lastUpdated": "2026-07-01T20:51:56.736Z"
     },
     "conheço": {
       "facts": {
@@ -24517,18 +25091,27 @@
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Conheço",
           "Tô",
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -24553,30 +25136,43 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.430Z"
+      "lastUpdated": "2026-07-01T20:51:56.743Z"
     },
     "certo": {
       "facts": {
         "nicknames": [
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
           "Certo",
           "Tá",
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -24601,26 +25197,39 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.448Z"
+      "lastUpdated": "2026-07-01T20:51:56.759Z"
     },
     "que": {
       "facts": {
         "nicknames": [
-          "Que"
+          "Que",
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "tetoNicknames": [
-          "Que"
+          "Que",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -24645,14 +25254,18 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.465Z"
+      "lastUpdated": "2026-07-01T20:51:56.776Z"
     },
     "120363426863669479::group:120363425913528764@g.us": {
       "facts": {
@@ -24748,7 +25361,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -24758,7 +25374,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -24767,14 +25387,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.853Z"
+      "lastUpdated": "2026-07-01T20:52:05.779Z"
     },
     "dm-120363426863669479::group:120363425913528764@g.us": {
       "facts": {
@@ -24870,7 +25494,10 @@
           "conheço",
           "certo",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Oie",
@@ -24880,7 +25507,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Oie",
@@ -24889,14 +25520,18 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.872Z"
+      "lastUpdated": "2026-07-01T20:52:05.787Z"
     },
     "conheço::group:120363425913528764@g.us": {
       "facts": {
@@ -24907,7 +25542,11 @@
           "Tá",
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Conheço",
@@ -24915,7 +25554,11 @@
           "Certo",
           "Tá",
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
@@ -24944,25 +25587,37 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.917Z"
+      "lastUpdated": "2026-07-01T20:52:05.819Z"
     },
     "que::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
           "Que",
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Que",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
@@ -24991,20 +25646,24 @@
           "certo",
           "tá",
           "que",
-          "sellye"
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.968Z"
+      "lastUpdated": "2026-07-01T20:52:05.851Z"
     },
     "sellye": {
       "facts": {
-        "waPhone": "5516994435369",
-        "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516993061143",
+        "waLid": "58141777641473",
+        "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Sellye",
         "name": "Sellye",
         "identityAliases": [
@@ -25033,14 +25692,31 @@
           "58141777641473",
           "5516993061143",
           "dm-58141777641473",
-          "mostarch"
+          "mostarch",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
-        "preferredName": "Kzer"
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
+        ],
+        "tetoNicknames": [
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
+        ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-07-01T15:57:30.472Z"
+      "lastUpdated": "2026-07-01T20:52:10.420Z"
     },
     "sellye::group:120363425913528764@g.us": {
       "facts": {
@@ -25075,21 +25751,33 @@
           "58141777641473",
           "5516993061143",
           "dm-58141777641473",
-          "mostarch"
+          "mostarch",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ],
         "nicknames": [
           "Kzer",
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
-          "OIIIIII"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:21:02.978Z"
+      "lastUpdated": "2026-07-01T20:52:05.859Z"
     },
     "salve::group:120363425913528764@g.us": {
       "facts": {
@@ -25136,16 +25824,18 @@
     "mano::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Mano"
+          "Kzer",
+          "MANO"
         ],
         "tetoNicknames": [
-          "Mano"
-        ]
+          "MANO"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:51:59.682Z"
+      "lastUpdated": "2026-07-01T17:14:53.510Z"
     },
     "explica::group:120363425913528764@g.us": {
       "facts": {
@@ -25164,16 +25854,18 @@
     "pronto::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Pronto"
+          "Kzer",
+          "pronto"
         ],
         "tetoNicknames": [
-          "Pronto"
-        ]
+          "pronto"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:53:27.159Z"
+      "lastUpdated": "2026-07-01T20:02:26.688Z"
     },
     "desligou::group:120363425913528764@g.us": {
       "facts": {
@@ -25220,16 +25912,59 @@
     "oxi::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
-          "Oxi"
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
-          "Oxi"
+          "OXI",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
+        ],
+        "preferredName": "Kzer",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "120363425913528764@g.us",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá",
+          "que",
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:59:24.355Z"
+      "lastUpdated": "2026-07-01T20:52:05.866Z"
     },
     "perfeição::group:120363425913528764@g.us": {
       "facts": {
@@ -25329,19 +26064,19 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.337Z"
+      "lastUpdated": "2026-07-01T20:46:47.602Z"
     },
     "dm-120363426014160691::group:120363425913528764@g.us": {
       "facts": {
@@ -25399,19 +26134,19 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.344Z"
+      "lastUpdated": "2026-07-01T20:46:47.610Z"
     },
     "sou::group:120363425913528764@g.us": {
       "facts": {
@@ -25419,13 +26154,13 @@
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Sou",
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -25472,19 +26207,19 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.417Z"
+      "lastUpdated": "2026-07-01T20:46:47.751Z"
     },
     "nasci::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "tetoNicknames": [
           "Nasci",
           "Quer",
-          "Oxi"
+          "Kkkkkkk"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -25531,20 +26266,27 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.422Z"
+      "lastUpdated": "2026-07-01T20:46:47.762Z"
     },
     "quer::group:120363425913528764@g.us": {
       "facts": {
         "nicknames": [
           "Quer",
-          "Oxi"
+          "Kzer",
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
         "tetoNicknames": [
           "Quer",
-          "Oxi"
+          "quer",
+          "pode",
+          "vou",
+          "Ceeeeeeeeertoooo"
         ],
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
         "waRemoteJid": "120363425913528764@g.us",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
@@ -25582,13 +26324,26 @@
           "120363426863669479",
           "dm-120363426863669479",
           "120363258200906509",
-          "dm-120363258200906509"
-        ]
+          "dm-120363258200906509",
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "kzer",
+          "oie",
+          "conheço",
+          "certo",
+          "que",
+          "sellye",
+          "oxi",
+          "pode",
+          "vou"
+        ],
+        "preferredName": "Kzer"
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:43.426Z"
+      "lastUpdated": "2026-07-01T20:52:05.874Z"
     },
     "menos::group:120363425913528764@g.us": {
       "facts": {
@@ -25616,7 +26371,7 @@
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T14:56:03.388Z"
+      "lastUpdated": "2026-07-01T18:40:54.942Z"
     },
     "burra::group:120363425913528764@g.us": {
       "facts": {
@@ -25792,32 +26547,32 @@
         "preferredName": "Kzer",
         "nicknames": [
           "Kzer",
-          "Ok"
+          "ok"
         ],
         "tetoNicknames": [
-          "Ok"
+          "ok"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:04:45.319Z"
+      "lastUpdated": "2026-07-01T18:43:08.013Z"
     },
     "sério::group:120363425913528764@g.us": {
       "facts": {
         "preferredName": "Kzer",
         "nicknames": [
           "Kzer",
-          "Sério"
+          "SÉRIO"
         ],
         "tetoNicknames": [
-          "Sério"
+          "SÉRIO"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
-      "lastUpdated": "2026-07-01T15:04:45.610Z"
+      "lastUpdated": "2026-07-01T17:49:04.486Z"
     },
     "oiiiiii::group:120363425913528764@g.us": {
       "facts": {
@@ -25834,6 +26589,1298 @@
       "counts": {},
       "channelScope": "group:120363425913528764@g.us",
       "lastUpdated": "2026-07-01T15:21:02.993Z"
+    },
+    "conseguindo::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "conseguindo"
+        ],
+        "tetoNicknames": [
+          "conseguindo"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:15:09.678Z"
+    },
+    "pelo::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "pelo"
+        ],
+        "tetoNicknames": [
+          "pelo"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:09:31.094Z"
+    },
+    "tcheu::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "tcheu"
+        ],
+        "tetoNicknames": [
+          "tcheu"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:16:21.573Z"
+    },
+    "você::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "VOCÊ"
+        ],
+        "tetoNicknames": [
+          "VOCÊ"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:13:55.223Z"
+    },
+    "interessante::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "interessante"
+        ],
+        "tetoNicknames": [
+          "interessante"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:17:11.042Z"
+    },
+    "quem::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "quem"
+        ],
+        "tetoNicknames": [
+          "quem"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T19:38:09.552Z"
+    },
+    "estou::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "estou"
+        ],
+        "tetoNicknames": [
+          "estou"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:42:56.684Z"
+    },
+    "como::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "Kzer",
+          "como"
+        ],
+        "tetoNicknames": [
+          "como"
+        ],
+        "preferredName": "Kzer"
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:33:29.943Z"
+    },
+    "tenho::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "tenho"
+        ],
+        "tetoNicknames": [
+          "tenho"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:31:27.727Z"
+    },
+    "mds::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "mds"
+        ],
+        "tetoNicknames": [
+          "mds"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:46:26.297Z"
+    },
+    "deixar::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "deixar"
+        ],
+        "tetoNicknames": [
+          "deixar"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:35:08.161Z"
+    },
+    "queee::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "queee"
+        ],
+        "tetoNicknames": [
+          "queee"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:49:40.245Z"
+    },
+    "termina::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "termina"
+        ],
+        "tetoNicknames": [
+          "termina"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:49:40.419Z"
+    },
+    "em::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "em"
+        ],
+        "tetoNicknames": [
+          "em"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:50:09.003Z"
+    },
+    "affer::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "Affer"
+        ],
+        "tetoNicknames": [
+          "Affer"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:50:51.334Z"
+    },
+    "ana::group:120363425913528764@g.us": {
+      "facts": {
+        "waPhone": "5514981007802",
+        "waLid": "10707890389212",
+        "waRemoteJid": "120363418986572470@g.us",
+        "displayName": "Ana",
+        "name": "Ana",
+        "identityAliases": [
+          "10707890389212",
+          "5514981007802",
+          "dm-10707890389212",
+          "120363418986572470",
+          "dm-120363418986572470",
+          "ana"
+        ],
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "ana"
+        ],
+        "tetoNicknames": [
+          "ana"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:53:35.440Z"
+    },
+    "minha::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "minha"
+        ],
+        "tetoNicknames": [
+          "minha"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:54:05.512Z"
+    },
+    "dona::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "dona"
+        ],
+        "tetoNicknames": [
+          "dona"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T16:54:05.683Z"
+    },
+    "tadinha::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "tadinha"
+        ],
+        "tetoNicknames": [
+          "tadinha"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:03:28.744Z"
+    },
+    "está::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "Kzer",
+          "está"
+        ],
+        "tetoNicknames": [
+          "está"
+        ],
+        "preferredName": "Kzer"
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:44:28.739Z"
+    },
+    "oxe::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "oxe"
+        ],
+        "tetoNicknames": [
+          "oxe"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:15:02.388Z"
+    },
+    "eita::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "eita"
+        ],
+        "tetoNicknames": [
+          "eita"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:15:37.061Z"
+    },
+    "coma::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "coma"
+        ],
+        "tetoNicknames": [
+          "coma"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:16:20.354Z"
+    },
+    "finalmente::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "FINALMENTE"
+        ],
+        "tetoNicknames": [
+          "FINALMENTE"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:49:33.268Z"
+    },
+    "claro::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "claro"
+        ],
+        "tetoNicknames": [
+          "claro"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:22:39.472Z"
+    },
+    "pão::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "Kzer",
+          "pão"
+        ],
+        "tetoNicknames": [
+          "pão"
+        ],
+        "preferredName": "Kzer"
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:57:00.880Z"
+    },
+    "parou::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "parou"
+        ],
+        "tetoNicknames": [
+          "parou"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:32:57.598Z"
+    },
+    "bonitinha::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "bonitinha"
+        ],
+        "tetoNicknames": [
+          "bonitinha"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:35:28.790Z"
+    },
+    "cara::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "cara"
+        ],
+        "tetoNicknames": [
+          "cara"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:35:28.980Z"
+    },
+    "merecer::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "merecer"
+        ],
+        "tetoNicknames": [
+          "merecer"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:35:37.209Z"
+    },
+    "para::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "para"
+        ],
+        "tetoNicknames": [
+          "para"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:37:36.019Z"
+    },
+    "só::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "só"
+        ],
+        "tetoNicknames": [
+          "só"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:37:34.141Z"
+    },
+    "anda::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "anda"
+        ],
+        "tetoNicknames": [
+          "anda"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:37:13.394Z"
+    },
+    "diz::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "Diz"
+        ],
+        "tetoNicknames": [
+          "Diz"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:56:20.536Z"
+    },
+    "tentar::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "tentar"
+        ],
+        "tetoNicknames": [
+          "tentar"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:58:37.783Z"
+    },
+    "convencer::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "convencer"
+        ],
+        "tetoNicknames": [
+          "convencer"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:58:37.981Z"
+    },
+    "percebeu::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "percebeu"
+        ],
+        "tetoNicknames": [
+          "percebeu"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T17:59:53.028Z"
+    },
+    "coisante::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "coisante"
+        ],
+        "tetoNicknames": [
+          "coisante"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:00:32.388Z"
+    },
+    "pix::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "pix"
+        ],
+        "tetoNicknames": [
+          "pix"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:37:02.662Z"
+    },
+    "cadê::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "Cadê"
+        ],
+        "tetoNicknames": [
+          "Cadê"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:47:27.271Z"
+    },
+    "dá::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "DÁ"
+        ],
+        "tetoNicknames": [
+          "DÁ"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:37:35.738Z"
+    },
+    "sabia::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "sabia"
+        ],
+        "tetoNicknames": [
+          "sabia"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:38:30.215Z"
+    },
+    "do::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "do"
+        ],
+        "tetoNicknames": [
+          "do"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:43:35.881Z"
+    },
+    "dieta::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "dieta"
+        ],
+        "tetoNicknames": [
+          "dieta"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:44:38.430Z"
+    },
+    "hahahaha::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "Hahahaha"
+        ],
+        "tetoNicknames": [
+          "Hahahaha"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:46:46.817Z"
+    },
+    "língua::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "língua"
+        ],
+        "tetoNicknames": [
+          "língua"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:52:07.972Z"
+    },
+    "quero::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "QUERO"
+        ],
+        "tetoNicknames": [
+          "QUERO"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:49:34.857Z"
+    },
+    "baguette::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "BAGUETTE"
+        ],
+        "tetoNicknames": [
+          "BAGUETTE"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:49:35.053Z"
+    },
+    "kkkkkkkkkkk::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "KKKKKKKKKKK"
+        ],
+        "tetoNicknames": [
+          "KKKKKKKKKKK"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T19:03:27.791Z"
+    },
+    "baguete::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "baguete"
+        ],
+        "tetoNicknames": [
+          "baguete"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:50:06.501Z"
+    },
+    "mentira::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "MENTIRA"
+        ],
+        "tetoNicknames": [
+          "MENTIRA"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:51:31.795Z"
+    },
+    "faz::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "faz"
+        ],
+        "tetoNicknames": [
+          "faz"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:55:50.292Z"
+    },
+    "ou::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "ou"
+        ],
+        "tetoNicknames": [
+          "ou"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:59:01.673Z"
+    },
+    "kkkkkkkk::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "KKKKKKKK"
+        ],
+        "tetoNicknames": [
+          "KKKKKKKK"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T18:59:17.484Z"
+    },
+    "aceito::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "aceito"
+        ],
+        "tetoNicknames": [
+          "aceito"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T19:03:08.851Z"
+    },
+    "kkkkkkk::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kkkkkkk"
+        ],
+        "tetoNicknames": [
+          "Kkkkkkk"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:46:47.778Z"
+    },
+    "vc::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "vc"
+        ],
+        "tetoNicknames": [
+          "vc"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:44:05.590Z"
+    },
+    "aé::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "Aé"
+        ],
+        "tetoNicknames": [
+          "Aé"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T19:05:30.522Z"
+    },
+    "das::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "das"
+        ],
+        "tetoNicknames": [
+          "das"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T19:06:23.526Z"
+    },
+    "six::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "six"
+        ],
+        "tetoNicknames": [
+          "six"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T19:16:28.702Z"
+    },
+    "oxi": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
+        ],
+        "tetoNicknames": [
+          "OXI",
+          "quer",
+          "pode",
+          "vou"
+        ],
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "120363425913528764@g.us",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá",
+          "que",
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "direct",
+      "lastUpdated": "2026-07-01T20:51:56.792Z"
+    },
+    "pode": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "pode",
+          "vou"
+        ],
+        "tetoNicknames": [
+          "pode",
+          "vou"
+        ],
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "120363425913528764@g.us",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá",
+          "que",
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "direct",
+      "lastUpdated": "2026-07-01T20:51:56.811Z"
+    },
+    "vou": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "vou"
+        ],
+        "tetoNicknames": [
+          "vou"
+        ],
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "120363425913528764@g.us",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá",
+          "que",
+          "sellye",
+          "oxi",
+          "quer",
+          "pode",
+          "vou"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "direct",
+      "lastUpdated": "2026-07-01T20:51:56.819Z"
+    },
+    "ta::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "ta"
+        ],
+        "tetoNicknames": [
+          "ta"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:13:31.382Z"
+    },
+    "siiim::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "Siiim"
+        ],
+        "tetoNicknames": [
+          "Siiim"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:16:31.639Z"
+    },
+    "calmaaa::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "calmaaa"
+        ],
+        "tetoNicknames": [
+          "calmaaa"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:17:55.520Z"
+    },
+    "tranquilo::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "tranquilo"
+        ],
+        "tetoNicknames": [
+          "tranquilo"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:18:47.247Z"
+    },
+    "quiere::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "quiere"
+        ],
+        "tetoNicknames": [
+          "quiere"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:41:53.220Z"
+    },
+    "quieto::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "quieto"
+        ],
+        "tetoNicknames": [
+          "quieto"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:42:04.674Z"
+    },
+    "dizer::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "dizer"
+        ],
+        "tetoNicknames": [
+          "dizer"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:44:05.362Z"
+    },
+    "quanto::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "quanto"
+        ],
+        "tetoNicknames": [
+          "quanto"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:44:16.440Z"
+    },
+    "daleeeee::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "daleeeee"
+        ],
+        "tetoNicknames": [
+          "daleeeee"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:45:50.688Z"
+    },
+    "estão::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "estão"
+        ],
+        "tetoNicknames": [
+          "estão"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:46:07.763Z"
+    },
+    "precisão::group:120363425913528764@g.us": {
+      "facts": {
+        "nicknames": [
+          "precisão"
+        ],
+        "tetoNicknames": [
+          "precisão"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:46:08.056Z"
+    },
+    "ceeeeeeeeertoooo::group:120363425913528764@g.us": {
+      "facts": {
+        "preferredName": "Kzer",
+        "nicknames": [
+          "Kzer",
+          "Ceeeeeeeeertoooo"
+        ],
+        "tetoNicknames": [
+          "Ceeeeeeeeertoooo"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "group:120363425913528764@g.us",
+      "lastUpdated": "2026-07-01T20:52:05.898Z"
     }
   },
   "mediumTerm": {
@@ -26496,103 +28543,103 @@
     ],
     "190546341540031::group:120363425913528764@g.us": [
       {
-        "summary": "Muito pelo contrario",
-        "timestamp": "2026-07-01T14:51:37.105Z",
+        "summary": "Faz essa fig virar imagem",
+        "timestamp": "2026-07-01T19:55:59.266Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Ta as duas juntas\nKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
-        "timestamp": "2026-07-01T14:51:50.117Z",
+        "summary": "Faz essa fig virar imagem",
+        "timestamp": "2026-07-01T20:00:32.613Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "esqueci de desligar a sellye",
-        "timestamp": "2026-07-01T14:51:59.692Z",
+        "summary": "Faz essa fig virar imagem",
+        "timestamp": "2026-07-01T20:02:26.696Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "calma ai, vou deligar a sellte",
-        "timestamp": "2026-07-01T14:52:19.276Z",
+        "summary": "Faz ela virar figurinha de novo",
+        "timestamp": "2026-07-01T20:03:04.638Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "n tem sellye mais",
-        "timestamp": "2026-07-01T14:53:39.541Z",
+        "summary": "Faz ela virar figurinha de novo",
+        "timestamp": "2026-07-01T20:11:41.584Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Agora elas estão suando o mesmo modelo",
-        "timestamp": "2026-07-01T14:54:02.308Z",
+        "summary": "Gerando figurinha... pode demorar um pouco em GIF/video.",
+        "timestamp": "2026-07-01T20:13:31.391Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Só tem que ta ajeitando o jeito que ela pega as coisas",
-        "timestamp": "2026-07-01T14:54:15.374Z",
+        "summary": "Faz ela virar figurinha de novo",
+        "timestamp": "2026-07-01T20:13:55.230Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Bro até a sellye buga nisso KKKKKKKKK",
-        "timestamp": "2026-07-01T14:56:25.676Z",
+        "summary": "Faz ela virar figurinha de novo",
+        "timestamp": "2026-07-01T20:16:31.648Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Teto, o gah quer te estourar no bom sentido da coisa",
-        "timestamp": "2026-07-01T14:57:14.850Z",
+        "summary": "cade, teto",
+        "timestamp": "2026-07-01T20:17:47.039Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "qq vc acha sobre isso",
-        "timestamp": "2026-07-01T14:57:30.166Z",
+        "summary": "a figurinha",
+        "timestamp": "2026-07-01T20:17:55.528Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Sobre a gabbis querer te estourar",
-        "timestamp": "2026-07-01T14:58:08.416Z",
+        "summary": "éh, isso eu tenho q ver com mais calma",
+        "timestamp": "2026-07-01T20:18:47.255Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "no bom sentido",
-        "timestamp": "2026-07-01T14:58:18.339Z",
+        "summary": "eu tenho um desafio pra vc",
+        "timestamp": "2026-07-01T20:37:34.149Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "qq vc tá recebendo? manda as mensagens que você recebeu só pra saber se a gente ta falando a mesma lingua",
-        "timestamp": "2026-07-01T14:59:24.360Z",
+        "summary": "Teto Ne manda o máximo de figurinhhas diferentes que vc conseguir",
+        "timestamp": "2026-07-01T20:38:52.119Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Ceeeeertoooooo",
-        "timestamp": "2026-07-01T14:59:48.046Z",
+        "summary": "deixa quiero",
+        "timestamp": "2026-07-01T20:41:53.230Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "lembro do plano",
-        "timestamp": "2026-07-01T15:02:22.806Z",
+        "summary": "@Kzer vou commitar aqui mas vc vai precisar logar com o qr code",
+        "timestamp": "2026-07-01T20:42:47.192Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "meus parabens",
-        "timestamp": "2026-07-01T15:02:35.965Z",
+        "summary": "é a gabbis",
+        "timestamp": "2026-07-01T20:43:35.542Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Mas sim\neu vou",
-        "timestamp": "2026-07-01T15:02:49.522Z",
+        "summary": "chega de figurinhas\nteto\nme diga então",
+        "timestamp": "2026-07-01T20:44:05.600Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Não me chame de Kzer",
-        "timestamp": "2026-07-01T15:03:34.238Z",
+        "summary": "20 + 20 + 20 +7",
+        "timestamp": "2026-07-01T20:44:28.746Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "pode chamar de kevin mesmo",
-        "timestamp": "2026-07-01T15:03:43.947Z",
+        "summary": "Qunado falar pra dale\nce dale",
+        "timestamp": "2026-07-01T20:45:50.696Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Teeetooooo",
-        "timestamp": "2026-07-01T15:21:03.015Z",
+        "summary": "Ceeeeeeeeeeeeerto",
+        "timestamp": "2026-07-01T20:52:05.906Z",
         "channelId": "120363425913528764@g.us"
       }
     ],
@@ -26700,83 +28747,103 @@
     ],
     "157947506229421::group:120363425913528764@g.us": [
       {
-        "summary": "Funcionou os updates que fiz no seu código?",
-        "timestamp": "2026-06-08T18:07:17.419Z",
-        "channelId": "157947506229421@lid"
-      },
-      {
-        "summary": "[Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥]: Teto q q se tá fazendo agora?\n[Kzer0]: Perdão sellye, não era um documento\n[Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥]: Vai estudar menina",
-        "timestamp": "2026-06-12T22:38:51.870Z",
+        "summary": "É fod né teto",
+        "timestamp": "2026-07-01T17:27:23.250Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Inclusive kevin esse aff q a teto ta soltando ela pegou vendo eu digitar enquanto espionava KKKKKKK",
-        "timestamp": "2026-06-12T22:39:56.787Z",
+        "summary": "eu dou teto",
+        "timestamp": "2026-07-01T18:37:20.472Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Teto ta fazendo o que agora? Vai estudar música menina",
-        "timestamp": "2026-06-12T22:42:15.385Z",
+        "summary": "eu dou eu dou",
+        "timestamp": "2026-07-01T18:37:36.027Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Vai ládormir teto",
-        "timestamp": "2026-06-12T22:42:43.413Z",
+        "summary": "seloco menina ta reagindo mensagem demais",
+        "timestamp": "2026-07-01T18:37:48.488Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "[Mostarch]: slk a Teto não perdoa ninguém kkk\n[Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥]: Deixa a doida falando sozinha ai",
-        "timestamp": "2026-06-12T22:43:10.171Z",
+        "summary": "Aceito aceito",
+        "timestamp": "2026-07-01T18:38:30.498Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Vish ela tá se adaptando",
-        "timestamp": "2026-06-12T22:52:38.318Z",
+        "summary": "manda em mim teto",
+        "timestamp": "2026-07-01T18:38:52.310Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "TETOOO SIX SEVENNNNN",
-        "timestamp": "2026-06-12T22:57:22.391Z",
+        "summary": "isso isso pode ser má comigo",
+        "timestamp": "2026-07-01T18:40:55.254Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Teto ó voce na minha cabeça",
-        "timestamp": "2026-06-12T22:58:19.551Z",
+        "summary": "Vou alimentar minha tetozinha com um monte de pãezinhos",
+        "timestamp": "2026-07-01T18:44:38.439Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Olha a Sellye sendo burrinha ai teto",
-        "timestamp": "2026-06-15T19:01:16.248Z",
+        "summary": "teto gordinha",
+        "timestamp": "2026-07-01T18:45:05.341Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Calada Teto",
-        "timestamp": "2026-06-15T19:06:44.431Z",
+        "summary": "issooo, uma delicia você 🤤",
+        "timestamp": "2026-07-01T18:46:16.333Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Pare de ignorar sua programacao",
-        "timestamp": "2026-06-15T19:09:56.204Z",
+        "summary": "quero você",
+        "timestamp": "2026-07-01T18:46:46.826Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "teto entra no modo passivo",
-        "timestamp": "2026-06-15T20:51:23.664Z",
+        "summary": "Vou te dar 5 baguettes agora mesmo",
+        "timestamp": "2026-07-01T18:47:27.279Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Teto eu vou saborear você",
-        "timestamp": "2026-07-01T14:55:59.653Z",
+        "summary": "Teto vou me casar com você e o anel de casamento vai ser dentro de uma baguette",
+        "timestamp": "2026-07-01T18:51:32.088Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "Teto eu vou saborear você",
-        "timestamp": "2026-07-01T14:56:03.398Z",
+        "summary": "Isso... vai ser um baguetão 😏",
+        "timestamp": "2026-07-01T18:52:08.303Z",
         "channelId": "120363425913528764@g.us"
       },
       {
-        "summary": "e faz essa burra entender contexto geral da sequencia de mensagens e conversa entre outros usuários",
-        "timestamp": "2026-07-01T14:56:12.028Z",
+        "summary": "Teto transforma em figurinha",
+        "timestamp": "2026-07-01T18:55:50.301Z",
+        "channelId": "120363425913528764@g.us"
+      },
+      {
+        "summary": "namora comigo teto",
+        "timestamp": "2026-07-01T19:02:56.708Z",
+        "channelId": "120363425913528764@g.us"
+      },
+      {
+        "summary": "eu te dou quantas baguettes vc quiser",
+        "timestamp": "2026-07-01T19:03:08.858Z",
+        "channelId": "120363425913528764@g.us"
+      },
+      {
+        "summary": "Sticker animada: Menina anime rosa segurando números. Comemorar data ou idade específica.",
+        "timestamp": "2026-07-01T20:46:08.065Z",
+        "channelId": "120363425913528764@g.us"
+      },
+      {
+        "summary": "N to em casa",
+        "timestamp": "2026-07-01T20:46:26.305Z",
+        "channelId": "120363425913528764@g.us"
+      },
+      {
+        "summary": "Manda no zap do fulvio\nE eu logo aqui",
+        "timestamp": "2026-07-01T20:46:47.786Z",
         "channelId": "120363425913528764@g.us"
       }
     ],
@@ -26899,6 +28966,16 @@
       {
         "summary": "Se me conhece?",
         "timestamp": "2026-07-01T14:12:57.207Z",
+        "channelId": "190546341540031@lid"
+      },
+      {
+        "summary": "oie\noie\noie",
+        "timestamp": "2026-07-01T19:46:18.160Z",
+        "channelId": "190546341540031@lid"
+      },
+      {
+        "summary": "Tem que tar aumentando o repertório de sticker da teto",
+        "timestamp": "2026-07-01T19:56:24.653Z",
         "channelId": "190546341540031@lid"
       }
     ]

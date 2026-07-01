@@ -20,6 +20,8 @@ const MEDIA_COMMAND_ALIASES = Object.freeze({
   removebg: "removebg",
   rmbg: "removebg",
   "remove-bg": "removebg",
+  rep: "repertorio",
+  repertorio: "repertorio",
   ajuda: "help",
   help: "help",
   comandos: "help",
@@ -33,7 +35,8 @@ export const MEDIA_COMMANDS = Object.freeze([
   "toimg",
   "optimize",
   "removebg",
-  "help"
+  "help",
+  "repertorio"
 ]);
 
 export function parseWhatsAppCommand(text = "", prefix = ".") {
@@ -58,6 +61,7 @@ export function formatWhatsAppHelpText(prefix = ".") {
     `${c("csticker")} - Recorta o centro para caber na figurinha (crop).`,
     `${c("optimize")} - Comprime figurinha (reply/anexo); também ${p}otimizar.`,
     `${c("removebg")} - Remove fundo de imagem ou figurinha estática. Fundo transparente ou cor: ${c("removebg")} verde. Potência: leve, media, forte.`,
-    `${c("toimg")} - Figurinha para imagem ou GIF/vídeo.`
+    `${c("toimg")} - Figurinha para imagem ou GIF/vídeo.`,
+    `${c("repertorio")} on|off - Modo repertório: salva automaticamente figurinhas enviadas/encaminhadas.`
   ].join("\n");
 }

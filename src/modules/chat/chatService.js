@@ -7,10 +7,30 @@ import {
 import { slimMetaForStorage } from "../../core/memory/slimMeta.js";
 import { detectTetoNameCall } from "../../integrations/whatsapp/tetoNameDetect.js";
 import { detectUserBoundary } from "../../core/channels/userBoundaryDetect.js";
+import {
+  AGENT_MEDIA_COMMANDS,
+  AGENT_MEDIA_COMMAND_PATTERN,
+  SAVE_STICKER_COMMAND_PATTERN,
+  REPERTOIRE_MODE_COMMAND_PATTERN,
+  buildMediaAction,
+  isPresetStickerKey,
+  isRepertoireModeCommand,
+  isSaveStickerCommand,
+  normalizeAgentMediaCommand,
+  parseRepertoireModeEnabled
+} from "../../integrations/whatsapp/agentMediaCommands.js";
+
+export function normalizeActionCommandText(rawText = "") {
+  return String(rawText ?? "")
+    .replace(/[\u201c\u201d\u201e\u201f\u2033\u2036]/g, '"')
+    .replace(/[\u2018\u2019\u201a\u201b\u2032\u2035]/g, "'")
+    .replace(/^```[\w]*\n?|\n?```$/g, "")
+    .trim();
+}
 
 export function parseActionCommands(rawText) {
   const actions = [];
-  const text = String(rawText ?? "").trim();
+  const text = normalizeActionCommandText(rawText);
   
   // Captura comandos como reagir("❤️"), mensagem("Oi!", "msg_123"), sticker("chave")
   const commandRegex = /([a-zA-Z]+)\s*\(([\s\S]*?)\)/g;
@@ -32,16 +52,125 @@ export function parseActionCommands(rawText) {
         actions.push({ type: "react", emoji: args[0] });
       }
     } else if (cmd === "sticker" || cmd === "figurinha") {
-      if (args[0]) {
+      if (!args[0]) continue;
+      if (isPresetStickerKey(args[0])) {
         actions.push({ type: "sticker", key: args[0], quoteId: args[1] || null });
+      } else {
+        const mediaAction = buildMediaAction("sticker", args[0], args.slice(1));
+        if (mediaAction) actions.push(mediaAction);
       }
     } else if (cmd === "mensagem" || cmd === "message" || cmd === "responder" || cmd === "reply" || cmd === "quote") {
       if (args[0]) {
         actions.push({ type: "message", text: args[0], quoteId: args[1] || null });
       }
+    } else if (isSaveStickerCommand(cmd)) {
+      if (args[0]) {
+        actions.push({
+          type: "save_sticker",
+          messageId: args[0],
+          key: args[1] || null,
+          label: args[2] || null
+        });
+      }
+    } else if (cmd === "ativarrepertorio" || cmd === "ligarrepertorio") {
+      actions.push({ type: "repertoire_mode", enabled: true });
+    } else if (cmd === "desativarrepertorio" || cmd === "desligarrepertorio") {
+      actions.push({ type: "repertoire_mode", enabled: false });
+    } else if (isRepertoireModeCommand(cmd)) {
+      actions.push({ type: "repertoire_mode", enabled: parseRepertoireModeEnabled(args) });
+    } else {
+      const mediaCmd = normalizeAgentMediaCommand(cmd);
+      if (AGENT_MEDIA_COMMANDS.includes(mediaCmd) && mediaCmd !== "sticker" && args[0]) {
+        const mediaAction = buildMediaAction(mediaCmd, args[0], args.slice(1));
+        if (mediaAction) actions.push(mediaAction);
+      } else if (cmd === "toimage" || cmd === "toimg" || cmd === "toimagem") {
+        if (args[0]) {
+          actions.push(buildMediaAction("toimg", args[0]) ?? { type: "toimage", messageId: args[0] });
+        }
+      }
     }
   }
   return actions;
+}
+
+function returnWithActions(actions) {
+  const resolved = resolveOutgoingActions(actions);
+  const texts = resolved
+    .filter((a) => a.type === "message")
+    .map((a) => a.text)
+    .filter(Boolean);
+  const out = texts.length ? texts : [];
+  out.actions = resolved;
+  return out;
+}
+
+/** Expande ações cujo text ainda contém comando cru (fallback do processor). */
+export function resolveOutgoingActions(actions = []) {
+  const out = [];
+  for (const action of actions) {
+    const raw = String(action?.text ?? "").trim();
+    const looksLikeCommand =
+      action?.type === "message" &&
+      /^(mensagem|message|reagir|react|sticker|figurinha|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\s*\(/i.test(
+        raw
+      );
+    if (!looksLikeCommand) {
+      out.push(action);
+      continue;
+    }
+    const reparsed = parseActionCommands(raw);
+    if (reparsed.length > 0) {
+      out.push(...reparsed);
+    } else {
+      out.push(action);
+    }
+  }
+  return out;
+}
+
+function normActionMessageId(id) {
+  return String(id ?? "")
+    .trim()
+    .replace(/^\[?ID:\s*/i, "")
+    .replace(/\]$/, "")
+    .trim();
+}
+
+/** Evita reply na msg que acabou de chegar, excesso de reagir e prioriza stickers. */
+export function sanitizeOutgoingActions(actions = [], meta = {}) {
+  if (!Array.isArray(actions) || !actions.length) return actions;
+
+  const triggerId = normActionMessageId(meta?.messageKey?.id ?? meta?.messageId ?? null);
+  const recentIds = new Set(
+    (meta?.recentHistory ?? [])
+      .slice(-4)
+      .map((m) => normActionMessageId(m?.messageId ?? m?.meta?.messageId))
+      .filter(Boolean)
+  );
+  if (triggerId) recentIds.add(triggerId);
+
+  let out = actions.map((action) => {
+    if ((action.type !== "message" && action.type !== "sticker") || !action.quoteId) return action;
+    const qid = normActionMessageId(action.quoteId);
+    if (!qid) return { ...action, quoteId: null };
+    if (recentIds.has(qid)) return { ...action, quoteId: null };
+    return action;
+  });
+
+  const hasSubstantive = out.some(
+    (a) =>
+      a.type === "message" ||
+      a.type === "sticker" ||
+      a.type === "media" ||
+      a.type === "toimage" ||
+      a.type === "save_sticker" ||
+      a.type === "repertoire_mode"
+  );
+  if (hasSubstantive) {
+    out = out.filter((a) => a.type !== "react");
+  }
+
+  return out;
 }
 
 export class ChatService {
@@ -452,18 +581,17 @@ export class ChatService {
     }
 
 
-    const actions = parseActionCommands(raw);
+    const actions = sanitizeOutgoingActions(parseActionCommands(raw), meta);
     if (actions.length > 0) {
-      const resultParts = actions
-        .filter(a => a.type === "message")
-        .map(a => a.text)
-        .filter(Boolean);
-      
-      resultParts.actions = actions;
       if (this.internalState?.updateAfter) {
-        this.internalState.updateAfter(resultParts.join(" ").trim());
+        const preview = actions
+          .filter((a) => a.type === "message")
+          .map((a) => a.text)
+          .join(" ")
+          .trim();
+        if (preview) this.internalState.updateAfter(preview);
       }
-      return resultParts;
+      return returnWithActions(actions);
     }
 
     const processor = this.getProcessor(meta);
@@ -631,13 +759,23 @@ export class ChatService {
     }
 
     if (!resultParts.length && ChatService.isDirectTetoCall(trimmed)) {
-      const resp = ["oxi, tô aqui kkk"];
-      resp.actions = [{ type: "message", text: resp[0], quoteId: null }];
-      return resp;
+      return returnWithActions([
+        { type: "message", text: "oxi, tô aqui kkk", quoteId: null }
+      ]);
     }
 
-    const defaultActions = resultParts.map(p => ({ type: "message", text: p, quoteId: null }));
-    resultParts.actions = defaultActions;
-    return resultParts;
+    const lateParsed = sanitizeOutgoingActions(
+      parseActionCommands(resultParts.join("\n---\n") || raw),
+      meta
+    );
+    if (lateParsed.length > 0) {
+      return returnWithActions(lateParsed);
+    }
+
+    const defaultActions = resultParts.flatMap((p) => {
+      const inner = parseActionCommands(p);
+      return inner.length > 0 ? inner : [{ type: "message", text: p, quoteId: null }];
+    });
+    return returnWithActions(defaultActions);
   }
 }

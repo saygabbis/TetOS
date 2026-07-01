@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from "node:fs";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { withGenerationSlot } from "../../infra/concurrency/generationSlot.js";
 import { touchInboundActivity } from "./inboundLiveness.js";
-import { waAgentDebugLog } from "./waDebugLog.js";
 import { jidNormalizedUser, downloadContentFromMessage, normalizeMessageContent } from "baileys";
 import { planWhatsAppReaction } from "./reactionPlanner.js";
 import { persistMedia, fileExtFromDocumentMessage } from "./mediaStore.js";
@@ -14,7 +13,7 @@ import {
   finalizeDecisionTrace
 } from "../../infra/observability/decisionTrace.js";
 import { resolveStickerAsset } from "./stickerAssets.js";
-import { ChatService } from "../../modules/chat/chatService.js";
+import { ChatService, resolveOutgoingActions, sanitizeOutgoingActions } from "../../modules/chat/chatService.js";
 import { resolveCloseDecision } from "../../core/brain/ConversationPhaseEngine.js";
 import { detectWrongBotNameVocative } from "./tetoNameDetect.js";
 import { hasVocativeToTeto } from "../../modules/chat/coherenceGuards.js";
@@ -25,6 +24,7 @@ import { resolveCommandTarget } from "./commandTargetResolver.js";
 import { isAnimatedRemoveBgTarget, MediaProcessor } from "../../core/media/mediaProcessor.js";
 import { probeStickerIsAnimated } from "../../core/media/stickerAnimation.js";
 import { enrichMediaVision } from "../../modules/vision/mediaVisionEnrich.js";
+import { formatMediaInputText } from "../../core/channels/mediaTimelineEnrich.js";
 import { resolveStickerDurationArg } from "../../core/media/stickerDurationParse.js";
 import {
   REMOVE_BG_MODEL_LABELS,
@@ -33,6 +33,7 @@ import {
 import { resolveTimingConfig, estimateTypingDelayMs as estimateTypingFromCfg } from "../../core/timing/timingConfig.js";
 import { ChatMessageIndex } from "./chatMessageIndex.js";
 import {
+  applyQuotedContextToPayload,
   botMentionedInJids,
   buildOutgoingQuoteKey,
   classifyTetoAddress,
@@ -49,6 +50,14 @@ import {
 } from "./mediaCommandParser.js";
 import { buildWhatsappIdentitySnapshot } from "./whatsappIdentityContract.js";
 import { MediaCommandService } from "./mediaCommandService.js";
+import { resolveMediaByMessageId } from "./agentMediaResolver.js";
+import {
+  saveStickerToRepertoire,
+  saveStickerToRepertoireWithVision,
+  tryAutoSaveIncomingSticker,
+  isForwardedMessage,
+  logRepertoireVision
+} from "./stickerRepertoire.js";
 import {
   canonicalSessionId,
   canonicalUserId,
@@ -63,7 +72,8 @@ import {
   normalizeIncomingMentions,
   recordWaIdentity
 } from "../../core/channels/waIdentity.js";
-import { applyWhatsAppMentions } from "./mentionResolver.js";
+import { buildGroupRoster } from "../../core/channels/groupRoster.js";
+import { translateAtMentions } from "./mentionResolver.js";
 import { createProcessedCommandDeduper } from "./processedCommandDeduper.js";
 
 function extractPhone(remoteJid = "") {
@@ -232,13 +242,28 @@ function parseWhatsAppCommand(text = "", prefix = ".") {
     otimizar: "optimize",
     optimizar: "optimize",
     rmbg: "removebg",
-    "remove-bg": "removebg"
+    "remove-bg": "removebg",
+    rep: "repertorio",
+    repertorio: "repertorio"
   };
   const normalized = aliases[command] ?? command;
-  if (!["sticker", "fsticker", "csticker", "toimg", "optimize", "removebg", "help"].includes(normalized)) {
+  if (!["sticker", "fsticker", "csticker", "toimg", "optimize", "removebg", "help", "repertorio"].includes(normalized)) {
     return null;
   }
   return { command: normalized, args };
+}
+
+function repertoireModeReplyText(store, userId, arg = "") {
+  const token = String(arg ?? "").trim().toLowerCase();
+  if (["on", "ligar", "ativar", "1", "sim"].includes(token)) {
+    store?.enable?.(userId);
+    return "modo repertório ATIVO — figurinhas que você mandar ou encaminhar vão pro meu repertório automaticamente";
+  }
+  if (["off", "desligar", "desativar", "0", "nao", "não"].includes(token)) {
+    store?.disable?.(userId);
+    return "modo repertório desativado";
+  }
+  return store?.statusLine?.(userId) ?? "modo repertório indisponível";
 }
 
 /** Texto do `.help` — só usado no número de comandos de mídia (ou sessão única `full`). */
@@ -254,7 +279,8 @@ function formatWhatsAppHelpText(prefix = ".") {
     `${c("csticker")} — Recorta o centro para caber na figurinha (crop). Duração opcional até 30s (ex.: ${c("csticker")} 10s).`,
     `${c("optimize")} — Comprime figurinha (reply/anexo); cada uso reduz mais um pouco ate nao dar pra comprimir (também ${p}otimizar).`,
     `${c("removebg")} — Remove fundo de imagem ou figurinha estatica (API remove.bg em media/forte). GIF/video/figurinha animada: so modelo local, sem gastar creditos. Fundo transparente (padrao) ou cor: ${c("removebg")} verde. Potencia: leve, media, forte. Envia como documento (PNG/GIF/MP4).`,
-    `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`
+    `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`,
+    `${c("repertorio")} on|off — Modo repertório: salva automaticamente figurinhas que você mandar/encaminhar.`
   ].join("\n");
 }
 
@@ -279,11 +305,32 @@ async function attachVisionTranscript(
   runtime,
   { filePath, mediaType, isAnimated = false, userId, remoteJid, skipVision }
 ) {
-  if (skipVision || !filePath) return null;
+  if (skipVision || !filePath) {
+    if (mediaType === "sticker") {
+      logRepertoireVision(runtime, "ingest_vision_skip", {
+        filePath,
+        reason: skipVision ? "skipVisionEnrichment" : "no_filePath"
+      });
+    }
+    return null;
+  }
+  logRepertoireVision(runtime, "ingest_vision_start", {
+    filePath,
+    mediaType,
+    isAnimated,
+    userId,
+    remoteJid
+  });
   const visualDescription = await enrichMediaVision(runtime, {
     filePath,
     mediaType,
     isAnimated
+  });
+  logRepertoireVision(runtime, "ingest_vision_done", {
+    filePath,
+    mediaType,
+    ok: Boolean(visualDescription),
+    preview: visualDescription ? String(visualDescription).slice(0, 120) : null
   });
   if (visualDescription) {
     runtime.visualAnalyses?.save?.({
@@ -295,6 +342,56 @@ async function attachVisionTranscript(
     });
   }
   return visualDescription;
+}
+
+/** Propaga descrição visual para índice, memória de grupo e multimodal (mesmo sem resposta do bot). */
+function syncIncomingMediaContext(
+  runtime,
+  {
+    remoteJid,
+    messageId,
+    userId,
+    pushName,
+    text,
+    media,
+    stanzaId,
+    participantJid,
+    chatMessageIndex,
+    isGroup
+  }
+) {
+  if (!messageId) return null;
+  const displayText = formatMediaInputText({ text, media });
+  if (!displayText) return null;
+
+  chatMessageIndex?.append?.({
+    channelId: remoteJid,
+    messageId,
+    actorId: userId,
+    speakerName: pushName || null,
+    text: displayText,
+    isFromBot: false,
+    remoteJid,
+    quotedMessageId: stanzaId ?? null,
+    participantJid: participantJid ?? null
+  });
+
+  if (isGroup) {
+    runtime.groupMemory?.patchEntry?.(remoteJid, messageId, { text: displayText });
+  }
+
+  const visionText = [media?.transcript, media?.caption].filter(Boolean).join(" ").trim();
+  if (media?.type && visionText) {
+    runtime.multimodalMemory?.save?.({
+      userId,
+      channelId: remoteJid,
+      media,
+      message: visionText,
+      messageId
+    });
+  }
+
+  return displayText;
 }
 
 function extractParticipantJid(incoming) {
@@ -333,7 +430,14 @@ function randBetween(min, max) {
 function createConversationOrchestrator(
   socket,
   runtime,
-  { chatMessageIndex = null, botJid = "", botPhone = "", logPrefix = "[whatsapp]" } = {}
+  {
+    chatMessageIndex = null,
+    botJid = "",
+    botPhone = "",
+    logPrefix = "[whatsapp]",
+    mediaHistoryStore = null,
+    mediaCommandService = null
+  } = {}
 ) {
   const timingCfg = resolveTimingConfig(runtime?.defaults ?? {});
   const pendingBySession = new Map();
@@ -418,12 +522,21 @@ function createConversationOrchestrator(
           console.log(`${logPrefix} outgoing quote id=${normalizedQuote.id} → ${remoteJid}`);
         }
         console.log(`${logPrefix} outgoing ${remoteJid}: ${content}`);
-        const rosterMembers = options?.groupRoster?.members ?? [];
-        const { text: mentionText, mentions } = applyWhatsAppMentions(content, rosterMembers);
+        let rosterMembers = options?.groupRoster?.members ?? [];
+        if (isGroup && !rosterMembers.length) {
+          rosterMembers = buildGroupRoster(runtime, remoteJid).members ?? [];
+        }
+        const { text: mentionText, mentions } = translateAtMentions(content, rosterMembers);
         const mentionPayload = mentions.length ? { mentions } : {};
-        const payload = normalizedQuote
-          ? { text: mentionText, quoted: normalizedQuote, ...mentionPayload }
-          : { text: mentionText, ...mentionPayload };
+        const indexedRow =
+          normalizedQuote?.id && chatMessageIndex
+            ? chatMessageIndex.get(remoteJid, normalizedQuote.id)
+            : null;
+        let payload = applyQuotedContextToPayload(
+          { text: mentionText, ...mentionPayload },
+          normalizedQuote,
+          indexedRow
+        );
         const sendTask = socket.sendMessage(remoteJid, payload);
         const sent = await Promise.race([
           sendTask,
@@ -441,7 +554,8 @@ function createConversationOrchestrator(
             text: content,
             isFromBot: true,
             remoteJid,
-            quotedMessageId: normalizedQuote?.id ?? null
+            quotedMessageId: normalizedQuote?.id ?? null,
+            participantJid: socket?.user?.id ? jidNormalizedUser(socket.user.id) : null
           });
         }
         if (index < replies.length - 1) {
@@ -664,16 +778,95 @@ function createConversationOrchestrator(
           const softened = runtime.userPatterns
             ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
             : false;
-          for (let index = 0; index < replies.actions.length; index += 1) {
-            const action = replies.actions[index];
+          const actionsToRun = resolveOutgoingActions(
+            sanitizeOutgoingActions(replies.actions, {
+              messageKey: item.messageKey,
+              isGroup: item.isGroup,
+              recentHistory: chatMessageIndex?.getThread?.(item.remoteJid, 5) ?? []
+            })
+          );
+          const mediaActions = actionsToRun.filter(
+            (a) => a.type === "media" || a.type === "toimage"
+          );
+          const immediateActions = actionsToRun.filter(
+            (a) => a.type !== "media" && a.type !== "toimage"
+          );
+          console.log(
+            `${logPrefix} action plan (${actionsToRun.length}): ${actionsToRun
+              .map((a) => `${a.type}${a.command ? `:${a.command}` : ""}${a.key ? `:${a.key}` : ""}`)
+              .join(", ")}`
+          );
+          const runAction = async (action, index) => {
             if (interruptBySession.get(sessionId) !== token) {
               console.warn(`${logPrefix} execution interrupted (token mismatch)`);
-              break;
+              return false;
             }
             if (index > 0) {
               await sleep(randBetween(800, 1500));
             }
             try {
+              const resolveActionQuoteKey = (quoteId) => {
+                if (!quoteId) return null;
+                const resolvedId =
+                  chatMessageIndex?.resolveQuoteMessageId?.(item.remoteJid, quoteId) ?? quoteId;
+                let indexed = chatMessageIndex?.get(item.remoteJid, resolvedId);
+                if (!indexed && runtime.groupMemory) {
+                  const gmFound = runtime.groupMemory.cache?.find(e => e.id === resolvedId && e.channelId === item.remoteJid);
+                  if (gmFound) {
+                    indexed = {
+                      messageId: gmFound.id,
+                      remoteJid: gmFound.channelId,
+                      isFromBot: gmFound.userId === "teto",
+                      actorId: gmFound.userId
+                    };
+                  }
+                }
+                let participantJid = undefined;
+                if (indexed) {
+                  if (indexed.participantJid) {
+                    participantJid = indexed.participantJid;
+                  } else if (indexed.isFromBot) {
+                    const botJid = jidNormalizedUser(socket?.user?.id || socket?.user?.jid || "");
+                    participantJid = botJid || undefined;
+                  } else if (indexed.actorId) {
+                    const member = item.groupRoster?.members?.find(m => m.userId === indexed.actorId || m.canonicalUserId === indexed.actorId);
+                    if (member?.mentionJid) {
+                      participantJid = member.mentionJid;
+                    } else if (String(indexed.actorId).includes("@")) {
+                      participantJid = indexed.actorId;
+                    } else if (/^\d{14,}$/.test(indexed.actorId)) {
+                      participantJid = `${indexed.actorId}@lid`;
+                    } else {
+                      participantJid = `${indexed.actorId}@s.whatsapp.net`;
+                    }
+                  }
+                  const built = buildOutgoingQuoteKey(
+                    {
+                      id: indexed.messageId,
+                      remoteJid: indexed.remoteJid || item.remoteJid,
+                      fromMe: indexed.isFromBot,
+                      participant: participantJid
+                    },
+                    item.remoteJid,
+                    { participantJid }
+                  );
+                  return built;
+                } else {
+                  participantJid = item.participantJid ?? item.messageKey?.participant ?? null;
+                  const built = buildOutgoingQuoteKey(
+                    {
+                      id: resolvedId,
+                      remoteJid: item.remoteJid,
+                      fromMe: false,
+                      participant: participantJid
+                    },
+                    item.remoteJid,
+                    { participantJid }
+                  );
+                  return built;
+                }
+              };
+
               if (action.type === "react") {
                 const reactionKey = buildOutgoingQuoteKey(item.messageKey, item.remoteJid, {
                   participantId: item.participantId ?? null,
@@ -690,49 +883,117 @@ function createConversationOrchestrator(
                 const stickerAsset = resolveStickerAsset(action.key, runtime.defaults.stickersPath);
                 if (stickerAsset) {
                   console.log(`${logPrefix} executing action sticker: ${action.key}`);
-                  let quote = null;
-                  if (action.quoteId && chatMessageIndex) {
-                    const indexed = chatMessageIndex.get(item.remoteJid, action.quoteId);
-                    quote = buildOutgoingQuoteKey(
-                      indexed ? {
-                        id: indexed.messageId,
-                        remoteJid: indexed.remoteJid || item.remoteJid,
-                        fromMe: indexed.isFromBot,
-                        participant: indexed.isFromBot ? undefined : (indexed.actorId ? `${indexed.actorId}@s.whatsapp.net` : undefined)
-                      } : {
-                        id: action.quoteId,
-                        remoteJid: item.remoteJid,
-                        fromMe: false
-                      },
-                      item.remoteJid,
-                      { participantId: indexed?.actorId }
-                    );
-                  }
-                  const payload = quote ? { sticker: stickerAsset, quoted: quote } : { sticker: stickerAsset };
+                  const quote = resolveActionQuoteKey(action.quoteId);
+                  const indexedRow =
+                    quote?.id && chatMessageIndex
+                      ? chatMessageIndex.get(item.remoteJid, quote.id)
+                      : null;
+                  const payload = applyQuotedContextToPayload({ sticker: stickerAsset }, quote, indexedRow);
                   await socket.sendMessage(item.remoteJid, payload);
                   outputKind = RESPONSE_OUTPUTS.STICKER;
                   runtime.metrics?.increment?.("whatsapp.sticker.sent");
                 }
+              } else if (action.type === "save_sticker") {
+                const targetId =
+                  chatMessageIndex?.resolveQuoteMessageId?.(item.remoteJid, action.messageId) ??
+                  action.messageId;
+                const resolved = await resolveMediaByMessageId({
+                  messageId: targetId,
+                  chatId: item.remoteJid,
+                  mediaHistoryStore,
+                  basePath: runtime.defaults.whatsappMediaPath,
+                  visualAnalyses: runtime.visualAnalyses
+                });
+                if (resolved?.media?.type !== "sticker" || !resolved.media.path) {
+                  await sendReplies(
+                    item.remoteJid,
+                    item.userId,
+                    item.sessionId,
+                    ["so consigo salvar figurinha — manda o message id de uma sticker"],
+                    token,
+                    { allowReply, groupRoster: item.groupRoster ?? null }
+                  );
+                  outputKind = RESPONSE_OUTPUTS.TEXT;
+                } else {
+                  const saved = await saveStickerToRepertoireWithVision({
+                    runtime,
+                    sourcePath: resolved.media.path,
+                    basePath: runtime.defaults.stickersPath,
+                    key: action.key,
+                    messageId: targetId,
+                    savedFrom: item.remoteJid,
+                    label: action.label,
+                    media: resolved.media,
+                    userId: item.userId,
+                    remoteJid: item.remoteJid
+                  });
+                  logRepertoireVision(runtime, "manual_save_ok", {
+                    key: saved.key,
+                    messageId: targetId,
+                    displayName: saved.displayName ?? null,
+                    visionSource: saved.visionSource ?? null,
+                    autoNamed: saved.autoNamed ?? false,
+                    hadMediaTranscript: Boolean(resolved.media?.transcript)
+                  });
+                  console.log(
+                    `${logPrefix} saved sticker to repertoire: ${saved.key} (${saved.path})${saved.displayName ? ` — ${saved.displayName}` : ""}`
+                  );
+                  runtime.logger?.log?.("whatsapp.sticker_repertoire_saved", {
+                    key: saved.key,
+                    messageId: targetId,
+                    remoteJid: item.remoteJid,
+                    displayName: saved.displayName ?? null,
+                    autoNamed: saved.autoNamed ?? false
+                  });
+                  outputKind = RESPONSE_OUTPUTS.COMMAND;
+                }
+              } else if (action.type === "repertoire_mode") {
+                const store = runtime.stickerRepertoireMode;
+                if (store) {
+                  if (action.enabled) {
+                    store.enable(item.userId, {
+                      channelId: item.remoteJid,
+                      enabledBy: item.userId
+                    });
+                    console.log(`${logPrefix} repertoire mode ON for ${item.userId}`);
+                  } else {
+                    store.disable(item.userId);
+                    console.log(`${logPrefix} repertoire mode OFF for ${item.userId}`);
+                  }
+                }
+                outputKind = RESPONSE_OUTPUTS.COMMAND;
+              } else if (action.type === "media" || action.type === "toimage") {
+                const command = action.command ?? "toimg";
+                const targetId =
+                  chatMessageIndex?.resolveQuoteMessageId?.(item.remoteJid, action.messageId) ??
+                  action.messageId;
+                const resolved = await resolveMediaByMessageId({
+                  messageId: targetId,
+                  chatId: item.remoteJid,
+                  mediaHistoryStore,
+                  basePath: runtime.defaults.whatsappMediaPath,
+                  visualAnalyses: runtime.visualAnalyses
+                });
+                console.log(
+                  `${logPrefix} executing action ${command}: ${targetId} (source=${resolved?.source ?? "none"})`
+                );
+                const mediaRun = mediaCommandService.runAgentMediaCommand({
+                  command,
+                  messageId: targetId,
+                  args: action.args ?? [],
+                  media: resolved?.media ?? null,
+                  remoteJid: item.remoteJid,
+                  userId: item.userId,
+                  targetSource: resolved?.source ?? "agent"
+                });
+                mediaRun.catch((err) => {
+                  console.error(`${logPrefix} agent media command failed (${command}):`, err?.message ?? err);
+                });
+                void mediaRun;
+                outputKind = RESPONSE_OUTPUTS.COMMAND;
               } else if (action.type === "message") {
                 console.log(`${logPrefix} executing action message: ${action.text} (quoteId: ${action.quoteId})`);
-                let quoteKey = null;
-                if (action.quoteId && chatMessageIndex) {
-                  const indexed = chatMessageIndex.get(item.remoteJid, action.quoteId);
-                  quoteKey = buildOutgoingQuoteKey(
-                    indexed ? {
-                      id: indexed.messageId,
-                      remoteJid: indexed.remoteJid || item.remoteJid,
-                      fromMe: indexed.isFromBot,
-                      participant: indexed.isFromBot ? undefined : (indexed.actorId ? `${indexed.actorId}@s.whatsapp.net` : undefined)
-                    } : {
-                      id: action.quoteId,
-                      remoteJid: item.remoteJid,
-                      fromMe: false
-                    },
-                    item.remoteJid,
-                    { participantId: indexed?.actorId }
-                  );
-                }
+                const quoteKey = resolveActionQuoteKey(action.quoteId);
                 await sendReplies(item.remoteJid, item.userId, item.sessionId, [action.text], token, {
                   softened,
                   timingPlan,
@@ -747,6 +1008,18 @@ function createConversationOrchestrator(
             } catch (actionError) {
               console.error(`${logPrefix} failed to execute action ${action.type}:`, actionError.message);
             }
+            return true;
+          };
+          for (let index = 0; index < immediateActions.length; index += 1) {
+            const done = await runAction(immediateActions[index], index);
+            if (done === false) break;
+          }
+          for (let index = 0; index < mediaActions.length; index += 1) {
+            const done = await runAction(
+              mediaActions[index],
+              immediateActions.length > 0 ? index + 1 : index
+            );
+            if (done === false) break;
           }
         }
 
@@ -1076,7 +1349,7 @@ function createConversationOrchestrator(
 
   function scheduleIncoming(entry) {
     const withDefaults = {
-      preferQuoteReply: true,
+      preferQuoteReply: false,
       ts: Date.now(),
       ...entry
     };
@@ -1125,18 +1398,13 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     role === "media" && runtime.defaults.whatsappMode === "dual" && runtime.defaults.whatsappMainObserveOnly;
   const waLogPrefix =
     role === "media" ? "[whatsapp:media]" : role === "main" ? "[whatsapp:main]" : "[whatsapp]";
-  const chatMessageIndex = new ChatMessageIndex({ maxPerChannel: 80 });
+  const chatMessageIndex =
+    runtime.chatMessageIndex ?? new ChatMessageIndex({ maxPerChannel: 80 });
+  if (!runtime.chatMessageIndex) {
+    runtime.chatMessageIndex = chatMessageIndex;
+  }
   const botJidForHandler = jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
   const botPhoneForHandler = extractPhone(botJidForHandler);
-  const orchestrator =
-    role === "media" && !botChatRole
-      ? null
-      : createConversationOrchestrator(socket, runtime, {
-          chatMessageIndex,
-          botJid: botJidForHandler,
-          botPhone: botPhoneForHandler,
-          logPrefix: waLogPrefix
-        });
   const messageSnapshotById = new Map();
   const commandQueue = new ChatCommandQueue();
   const mediaHistoryStore = new ChatMediaHistoryStore(runtime.defaults.commandMediaHistoryLimit);
@@ -1155,6 +1423,17 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     safeSendMessage,
     logPrefix: waLogPrefix
   });
+  const orchestrator =
+    role === "media" && !botChatRole
+      ? null
+      : createConversationOrchestrator(socket, runtime, {
+          chatMessageIndex,
+          botJid: botJidForHandler,
+          botPhone: botPhoneForHandler,
+          logPrefix: waLogPrefix,
+          mediaHistoryStore,
+          mediaCommandService
+        });
   const seenMessageIds = new Map();
   const ownerRedirectDedupe = new Map();
   const MESSAGE_DEDUPE_TTL_MS = 10 * 60 * 1000;
@@ -1508,35 +1787,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     const inboundSource =
       botChatRole || role === "full" ? "bot" : role === "main" ? "main" : "media";
     touchInboundActivity(inboundSource);
-    // #region agent log
-    waAgentDebugLog({
-      runId: "wa-inbound",
-      hypothesisId: "H2-H4",
-      location: "messageHandler.js:messages.upsert",
-      message: "upsert received",
-      data: {
-        role,
-        botChatRole,
-        type: type ?? null,
-        count: batch.length,
-        sampleRemoteJid: batch[0]?.key?.remoteJid ?? null,
-        sampleFromMe: batch[0]?.key?.fromMe ?? null,
-        sampleHasMessage: Boolean(batch[0]?.message)
-      }
-    });
-    // #endregion
     console.log(`${waLogPrefix} upsert type=${type ?? "?"} count=${batch.length}`);
 
     if (type !== "notify" && type !== "append") {
-      // #region agent log
-      waAgentDebugLog({
-        runId: "wa-inbound",
-        hypothesisId: "H4",
-        location: "messageHandler.js:messages.upsert",
-        message: "upsert type ignored",
-        data: { role, type: type ?? null, count: batch.length }
-      });
-      // #endregion
       if (runtime.defaults.thinkingLogsEnabled && batch.length > 0) {
         console.warn(`${waLogPrefix} upsert ignorado (type=${type}) — msg nao processada`);
       }
@@ -1603,7 +1856,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const parsedCommand = parseMediaCommand(text, runtime.defaults.commandPrefix);
         const tetoSlash = parseTetoSlashCommand(text);
         const mediaKind = detectMediaKind(unwrappedMessage);
-        const isFromMe = Boolean(incoming.key?.fromMe);
+        const botJid = botJidForHandler || jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
+        const participantJid = isGroup ? extractParticipantJid(incoming) : "";
+        const isFromMe = Boolean(incoming.key?.fromMe) || 
+                         (participantJid && botJid && jidNormalizedUser(participantJid) === jidNormalizedUser(botJid)) ||
+                         (!isGroup && remoteJid && botJid && jidNormalizedUser(remoteJid) === jidNormalizedUser(botJid));
         const hasMediaPayload = Boolean(
           unwrappedMessage?.imageMessage ||
           unwrappedMessage?.videoMessage ||
@@ -1611,11 +1868,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           unwrappedMessage?.stickerMessage ||
           unwrappedMessage?.documentMessage
         );
+        let media = null;
         if (!text && !hasMediaPayload) continue;
         console.log(`${waLogPrefix} ${isFromMe ? "outgoing" : "incoming"} ${remoteJid}: ${text || `[${mediaKind}]`}`);
 
         const baseUserId = extractPhone(remoteJid);
-        const participantJid = isGroup ? extractParticipantJid(incoming) : "";
         const participantPhone = isGroup ? extractParticipantPhone(incoming) : "";
         let participantId = isGroup
           ? extractLocalPart(participantJid) || participantPhone
@@ -1701,6 +1958,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           continue;
         }
 
+        if (parsedCommand?.command === "repertorio") {
+          const reply = repertoireModeReplyText(
+            runtime.stickerRepertoireMode,
+            userId,
+            parsedCommand.args?.[0] ?? "status"
+          );
+          await socket.sendMessage(remoteJid, { text: reply });
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.COMMAND
+          });
+          continue;
+        }
+
         if (role === "media" && !botChatRole) {
           if (!parsedCommand && !hasMediaPayload) {
             finalizeDecisionTrace(runtime, decisionTrace, {
@@ -1710,7 +1980,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
         }
 
-        if (role === "main" && parsedCommand) {
+        if (role === "main" && parsedCommand && parsedCommand.command !== "repertorio") {
           const hint = String(runtime.defaults.whatsappStickerCommandsDisabledHint ?? "").trim();
           if (hint) {
               await socket.sendMessage(remoteJid, { text: hint });
@@ -1735,7 +2005,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const contextInfo = extractContextInfo(unwrappedMessage);
         const stanzaId = contextInfo?.stanzaId ?? null;
         const quotedSnapshot = stanzaId ? messageSnapshotById.get(stanzaId) : null;
-        const botJid = botJidForHandler || jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
         const botPhone = botPhoneForHandler || extractPhone(botJid);
         const botActorIds = new Set(
           ["teto", "self", runtime.defaults.learningTargetUserId, botPhone].filter(Boolean)
@@ -1769,7 +2038,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         let groupEngagementActive = false;
         let groupAddressKind = "none";
 
-        if (isGroup && !parsedCommand) {
+        if (isGroup && !parsedCommand && !isFromMe) {
           const hasMention = botMentionedInJids(mentionHint, botJid, botPhone);
           groupAddressKind = classifyTetoAddress(text, { hasMention, isReplyToBot });
           if (isReplyToBot) isReply = true;
@@ -1819,13 +2088,29 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
 
           runtime.groupMemory?.append?.({
+            id: incoming.key.id,
             channelId: remoteJid,
             userId,
             speakerName: pushName || null,
             text: text || `[${mediaKind}]`,
             addressedToTeto: explicitAddress || groupEngagementActive,
-            ts: new Date().toISOString()
+            ts: new Date().toISOString(),
+            quotedMessageId: stanzaId || null
           });
+
+          if (incoming.key?.id && chatMessageIndex) {
+            chatMessageIndex.append({
+              channelId: remoteJid,
+              messageId: incoming.key.id,
+              actorId: userId,
+              speakerName: pushName || null,
+              text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
+              isFromBot: false,
+              remoteJid,
+              quotedMessageId: stanzaId,
+              participantJid: incoming.key?.participant ?? null
+            });
+          }
 
           if (!allowGroupReply) {
             finalizeDecisionTrace(runtime, decisionTrace, {
@@ -1917,7 +2202,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             ? chatMessageIndex.buildReplyContext(remoteJid, stanzaId, 14)
             : null;
 
-        let media = null;
         try {
           if (unwrappedMessage?.imageMessage && incoming.key?.id) {
             const path = await persistMedia({
@@ -2083,6 +2367,56 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
         }
 
+        if (incoming.key?.id && media?.type) {
+          syncIncomingMediaContext(runtime, {
+            remoteJid,
+            messageId: incoming.key.id,
+            userId,
+            pushName,
+            text,
+            media,
+            stanzaId,
+            participantJid: incoming.key?.participant ?? null,
+            chatMessageIndex,
+            isGroup
+          });
+        }
+
+        if (!isFromMe && media?.type === "sticker" && media?.path && incoming.key?.id) {
+          const autoSaved = await tryAutoSaveIncomingSticker({
+            runtime,
+            repertoireModeStore: runtime.stickerRepertoireMode,
+            userId,
+            remoteJid,
+            messageId: incoming.key.id,
+            media,
+            isForwarded: isForwardedMessage(contextInfo),
+            pushName,
+            basePath: runtime.defaults.stickersPath
+          });
+          if (autoSaved?.key) {
+            console.log(
+              `${waLogPrefix} auto-repertoire saved: ${autoSaved.key} from ${userId}${autoSaved.forwarded ? " (fwd)" : ""}${autoSaved.displayName ? ` — ${autoSaved.displayName}` : ""}`
+            );
+            runtime.logger?.log?.("whatsapp.sticker_repertoire_auto", {
+              key: autoSaved.key,
+              userId,
+              remoteJid,
+              messageId: incoming.key.id,
+              forwarded: autoSaved.forwarded,
+              displayName: autoSaved.displayName ?? null,
+              visionSource: autoSaved.visionSource ?? null,
+              autoNamed: autoSaved.autoNamed ?? false
+            });
+          } else if (runtime.stickerRepertoireMode?.isActive?.(userId)) {
+            logRepertoireVision(runtime, "auto_save_no_result", {
+              messageId: incoming.key.id,
+              userId,
+              transcript: media?.transcript ? String(media.transcript).slice(0, 120) : null
+            });
+          }
+        }
+
         if (parsedCommand) {
           const commandMessageId = incoming.key?.id ?? null;
           if (type === "append") {
@@ -2217,6 +2551,12 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         if (isFromMe) {
+          if (incoming.key?.id && chatMessageIndex?.get(remoteJid, incoming.key.id)) {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
+            continue;
+          }
           logOutgoingAudit(runtime, {
             remoteJid,
             userId,
@@ -2279,8 +2619,21 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
               isFromBot: isBotOwn,
               remoteJid,
-              quotedMessageId: stanzaId
+              quotedMessageId: stanzaId,
+              participantJid: incoming.key?.participant ?? null
             });
+            if (isGroup && isBotOwn) {
+              runtime.groupMemory?.append?.({
+                id: incoming.key.id,
+                channelId: remoteJid,
+                userId: "teto",
+                speakerName: "Teto",
+                text: text || `[${mediaKind}]`,
+                addressedToTeto: true,
+                ts: new Date().toISOString(),
+                quotedMessageId: stanzaId || null
+              });
+            }
           }
           finalizeDecisionTrace(runtime, decisionTrace, {
             output: RESPONSE_OUTPUTS.IGNORED
@@ -2321,27 +2674,31 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           links
         });
         if (incoming.key?.id) {
+          const indexedText = formatMediaInputText({ text, media });
           messageSnapshotById.set(
             incoming.key.id,
             buildMessageSnapshot({
               messageId: incoming.key.id,
               remoteJid,
               actorId: userId,
-              text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
+              text: indexedText,
               mediaType: media?.type ?? null,
               quotedMessage
             })
           );
-          chatMessageIndex.append({
-            channelId: remoteJid,
-            messageId: incoming.key.id,
-            actorId: userId,
-            speakerName: pushName || null,
-            text: text || media?.transcript || media?.caption || `[${mediaKind}]`,
-            isFromBot: false,
-            remoteJid,
-            quotedMessageId: stanzaId
-          });
+          if (!media?.type && !chatMessageIndex?.get(remoteJid, incoming.key.id)) {
+            chatMessageIndex.append({
+              channelId: remoteJid,
+              messageId: incoming.key.id,
+              actorId: userId,
+              speakerName: pushName || null,
+              text: indexedText,
+              isFromBot: false,
+              remoteJid,
+              quotedMessageId: stanzaId,
+              participantJid: incoming.key?.participant ?? null
+            });
+          }
         }
         logThinking(runtime, {
           phase: "event_captured",
@@ -2354,7 +2711,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           runtime.metrics?.increment?.(`whatsapp.media.${media.type}`);
         }
 
-        const effectiveMessage = text || media?.transcript || media?.caption || `[${media?.type ?? "media"}]`;
+        const effectiveMessage = formatMediaInputText({ text, media });
 
         const isOwner = isOwnerContact(runtime, remoteJid, userId);
 
@@ -2433,7 +2790,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           participantId: isGroup ? participantId : null,
           participantJid: isGroup ? extractParticipant(incoming) || null : null,
           decisionTrace,
-          preferQuoteReply: true
+          preferQuoteReply: false
         });
       } catch (error) {
         console.error("[whatsapp] message handler error:", error.message);

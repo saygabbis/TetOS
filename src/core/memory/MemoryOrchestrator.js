@@ -113,14 +113,42 @@ export class MemoryOrchestrator {
     if (salient.length) {
       blocks.push(`[MARCANTES]\n${salient.map((e) => `- ${e.content ?? e.summary}`).join("\n")}`);
     }
+    function formatMsgTime(ts) {
+      if (!ts) return "";
+      try {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
+      } catch {
+        return "";
+      }
+    }
+
     if (retrieved.group?.length) {
       blocks.push(
         `[GRUPO — CONTEXTO RECENTE]\n${retrieved.group
           .slice(0, 12)
           .map((e) => {
-            const who = e.speakerName || e.userId || "?";
+            const rawWho = e.speakerName || e.userId || "?";
+            const isSelf = String(rawWho).toLowerCase() === "teto" || e.userId === "teto";
+            let who = isSelf ? "Teto (você)" : rawWho;
+            if (String(who).includes("Gabbis( ˘ ³˘)♥")) who = "Gabbis";
             const mark = e.addressedToTeto ? "" : " (não era pra você)";
-            return `- ${who}${mark}: ${e.text}`;
+            const idPrefix = e.id ? `[ID: ${e.id}] ` : "";
+            const quote = e.quotedMessageId ? ` [reply a ID: ${e.quotedMessageId}]` : "";
+            
+            let text = e.text;
+            if (e.id && Array.isArray(retrieved.multimodal)) {
+              const matched = retrieved.multimodal.find(m => m.messageId === e.id);
+              if (matched) {
+                text = `[${matched.mediaType} - ${matched.text}]`;
+              }
+            }
+
+            const msgTime = formatMsgTime(e.ts);
+            const timeStr = msgTime ? `[${msgTime}] ` : "";
+
+            return `${timeStr}${idPrefix}- ${who}${mark}${quote}: ${text}`;
           })
           .join("\n")}`
       );

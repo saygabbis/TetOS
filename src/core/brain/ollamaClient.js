@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+
 export class OllamaClient {
   constructor({
     baseUrl,
@@ -87,4 +89,61 @@ export class OllamaClient {
     }
     return text;
   }
+
+  /**
+   * Chat multimodal (mesmo protocolo da Sellye: POST /api/chat com images em base64).
+   * @param {{ role: string, content: string }[]} messages
+   * @param {string[]} [imagePaths] caminhos locais codificados na última mensagem user
+   */
+  async chat(messages = [], { imagePaths = [], timeoutMs = this.timeoutMs } = {}) {
+    const encoded = encodeLocalImages(imagePaths);
+    const payloadMessages = (messages ?? []).map((m) => ({
+      role: m.role ?? "user",
+      content: String(m.content ?? "")
+    }));
+    if (encoded.length && payloadMessages.length) {
+      const last = payloadMessages[payloadMessages.length - 1];
+      last.images = encoded;
+    }
+
+    const controller = new AbortController();
+    const tm = Number(timeoutMs);
+    const waitMs = Number.isFinite(tm) && tm > 0 ? Math.floor(tm) : this.timeoutMs;
+    const timeout = setTimeout(() => controller.abort(), waitMs);
+    const response = await fetch(`${this.baseUrl}/api/chat`, {
+      method: "POST",
+      headers: this._headers(),
+      body: JSON.stringify({
+        model: this.model,
+        messages: payloadMessages,
+        stream: false,
+        options: {
+          temperature: this.temperature,
+          ...(this.numPredict != null ? { num_predict: this.numPredict } : {})
+        }
+      }),
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeout));
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Ollama chat error: ${response.status} ${text}`);
+    }
+
+    const data = await response.json();
+    return String(data?.message?.content ?? "").trim();
+  }
+}
+
+function encodeLocalImages(imagePaths = []) {
+  const encoded = [];
+  for (const imagePath of imagePaths ?? []) {
+    try {
+      if (!imagePath || !existsSync(imagePath)) continue;
+      encoded.push(readFileSync(imagePath).toString("base64"));
+    } catch {
+      /* ignore */
+    }
+  }
+  return encoded;
 }

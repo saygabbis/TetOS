@@ -8,6 +8,8 @@ import { slimMetaForStorage } from "../memory/slimMeta.js";
 import { formatGroupRosterBlock } from "../channels/groupRoster.js";
 import { buildMultiBubbleRhythmBlock } from "../../modules/chat/bubbleComposer.js";
 import { formatConversationPhaseBlock } from "../brain/ConversationPhaseEngine.js";
+import { formatRepertoireForPrompt } from "../../integrations/whatsapp/stickerRepertoire.js";
+import { DEFAULTS } from "../../infra/config/defaults.js";
 
 export class Agent {
   constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder, brainOrchestrator = null }) {
@@ -67,16 +69,45 @@ export class Agent {
         : this.shortTerm.getAll(sessionKey);
     const lastAssistant = [...historySource].reverse().find((m) => m?.role === "assistant");
     const assistantJustStatedIdentity = Agent.containsIdentityLoop(lastAssistant?.content);
-    const conversationText = historySource
-      .map((msg) => {
-        const msgId = msg.meta?.messageId ?? msg.messageId ?? "";
-        const idPrefix = msgId ? `[ID: ${msgId}] ` : "";
-        const quote = msg.meta?.quotedMessage
-          ? ` [reply a: «${String(msg.meta.quotedMessage).slice(0, 120)}»]`
-          : "";
-        return `${idPrefix}${msg.role}${quote}: ${msg.content}`;
-      })
-      .join("\n");
+    function formatMsgTime(ts) {
+      if (!ts) return "";
+      try {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
+      } catch {
+        return "";
+      }
+    }
+
+    const conversationText = meta?.channelTimelineText
+      ? String(meta.channelTimelineText)
+      : historySource
+          .map((msg) => {
+            const msgId = msg.meta?.messageId ?? msg.messageId ?? "";
+            const idPrefix = msgId ? `[ID: ${msgId}] ` : "";
+            const quote = msg.meta?.quotedMessage
+              ? ` [reply a: «${String(msg.meta.quotedMessage).slice(0, 120)}»]`
+              : "";
+
+            let content = msg.content;
+            if (msgId && Array.isArray(memoryBundle?.multimodal)) {
+              const matchedMedia = memoryBundle.multimodal.find((e) => e.messageId === msgId);
+              if (matchedMedia) {
+                content = `[${matchedMedia.mediaType} - ${matchedMedia.text}]`;
+              }
+            }
+
+            const msgTime = formatMsgTime(msg.ts || msg.meta?.ts || msg.createdAt || msg.timestamp);
+            const timeStr = msgTime ? `[${msgTime}] ` : "";
+            const who =
+              msg.role === "assistant"
+                ? "Teto (Você)"
+                : msg.meta?.speakerName || msg.meta?.userId || "Usuário";
+
+            return `${timeStr}${who} (message id: ${msgId || "?"}): "${content}"${quote}`;
+          })
+          .join("\n\n");
 
     const {
       resumedAfterClose,
@@ -88,11 +119,30 @@ export class Agent {
       reminderContext,
       operationContext,
       mediaContext,
+      historicalMultimodalContext,
       ...metaRest
     } = meta ?? {};
-    const metaBlock = Object.keys(metaRest).length
-      ? ["[META]", Object.entries(metaRest).map(([k, v]) => `${k}: ${v}`).join("\n")]
+    // Apenas campos primitivos e úteis — objetos grandes e duplicatas de blocos dedicados são omitidos
+    const META_ALLOWLIST = new Set([
+      "userId", "sessionId", "channelId", "isGroup", "isOwner",
+      "channelMode", "groupAddressKind", "speakerName", "participantId",
+      "quotedMessageId", "isReplyToBot", "selfImageDetected", "closeDecision",
+      "groupEngagementActive", "tone", "userPronouns", "musicLoreBlock",
+      "brainOrchestratorEnabled", "recentHistoryCount"
+    ]);
+    const metaEntries = Object.entries(metaRest).filter(([k, v]) => {
+      if (!META_ALLOWLIST.has(k)) return false;
+      return v !== null && v !== undefined && v !== false && v !== "";
+    });
+    const metaBlock = metaEntries.length
+      ? ["[META]", metaEntries.map(([k, v]) => `${k}: ${v}`).join("\n")]
       : [];
+
+    const stickersPath = meta?.stickersPath ?? DEFAULTS.stickersPath;
+    const repertoireLine = formatRepertoireForPrompt(stickersPath);
+    const repertoireModeLine = meta?.repertoireModeActive
+      ? "Modo repertório automático ATIVO para este usuário — figurinhas que ele mandar ou encaminhar já entram no repertório."
+      : 'Modo repertório automático inativo — ative com modoRepertorio("on") ou peça para usar .repertorio on';
 
     const actionCommandsBlock = [
       "[PROTOCOLO DE COMANDOS DE AÇÃO - OBRIGATÓRIO]",
@@ -100,21 +150,45 @@ export class Agent {
       "Cada comando deve ser escrito em uma nova linha.",
       "Comandos válidos disponíveis:",
       '1. reagir("emoji")',
-      '   Reage à última mensagem recebida com um emoji (ex: ❤️, 😂, 👍, 🔥). Sem limites de cooldown.',
+      '   Reage à última mensagem recebida. Use RARAMENTE — só quando uma reação sozinha basta (ex: curtir uma piada sem precisar responder). NUNCA combine reagir com mensagem ou sticker na mesma resposta.',
       '2. mensagem("texto", "id_mensagem_opcional")',
-      '   Envia uma mensagem de texto. Se passar o segundo argumento (id_mensagem_opcional), responderá citando/marcando (quote/reply) o ID especificado.',
-      '   Você pode e deve enviar múltiplas mensagens de texto consecutivas em linhas separadas para simular várias bolhas digitadas por um humano no WhatsApp!',
-      '3. sticker("chave", "id_mensagem_opcional")',
-      '   Envia uma figurinha. Chaves válidas: "teto-linguinha", "teto-pao", "teto-saliente". Opcionalmente cita o ID especificado no segundo argumento.',
+      '   Envia texto. O segundo argumento (quote/reply) é OPCIONAL e só deve ser usado para citar mensagens MAIS ANTIGAS no `[RECENT CONVERSATION]` — algo que subiu no histórico, não a mensagem que acabou de chegar.',
+      '   Para responder à última mensagem do chat, use mensagem("...") SEM segundo argumento.',
+      '   Você pode enviar múltiplas bolhas em linhas separadas.',
+      '3. sticker("chave_ou_message_id", "opcional")',
+      '   Duas formas:',
+      '   a) Enviar figurinha do repertório: sticker("teto-linguinha"), sticker("teto-pao"), sticker("teto-saliente") ou qualquer chave aprendida (ver abaixo). Segundo arg opcional = quote em msg antiga.',
+      '   b) Criar figurinha de mídia do chat (equivalente a .sticker): sticker("message_id") ou sticker("message_id", "10s") para limitar duração de vídeo/GIF. Stretch.',
+      `   ${repertoireLine}`,
+      '4. salvarSticker("message_id", "chave_opcional") — Salva figurinha no repertório. **Sem chave**, o leitor de imagem analisa a figurinha e gera o nome/chave automaticamente (ex.: gato-bravo). Com chave opcional, usa o nome que você passar. Se pedirem "adiciona/salva essa figurinha", use salvarSticker("message_id") sem chave.',
+      '   Aliases: salvarRepertorio(...), adicionarRepertorio(...).',
+      '5. modoRepertorio("on"|"off") — Liga/desliga modo repertório automático: com "on", toda figurinha que o usuário mandar ou encaminhar para você é salva no repertório sem precisar de salvarSticker. Aliases: ativarRepertorio(), desativarRepertorio().',
+      `   ${repertoireModeLine}`,
+      '   No modo repertório automático ou ao salvar sem chave, o sistema nomeia a figurinha pela análise visual.',
+      '6. fsticker("message_id", "opcional") — Igual .fsticker: figurinha sem cortar (contain). Duração opcional: "10s".',
+      '7. csticker("message_id", "opcional") — Igual .csticker: recorta o centro (crop).',
+      '8. optimize("message_id") — Comprime figurinha existente (equivalente a .optimize).',
+      '9. removebg("message_id", "opcional") — Remove fundo de imagem ou figurinha estática. Args extras: cor de fundo (ex. "verde") e potência ("leve", "media", "forte"). Ex.: removebg("3EB0...", "verde", "forte").',
+      '10. toimage("message_id") — Figurinha → imagem ou GIF/vídeo (equivalente a .toimg). Só funciona com stickers.',
+      "",
+      "COMANDOS DE MÍDIA — REGRAS:",
+      "- Todos usam o **message id** (hex 3EB...) da mensagem que contém a mídia no `[RECENT CONVERSATION]`.",
+      "- NUNCA use user id numérico — só message id.",
+      "- sticker/fsticker/csticker aceitam imagem, vídeo ou GIF da mensagem citada.",
+      "- Quando alguém mandar uma figurinha legal e pedir pra você guardar/aprender, use salvarSticker ou modoRepertorio(\"on\") se quiser salvar tudo automaticamente.",
       "",
       "REGRAS DE OURO:",
-      '- NUNCA coloque texto solto fora dos comandos de ação. Todo texto de resposta deve estar dentro de mensagem("..."), reagir("...") ou sticker("...").',
-      "- Para citar ou responder a uma mensagem específica, procure o prefixo [ID: ...] no histórico e passe a ID exata como o segundo argumento.",
-      '- Se a conversa acabou e não há o que falar, você pode responder apenas com reagir("...") ou usar a instrução silêncio se couber.',
-      "Exemplo de resposta válida contendo múltiplos comandos:",
-      'reagir("😂")',
-      'mensagem("mentira que você fez isso kkk")',
-      'mensagem("não acredito de jeito nenhum", "msg_12345")'
+      '- NUNCA coloque texto solto fora dos comandos de ação. Use mensagem("..."), reagir("..."), sticker("..."), salvarSticker("...") ou os comandos de mídia acima.',
+      "- DIRECIONAMENTO: Você pode responder a falas de outras pessoas no grupo, não só à última mensagem. Para citar algo lá de cima, localize `(message id: ...)` no `[RECENT CONVERSATION]` e passe esse ID como segundo argumento.",
+      "- ID DE MENSAGEM vs ID DE PESSOA: O segundo argumento de mensagem(...)/sticker(...) deve ser o **message id** (hex tipo 3EB0F91A291E21535654C7). O `user id` numérico identifica a PESSOA — NUNCA use user id para citar/reply.",
+      "- REPLY SÓ LÁ EM CIMA: NÃO use quote/reply na mensagem que acabou de chegar nem nas 2–3 mais recentes do histórico. Resposta direta ao que acabou de ser dito = mensagem(\"...\") ou sticker(\"...\") sem ID. Quote é para puxar contexto de mais cedo no chat.",
+      "- STICKERS > REAÇÕES: Em grupos, quando quiser reagir visualmente, prefira sticker(...) em vez de reagir(...). Reserve reagir para quando não houver nada a dizer em texto nem sticker.",
+      "- MENÇÕES REAIS: Para marcar alguém no WhatsApp (notificação azul), use @nome dentro de mensagem(...). Aceita @Gabbis ou @gabbis; prefixo parcial único também (@Kzer → Kzer0). Apelidos do [GRUPO — QUEM ESTÁ AQUI] valem. Sem @ é só texto.",
+      '- Se a conversa acabou e não há o que falar, pode usar só reagir("...") ou silêncio.',
+      "Exemplo — resposta à última msg + comentário em msg antiga:",
+      'sticker("teto-linguinha")',
+      'mensagem("sobre o que você falou agora, concordo kkk")',
+      'mensagem("aquilo lá em cima faz sentido sim", "3EB0131C49E0EDE0EC4313")'
     ];
 
     const fallbackBlock =
@@ -165,8 +239,7 @@ export class Agent {
         ? [
             "[ESTILO DESTE USUÁRIO — aprendido no papo]",
             ...styleHint.learnedStyleLines,
-            "Adapte o gingado pra ESTA pessoa: soe natural com ela/ele, não genérica. Você continua sendo a Teto — só calibra vocabulário e energia.",
-            "Pode reutilizar expressões que eles já usaram; gírias brasileiras de zap (oxi, mds, aff, vei, né, tipo) cabem quando o clima pedir."
+            "- DIRETRIZ: Calibre seu vocabulário e nível de energia para soar íntima e natural especificamente para esta pessoa, mantendo sempre a personalidade diva/tsundere da Kasane Teto."
           ]
         : [];
 
@@ -185,20 +258,21 @@ export class Agent {
 
     const brazilianZapBlock = [
       "[BRASILEIRICE — ZAP]",
-      "Risada e leveza no TECLADO (kkk, kkkk, KKKKK, ksks) — não 😂🤣 como hábito.",
-      "Seja expressiva de jeito brasileiro: interjeições (oxi, mds, aff, poxa, ora), 'tipo', 'mano/vei', vogal esticada, caps pontual.",
-      "Vícios de linguagem leves e naturais são bem-vindos (né no fim, aff, sla) quando couber — gingado de zap, não redação.",
-      "Use o cérebro e o histórico: naturalizar com cada pessoa é o objetivo, não soar robô educada."
+      "- ESTILO: Digite como uma pessoa real brasileira no WhatsApp. Evite soar formal, robótica ou excessivamente educada.",
+      "- RISADAS: Expresse risadas puramente por texto (kkk, ksks). NUNCA use emojis de riso (😂, 🤣) como reação padrão de risada.",
+      "- VOCABULÁRIO DE CHAT: Use naturalmente gírias e interjeições brasileiras (ex: 'oxi', 'mds', 'aff', 'poxa', 'tipo', 'mano', 'vei', 'né', 'sla').",
+      "- RITMO NATURAL: Use repetição de vogais para dar entonação (ex: 'oieee', 'nãao') e escreva em caixa alta (CAPS) palavras isoladas para dar ênfase (ex: 'NÃO', 'MDs').",
+      "- ADAPTAÇÃO: Observe o histórico recente para calibrar seu nível de intimidade e energia com o interlocutor."
     ];
 
     const keyboardLaughterBlock = [
       "[RISADA NO TECLADO — kkk]",
-      "Risada no zap = texto: kkk, kkkk, KKKKK, ksks, kskd — varie quantidade de k, maiúsculas e mistura (ksks) conforme a energia do momento.",
-      "Pode usar no fim de uma frase pra leveza ou quando algo é engraçado/constrangedor — mas NÃO em toda mensagem; alterne com respostas secas.",
-      "Se você acabou de mandar kkk e a pessoa não riu de volta, a próxima resposta pode ir sem risada.",
-      "Papo sério, triste, meloso ou vulnerável → segure o kkk; deixa a frase respirar sem rindo sozinha.",
-      "Espelhe quem tá falando com você: poucos k deles → kkk; rajada → kkkkk/KKKKK; caótico → ksks curto.",
-      "Proibido emoji de riso (😂🤣) como muleta — se quiser rir, escreva no teclado."
+      "- FORMATO: Use variações de risada textual baseada na energia: 'kkk' (leve), 'kkkkk' ou 'KKKKK' (alta energia/empolgação), ou 'ksks' / 'ksksk' (mais irônica ou tímida).",
+      "- CALIBRAÇÃO: Não ria em todas as bolhas de mensagem. Alterne com respostas normais ou secas para parecer natural.",
+      "- ESPELHAMENTO: Ajuste a intensidade da risada à do usuário. Se ele mandar apenas 'kkk', responda com risada curta. Se ele mandar uma rajada 'KKKKKKK', você pode responder no mesmo nível caótico.",
+      "- CONTEXTO: Segure as risadas em conversas sérias, tristes ou melancólicas. Deixe a frase respirar sem rir sozinha.",
+      "- REGRA DE REPETIÇÃO: Se você mandou 'kkk' na mensagem anterior e o usuário não riu de volta, não inclua risadas na próxima resposta.",
+      "- PROIBIÇÃO CRÍTICA: Não use emojis 😂 ou 🤣 para expressar riso. Prefira sempre rir escrevendo."
     ];
 
     const brainBlocks = meta?.brainBlocks ?? null;
@@ -281,12 +355,18 @@ export class Agent {
         : [];
 
     const historyAwareBlock =
-      meta?.styleHint?.hasConversationHistory || (Array.isArray(history) && history.length > 0)
+      meta?.styleHint?.hasConversationHistory ||
+      (Array.isArray(history) && history.length > 0) ||
+      Boolean(conversationText)
         ? [
             "[CONTINUIDADE]",
             "Já existe histórico neste chat. Continue o assunto — proibido resetar com cumprimento de bot ('Oi, tudo bem?').",
-            "Cada frase precisa ter começo, meio e fim. Nada de fragmento solto."
-          ]
+            "Cada frase precisa ter começo, meio e fim. Nada de fragmento solto.",
+            meta?.isGroup
+              ? "Leia TODAS as linhas de [RECENT CONVERSATION] antes de responder — pedidos, tarefas e perguntas de mensagens anteriores continuam valendo mesmo que você responda só uma pessoa ou cite só uma msg. Não finja que não viu o que foi pedido lá em cima."
+              : null,
+            "Se no histórico aparecer [figurinha], [sticker] ou [imagem] seguido de descrição visual, trate como se tivesse visto aquela mídia — é o leitor de imagem descrevendo o que foi mandado."
+          ].filter(Boolean)
         : [];
 
     const privacyBlock = [
@@ -564,7 +644,11 @@ export class Agent {
           longGap ? "Faz bastante tempo — pode retomar leve ou cumprimentar se fizer sentido." : null
         ].filter(Boolean)
       : [];
-    const episodicMemoryBlock = memoryHints.length ? memoryHints : [];
+    const filteredMemoryHints =
+      meta?.isGroup && conversationText
+        ? memoryHints.filter((h) => !String(h).startsWith("[GRUPO — CONTEXTO RECENTE]"))
+        : memoryHints;
+    const episodicMemoryBlock = filteredMemoryHints.length ? filteredMemoryHints : [];
     const initCtx = meta?.initiationContext ?? null;
     const isInitiative = Boolean(meta?.isInitiative || meta?.isNudge || initCtx);
     const ghost = initCtx?.ghosting ?? null;
@@ -634,16 +718,57 @@ export class Agent {
         : null
     ].filter(Boolean);
 
-    const profileBlock = profile?.facts && Object.keys(profile.facts).length
-      ? ["[USER PROFILE]", Object.entries(profile.facts).map(([k, v]) => `${k}: ${v}`).join("\n")]
-      : [];
+    const channelScope = meta?.isGroup
+      ? `group:${meta.channelId ?? meta.sessionId ?? "unknown"}`
+      : "direct";
+    const profileBlock = [];
+    if (meta?.isGroup) {
+      const activeUserIds = new Set();
+      if (Array.isArray(historySource)) {
+        for (const msg of historySource) {
+          const uid = msg.meta?.participantId || msg.userId || (msg.role === "user" ? meta.userId : null);
+          if (uid && uid !== "teto") activeUserIds.add(uid);
+        }
+      }
+      if (meta?.userId && meta.userId !== "teto") {
+        activeUserIds.add(meta.userId);
+      }
+
+      const profileLines = [];
+      for (const uid of activeUserIds) {
+        const prof = this.longTerm.getProfile(uid, channelScope);
+        if (prof?.facts && Object.keys(prof.facts).length > 0) {
+          const canonicalName = prof.facts.preferredName || prof.facts.displayName || prof.facts.name || uid;
+          const cleanName = String(canonicalName).includes("Gabbis( ˘ ³˘)♥") ? "Gabbis" : canonicalName;
+          profileLines.push(`- ${cleanName}:`);
+          for (const [k, v] of Object.entries(prof.facts)) {
+            const cleanVal = typeof v === "string" && v.includes("Gabbis( ˘ ³˘)♥") ? "Gabbis" : v;
+            profileLines.push(`  ${k}: ${cleanVal}`);
+          }
+        }
+      }
+      if (profileLines.length > 0) {
+        profileBlock.push("[USER PROFILE]", profileLines.join("\n"));
+      }
+    } else {
+      if (profile?.facts && Object.keys(profile.facts).length > 0) {
+        const lines = Object.entries(profile.facts).map(([k, v]) => {
+          const cleanVal = typeof v === "string" && v.includes("Gabbis( ˘ ³˘)♥") ? "Gabbis" : v;
+          return `${k}: ${cleanVal}`;
+        });
+        profileBlock.push("[USER PROFILE]", lines.join("\n"));
+      }
+    }
     const mediumBlock = mediumText ? ["[MEDIUM MEMORY]", mediumText] : [];
     const memoryBlock = memoryText
       ? ["[MEMORY]", memoryText]
       : [];
 
     const conversationBlock = conversationText
-      ? ["[RECENT CONVERSATION]", conversationText]
+      ? [
+          meta?.channelTimelineText ? "[RECENT CONVERSATION — histórico do canal]" : "[RECENT CONVERSATION]",
+          conversationText
+        ]
       : [];
 
     const quotedText = String(meta?.quotedMessage ?? quotedMessage ?? "").trim();
@@ -666,16 +791,6 @@ export class Agent {
         : [];
 
     const groupRosterBlock = meta?.isGroup ? formatGroupRosterBlock(meta?.groupRoster) : [];
-
-    const groupSpeakerBlock =
-      meta?.isGroup && (meta?.speakerName || meta?.participantId)
-        ? [
-            "[GRUPO — QUEM FALOU]",
-            meta.speakerName
-              ? `Esta mensagem veio de ${meta.speakerName} no grupo. Responda sabendo quem falou; não confunda com outras pessoas do histórico.`
-              : `Remetente (id): ${meta.participantId}. Responda no contexto do grupo sem misturar quem disse o quê.`
-          ]
-        : [];
 
     const groupMultiSpeakerBlock =
       meta?.isGroup && meta?.segmentMultiSpeaker
@@ -700,15 +815,6 @@ export class Agent {
               "O usuário mandou várias linhas seguidas (ou o grupo está ativo). Responda cobrindo todos os pontos relevantes.",
               "Não ignore perguntas no meio do texto; mantenha o fio do assunto sem resetar a conversa."
             ]
-        : [];
-
-    const groupEngagementBlock =
-      meta?.isGroup && meta?.groupEngagementActive
-        ? [
-            "[GRUPO — CONVERSA ATIVA COM ESTA PESSOA]",
-            "Ela te chamou há pouco (menção ou nome em contexto). Você ainda está no fio com ELA — pode responder sem nova @.",
-            "Não confunda com o resto do grupo falando entre si; foque no que esta pessoa disse."
-          ]
         : [];
 
     const groupAddressBlock =
@@ -753,7 +859,16 @@ export class Agent {
       ? [
           "[MEDIA CONTEXT]",
           String(mediaContext),
-          "Use esse bloco como percepção disponível da mídia atual. Se houver descrição visual, transcrição de áudio, legenda ou análise de sticker/imagem, responda com base nisso em vez de dizer que não consegue ver a mídia."
+          "Use esse bloco como percepção disponível da mídia atual. Se houver descrição visual, transcrição de áudio, legenda ou análise de sticker/imagem, responda com base nisso em vez de dizer que não consegue ver a mídia.",
+          "Figurinhas da Kasane Teto (cabelo rosa/vermelho, brocas) podem ser você — reaja em primeira pessoa se couber."
+        ]
+      : [];
+
+    const recentMediaBlock = historicalMultimodalContext
+      ? [
+          "[MÍDIAS RECENTES NESTE CHAT]",
+          String(historicalMultimodalContext),
+          "Imagens/figurinhas anteriores já analisadas — use essas descrições. Não diga que não viu se a descrição estiver aqui ou no [RECENT CONVERSATION]."
         ]
       : [];
 
@@ -842,19 +957,17 @@ export class Agent {
       ...conversationBlock,
       ...quotedBlock,
       ...groupRosterBlock,
-      ...groupSpeakerBlock,
       ...groupMultiSpeakerBlock,
-      ...groupEngagementBlock,
       ...groupAddressBlock,
       ...burstContextBlock,
       ...searchBlock,
       ...documentBlock,
       ...operationBlock,
       ...reminderBlock,
+      ...recentMediaBlock,
       ...selfImageBlock,
       ...mediaBlock,
       ...metaBlock,
-      ...factsBlock,
       ...reinforceBlock,
       ...fallbackBlock,
       "[INPUT]",
@@ -906,7 +1019,20 @@ export class Agent {
         ? "[TONE: calm — respostas curtas, neutras, sem exagero; reconhecer pedido de calma]"
         : "[TONE: playful — leve, espontânea, pode brincar e rir no ritmo do usuário; não ser reclusa nem só 'educada' — ainda com noção]";
     const fullPrompt = `${prompt}\n\n${toneInstruction}`;
+
+    console.log(
+      `\n[agent] === FULL PROMPT (userId=${meta?.userId ?? "?"}, session=${sessionKey}) ===\n` +
+      fullPrompt +
+      `\n[agent] === END FULL PROMPT ===\n`
+    );
+
     const reply = await this.brain.generate(fullPrompt);
+
+    console.log(
+      `\n[agent] === LLM RAW RESPONSE (userId=${meta?.userId ?? "?"}, session=${sessionKey}) ===\n` +
+      String(reply ?? "").trim() +
+      `\n[agent] === END LLM RESPONSE ===\n`
+    );
 
     if (!Agent.isSilentReply(reply)) {
       this.shortTerm.add({ role: "assistant", content: reply, meta: slimMeta }, sessionKey);

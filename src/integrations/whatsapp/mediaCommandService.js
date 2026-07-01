@@ -35,6 +35,7 @@ export class MediaCommandService {
     this.mediaProcessor = mediaProcessor;
     this.safeSendMessage = safeSendMessage;
     this.logPrefix = logPrefix;
+    this.agentMediaInFlight = new Map();
   }
 
   appendCommandEvent(event) {
@@ -248,6 +249,145 @@ export class MediaCommandService {
         text: `Figurinha otimizada: ${beforeKb} KiB -> ${afterKb} KiB. Pode mandar .optimize de novo pra comprimir mais.`
       });
     }
+  }
+
+  async runAgentMediaCommand({
+    command,
+    messageId = null,
+    args = [],
+    media,
+    remoteJid,
+    userId = null,
+    targetSource = "agent"
+  } = {}) {
+    const cmd = String(command ?? "").toLowerCase();
+    const mid = String(messageId ?? "").trim();
+    const dedupeKey = `${remoteJid}:${cmd}:${mid}`;
+    if (mid && this.agentMediaInFlight.has(dedupeKey)) {
+      return this.agentMediaInFlight.get(dedupeKey);
+    }
+
+    const run = this._runAgentMediaCommandOnce({
+      command: cmd,
+      messageId: mid,
+      args,
+      media,
+      remoteJid,
+      userId,
+      targetSource
+    });
+    if (mid) {
+      this.agentMediaInFlight.set(dedupeKey, run);
+      run.finally(() => this.agentMediaInFlight.delete(dedupeKey));
+    }
+    return run;
+  }
+
+  async _runAgentMediaCommandOnce({
+    command: cmd,
+    messageId = null,
+    args = [],
+    media,
+    remoteJid,
+    userId = null,
+    targetSource = "agent"
+  } = {}) {
+    if (!media?.path) {
+      await this.safeSendMessage(remoteJid, {
+        text: "Nao achei midia com esse message id. Use o message id (hex 3EB...) da mensagem com imagem, video, GIF ou figurinha no historico."
+      });
+      return false;
+    }
+    if (cmd === "toimg" && media.type !== "sticker") {
+      await this.safeSendMessage(remoteJid, {
+        text: "toimage so funciona com figurinhas — passe o message id de uma sticker."
+      });
+      return false;
+    }
+
+    const parsedCommand = { command: cmd, args: args ?? [] };
+
+    return this.commandQueue.enqueue(remoteJid, async () => {
+      const startedAt = Date.now();
+      const resolved = { media, source: targetSource };
+      try {
+        if (cmd === "toimg") {
+          await this.sendPresence("composing", remoteJid);
+          await this.safeSendMessage(remoteJid, { text: "Convertendo figurinha..." });
+        } else if (["sticker", "fsticker", "csticker"].includes(cmd)) {
+          await this.sendPresence("composing", remoteJid);
+          await this.safeSendMessage(remoteJid, {
+            text: "Gerando figurinha... pode demorar um pouco em GIF/video."
+          });
+        } else if (cmd === "removebg") {
+          const bgOptsEarly = resolveRemoveBgOptions(parsedCommand.args);
+          if (!bgOptsEarly.error) {
+            const potencyKey = bgOptsEarly.model ?? this.runtime.defaults.removeBgModel ?? "small";
+            const potencyLabel = REMOVE_BG_MODEL_LABELS[potencyKey] ?? potencyKey;
+            const animTarget = await isAnimatedRemoveBgTarget(resolved.media);
+            const statusText = animTarget
+              ? "Removendo fundo animado (modelo local - nao gasta creditos remove.bg)... pode demorar bastante."
+              : `Removendo fundo (${potencyLabel})...`;
+            await this.sendPresence("composing", remoteJid);
+            await this.safeSendMessage(remoteJid, { text: statusText });
+            await this.sendPresence("paused", remoteJid);
+          }
+        }
+
+        const output = await this.processCommand(parsedCommand, resolved, remoteJid);
+        if (output === true) return true;
+
+        const skipToimgPlayback =
+          cmd === "toimg" && output.kind === "video" && output.toimgPlaybackSkipped === true;
+        if (!output?.path && !skipToimgPlayback) throw new Error("processing failed");
+
+        await this.sendOutput(parsedCommand, output, remoteJid);
+
+        const okEvent = {
+          commandName: cmd,
+          status: "ok",
+          targetSource,
+          inputType: media.type,
+          outputType: output.kind,
+          remoteJid,
+          actorId: userId,
+          messageId,
+          elapsedMs: Date.now() - startedAt
+        };
+        this.audit(okEvent);
+        this.appendCommandEvent(okEvent);
+        return true;
+      } catch (error) {
+        await this.sendPresence("paused", remoteJid);
+        if (isWaConnectionError(error)) {
+          console.warn(`${this.logPrefix} ${cmd} interrompido - conexao caiu (${remoteJid})`);
+          return true;
+        }
+        const failText =
+          cmd === "removebg"
+            ? resolved.media?.type === "sticker"
+              ? "Nao consegui remover o fundo dessa figurinha. Estatica: removebg forte. Animada e instavel - tenta uma figurinha estatica."
+              : "Nao consegui remover o fundo desta midia. Imagem/figurinha estatica: removebg forte. GIF/video animado costuma falhar no modelo local."
+            : `Falha ao processar ${cmd}: ${error.message}`;
+        await this.safeSendMessage(remoteJid, { text: failText });
+        this.appendCommandEvent({
+          commandName: cmd,
+          status: "error",
+          reason: error.message,
+          targetSource,
+          inputType: media?.type ?? null,
+          remoteJid,
+          actorId: userId,
+          messageId
+        });
+        return false;
+      }
+    });
+  }
+
+  /** @deprecated use runAgentMediaCommand */
+  async runToImageFromMedia(opts = {}) {
+    return this.runAgentMediaCommand({ ...opts, command: "toimg" });
   }
 
   async sendToImgOutput(output, outBuffer, remoteJid) {

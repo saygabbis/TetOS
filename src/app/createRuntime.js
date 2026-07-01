@@ -22,6 +22,7 @@ import { ChannelRegistry } from "../core/channels/channelRegistry.js";
 import { GroupEngagementWindow } from "../core/channels/groupEngagementWindow.js";
 import { ChannelAdminService } from "../core/channels/channelAdmin.js";
 import { TetoActivationStore } from "../core/channels/TetoActivationStore.js";
+import { StickerRepertoireModeStore } from "../integrations/whatsapp/stickerRepertoireModeStore.js";
 import { runMessagePipeline } from "../core/pipeline/messagePipeline.js";
 import { SearchAdapter } from "../modules/search/searchAdapter.js";
 import { SearchModule } from "../modules/search/searchModule.js";
@@ -39,6 +40,7 @@ import { AudioTranscriber } from "../modules/audio/audioTranscriber.js";
 import { VisualAnalysisStore } from "../modules/vision/visualAnalysisStore.js";
 import { VisualAnalyzer } from "../modules/vision/visualAnalyzer.js";
 import { SemanticVisionAnalyzer } from "../modules/vision/semanticVisionAnalyzer.js";
+import { OllamaVisionAnalyzer } from "../modules/vision/ollamaVisionAnalyzer.js";
 import { Logger } from "../infra/observability/logger.js";
 import { MetricsStore } from "../infra/observability/metricsStore.js";
 import { loadCharacter, loadPersonality } from "../core/personality/index.js";
@@ -106,6 +108,7 @@ export function createRuntime() {
   const tetoActivation = new TetoActivationStore(DEFAULTS.tetoActivationPath, {
     activationRequired: DEFAULTS.tetoActivationRequired
   });
+  const stickerRepertoireMode = new StickerRepertoireModeStore(DEFAULTS.stickerRepertoireModePath);
   const brain = createLlmClient({
     model: DEFAULTS.llmProvider === "minimax" ? DEFAULTS.minimaxModel : DEFAULTS.model,
     temperature: DEFAULTS.ollamaTemperature,
@@ -135,6 +138,23 @@ export function createRuntime() {
   });
   const visualAnalyzer = new VisualAnalyzer();
   const semanticVisionAnalyzer = new SemanticVisionAnalyzer();
+  const visionModel = DEFAULTS.visionModel || DEFAULTS.model;
+  const ollamaVisionAnalyzer = new OllamaVisionAnalyzer({
+    client: new OllamaClient({
+      baseUrl: DEFAULTS.ollamaBaseUrl,
+      model: visionModel,
+      apiKey: DEFAULTS.ollamaApiKey || undefined,
+      temperature: DEFAULTS.ollamaTemperature,
+      numPredict: 120,
+      timeoutMs: DEFAULTS.visionTimeoutMs
+    }),
+    enabled:
+      DEFAULTS.visionAdapter === "ollama" &&
+      DEFAULTS.visionEnabled &&
+      DEFAULTS.mediaEnrichEnabled
+  });
+  const primaryVisionAnalyzer =
+    DEFAULTS.visionAdapter === "ollama" ? ollamaVisionAnalyzer : semanticVisionAnalyzer;
   const reminderScheduler = new ReminderScheduler({
     reminders,
     logger,
@@ -224,11 +244,11 @@ export function createRuntime() {
         soloThoughtIntervalMs: DEFAULTS.soloThoughtIntervalMs,
         searchAdapter,
         workerLlm,
-        visionAdapter: semanticVisionAnalyzer,
+        visionAdapter: primaryVisionAnalyzer,
         adapters: {
           web: searchAdapter,
           worker: workerLlm,
-          vision: semanticVisionAnalyzer
+          vision: primaryVisionAnalyzer
         }
       })
     : null;
@@ -301,6 +321,7 @@ export function createRuntime() {
     groupEngagement,
     channelAdmin,
     tetoActivation,
+    stickerRepertoireMode,
     searchModule,
     documentModule,
     operationRouter,
@@ -315,6 +336,8 @@ export function createRuntime() {
     visualAnalyses,
     visualAnalyzer,
     semanticVisionAnalyzer,
+    ollamaVisionAnalyzer,
+    primaryVisionAnalyzer,
     anonymizer,
     eventLedger,
     behaviorProfiler,

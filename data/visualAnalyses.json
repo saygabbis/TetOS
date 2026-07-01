@@ -22921,16 +22921,6 @@
       "createdAt": "2026-06-12T22:36:00.731Z"
     },
     {
-      "id": "753e2cec-8a52-4824-9253-a10f4406cc11",
-      "userId": "157947506229421",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/ACFD617C73043C558EBDCB9C9337856E-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/ACFD617C73043C558EBDCB9C9337856E-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-12T22:41:56.395Z"
-    },
-    {
       "id": "b68bf8a1-c42f-48f4-983e-abb183d8f531",
       "userId": "190546341540031",
       "channelId": "120363425913528764@g.us",
@@ -23829,16 +23819,6 @@
       "description": "Vídeo (3 quadros): [quadro 1] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-9F31Vq/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-9F31Vq/f_002.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro",
       "source": "local_vision",
       "createdAt": "2026-06-18T17:54:39.765Z"
-    },
-    {
-      "id": "5ef1f9ad-9d3c-43ea-a90c-94e7f40fe413",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/ACE383370FA35D20FFCB6631D6933763-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/ACE383370FA35D20FFCB6631D6933763-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-18T18:18:55.191Z"
     },
     {
       "id": "c013860c-67a9-4bf0-a02d-1d679608bf57",
@@ -25161,16 +25141,6 @@
       "createdAt": "2026-06-25T01:13:48.523Z"
     },
     {
-      "id": "b972c027-fc75-40fc-b9a3-382bef7f45dd",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/3EB055DE58AAB56AB4A5C5-video.mp4",
-      "mediaType": "gif",
-      "description": "GIF/vídeo animado (3 quadros): [quadro 1] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-zY642A/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-zY642A/f_002.png. A análise semântica não ficou disponível, então use apenas pista",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T01:17:05.735Z"
-    },
-    {
       "id": "31b8777a-ffee-4fba-9cb1-baca3089e145",
       "userId": "dm-132813357596880",
       "channelId": "132813357596880@lid",
@@ -25191,26 +25161,6 @@
       "createdAt": "2026-06-25T01:19:44.766Z"
     },
     {
-      "id": "ff010084-6c67-426d-9b0d-1426e8941029",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/3EB0F4B5D7897B8749B62C-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0F4B5D7897B8749B62C-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T01:23:04.545Z"
-    },
-    {
-      "id": "3e7d6fb4-926c-478e-94c9-f1c11d1f3cd3",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/3EB0C22F7B6AD130DB59E4-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0C22F7B6AD130DB59E4-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T01:25:47.467Z"
-    },
-    {
       "id": "50ff2f47-7d0b-4dc8-a77c-f05069a9b289",
       "userId": "171168086683696",
       "channelId": "120363403135646522@g.us",
@@ -25219,26 +25169,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB054439BC8E915F8946D-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-25T01:53:52.658Z"
-    },
-    {
-      "id": "475fc49b-b7a7-4a01-93c9-3a81e8286891",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/ACEDEC3D699321CE2DBB7F1F2BDDB52F-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-1782353356374-frame.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T02:09:16.851Z"
-    },
-    {
-      "id": "908720d3-d4bf-4202-8a4c-0fc57756780b",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/3EB0FA8F9684740BC3CF09-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0FA8F9684740BC3CF09-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T02:33:19.728Z"
     },
     {
       "id": "87100588-eedd-48d5-b5cb-9631bc22d49c",
@@ -25251,20 +25181,10 @@
       "createdAt": "2026-06-25T02:46:08.882Z"
     },
     {
-      "id": "e294a48e-8783-489c-8f65-d33f812e3cb1",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/AC809AB073047C8ACA9035A455E90A28-video.mp4",
-      "mediaType": "gif",
-      "description": "GIF/vídeo animado (3 quadros): [quadro 1] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-ZqgqLB/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-ZqgqLB/f_002.png. A análise semântica não ficou disponível, então use apenas pista",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T03:07:51.513Z"
-    },
-    {
       "id": "4e57c6cf-1beb-4fdb-bd50-ab4ac2eec2f2",
       "userId": "171168086683696",
       "channelId": "120363403135646522@g.us",
-      "mediaPath": "data/media/3EB0130FF89C1B4844A467-image.jpg",
+      "mediaPath": "./data/media/_archive/knowledge/018c50cdd8ab7bf2204c.jpg",
       "mediaType": "image",
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0130FF89C1B4844A467-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
@@ -25279,16 +25199,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0BE478651A1D6205AAC-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-25T03:09:14.602Z"
-    },
-    {
-      "id": "cb467a28-352c-4aab-8e6e-da4c45d47ee7",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/3EB0240E6DC7F7ACBC9E03-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0240E6DC7F7ACBC9E03-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T03:10:44.864Z"
     },
     {
       "id": "71dc4898-4699-493a-b832-c1ff41647b1c",
@@ -25309,16 +25219,6 @@
       "description": "Vídeo (3 quadros): [quadro 1] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-7sPtng/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-7sPtng/f_002.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro",
       "source": "local_vision",
       "createdAt": "2026-06-25T03:13:24.048Z"
-    },
-    {
-      "id": "952ff441-2ad5-40b3-81b8-5730d36c27ab",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/AC737666AB8EB3805D7B7D9E7BEDC1F3-video.mp4",
-      "mediaType": "video",
-      "description": "Vídeo (3 quadros): [quadro 1] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-lSrOVt/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-lSrOVt/f_002.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T03:14:17.751Z"
     },
     {
       "id": "60b73390-9d90-44f7-b3ad-33065adc36c8",
@@ -25651,26 +25551,6 @@
       "createdAt": "2026-06-27T03:06:51.218Z"
     },
     {
-      "id": "e90eafce-c98d-430e-b9e3-08575d10ea5b",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data\\media\\ACC27C1E0F72BD4A8636081B51E2A17E-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data\\media\\ACC27C1E0F72BD4A8636081B51E2A17E-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T14:13:36.932Z"
-    },
-    {
-      "id": "842b655f-a4c3-4fbd-bbbf-f26c8f44b216",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data\\media\\3EB0C914876CD61E98B91E-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data\\media\\3EB0C914876CD61E98B91E-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T14:13:58.946Z"
-    },
-    {
       "id": "c8afa326-246c-42a8-9bc9-f86f3357632e",
       "userId": "190546341540031",
       "channelId": "120363425913528764@g.us",
@@ -25679,16 +25559,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB02B6AF07932945C3578-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-07-01T14:50:30.552Z"
-    },
-    {
-      "id": "8f0c6e84-cc42-4c1e-a578-ab583084fa00",
-      "userId": "5516993061143",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB09594A8D2E241B2DF44-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/3EB09594A8D2E241B2DF44-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T14:50:43.402Z"
     },
     {
       "id": "4f495914-b79c-47d6-9f45-f26ac6c318f8",
@@ -25701,26 +25571,6 @@
       "createdAt": "2026-07-01T14:51:39.063Z"
     },
     {
-      "id": "197560c6-4004-45be-98e2-7ffc708dc54e",
-      "userId": "5516993061143",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB0CA1A695A4EDDA7B091-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/3EB0CA1A695A4EDDA7B091-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T14:51:40.427Z"
-    },
-    {
-      "id": "9966ef39-d0ee-4d0b-9adf-8d839934b3e3",
-      "userId": "5516993061143",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB0540B8E3B0DB2820915-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/3EB0540B8E3B0DB2820915-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T14:51:50.265Z"
-    },
-    {
       "id": "5fad3edc-1d7f-4271-83e9-78e16748f66f",
       "userId": "157947506229421",
       "channelId": "120363425913528764@g.us",
@@ -25729,16 +25579,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB01A98D51B5DC756331A-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-07-01T14:52:02.374Z"
-    },
-    {
-      "id": "d8469142-b911-488c-bcee-9a19fc098352",
-      "userId": "5516993061143",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB0175C8FAD2DFAE1C7DA-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/3EB0175C8FAD2DFAE1C7DA-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T14:52:04.576Z"
     },
     {
       "id": "732da86d-47e7-4db5-8e77-6b868968e398",
@@ -25751,16 +25591,6 @@
       "createdAt": "2026-07-01T14:52:13.476Z"
     },
     {
-      "id": "19604fdb-ebdd-42f1-be34-f534569f47f6",
-      "userId": "5516993061143",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB04C939CC8A1AECD331E-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/3EB04C939CC8A1AECD331E-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T14:52:15.021Z"
-    },
-    {
       "id": "ad0a57df-d11e-47d6-ae0b-fdc5cb2dee05",
       "userId": "190546341540031",
       "channelId": "120363425913528764@g.us",
@@ -25771,24 +25601,234 @@
       "createdAt": "2026-07-01T14:59:48.289Z"
     },
     {
-      "id": "9480986f-0a8a-45e0-a348-74264b56ac3b",
-      "userId": "5516993061143",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB0DC88EFE0FB7D18203A-image.jpg",
+      "id": "0c53e5d6-f1ee-4601-9189-26935fd30d46",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data\\media\\3EB04CA9107B70BC8D01D5-image.jpg",
       "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0DC88EFE0FB7D18203A-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+      "description": "Imagem analisada localmente. Arquivo persistido em data\\media\\3EB04CA9107B70BC8D01D5-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
-      "createdAt": "2026-07-01T15:00:48.898Z"
+      "createdAt": "2026-07-01T16:21:17.697Z"
     },
     {
-      "id": "aeac554f-166d-4f5b-a967-bcc78714c3df",
+      "id": "e081f757-0a67-4710-9fe4-aec4339a9e50",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB0983870515D488EF483-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Cosplayer ruiva fazendo careta engraçada. Momentos brincalhões ou zoeira online.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:18.680Z"
+    },
+    {
+      "id": "677f5088-100c-4701-8a76-86d7fddeefc3",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB0E5F913AA1D4ABF9EAB-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina rosa texto Absolute Cinema. Quando algo for épico demais.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:19.218Z"
+    },
+    {
+      "id": "656b1cd9-a41a-4f90-a80f-00d8976212f4",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB03AD8F76D29138C0715-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina rosa recebendo carinho cabeça. Momentos de fofura e afeto.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:20.068Z"
+    },
+    {
+      "id": "92b31f4c-ac85-4903-a5f0-599fb7434e4d",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB05DDAED86078B74B36F-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Garota ruiva espiando pela porta. Curiosidade, timidez, surpresa ou vigilância.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:22.095Z"
+    },
+    {
+      "id": "43b3e2db-f0ed-4a8e-907a-ed4de7a1d56f",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB019C35FD937E2B37814-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Garota anime triste cabelo vermelho. Quando estiver triste ou decepcionado.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:24.038Z"
+    },
+    {
+      "id": "6db8da43-8b3f-4b6b-9980-2e7211c89bd2",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB0E8686A32A77A086AE4-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Garota acordando bocejando na cama. Quando acordar com muito sono.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:25.753Z"
+    },
+    {
+      "id": "e88575fd-5464-4c99-aeca-fc55e7b0deea",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB0CB46CAF71B9AD4AA05-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Boneca anime sendo martelada agora. Quando quiser expressar frustração extrema.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:27.371Z"
+    },
+    {
+      "id": "9da99cba-d5d0-4702-9ae4-a14f5633dba1",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB0F06C0B2EC937CE3E4A-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Personagem secreta com óculos escuros. Para fingir mistério ou anonimato.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:30.176Z"
+    },
+    {
+      "id": "09a56d8b-a898-4f08-97ef-b788a689e4b6",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB01646B3E290C83B87B4-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina cabelo rosa rindo timidamente. Quando estiver com vergonha feliz.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:31.947Z"
+    },
+    {
+      "id": "daf2f006-94fd-4398-8171-878bb194d3d8",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB0D0A1856BDB2AFE7564-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Garota anime vermelha língua fora. Brincadeiras, deboche, ironia ou diversão.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:29:37.474Z"
+    },
+    {
+      "id": "398075a5-b858-4ecc-9b84-983c3a2dac0b",
       "userId": "5516993061143",
       "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB0804CAD92C389A6792C-document.png",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0804CAD92C389A6792C-document.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+      "mediaPath": "data\\media\\3EB0A6D0C23A2825369BD3-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Anime rosa com capacete militar. Situações absurdas ou humor negro.",
       "source": "local_vision",
-      "createdAt": "2026-07-01T15:00:49.832Z"
+      "createdAt": "2026-07-01T20:39:19.769Z"
+    },
+    {
+      "id": "04d89985-bec8-4c16-a814-6f8f7e3f8ea5",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB0BB388B8041764C0479-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Personagem ruiva, pera, frase confusa. Para expressar confusão ou dúvida.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:41:18.376Z"
+    },
+    {
+      "id": "17d4b912-0c4a-429a-b407-73a38124f165",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB0EDDD2141602EA6E5D3-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina rosa língua para fora. Brincando ou provocando alguém agora.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:42:10.051Z"
+    },
+    {
+      "id": "f2b855df-98c8-4199-8be5-d2f3c00c51d1",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB0F64AB0B6823FA2A372-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina anime rosa língua fora. Expressar alegria ou deboche leve.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:43:01.913Z"
+    },
+    {
+      "id": "84db1b38-5075-4e60-b249-349d818db90e",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB04A43B5CD6D0E8FB261-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Personagem confusa com pera humana. Para expressar confusão ou dúvida.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:43:39.675Z"
+    },
+    {
+      "id": "b780a738-46c7-46ea-9fc7-51422a233dbf",
+      "userId": "157947506229421",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\ACAB6998D93DBE8EFB8BCCBA924DAC8F-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina anime rosa segurando números. Comemorar data ou idade específica.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:45:50.947Z"
+    },
+    {
+      "id": "0ebe3391-5c93-48bf-8074-9b3dd4ea1c2a",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB0605DE72B41339A858D-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Garota anime rosa língua fora. Quando quiser ser brincalhona agora.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:45:57.618Z"
+    },
+    {
+      "id": "4daf0484-f93e-4131-a779-3ee0d64f5c97",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB02B72E2F203E65BC224-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina anime rosa língua fora. Quando estiver brincando ou engraçado.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:46:12.144Z"
+    },
+    {
+      "id": "2c4c0383-b997-4840-b62d-ce993e094738",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB04DF8426C18EFF8F1BF-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Personagens estranhos com texto confuso. Quando não reconhece alguém online.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:46:52.317Z"
+    },
+    {
+      "id": "85d78c7f-152a-4b6d-9853-ddd1b62b85c8",
+      "userId": "190546341540031",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB00504FED0BAA6219853-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Garota segurando duas baguetes francesas. Quando quiser comer muito pão.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:51:18.463Z"
+    },
+    {
+      "id": "c6f6cd9b-0b2b-434d-a219-1e8616c9c21f",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB0FC216AB810D7319361-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Personagem rosa, pera, texto confuso. Para dúvidas sobre alguém desconhecido.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:51:33.125Z"
+    },
+    {
+      "id": "b13bc05c-8437-4024-a519-1de7715e1ca1",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data\\media\\3EB018FAA631DC3CE91C97-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Menina anime rosa língua fora. Expressar deboche ou brincadeira leve.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T20:52:10.632Z"
     }
   ]
 }

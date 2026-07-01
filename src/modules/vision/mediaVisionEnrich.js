@@ -102,6 +102,66 @@ export async function extractFramesForVision(filePath, { maxFrames = 3, maxDurat
   return { frames, tmpDir, disposable };
 }
 
+/**
+ * Extrai frames no estilo Sellye (2 screenshots em 33% e 66%, fallback em t=0).
+ * @returns {{ frames: string[], disposable: string[] }}
+ */
+export async function extractFramesSellyeStyle(mediaPath) {
+  const disposable = [];
+  const tmpDir = tmpdir();
+  let generatedFiles = [];
+
+  const captureScreenshots = (options) =>
+    new Promise((resolve, reject) => {
+      ffmpeg(mediaPath)
+        .on("filenames", (filenames) => {
+          generatedFiles = filenames.map((f) => join(tmpDir, f));
+        })
+        .on("end", () => resolve())
+        .on("error", (err) => reject(err))
+        .screenshots(options);
+    });
+
+  try {
+    await captureScreenshots({
+      count: 2,
+      timestamps: ["33%", "66%"],
+      folder: tmpDir,
+      filename: `frame_${Date.now()}_%i.png`,
+      size: "512x?"
+    });
+  } catch {
+    generatedFiles = [];
+  }
+
+  if (!generatedFiles.length) {
+    try {
+      await captureScreenshots({
+        timestamps: [0],
+        folder: tmpDir,
+        filename: `frame_fallback_${Date.now()}.png`,
+        size: "512x?"
+      });
+    } catch {
+      generatedFiles = [];
+    }
+  }
+
+  if (!generatedFiles.length) {
+    const extracted = await extractFramesForVision(mediaPath, { maxFrames: 2 });
+    const frames = extracted.frames ?? [];
+    disposable.push(...(extracted.disposable ?? []));
+    if (extracted.tmpDir) {
+      disposable.push(extracted.tmpDir);
+    }
+    return { frames, disposable };
+  }
+
+  const frames = generatedFiles.filter((p) => existsSync(p) && statSync(p).size > 32);
+  disposable.push(...frames);
+  return { frames, disposable };
+}
+
 function mediaKindLabel(mediaType, isAnimated) {
   if (mediaType === "sticker") return isAnimated ? "Sticker animada" : "Sticker";
   if (mediaType === "gif" || isAnimated) return "GIF/vídeo animado";
@@ -110,13 +170,55 @@ function mediaKindLabel(mediaType, isAnimated) {
 }
 
 /**
- * BLIP (semantic) + fallback PIL no primeiro frame ou em vários quadros de vídeo/GIF.
+ * Enriquece mídia com descrição visual.
+ * Padrão: Ollama multimodal (Sellye). Fallback legado: BLIP + PIL local.
  */
 export async function enrichMediaVision(
   runtime,
   { filePath, mediaType = "image", isAnimated = false } = {}
 ) {
-  if (!filePath || !runtime) return null;
+  if (!filePath || !runtime) {
+    console.log(
+      "[repertorio:vision] enrich_skip",
+      JSON.stringify({ reason: !filePath ? "no_filePath" : "no_runtime" })
+    );
+    return null;
+  }
+
+  const adapter = runtime.defaults?.visionAdapter ?? "ollama";
+  const ollamaVision = runtime.ollamaVisionAnalyzer;
+  const ollamaEnabled = Boolean(ollamaVision?.isEnabled?.());
+  console.log(
+    "[repertorio:vision] enrich_start",
+    JSON.stringify({
+      filePath,
+      mediaType,
+      isAnimated,
+      adapter,
+      ollamaEnabled,
+      visionModel: runtime.defaults?.visionModel || runtime.defaults?.model || null
+    })
+  );
+
+  if (adapter === "ollama" && ollamaEnabled) {
+    const result = await ollamaVision.analyze({ filePath, mediaType, isAnimated });
+    console.log(
+      "[repertorio:vision] enrich_ollama_done",
+      JSON.stringify({
+        filePath,
+        mediaType,
+        ok: Boolean(result),
+        preview: result ? String(result).slice(0, 120) : null
+      })
+    );
+    runtime?.logger?.log?.("repertoire.vision", {
+      step: "enrich_ollama_done",
+      filePath,
+      mediaType,
+      ok: Boolean(result)
+    });
+    return result;
+  }
 
   const ext = extname(filePath).toLowerCase();
   const needsExtract =

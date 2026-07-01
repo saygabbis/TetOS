@@ -29,4 +29,21 @@ export class ChatMediaHistoryStore {
     const list = this.itemsByScope.get(key) ?? [];
     return list.length ? list[list.length - 1] : null;
   }
+
+  /** Busca mídia indexada pelo message id (varre escopos do chat). */
+  findByMessageId(chatId, messageId) {
+    const chat = String(chatId ?? "");
+    const mid = String(messageId ?? "").trim();
+    if (!chat || !mid) return null;
+    let best = null;
+    for (const [scope, list] of this.itemsByScope.entries()) {
+      if (scope !== chat && !scope.startsWith(`${chat}::`)) continue;
+      for (let i = list.length - 1; i >= 0; i -= 1) {
+        if (String(list[i]?.messageId ?? "") === mid) {
+          best = list[i];
+        }
+      }
+    }
+    return best;
+  }
 }

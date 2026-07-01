@@ -55,7 +55,8 @@ export class GroupMemoryStore {
       ts: entry.ts ?? new Date().toISOString(),
       tags: entry.tags ?? [],
       salience: entry.salience ?? 0.5,
-      addressedToTeto: entry.addressedToTeto ?? false
+      addressedToTeto: entry.addressedToTeto ?? false,
+      quotedMessageId: entry.quotedMessageId ?? null
     };
     appendFileSync(this.path, `${JSON.stringify(normalized)}\n`);
     this.cache.push(normalized);
@@ -63,6 +64,21 @@ export class GroupMemoryStore {
       this.cache = this.cache.slice(-this.maxEntries);
     }
     return normalized;
+  }
+
+  /** Atualiza texto em cache (ex.: após visão preencher transcript). */
+  patchEntry(channelId, messageId, patch = {}) {
+    const cid = String(channelId ?? "");
+    const mid = String(messageId ?? "");
+    if (!cid || !mid) return null;
+    for (let i = this.cache.length - 1; i >= 0; i -= 1) {
+      const row = this.cache[i];
+      if (row.channelId === cid && String(row.id ?? "") === mid) {
+        this.cache[i] = { ...row, ...patch, text: String(patch.text ?? row.text ?? "").slice(0, 500) };
+        return this.cache[i];
+      }
+    }
+    return null;
   }
 
   byChannel(channelId, { limit = 30, now = Date.now() } = {}) {

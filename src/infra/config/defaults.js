@@ -132,12 +132,14 @@ export const DEFAULTS = {
   metricsPath: process.env.TETOS_METRICS_PATH ?? "./data/metrics.json",
   pendingConfirmationsPath: process.env.TETOS_PENDING_CONFIRMATIONS_PATH ?? "./data/pendingConfirmations.json",
   stickersPath: process.env.TETOS_STICKERS_PATH ?? "./data/stickers",
+  stickerRepertoireModePath:
+    process.env.TETOS_STICKER_REPERTOIRE_MODE_PATH ?? "./data/stickerRepertoireMode.json",
   remindersPath: process.env.TETOS_REMINDERS_PATH ?? "./data/reminders.json",
   multimodalMemoryPath: process.env.TETOS_MULTIMODAL_MEMORY_PATH ?? "./data/multimodalMemory.json",
   reminderSweepMs: Number(process.env.TETOS_REMINDER_SWEEP_MS ?? 60000),
   reminderMaxDeliveryAttempts: Number(process.env.TETOS_REMINDER_MAX_DELIVERY_ATTEMPTS ?? 5),
   reminderDeliveryRetryMs: Number(process.env.TETOS_REMINDER_DELIVERY_RETRY_MS ?? 300000),
-  stickerOnlyChance: Number(process.env.TETOS_STICKER_ONLY_CHANCE ?? 0.35),
+  stickerOnlyChance: Number(process.env.TETOS_STICKER_ONLY_CHANCE ?? 0.55),
   whatsappEnabled: String(process.env.WHATSAPP_ENABLED ?? "false").toLowerCase() === "true",
   /**
    * single = uma sessão (chat + comandos de mídia).
@@ -261,7 +263,15 @@ export const DEFAULTS = {
   typingMinDelayMs: Number(process.env.TETOS_TYPING_MIN_DELAY_MS ?? 140),
   typingMaxDelayMs: Number(process.env.TETOS_TYPING_MAX_DELAY_MS ?? 2400),
   modelTimeoutMs: Number(process.env.TETOS_MODEL_TIMEOUT_MS ?? 25000),
-  visionAdapter: process.env.TETOS_VISION_ADAPTER ?? "blip",
+  /** ollama = LLM multimodal (Sellye); blip = Python BLIP local (legado). */
+  visionAdapter: String(process.env.TETOS_VISION_ADAPTER ?? "ollama").trim().toLowerCase() === "blip"
+    ? "blip"
+    : "ollama",
+  visionEnabled: String(process.env.TETOS_VISION_ENABLED ?? "true").toLowerCase() === "true",
+  /** Modelo com visão (ex.: llava, llama3.2-vision). Vazio = TETOS_MODEL. */
+  visionModel: String(process.env.TETOS_VISION_MODEL ?? "").trim(),
+  visionTimeoutMs: Number(process.env.TETOS_VISION_TIMEOUT_MS ?? 60000),
+  mediaEnrichEnabled: String(process.env.TETOS_MEDIA_ENRICH_ENABLED ?? "true").toLowerCase() === "true",
   videoAdapter: process.env.TETOS_VIDEO_ADAPTER ?? "ffmpeg_frames",
   webReaderEnabled: String(process.env.TETOS_WEB_READER_ENABLED ?? "true").toLowerCase() === "true",
   /** false = responde a qualquer contato (comportamento atual); true = só /teto-ativar e /teto-grupo-ativar */

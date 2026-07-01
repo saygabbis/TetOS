@@ -63,7 +63,10 @@ const key = buildOutgoingQuoteKey(
 );
 assert.equal(key.participant, "5511999999999@s.whatsapp.net");
 
-assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, preferQuoteReply: true }), true);
-assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: true }), true);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isReplyToBot: true }), true);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, quotedMessageId: "abc" }), true);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, batchedCount: 2 }), true);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: true }), false);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, preferQuoteReply: true }), false);
 
 console.log("test-group-turn-planner: ok");

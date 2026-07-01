@@ -190,27 +190,58 @@ export function buildOutgoingQuoteKey(key, remoteJid, { participantId = null, pa
   const out = normalizeQuoteKey(key, remoteJid);
   if (!out) return null;
   const isGroup = String(remoteJid ?? "").endsWith("@g.us");
-  if (!isGroup || out.participant) return out;
+  if (!isGroup) return out;
 
-  const jid = participantJid || key?.participant || null;
+  // Prefer participant already on the quote key (mensagem citada) — não sobrescrever com quem mandou a msg atual.
+  let jid = key?.participant || out.participant || participantJid || null;
+  if (!jid && participantId) {
+    const phone = String(participantId).replace(/\D/g, "");
+    if (phone.length >= 8) {
+      jid = `${phone}@s.whatsapp.net`;
+    }
+  }
+
   if (jid && String(jid).includes("@")) {
-    out.participant = String(jid).split(":")[0];
-    return out;
+    const [userPart, domainPart] = String(jid).split("@");
+    const cleanUser = userPart.split(":")[0];
+    out.participant = `${cleanUser}@${domainPart}`;
   }
-  const phone = String(participantId ?? "").replace(/\D/g, "");
-  if (phone.length >= 8) {
-    out.participant = `${phone}@s.whatsapp.net`;
+  return out;
+}
+
+/**
+ * Injeta contextInfo no payload (padrão Sellye/Baileys) — quote + menções reais no mesmo bloco.
+ */
+export function applyQuotedContextToPayload(payload = {}, quoteKey = null, indexedRow = null) {
+  const mentionJids = Array.isArray(payload.mentions) ? payload.mentions.filter(Boolean) : [];
+  const { mentions: _mentions, contextInfo: existingCtx, ...rest } = payload;
+
+  if (!quoteKey?.id && !mentionJids.length) return payload;
+
+  const contextInfo = { ...(existingCtx ?? {}) };
+
+  if (quoteKey?.id) {
+    contextInfo.stanzaId = quoteKey.id;
+    contextInfo.participant = quoteKey.participant || indexedRow?.participantJid || "";
+    const quotedText = String(indexedRow?.text ?? "").trim().slice(0, 500);
+    contextInfo.quotedMessage = quotedText ? { conversation: quotedText } : {};
   }
+
+  if (mentionJids.length) {
+    const prev = Array.isArray(contextInfo.mentionedJid) ? contextInfo.mentionedJid : [];
+    contextInfo.mentionedJid = [...new Set([...prev, ...mentionJids])];
+  }
+
+  const out = { ...rest, contextInfo };
+  if (mentionJids.length) out.mentions = mentionJids;
   return out;
 }
 
 export function shouldQuoteOutgoing(item = {}) {
   if (!item?.messageKey?.id) return false;
-  if (item.isGroup || item.preferQuoteReply === true) return true;
-  return (
-    item.isReply ||
-    item.isReplyToBot ||
-    Boolean(item.quotedMessageId) ||
-    (item.batchedCount ?? 1) > 1
-  );
+  if (item.isReplyToBot) return true;
+  if (Boolean(item.quotedMessageId)) return true;
+  if (item.isReply && Boolean(item.quotedMessageId)) return true;
+  if ((item.batchedCount ?? 1) > 1) return true;
+  return false;
 }

@@ -10,7 +10,7 @@ export class MultimodalMemoryStore {
     this.data.entries ??= [];
   }
 
-  save({ userId, channelId, media, message } = {}) {
+  save({ userId, channelId, media, message, messageId } = {}) {
     if (!media?.type && !message) return null;
     const safeUserId = String(userId ?? "default");
     const safeChannelId = String(channelId ?? "default");
@@ -21,7 +21,8 @@ export class MultimodalMemoryStore {
       mediaType: media?.type ?? null,
       mediaPath: media?.path ?? null,
       text: String(message ?? "").trim().slice(0, this.maxTextLength),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      messageId: messageId ? String(messageId) : null
     };
     this.data.entries.push(entry);
     this.pruneScope(safeUserId, safeChannelId);

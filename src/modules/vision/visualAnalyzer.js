@@ -62,10 +62,8 @@ export class VisualAnalyzer {
       const normalized = normalizeText(result?.description ?? "");
       if (normalized) return normalized;
     } catch {
-      // fallback below
+      // sem descrição útil — evita vazar caminho local no catálogo
     }
-    return normalizeText(
-      `${mediaType === "sticker" ? "Sticker" : "Imagem"} analisada localmente${isAnimated ? " e animada" : ""}. Arquivo persistido em ${filePath}. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.`
-    );
+    return null;
   }
 }

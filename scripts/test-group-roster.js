@@ -90,10 +90,14 @@ const resolved = applyWhatsAppMentions(
   roster.members
 );
 assert(resolved.mentions.length >= 1, "gera menções");
-assert(!resolved.text.includes("@6283879987068"), "substitui número por nome");
+assert(resolved.text.includes("@6283879987068"), "texto usa @dígitos para Baileys");
 
 const lidMention = applyWhatsAppMentions("@187995030323304 vem aqui", roster.members);
-assert(lidMention.text.includes("@Ana"), "substitui LID por nome na saída");
+assert(lidMention.mentions.some((j) => j.includes("5516997140666") || j.includes("187995030323304")), "menção Ana com jid");
+assert(
+  lidMention.text.includes("@5516997140666") || lidMention.text.includes("@187995030323304"),
+  "texto com marca numérica"
+);
 
 const normalized = normalizeIncomingMentions(
   "@187995030323304 falou comigo",

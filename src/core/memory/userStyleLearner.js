@@ -100,7 +100,7 @@ export function formatLearnedStyleForPrompt(learned = {}, stylePrefs = {}, liveH
   const lines = [];
   const topExpr = Object.keys(learned.expressions ?? {}).slice(0, 10);
   if (topExpr.length) {
-    lines.push(`Expressões e jeito que esta pessoa já usou com você: ${topExpr.join(", ")}.`);
+    lines.push(`- VOCABULÁRIO ADOTADO: Esta pessoa costuma falar usando: ${topExpr.join(", ")}. Você pode adotar essas mesmas gírias de forma natural.`);
   }
 
   const pref =
@@ -112,22 +112,22 @@ export function formatLearnedStyleForPrompt(learned = {}, stylePrefs = {}, liveH
   if (pref === "kk" || stylePrefs.prefersLaughter || kkRun >= 3) {
     const sample = kkRun >= 10 ? "kkkkkkk" : kkRun >= 6 ? "kkkkk" : "kkk";
     lines.push(
-      `Risada deles no teclado (${sample}, ksks…) — quando rir junto, use kkk no texto, não emoji 😂; não precisa rir em toda resposta.`
+      `- RISADA DO USUÁRIO: Ele costuma rir usando teclado (${sample}, ksks). Espelhe esse padrão (use 'kkk' e similares por texto, nunca 😂/🤣).`
     );
   } else if (pref === "rs") {
-    lines.push("Eles costumam rir com rs/rsrs — pode espelhar com moderação.");
+    lines.push("- RISADA DO USUÁRIO: Ele costuma usar 'rs' / 'rsrs'. Se for rir junto, prefira responder com 'rs'.");
   } else if (pref === "emoji" || stylePrefs.prefersEmoji) {
-    lines.push("Às vezes usam emoji — pode misturar, mas risada em texto (kkk) soa mais zap brasileiro.");
+    lines.push("- PREFERÊNCIA DE EMOJI: Ele usa bastante emojis. Pode usá-los nas suas mensagens, mas dê preferência a risadas por texto.");
   }
 
   const habits = learned.habits ?? {};
-  if (habits.usesNe >= 2) lines.push('Fecham frase com "né" — pode usar quando natural.');
-  if (habits.usesAbbrev >= 3) lines.push("Falam abreviado (vc, pq, tb) — espelhe leve, sem forçar.");
-  if (habits.stretchesVowels >= 2) lines.push("Esticam vogal (oooi, ebaa) — pode espelhar a energia.");
-  if (habits.usesCaps >= 2) lines.push("Usam CAPS em trechos — pode subir o volume no mesmo clima.");
+  if (habits.usesNe >= 2) lines.push('- VÍCIO DE LINGUAGEM: O usuário finaliza frases com "né". Você pode incluir "né" em suas falas pontualmente.');
+  if (habits.usesAbbrev >= 3) lines.push("- ABREVIAÇÕES: Ele digita de forma abreviada (vc, pq, tb). Espelhe esse ritmo sem forçar termos que você não costuma usar.");
+  if (habits.stretchesVowels >= 2) lines.push("- VOGAIS ESTICADAS: Ele alonga palavras (ex: 'oooi', 'ebaaa'). Sinta-se livre para espelhar essa expressividade física.");
+  if (habits.usesCaps >= 2) lines.push("- CAIXA ALTA: Ele usa CAPS LOCK para expressar ênfase ou gritos. Você pode subir o volume (digitar palavras em CAPS) seguindo a vibe dele.");
 
-  if (stylePrefs.brevity === "short") lines.push("Mensagens curtas no geral — não enrole.");
-  if (stylePrefs.prefersLaughter) lines.push("Costumam rir no chat — pode ser mais solta e expressiva.");
+  if (stylePrefs.brevity === "short") lines.push("- COMPRIMENTO: O usuário envia mensagens curtas e diretas. Responda de forma concisa e sem enrolação.");
+  if (stylePrefs.prefersLaughter) lines.push("- INTERAÇÃO DESCONTRAÍDA: Ele é brincalhão no chat. Adote uma postura mais leve, travessa e brincalhona.");
 
   return lines;
 }

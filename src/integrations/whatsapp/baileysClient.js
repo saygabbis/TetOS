@@ -1,6 +1,5 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { DEFAULTS } from "../../infra/config/defaults.js";
-import { waAgentDebugLog } from "./waDebugLog.js";
 import qrcode from "qrcode-terminal";
 import makeWASocket, {
   fetchLatestBaileysVersion,
@@ -68,25 +67,6 @@ export async function createBaileysClient({
   socket.ev.on("creds.update", saveCreds);
 
   socket.ev.on("connection.update", async (update) => {
-    // #region agent log
-    if (update?.connection || update?.receivedPendingNotifications != null || update?.qr) {
-      waAgentDebugLog({
-        runId: "wa-inbound",
-        hypothesisId: "H1-H3",
-        location: "baileysClient.js:connection.update",
-        message: "connection update",
-        data: {
-          sessionLabel,
-          sessionPath,
-          connection: update?.connection ?? null,
-          receivedPendingNotifications: update?.receivedPendingNotifications ?? null,
-          hasQr: Boolean(update?.qr),
-          lastDisconnect: update?.lastDisconnect?.error?.message ?? null
-        }
-      });
-    }
-    // #endregion
-
     if (update?.qr) {
       qrcode.generate(update.qr, { small: true });
     }

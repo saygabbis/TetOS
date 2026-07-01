@@ -12,7 +12,17 @@ const VISUAL_PATTERNS = [
   /\b(red|pink)\s+hair\b.*\banime/i,
   /\bbaguette\b/i,
   /\bfrench\s+bread\b/i,
-  /\bteto\b/i
+  /\bteto\b/i,
+  /\bmenina\s+(ruiva|rosa|vermelha)\b/i,
+  /\bgarota\s+(ruiva|rosa|anime|vermelha)\b/i,
+  /\bpersonagem\s+(ruiva|vermelha|rosa)\b/i,
+  /\bcabelo\s+(ruivo|rosa|vermelho|pink)\b/i,
+  /\bbrocas\b/i,
+  /\btwin\s*drills?\b/i,
+  /\bdrill[s]?\b/i,
+  /\butau\b/i,
+  /\bfigurinha\b.*\b(ruiv|rosa|vermelh|teto)\b/i,
+  /\bsticker\b.*\b(ruiv|rosa|vermelh|teto)\b/i
 ];
 
 const STICKER_HINTS = [/sticker/i, /figurinha/i, /emoji/i, /cartoon/i, /anime/i];
