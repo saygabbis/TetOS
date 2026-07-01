@@ -31,171 +31,322 @@
     "miku": {
       "name": "Hatsune Miku",
       "role": "best_friend",
-      "trust": 0.92,
-      "intimacy": 0.88,
+      "trust": 1,
+      "intimacy": 1,
       "affinity": 0.9,
-      "lastContactAt": null,
+      "lastContactAt": "2026-06-26T14:58:03.162Z",
       "moodToward": "warm",
-      "history": []
+      "history": [
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:32:03.141Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:32:03.144Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:34:03.143Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:34:03.146Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:36:03.144Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:36:03.149Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:38:03.146Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:38:03.149Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:40:03.147Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:40:03.153Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:41:03.830Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:42:03.148Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:42:03.154Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:44:03.152Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:44:03.156Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:46:03.152Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:46:03.157Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:48:03.153Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:48:03.158Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:50:03.154Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:50:03.156Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:52:03.154Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:52:03.161Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:54:03.157Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:54:03.159Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:56:03.160Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:56:03.165Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:56:03.837Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:58:03.158Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        },
+        {
+          "type": "reconcile",
+          "ts": "2026-06-26T14:58:03.161Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
+        }
+      ]
     },
     "rin": {
       "name": "Kagamine Rin",
       "role": "friend",
-      "trust": 0.65,
-      "intimacy": 0.5,
+      "trust": 0.68,
+      "intimacy": 0.54,
       "affinity": 0.6,
-      "lastContactAt": "2026-06-15T23:58:27.222Z",
-      "moodToward": "neutral",
+      "lastContactAt": "2026-06-23T02:01:29.368Z",
+      "moodToward": "warm",
       "history": [
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:30:43.131Z",
+          "ts": "2026-06-20T15:33:27.310Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:32:27.159Z",
+          "ts": "2026-06-20T15:33:27.311Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:32:27.160Z",
+          "ts": "2026-06-20T15:35:27.311Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:34:27.167Z",
+          "ts": "2026-06-20T15:35:27.312Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:34:27.168Z",
+          "ts": "2026-06-20T15:37:27.314Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:36:27.170Z",
+          "ts": "2026-06-20T15:37:27.315Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:36:27.171Z",
+          "ts": "2026-06-20T15:39:27.314Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:38:27.174Z",
+          "ts": "2026-06-20T15:39:27.315Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:38:27.175Z",
+          "ts": "2026-06-20T15:41:27.319Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:40:27.177Z",
+          "ts": "2026-06-20T15:41:27.320Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:40:27.180Z",
+          "ts": "2026-06-20T15:43:27.318Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:42:27.184Z",
+          "ts": "2026-06-20T15:43:27.319Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:42:27.186Z",
+          "ts": "2026-06-20T15:45:27.319Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:44:27.192Z",
+          "ts": "2026-06-20T15:45:27.321Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:44:27.193Z",
+          "ts": "2026-06-20T15:47:22.806Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:45:43.135Z",
+          "ts": "2026-06-20T15:47:27.321Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:46:27.197Z",
+          "ts": "2026-06-20T15:47:27.322Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:46:27.199Z",
+          "ts": "2026-06-20T15:49:27.321Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:48:27.201Z",
+          "ts": "2026-06-20T15:49:27.322Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:48:27.204Z",
+          "ts": "2026-06-20T15:51:27.322Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:50:27.201Z",
+          "ts": "2026-06-20T15:51:27.323Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:50:27.202Z",
+          "ts": "2026-06-20T15:53:27.322Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:52:27.206Z",
+          "ts": "2026-06-20T15:53:27.323Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:52:27.207Z",
+          "ts": "2026-06-20T15:55:27.323Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:54:27.214Z",
+          "ts": "2026-06-20T15:55:27.324Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:54:27.215Z",
+          "ts": "2026-06-20T15:57:27.323Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:56:27.217Z",
+          "ts": "2026-06-20T15:57:27.324Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:56:27.218Z",
+          "ts": "2026-06-20T15:59:27.323Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
           "type": "missed_call",
-          "ts": "2026-06-15T23:58:27.220Z",
+          "ts": "2026-06-20T15:59:27.324Z",
           "summary": "perdeu ligação, vai responder depois"
         },
         {
-          "type": "missed_call",
-          "ts": "2026-06-15T23:58:27.222Z",
-          "summary": "perdeu ligação, vai responder depois"
+          "type": "reconcile",
+          "ts": "2026-06-23T02:01:29.355Z",
+          "summary": "fizeram as pazes depois de mal-entendido"
         }
       ]
     },
@@ -205,157 +356,157 @@
       "trust": 1,
       "intimacy": 1,
       "affinity": 0.5,
-      "lastContactAt": "2026-06-15T19:10:00.461Z",
+      "lastContactAt": "2026-06-27T20:58:06.030Z",
       "moodToward": "warm",
       "history": [
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:03:38.260Z",
+          "ts": "2026-06-27T20:32:05.996Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:03:48.925Z",
+          "ts": "2026-06-27T20:32:06.001Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:03:57.862Z",
+          "ts": "2026-06-27T20:34:05.998Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:03:57.987Z",
+          "ts": "2026-06-27T20:34:05.999Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:04:06.446Z",
+          "ts": "2026-06-27T20:36:06.006Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:04:30.632Z",
+          "ts": "2026-06-27T20:36:06.009Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:04:39.786Z",
+          "ts": "2026-06-27T20:38:06.002Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:04:49.614Z",
+          "ts": "2026-06-27T20:38:06.003Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:04:51.867Z",
+          "ts": "2026-06-27T20:40:06.009Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:05:02.360Z",
+          "ts": "2026-06-27T20:40:06.014Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:05:45.649Z",
+          "ts": "2026-06-27T20:41:04.159Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:05:45.725Z",
+          "ts": "2026-06-27T20:42:06.008Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:06:05.798Z",
+          "ts": "2026-06-27T20:42:06.009Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:06:13.443Z",
+          "ts": "2026-06-27T20:44:06.009Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:06:14.874Z",
+          "ts": "2026-06-27T20:44:06.012Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:06:26.466Z",
+          "ts": "2026-06-27T20:46:06.010Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:06:26.636Z",
+          "ts": "2026-06-27T20:46:06.011Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:06:48.719Z",
+          "ts": "2026-06-27T20:48:06.012Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:08:06.218Z",
+          "ts": "2026-06-27T20:48:06.013Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:08:09.917Z",
+          "ts": "2026-06-27T20:50:06.018Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:08:14.160Z",
+          "ts": "2026-06-27T20:50:06.023Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:08:41.223Z",
+          "ts": "2026-06-27T20:52:06.014Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:08:41.314Z",
+          "ts": "2026-06-27T20:52:06.015Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:08:52.939Z",
+          "ts": "2026-06-27T20:54:06.024Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:08:58.456Z",
+          "ts": "2026-06-27T20:54:06.025Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:09:01.872Z",
+          "ts": "2026-06-27T20:56:04.155Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:09:10.779Z",
+          "ts": "2026-06-27T20:56:06.028Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:09:19.843Z",
+          "ts": "2026-06-27T20:56:06.029Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:09:40.029Z",
+          "ts": "2026-06-27T20:58:06.029Z",
           "summary": "surgiu ideia de collab"
         },
         {
           "type": "collab_idea",
-          "ts": "2026-06-15T19:10:00.461Z",
+          "ts": "2026-06-27T20:58:06.030Z",
           "summary": "surgiu ideia de collab"
         }
       ]
@@ -373,1603 +524,1603 @@
   },
   "offscreenEvents": [
     {
-      "id": "off_1781550521223",
-      "ts": "2026-06-15T19:08:41.223Z",
+      "id": "off_1782161609180",
+      "ts": "2026-06-22T20:53:29.180Z",
+      "npcId": "miku",
+      "type": "chat",
+      "summary": "conversa rápida sobre música",
+      "generated": true
+    },
+    {
+      "id": "off_1782161729181",
+      "ts": "2026-06-22T20:55:29.181Z",
+      "npcId": "miku",
+      "type": "chat",
+      "summary": "conversa rápida sobre música",
+      "generated": true
+    },
+    {
+      "id": "off_1782161729183",
+      "ts": "2026-06-22T20:55:29.183Z",
+      "npcId": "miku",
+      "type": "chat",
+      "summary": "conversa rápida sobre música",
+      "generated": true
+    },
+    {
+      "id": "off_1782161849182",
+      "ts": "2026-06-22T20:57:29.182Z",
+      "npcId": "miku",
+      "type": "chat",
+      "summary": "conversa rápida sobre música",
+      "generated": true
+    },
+    {
+      "id": "off_1782161849186",
+      "ts": "2026-06-22T20:57:29.186Z",
+      "npcId": "miku",
+      "type": "chat",
+      "summary": "conversa rápida sobre música",
+      "generated": true
+    },
+    {
+      "id": "off_1782161969183",
+      "ts": "2026-06-22T20:59:29.183Z",
+      "npcId": "miku",
+      "type": "chat",
+      "summary": "conversa rápida sobre música",
+      "generated": true
+    },
+    {
+      "id": "off_1782161969184",
+      "ts": "2026-06-22T20:59:29.184Z",
+      "npcId": "miku",
+      "type": "chat",
+      "summary": "conversa rápida sobre música",
+      "generated": true
+    },
+    {
+      "id": "off_1782180089354",
+      "ts": "2026-06-23T02:01:29.355Z",
+      "npcId": "rin",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782306092069",
+      "ts": "2026-06-24T13:01:32.069Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306092077",
+      "ts": "2026-06-24T13:01:32.077Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306143284",
+      "ts": "2026-06-24T13:02:23.284Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306212073",
+      "ts": "2026-06-24T13:03:32.073Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306212075",
+      "ts": "2026-06-24T13:03:32.075Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306332068",
+      "ts": "2026-06-24T13:05:32.068Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306332070",
+      "ts": "2026-06-24T13:05:32.070Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306452070",
+      "ts": "2026-06-24T13:07:32.070Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306452073",
+      "ts": "2026-06-24T13:07:32.073Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306572090",
+      "ts": "2026-06-24T13:09:32.090Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306572111",
+      "ts": "2026-06-24T13:09:32.111Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306692079",
+      "ts": "2026-06-24T13:11:32.079Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306692080",
+      "ts": "2026-06-24T13:11:32.080Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306812080",
+      "ts": "2026-06-24T13:13:32.080Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306812082",
+      "ts": "2026-06-24T13:13:32.082Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306932082",
+      "ts": "2026-06-24T13:15:32.082Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782306932084",
+      "ts": "2026-06-24T13:15:32.084Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307043285",
+      "ts": "2026-06-24T13:17:23.285Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307052083",
+      "ts": "2026-06-24T13:17:32.083Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307052085",
+      "ts": "2026-06-24T13:17:32.085Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307172089",
+      "ts": "2026-06-24T13:19:32.089Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307172090",
+      "ts": "2026-06-24T13:19:32.090Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307292089",
+      "ts": "2026-06-24T13:21:32.089Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307292094",
+      "ts": "2026-06-24T13:21:32.094Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307412091",
+      "ts": "2026-06-24T13:23:32.091Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307412093",
+      "ts": "2026-06-24T13:23:32.093Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307532094",
+      "ts": "2026-06-24T13:25:32.094Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307532106",
+      "ts": "2026-06-24T13:25:32.106Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307652099",
+      "ts": "2026-06-24T13:27:32.099Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307652105",
+      "ts": "2026-06-24T13:27:32.105Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307772099",
+      "ts": "2026-06-24T13:29:32.099Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307772101",
+      "ts": "2026-06-24T13:29:32.101Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307892103",
+      "ts": "2026-06-24T13:31:32.103Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307892107",
+      "ts": "2026-06-24T13:31:32.107Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782307943286",
+      "ts": "2026-06-24T13:32:23.286Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308012109",
+      "ts": "2026-06-24T13:33:32.109Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308012117",
+      "ts": "2026-06-24T13:33:32.117Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308132113",
+      "ts": "2026-06-24T13:35:32.113Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308132129",
+      "ts": "2026-06-24T13:35:32.129Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308252111",
+      "ts": "2026-06-24T13:37:32.111Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308252113",
+      "ts": "2026-06-24T13:37:32.113Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308372111",
+      "ts": "2026-06-24T13:39:32.111Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308372113",
+      "ts": "2026-06-24T13:39:32.113Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308492116",
+      "ts": "2026-06-24T13:41:32.116Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308492117",
+      "ts": "2026-06-24T13:41:32.117Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308612117",
+      "ts": "2026-06-24T13:43:32.117Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308612119",
+      "ts": "2026-06-24T13:43:32.119Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308732120",
+      "ts": "2026-06-24T13:45:32.120Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308732121",
+      "ts": "2026-06-24T13:45:32.121Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308843290",
+      "ts": "2026-06-24T13:47:23.290Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308852121",
+      "ts": "2026-06-24T13:47:32.121Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308852122",
+      "ts": "2026-06-24T13:47:32.122Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308972125",
+      "ts": "2026-06-24T13:49:32.125Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782308972127",
+      "ts": "2026-06-24T13:49:32.127Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309092128",
+      "ts": "2026-06-24T13:51:32.128Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309092131",
+      "ts": "2026-06-24T13:51:32.131Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309212132",
+      "ts": "2026-06-24T13:53:32.132Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309212136",
+      "ts": "2026-06-24T13:53:32.136Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309332132",
+      "ts": "2026-06-24T13:55:32.132Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309332133",
+      "ts": "2026-06-24T13:55:32.133Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309452133",
+      "ts": "2026-06-24T13:57:32.133Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309452134",
+      "ts": "2026-06-24T13:57:32.134Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309572137",
+      "ts": "2026-06-24T13:59:32.137Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782309572138",
+      "ts": "2026-06-24T13:59:32.138Z",
+      "npcId": "producer_k",
+      "type": "missed_call",
+      "summary": "perdeu ligação, vai responder depois",
+      "generated": true
+    },
+    {
+      "id": "off_1782482403099",
+      "ts": "2026-06-26T14:00:03.099Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482403116",
+      "ts": "2026-06-26T14:00:03.116Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482523101",
+      "ts": "2026-06-26T14:02:03.102Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482523104",
+      "ts": "2026-06-26T14:02:03.105Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482643118",
+      "ts": "2026-06-26T14:04:03.118Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482643136",
+      "ts": "2026-06-26T14:04:03.136Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482763111",
+      "ts": "2026-06-26T14:06:03.111Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482763117",
+      "ts": "2026-06-26T14:06:03.117Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482883112",
+      "ts": "2026-06-26T14:08:03.112Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782482883117",
+      "ts": "2026-06-26T14:08:03.117Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483003122",
+      "ts": "2026-06-26T14:10:03.122Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483003126",
+      "ts": "2026-06-26T14:10:03.126Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483063829",
+      "ts": "2026-06-26T14:11:03.829Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483123117",
+      "ts": "2026-06-26T14:12:03.117Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483123122",
+      "ts": "2026-06-26T14:12:03.122Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483243119",
+      "ts": "2026-06-26T14:14:03.119Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483243123",
+      "ts": "2026-06-26T14:14:03.123Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483363120",
+      "ts": "2026-06-26T14:16:03.120Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483363130",
+      "ts": "2026-06-26T14:16:03.130Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483483121",
+      "ts": "2026-06-26T14:18:03.121Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483483124",
+      "ts": "2026-06-26T14:18:03.124Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483603122",
+      "ts": "2026-06-26T14:20:03.122Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483603129",
+      "ts": "2026-06-26T14:20:03.129Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483723123",
+      "ts": "2026-06-26T14:22:03.123Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483723189",
+      "ts": "2026-06-26T14:22:03.189Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483843126",
+      "ts": "2026-06-26T14:24:03.126Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483843129",
+      "ts": "2026-06-26T14:24:03.129Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483963125",
+      "ts": "2026-06-26T14:26:03.125Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483963132",
+      "ts": "2026-06-26T14:26:03.132Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782483963829",
+      "ts": "2026-06-26T14:26:03.829Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484083140",
+      "ts": "2026-06-26T14:28:03.140Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484083149",
+      "ts": "2026-06-26T14:28:03.149Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484203143",
+      "ts": "2026-06-26T14:30:03.143Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484203147",
+      "ts": "2026-06-26T14:30:03.147Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484323141",
+      "ts": "2026-06-26T14:32:03.141Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484323144",
+      "ts": "2026-06-26T14:32:03.144Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484443143",
+      "ts": "2026-06-26T14:34:03.143Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484443146",
+      "ts": "2026-06-26T14:34:03.146Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484563144",
+      "ts": "2026-06-26T14:36:03.144Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484563149",
+      "ts": "2026-06-26T14:36:03.149Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484683146",
+      "ts": "2026-06-26T14:38:03.146Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484683149",
+      "ts": "2026-06-26T14:38:03.149Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484803147",
+      "ts": "2026-06-26T14:40:03.147Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484803153",
+      "ts": "2026-06-26T14:40:03.153Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484863830",
+      "ts": "2026-06-26T14:41:03.830Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484923148",
+      "ts": "2026-06-26T14:42:03.148Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782484923154",
+      "ts": "2026-06-26T14:42:03.154Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485043152",
+      "ts": "2026-06-26T14:44:03.152Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485043156",
+      "ts": "2026-06-26T14:44:03.156Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485163152",
+      "ts": "2026-06-26T14:46:03.152Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485163157",
+      "ts": "2026-06-26T14:46:03.157Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485283153",
+      "ts": "2026-06-26T14:48:03.153Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485283158",
+      "ts": "2026-06-26T14:48:03.158Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485403154",
+      "ts": "2026-06-26T14:50:03.154Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485403156",
+      "ts": "2026-06-26T14:50:03.156Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485523154",
+      "ts": "2026-06-26T14:52:03.154Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485523161",
+      "ts": "2026-06-26T14:52:03.161Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485643157",
+      "ts": "2026-06-26T14:54:03.157Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485643159",
+      "ts": "2026-06-26T14:54:03.159Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485763160",
+      "ts": "2026-06-26T14:56:03.160Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485763165",
+      "ts": "2026-06-26T14:56:03.165Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485763837",
+      "ts": "2026-06-26T14:56:03.837Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485883158",
+      "ts": "2026-06-26T14:58:03.158Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782485883161",
+      "ts": "2026-06-26T14:58:03.161Z",
+      "npcId": "miku",
+      "type": "reconcile",
+      "summary": "fizeram as pazes depois de mal-entendido",
+      "generated": true
+    },
+    {
+      "id": "off_1782590405967",
+      "ts": "2026-06-27T20:00:05.967Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550521314",
-      "ts": "2026-06-15T19:08:41.314Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550521314",
-      "ts": "2026-06-15T19:08:41.314Z",
+      "id": "off_1782590405976",
+      "ts": "2026-06-27T20:00:05.976Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550532938",
-      "ts": "2026-06-15T19:08:52.938Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550532939",
-      "ts": "2026-06-15T19:08:52.939Z",
+      "id": "off_1782590525969",
+      "ts": "2026-06-27T20:02:05.969Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550538454",
-      "ts": "2026-06-15T19:08:58.454Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550538456",
-      "ts": "2026-06-15T19:08:58.456Z",
+      "id": "off_1782590525972",
+      "ts": "2026-06-27T20:02:05.972Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550541870",
-      "ts": "2026-06-15T19:09:01.870Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550541872",
-      "ts": "2026-06-15T19:09:01.872Z",
+      "id": "off_1782590645968",
+      "ts": "2026-06-27T20:04:05.968Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550550778",
-      "ts": "2026-06-15T19:09:10.778Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550550779",
-      "ts": "2026-06-15T19:09:10.779Z",
+      "id": "off_1782590645969",
+      "ts": "2026-06-27T20:04:05.969Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550559841",
-      "ts": "2026-06-15T19:09:19.841Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550559843",
-      "ts": "2026-06-15T19:09:19.843Z",
+      "id": "off_1782590765968",
+      "ts": "2026-06-27T20:06:05.968Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550580028",
-      "ts": "2026-06-15T19:09:40.028Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550580029",
-      "ts": "2026-06-15T19:09:40.029Z",
+      "id": "off_1782590765970",
+      "ts": "2026-06-27T20:06:05.970Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550600459",
-      "ts": "2026-06-15T19:10:00.459Z",
-      "npcId": "rin",
-      "type": "collab_idea",
-      "summary": "surgiu ideia de collab",
-      "generated": true
-    },
-    {
-      "id": "off_1781550600461",
-      "ts": "2026-06-15T19:10:00.461Z",
+      "id": "off_1782590885971",
+      "ts": "2026-06-27T20:08:05.971Z",
       "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550626819",
-      "ts": "2026-06-15T19:10:26.819Z",
-      "npcId": "rin",
+      "id": "off_1782590885972",
+      "ts": "2026-06-27T20:08:05.972Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550626821",
-      "ts": "2026-06-15T19:10:26.821Z",
-      "npcId": "rin",
+      "id": "off_1782591005973",
+      "ts": "2026-06-27T20:10:05.973Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550746823",
-      "ts": "2026-06-15T19:12:26.823Z",
-      "npcId": "rin",
+      "id": "off_1782591005974",
+      "ts": "2026-06-27T20:10:05.974Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550746826",
-      "ts": "2026-06-15T19:12:26.826Z",
-      "npcId": "rin",
+      "id": "off_1782591064150",
+      "ts": "2026-06-27T20:11:04.150Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550866828",
-      "ts": "2026-06-15T19:14:26.828Z",
-      "npcId": "rin",
+      "id": "off_1782591125976",
+      "ts": "2026-06-27T20:12:05.976Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550866831",
-      "ts": "2026-06-15T19:14:26.831Z",
-      "npcId": "rin",
+      "id": "off_1782591125977",
+      "ts": "2026-06-27T20:12:05.977Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550943098",
-      "ts": "2026-06-15T19:15:43.098Z",
-      "npcId": "rin",
+      "id": "off_1782591245980",
+      "ts": "2026-06-27T20:14:05.980Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550986831",
-      "ts": "2026-06-15T19:16:26.831Z",
-      "npcId": "rin",
+      "id": "off_1782591245982",
+      "ts": "2026-06-27T20:14:05.982Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781550986833",
-      "ts": "2026-06-15T19:16:26.833Z",
-      "npcId": "rin",
+      "id": "off_1782591365981",
+      "ts": "2026-06-27T20:16:05.981Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551106834",
-      "ts": "2026-06-15T19:18:26.834Z",
-      "npcId": "rin",
+      "id": "off_1782591365982",
+      "ts": "2026-06-27T20:16:05.982Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551106838",
-      "ts": "2026-06-15T19:18:26.838Z",
-      "npcId": "rin",
+      "id": "off_1782591485984",
+      "ts": "2026-06-27T20:18:05.984Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551226838",
-      "ts": "2026-06-15T19:20:26.838Z",
-      "npcId": "rin",
+      "id": "off_1782591485985",
+      "ts": "2026-06-27T20:18:05.985Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551226840",
-      "ts": "2026-06-15T19:20:26.840Z",
-      "npcId": "rin",
+      "id": "off_1782591605986",
+      "ts": "2026-06-27T20:20:05.986Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551346839",
-      "ts": "2026-06-15T19:22:26.839Z",
-      "npcId": "rin",
+      "id": "off_1782591605991",
+      "ts": "2026-06-27T20:20:05.991Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551346840",
-      "ts": "2026-06-15T19:22:26.840Z",
-      "npcId": "rin",
+      "id": "off_1782591725986",
+      "ts": "2026-06-27T20:22:05.986Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551466840",
-      "ts": "2026-06-15T19:24:26.840Z",
-      "npcId": "rin",
+      "id": "off_1782591725987",
+      "ts": "2026-06-27T20:22:05.987Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551466841",
-      "ts": "2026-06-15T19:24:26.841Z",
-      "npcId": "rin",
+      "id": "off_1782591845986",
+      "ts": "2026-06-27T20:24:05.986Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551586842",
-      "ts": "2026-06-15T19:26:26.842Z",
-      "npcId": "rin",
+      "id": "off_1782591845987",
+      "ts": "2026-06-27T20:24:05.987Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551586843",
-      "ts": "2026-06-15T19:26:26.843Z",
-      "npcId": "rin",
+      "id": "off_1782591964151",
+      "ts": "2026-06-27T20:26:04.151Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551706846",
-      "ts": "2026-06-15T19:28:26.846Z",
-      "npcId": "rin",
+      "id": "off_1782591965987",
+      "ts": "2026-06-27T20:26:05.987Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551706849",
-      "ts": "2026-06-15T19:28:26.849Z",
-      "npcId": "rin",
+      "id": "off_1782591965988",
+      "ts": "2026-06-27T20:26:05.988Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551826848",
-      "ts": "2026-06-15T19:30:26.848Z",
-      "npcId": "rin",
+      "id": "off_1782592085990",
+      "ts": "2026-06-27T20:28:05.990Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551826850",
-      "ts": "2026-06-15T19:30:26.850Z",
-      "npcId": "rin",
+      "id": "off_1782592085992",
+      "ts": "2026-06-27T20:28:05.992Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551843098",
-      "ts": "2026-06-15T19:30:43.098Z",
-      "npcId": "rin",
+      "id": "off_1782592205992",
+      "ts": "2026-06-27T20:30:05.992Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551946853",
-      "ts": "2026-06-15T19:32:26.853Z",
-      "npcId": "rin",
+      "id": "off_1782592205995",
+      "ts": "2026-06-27T20:30:05.995Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781551946855",
-      "ts": "2026-06-15T19:32:26.855Z",
-      "npcId": "rin",
+      "id": "off_1782592325996",
+      "ts": "2026-06-27T20:32:05.996Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552066859",
-      "ts": "2026-06-15T19:34:26.859Z",
-      "npcId": "rin",
+      "id": "off_1782592326001",
+      "ts": "2026-06-27T20:32:06.001Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552066860",
-      "ts": "2026-06-15T19:34:26.860Z",
-      "npcId": "rin",
+      "id": "off_1782592445998",
+      "ts": "2026-06-27T20:34:05.998Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552186862",
-      "ts": "2026-06-15T19:36:26.862Z",
-      "npcId": "rin",
+      "id": "off_1782592445999",
+      "ts": "2026-06-27T20:34:05.999Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552186865",
-      "ts": "2026-06-15T19:36:26.865Z",
-      "npcId": "rin",
+      "id": "off_1782592566006",
+      "ts": "2026-06-27T20:36:06.006Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552306861",
-      "ts": "2026-06-15T19:38:26.861Z",
-      "npcId": "rin",
+      "id": "off_1782592566009",
+      "ts": "2026-06-27T20:36:06.009Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552306863",
-      "ts": "2026-06-15T19:38:26.863Z",
-      "npcId": "rin",
+      "id": "off_1782592686002",
+      "ts": "2026-06-27T20:38:06.002Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552426865",
-      "ts": "2026-06-15T19:40:26.865Z",
-      "npcId": "rin",
+      "id": "off_1782592686003",
+      "ts": "2026-06-27T20:38:06.003Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552426866",
-      "ts": "2026-06-15T19:40:26.866Z",
-      "npcId": "rin",
+      "id": "off_1782592806009",
+      "ts": "2026-06-27T20:40:06.009Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552546871",
-      "ts": "2026-06-15T19:42:26.871Z",
-      "npcId": "rin",
+      "id": "off_1782592806014",
+      "ts": "2026-06-27T20:40:06.014Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552546874",
-      "ts": "2026-06-15T19:42:26.874Z",
-      "npcId": "rin",
+      "id": "off_1782592864159",
+      "ts": "2026-06-27T20:41:04.159Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552666870",
-      "ts": "2026-06-15T19:44:26.870Z",
-      "npcId": "rin",
+      "id": "off_1782592926008",
+      "ts": "2026-06-27T20:42:06.008Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552666873",
-      "ts": "2026-06-15T19:44:26.873Z",
-      "npcId": "rin",
+      "id": "off_1782592926009",
+      "ts": "2026-06-27T20:42:06.009Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552743108",
-      "ts": "2026-06-15T19:45:43.108Z",
-      "npcId": "rin",
+      "id": "off_1782593046009",
+      "ts": "2026-06-27T20:44:06.009Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552786873",
-      "ts": "2026-06-15T19:46:26.873Z",
-      "npcId": "rin",
+      "id": "off_1782593046012",
+      "ts": "2026-06-27T20:44:06.012Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552786876",
-      "ts": "2026-06-15T19:46:26.876Z",
-      "npcId": "rin",
+      "id": "off_1782593166010",
+      "ts": "2026-06-27T20:46:06.010Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552906872",
-      "ts": "2026-06-15T19:48:26.872Z",
-      "npcId": "rin",
+      "id": "off_1782593166011",
+      "ts": "2026-06-27T20:46:06.011Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781552906875",
-      "ts": "2026-06-15T19:48:26.875Z",
-      "npcId": "rin",
+      "id": "off_1782593286012",
+      "ts": "2026-06-27T20:48:06.012Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553026876",
-      "ts": "2026-06-15T19:50:26.876Z",
-      "npcId": "rin",
+      "id": "off_1782593286013",
+      "ts": "2026-06-27T20:48:06.013Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553026877",
-      "ts": "2026-06-15T19:50:26.877Z",
-      "npcId": "rin",
+      "id": "off_1782593406018",
+      "ts": "2026-06-27T20:50:06.018Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553146878",
-      "ts": "2026-06-15T19:52:26.878Z",
-      "npcId": "rin",
+      "id": "off_1782593406023",
+      "ts": "2026-06-27T20:50:06.023Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553146881",
-      "ts": "2026-06-15T19:52:26.881Z",
-      "npcId": "rin",
+      "id": "off_1782593526014",
+      "ts": "2026-06-27T20:52:06.014Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553266879",
-      "ts": "2026-06-15T19:54:26.879Z",
-      "npcId": "rin",
+      "id": "off_1782593526015",
+      "ts": "2026-06-27T20:52:06.015Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553266883",
-      "ts": "2026-06-15T19:54:26.883Z",
-      "npcId": "rin",
+      "id": "off_1782593646024",
+      "ts": "2026-06-27T20:54:06.024Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553386883",
-      "ts": "2026-06-15T19:56:26.883Z",
-      "npcId": "rin",
+      "id": "off_1782593646025",
+      "ts": "2026-06-27T20:54:06.025Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553386884",
-      "ts": "2026-06-15T19:56:26.884Z",
-      "npcId": "rin",
+      "id": "off_1782593764155",
+      "ts": "2026-06-27T20:56:04.155Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553506882",
-      "ts": "2026-06-15T19:58:26.882Z",
-      "npcId": "rin",
+      "id": "off_1782593766028",
+      "ts": "2026-06-27T20:56:06.028Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781553506883",
-      "ts": "2026-06-15T19:58:26.883Z",
-      "npcId": "rin",
+      "id": "off_1782593766029",
+      "ts": "2026-06-27T20:56:06.029Z",
+      "npcId": "producer_k",
       "type": "collab_idea",
       "summary": "surgiu ideia de collab",
       "generated": true
     },
     {
-      "id": "off_1781554836223",
-      "ts": "2026-06-15T20:20:36.223Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554836271",
-      "ts": "2026-06-15T20:20:36.271Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554845480",
-      "ts": "2026-06-15T20:20:45.480Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554852840",
-      "ts": "2026-06-15T20:20:52.840Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554857206",
-      "ts": "2026-06-15T20:20:57.206Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554862341",
-      "ts": "2026-06-15T20:21:02.341Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554865670",
-      "ts": "2026-06-15T20:21:05.670Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554870801",
-      "ts": "2026-06-15T20:21:10.801Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554873757",
-      "ts": "2026-06-15T20:21:13.757Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554882382",
-      "ts": "2026-06-15T20:21:22.382Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554891388",
-      "ts": "2026-06-15T20:21:31.388Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554893449",
-      "ts": "2026-06-15T20:21:33.449Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554899087",
-      "ts": "2026-06-15T20:21:39.087Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781554959249",
-      "ts": "2026-06-15T20:22:39.249Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555027562",
-      "ts": "2026-06-15T20:23:47.562Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555027626",
-      "ts": "2026-06-15T20:23:47.626Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555034341",
-      "ts": "2026-06-15T20:23:54.341Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555038565",
-      "ts": "2026-06-15T20:23:58.565Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555042553",
-      "ts": "2026-06-15T20:24:02.553Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555046013",
-      "ts": "2026-06-15T20:24:06.013Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555050169",
-      "ts": "2026-06-15T20:24:10.169Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555057483",
-      "ts": "2026-06-15T20:24:17.483Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555069158",
-      "ts": "2026-06-15T20:24:29.158Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555104723",
-      "ts": "2026-06-15T20:25:04.723Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555104843",
-      "ts": "2026-06-15T20:25:04.843Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555179870",
-      "ts": "2026-06-15T20:26:19.870Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555179953",
-      "ts": "2026-06-15T20:26:19.953Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555186941",
-      "ts": "2026-06-15T20:26:26.941Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555192465",
-      "ts": "2026-06-15T20:26:32.465Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555197677",
-      "ts": "2026-06-15T20:26:37.677Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555199677",
-      "ts": "2026-06-15T20:26:39.677Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555205352",
-      "ts": "2026-06-15T20:26:45.352Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781555216766",
-      "ts": "2026-06-15T20:26:56.766Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556594382",
-      "ts": "2026-06-15T20:49:54.382Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556594456",
-      "ts": "2026-06-15T20:49:54.456Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556670265",
-      "ts": "2026-06-15T20:51:10.265Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556670410",
-      "ts": "2026-06-15T20:51:10.410Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556688097",
-      "ts": "2026-06-15T20:51:28.097Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556696375",
-      "ts": "2026-06-15T20:51:36.375Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556696457",
-      "ts": "2026-06-15T20:51:36.457Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556704469",
-      "ts": "2026-06-15T20:51:44.469Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556705241",
-      "ts": "2026-06-15T20:51:45.241Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556767265",
-      "ts": "2026-06-15T20:52:47.265Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556767365",
-      "ts": "2026-06-15T20:52:47.365Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556774185",
-      "ts": "2026-06-15T20:52:54.185Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556782055",
-      "ts": "2026-06-15T20:53:02.055Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556782320",
-      "ts": "2026-06-15T20:53:02.320Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556791265",
-      "ts": "2026-06-15T20:53:11.265Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556848405",
-      "ts": "2026-06-15T20:54:08.405Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556914170",
-      "ts": "2026-06-15T20:55:14.170Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556914214",
-      "ts": "2026-06-15T20:55:14.214Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556926333",
-      "ts": "2026-06-15T20:55:26.333Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556928334",
-      "ts": "2026-06-15T20:55:28.334Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556936778",
-      "ts": "2026-06-15T20:55:36.778Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556942343",
-      "ts": "2026-06-15T20:55:42.343Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556943683",
-      "ts": "2026-06-15T20:55:43.683Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556951073",
-      "ts": "2026-06-15T20:55:51.073Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781556957925",
-      "ts": "2026-06-15T20:55:57.925Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557005140",
-      "ts": "2026-06-15T20:56:45.140Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557005228",
-      "ts": "2026-06-15T20:56:45.228Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557012453",
-      "ts": "2026-06-15T20:56:52.453Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557019344",
-      "ts": "2026-06-15T20:56:59.344Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557082885",
-      "ts": "2026-06-15T20:58:02.885Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557089363",
-      "ts": "2026-06-15T20:58:09.363Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557092891",
-      "ts": "2026-06-15T20:58:12.891Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781557100171",
-      "ts": "2026-06-15T20:58:20.171Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564427110",
-      "ts": "2026-06-15T23:00:27.110Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564427118",
-      "ts": "2026-06-15T23:00:27.118Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564443128",
-      "ts": "2026-06-15T23:00:43.128Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564547112",
-      "ts": "2026-06-15T23:02:27.112Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564547114",
-      "ts": "2026-06-15T23:02:27.114Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564667115",
-      "ts": "2026-06-15T23:04:27.115Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564667116",
-      "ts": "2026-06-15T23:04:27.116Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564787115",
-      "ts": "2026-06-15T23:06:27.115Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564787116",
-      "ts": "2026-06-15T23:06:27.116Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564907117",
-      "ts": "2026-06-15T23:08:27.117Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781564907118",
-      "ts": "2026-06-15T23:08:27.118Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565027119",
-      "ts": "2026-06-15T23:10:27.119Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565027124",
-      "ts": "2026-06-15T23:10:27.124Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565147120",
-      "ts": "2026-06-15T23:12:27.120Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565147124",
-      "ts": "2026-06-15T23:12:27.124Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565267123",
-      "ts": "2026-06-15T23:14:27.123Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565267124",
-      "ts": "2026-06-15T23:14:27.124Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565343130",
-      "ts": "2026-06-15T23:15:43.130Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565387126",
-      "ts": "2026-06-15T23:16:27.126Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565387132",
-      "ts": "2026-06-15T23:16:27.133Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565507127",
-      "ts": "2026-06-15T23:18:27.127Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565507128",
-      "ts": "2026-06-15T23:18:27.128Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565627131",
-      "ts": "2026-06-15T23:20:27.131Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565627133",
-      "ts": "2026-06-15T23:20:27.133Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565747135",
-      "ts": "2026-06-15T23:22:27.135Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565747138",
-      "ts": "2026-06-15T23:22:27.138Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565867140",
-      "ts": "2026-06-15T23:24:27.140Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565867142",
-      "ts": "2026-06-15T23:24:27.142Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565987145",
-      "ts": "2026-06-15T23:26:27.145Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781565987147",
-      "ts": "2026-06-15T23:26:27.147Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566107147",
-      "ts": "2026-06-15T23:28:27.147Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566107148",
-      "ts": "2026-06-15T23:28:27.148Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566227151",
-      "ts": "2026-06-15T23:30:27.151Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566227155",
-      "ts": "2026-06-15T23:30:27.155Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566243131",
-      "ts": "2026-06-15T23:30:43.131Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566347159",
-      "ts": "2026-06-15T23:32:27.159Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566347160",
-      "ts": "2026-06-15T23:32:27.160Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566467167",
-      "ts": "2026-06-15T23:34:27.167Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566467168",
-      "ts": "2026-06-15T23:34:27.168Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566587170",
-      "ts": "2026-06-15T23:36:27.170Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566587171",
-      "ts": "2026-06-15T23:36:27.171Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566707174",
-      "ts": "2026-06-15T23:38:27.174Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566707175",
-      "ts": "2026-06-15T23:38:27.175Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566827177",
-      "ts": "2026-06-15T23:40:27.177Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566827180",
-      "ts": "2026-06-15T23:40:27.180Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566947184",
-      "ts": "2026-06-15T23:42:27.184Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781566947186",
-      "ts": "2026-06-15T23:42:27.186Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567067192",
-      "ts": "2026-06-15T23:44:27.192Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567067193",
-      "ts": "2026-06-15T23:44:27.193Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567143135",
-      "ts": "2026-06-15T23:45:43.135Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567187197",
-      "ts": "2026-06-15T23:46:27.197Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567187199",
-      "ts": "2026-06-15T23:46:27.199Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567307201",
-      "ts": "2026-06-15T23:48:27.201Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567307204",
-      "ts": "2026-06-15T23:48:27.204Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567427201",
-      "ts": "2026-06-15T23:50:27.201Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567427202",
-      "ts": "2026-06-15T23:50:27.202Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567547206",
-      "ts": "2026-06-15T23:52:27.206Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567547207",
-      "ts": "2026-06-15T23:52:27.207Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567667214",
-      "ts": "2026-06-15T23:54:27.214Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567667215",
-      "ts": "2026-06-15T23:54:27.215Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567787217",
-      "ts": "2026-06-15T23:56:27.217Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567787218",
-      "ts": "2026-06-15T23:56:27.218Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567907220",
-      "ts": "2026-06-15T23:58:27.220Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
-      "generated": true
-    },
-    {
-      "id": "off_1781567907222",
-      "ts": "2026-06-15T23:58:27.222Z",
-      "npcId": "rin",
-      "type": "missed_call",
-      "summary": "perdeu ligação, vai responder depois",
+      "id": "off_1782593886029",
+      "ts": "2026-06-27T20:58:06.029Z",
+      "npcId": "producer_k",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
+      "generated": true
+    },
+    {
+      "id": "off_1782593886030",
+      "ts": "2026-06-27T20:58:06.030Z",
+      "npcId": "producer_k",
+      "type": "collab_idea",
+      "summary": "surgiu ideia de collab",
       "generated": true
     }
   ]

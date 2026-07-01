@@ -536,22 +536,12 @@
     "dm-157947506229421::direct": {
       "userId": "dm-157947506229421",
       "channelScope": "direct",
-      "trust": 0.7020000000000002,
-      "intimacy": 0.5090000000000001,
-      "rupture": 0.04442857142857158,
+      "trust": 0.7180000000000002,
+      "intimacy": 0.5210000000000001,
+      "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-06-15T17:48:27.346Z",
+      "lastInteractionAt": "2026-06-17T21:24:40.831Z",
       "notes": [
-        {
-          "type": "reinforce",
-          "reason": "interaction",
-          "ts": "2026-06-12T16:19:57.987Z"
-        },
-        {
-          "type": "reinforce",
-          "reason": "interaction",
-          "ts": "2026-06-12T16:36:06.722Z"
-        },
         {
           "type": "reinforce",
           "reason": "interaction",
@@ -641,6 +631,16 @@
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-06-15T17:48:27.346Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T21:23:54.996Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T21:24:40.831Z"
         }
       ]
     },
@@ -657,12 +657,23 @@
     "81544400130175::group:120363342938049353@g.us": {
       "userId": "81544400130175",
       "channelScope": "group:120363342938049353@g.us",
-      "trust": 0.45,
-      "intimacy": 0.35,
+      "trust": 0.466,
+      "intimacy": 0.362,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": null,
-      "notes": []
+      "lastInteractionAt": "2026-06-18T18:36:39.356Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:13.135Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:39.356Z"
+        }
+      ]
     },
     "dm-5516988137617::direct": {
       "userId": "dm-5516988137617",
@@ -717,12 +728,18 @@
     "132813357596880::group:120363342938049353@g.us": {
       "userId": "132813357596880",
       "channelScope": "group:120363342938049353@g.us",
-      "trust": 0.45,
-      "intimacy": 0.35,
+      "trust": 0.458,
+      "intimacy": 0.356,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": null,
-      "notes": []
+      "lastInteractionAt": "2026-06-18T18:37:14.418Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:37:14.418Z"
+        }
+      ]
     },
     "238009924509886::group:120363342938049353@g.us": {
       "userId": "238009924509886",
@@ -737,12 +754,33 @@
     "157947506229421::group:120363342938049353@g.us": {
       "userId": "157947506229421",
       "channelScope": "group:120363342938049353@g.us",
-      "trust": 0.45,
-      "intimacy": 0.35,
+      "trust": 0.48900000000000005,
+      "intimacy": 0.38,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": null,
-      "notes": []
+      "lastInteractionAt": "2026-06-18T18:36:57.673Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:01.421Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:04.746Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:25.257Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:57.673Z"
+        }
+      ]
     },
     "6283879987068::group:120363342938049353@g.us": {
       "userId": "6283879987068",
@@ -857,12 +895,43 @@
     "190546341540031::group:120363342938049353@g.us": {
       "userId": "190546341540031",
       "channelScope": "group:120363342938049353@g.us",
-      "trust": 0.45,
-      "intimacy": 0.35,
+      "trust": 0.49800000000000005,
+      "intimacy": 0.386,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": null,
-      "notes": []
+      "lastInteractionAt": "2026-06-18T18:37:29.512Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:11.809Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:12.585Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:21.134Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:30.730Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:36:33.694Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:37:29.512Z"
+        }
+      ]
     },
     "190546341540031::group:120363425913528764@g.us": {
       "userId": "190546341540031",
@@ -1801,6 +1870,950 @@
     "dm-214963146760277::direct": {
       "userId": "dm-214963146760277",
       "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "193909485502717::group:120363402362643675@g.us": {
+      "userId": "193909485502717",
+      "channelScope": "group:120363402362643675@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-5516997241905::direct": {
+      "userId": "dm-5516997241905",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-5516991476228::direct": {
+      "userId": "dm-5516991476228",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-5516994435369::direct": {
+      "userId": "dm-5516994435369",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "93729205547139::group:120363402362643675@g.us": {
+      "userId": "93729205547139",
+      "channelScope": "group:120363402362643675@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "81544400130175::group:120363402362643675@g.us": {
+      "userId": "81544400130175",
+      "channelScope": "group:120363402362643675@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-5516996242810::direct": {
+      "userId": "dm-5516996242810",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-206476459155457::direct": {
+      "userId": "dm-206476459155457",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "157947506229421::group:120363426014160691@g.us": {
+      "userId": "157947506229421",
+      "channelScope": "group:120363426014160691@g.us",
+      "trust": 0.5700000000000001,
+      "intimacy": 0.44000000000000006,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": "2026-06-17T20:57:14.817Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:01:45.615Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:01:48.378Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:01:56.193Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:02:11.085Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:03:59.941Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:04:00.099Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:06:24.749Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:06:24.846Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:12:54.820Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:23:31.536Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:15.038Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:15.164Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:53.202Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:53.308Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T20:57:14.817Z"
+        }
+      ]
+    },
+    "6283879987068::group:120363426014160691@g.us": {
+      "userId": "6283879987068",
+      "channelScope": "group:120363426014160691@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "131778236952767::group:120363426014160691@g.us": {
+      "userId": "131778236952767",
+      "channelScope": "group:120363426014160691@g.us",
+      "trust": 0.5940000000000001,
+      "intimacy": 0.4580000000000001,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": "2026-06-17T20:54:28.624Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:03:09.098Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:04:07.628Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:04:25.135Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:09:49.293Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:09:55.259Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:11:55.643Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:16:30.169Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:16:30.275Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:18:10.811Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:18:10.929Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:19:13.920Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:19:13.977Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:20:20.159Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:20:20.248Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:38.760Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:59.589Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:25:12.745Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T20:54:28.624Z"
+        }
+      ]
+    },
+    "174165839581324::group:120363426014160691@g.us": {
+      "userId": "174165839581324",
+      "channelScope": "group:120363426014160691@g.us",
+      "trust": 0.6430000000000001,
+      "intimacy": 0.5000000000000001,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": "2026-06-17T20:38:14.734Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:01:40.868Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:02:36.723Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:03:23.606Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:04:26.916Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:04:46.482Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:06:43.126Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:07:09.879Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:09:27.350Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:11:42.722Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:16:50.518Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:18:30.889Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:19:36.974Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:20:41.093Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:23:51.795Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:36.786Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:24:49.309Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T15:25:14.721Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-17T20:38:14.734Z"
+        }
+      ]
+    },
+    "5516988137617::group:120363426014160691@g.us": {
+      "userId": "5516988137617",
+      "channelScope": "group:120363426014160691@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-253523715473621::direct": {
+      "userId": "dm-253523715473621",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "171168086683696::group:120363403135646522@g.us": {
+      "userId": "171168086683696",
+      "channelScope": "group:120363403135646522@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-5517991664082::direct": {
+      "userId": "dm-5517991664082",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "129386040836118::group:120363402362643675@g.us": {
+      "userId": "129386040836118",
+      "channelScope": "group:120363402362643675@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "227633317040340::group:120363402362643675@g.us": {
+      "userId": "227633317040340",
+      "channelScope": "group:120363402362643675@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-44495928357045::direct": {
+      "userId": "dm-44495928357045",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-5516988776338::direct": {
+      "userId": "dm-5516988776338",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "3891374633162::group:120363289474967524@g.us": {
+      "userId": "3891374633162",
+      "channelScope": "group:120363289474967524@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "193819442184289::group:120363289474967524@g.us": {
+      "userId": "193819442184289",
+      "channelScope": "group:120363289474967524@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "174165839581324::group:120363342938049353@g.us": {
+      "userId": "174165839581324",
+      "channelScope": "group:120363342938049353@g.us",
+      "trust": 0.458,
+      "intimacy": 0.356,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": "2026-06-18T18:35:56.940Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-06-18T18:35:56.940Z"
+        }
+      ]
+    },
+    "5516988137617::group:120363342938049353@g.us": {
+      "userId": "5516988137617",
+      "channelScope": "group:120363342938049353@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "279903085797589::group:120363246580968934@g.us": {
+      "userId": "279903085797589",
+      "channelScope": "group:120363246580968934@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-81544400130175::direct": {
+      "userId": "dm-81544400130175",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "81544400130175::group:120363426863669479@g.us": {
+      "userId": "81544400130175",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "157947506229421::group:120363426863669479@g.us": {
+      "userId": "157947506229421",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "74053859672191::group:120363426863669479@g.us": {
+      "userId": "74053859672191",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "132813357596880::group:120363426863669479@g.us": {
+      "userId": "132813357596880",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "193909485502717::group:120363426863669479@g.us": {
+      "userId": "193909485502717",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "190546341540031::group:120363426863669479@g.us": {
+      "userId": "190546341540031",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "150242334867642::group:120363426863669479@g.us": {
+      "userId": "150242334867642",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "194132672835676::group:120363426863669479@g.us": {
+      "userId": "194132672835676",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "157947506229421::group:120363258200906509@g.us": {
+      "userId": "157947506229421",
+      "channelScope": "group:120363258200906509@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "149684324700164::group:120363426863669479@g.us": {
+      "userId": "149684324700164",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "242794635518154::group:120363426863669479@g.us": {
+      "userId": "242794635518154",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-5516999619085::direct": {
+      "userId": "dm-5516999619085",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "187995030323304::group:120363426863669479@g.us": {
+      "userId": "187995030323304",
+      "channelScope": "group:120363426863669479@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-150242334867642::direct": {
+      "userId": "dm-150242334867642",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "16729065414809::group:5516991242473-1515078704@g.us": {
+      "userId": "16729065414809",
+      "channelScope": "group:5516991242473-1515078704@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "21346138464359::group:558183111688-1616801784@g.us": {
+      "userId": "21346138464359",
+      "channelScope": "group:558183111688-1616801784@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "242116047446124::group:558183111688-1616801784@g.us": {
+      "userId": "242116047446124",
+      "channelScope": "group:558183111688-1616801784@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "33801493332093::group:558183111688-1616801784@g.us": {
+      "userId": "33801493332093",
+      "channelScope": "group:558183111688-1616801784@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "132813357596880::group:120363402362643675@g.us": {
+      "userId": "132813357596880",
+      "channelScope": "group:120363402362643675@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "137053111091288::group:558183111688-1616801784@g.us": {
+      "userId": "137053111091288",
+      "channelScope": "group:558183111688-1616801784@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "87969637597431::group:5516991242473-1515078704@g.us": {
+      "userId": "87969637597431",
+      "channelScope": "group:5516991242473-1515078704@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "19014122213383::group:558183111688-1616801784@g.us": {
+      "userId": "19014122213383",
+      "channelScope": "group:558183111688-1616801784@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "253123964727450::group:5516991242473-1515078704@g.us": {
+      "userId": "253123964727450",
+      "channelScope": "group:5516991242473-1515078704@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "201490354462943::group:5516991242473-1515078704@g.us": {
+      "userId": "201490354462943",
+      "channelScope": "group:5516991242473-1515078704@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "190546341540031::group:120363402362643675@g.us": {
+      "userId": "190546341540031",
+      "channelScope": "group:120363402362643675@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-248142339518693::direct": {
+      "userId": "dm-248142339518693",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-277197541638285::direct": {
+      "userId": "dm-277197541638285",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-144787676106892::direct": {
+      "userId": "dm-144787676106892",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "33797450018979::group:120363096102550685@g.us": {
+      "userId": "33797450018979",
+      "channelScope": "group:120363096102550685@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "132813357596880::group:120363408453210191@g.us": {
+      "userId": "132813357596880",
+      "channelScope": "group:120363408453210191@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "10338019860504::group:5516991242473-1515078704@g.us": {
+      "userId": "10338019860504",
+      "channelScope": "group:5516991242473-1515078704@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "105033442058407::group:120363408453210191@g.us": {
+      "userId": "105033442058407",
+      "channelScope": "group:120363408453210191@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "132813357596880::group:120363408554575864@g.us": {
+      "userId": "132813357596880",
+      "channelScope": "group:120363408554575864@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "144787676106892::group:120363408554575864@g.us": {
+      "userId": "144787676106892",
+      "channelScope": "group:120363408554575864@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "74053859672191::group:5516996228023-1617627661@g.us": {
+      "userId": "74053859672191",
+      "channelScope": "group:5516996228023-1617627661@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-9281743114312::direct": {
+      "userId": "dm-9281743114312",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "132813357596880::group:5516996228023-1617627661@g.us": {
+      "userId": "132813357596880",
+      "channelScope": "group:5516996228023-1617627661@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-33797450018979::direct": {
+      "userId": "dm-33797450018979",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "dm-155641394032704::direct": {
+      "userId": "dm-155641394032704",
+      "channelScope": "direct",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "139230391062567::group:120363096102550685@g.us": {
+      "userId": "139230391062567",
+      "channelScope": "group:120363096102550685@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "81544400130175::group:120363289474967524@g.us": {
+      "userId": "81544400130175",
+      "channelScope": "group:120363289474967524@g.us",
+      "trust": 0.45,
+      "intimacy": 0.35,
+      "rupture": 0,
+      "vulnerabilityEvents": 0,
+      "lastInteractionAt": null,
+      "notes": []
+    },
+    "245715297116392::group:120363289474967524@g.us": {
+      "userId": "245715297116392",
+      "channelScope": "group:120363289474967524@g.us",
       "trust": 0.45,
       "intimacy": 0.35,
       "rupture": 0,

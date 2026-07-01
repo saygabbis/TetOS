@@ -17,11 +17,33 @@
       "recoveryProgress": 1,
       "lastFlareAt": "2026-06-15T20:58:20.170Z",
       "recoveredAt": "2026-06-15T23:00:27.122Z"
+    },
+    {
+      "id": "jet_lag_1781807756938",
+      "type": "jet_lag",
+      "status": "recovered",
+      "onsetAt": "2026-06-18T18:35:56.938Z",
+      "severity": 1,
+      "reason": "regional_nyc",
+      "region": "nyc",
+      "triggers": [
+        "jet_lag",
+        "urbano",
+        "cultura_us"
+      ],
+      "recoveryDays": 5,
+      "chronic": false,
+      "recoveryProgress": 1,
+      "lastFlareAt": "2026-06-18T18:37:29.510Z",
+      "recoveredAt": "2026-06-20T01:43:26.270Z"
     }
   ],
   "regionalModifiers": {
     "sp": {
       "updatedAt": "2026-06-16T11:29:40.409Z"
+    },
+    "nyc": {
+      "updatedAt": "2026-06-18T18:37:29.510Z"
     }
   }
 }

@@ -1,0 +1,1712 @@
+{
+  "day": "2026-06-19",
+  "generatedAt": "2026-06-20T00:00:18.896Z",
+  "timezone": "America/Sao_Paulo",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 7248,
+    "byEvent": {
+      "message.receipt_update": 3852,
+      "chat.update": 2752,
+      "message.update": 563,
+      "group.participants_update": 13,
+      "message.outgoing": 5,
+      "message.reaction": 53,
+      "group.update": 3,
+      "command.media": 3,
+      "message.incoming": 1,
+      "message.deleted": 3
+    }
+  },
+  "timeline": {
+    "hourly": [
+      {
+        "hour": 0,
+        "events": 6,
+        "messages": 4,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 1,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 2,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 3,
+        "events": 348,
+        "messages": 340,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 4,
+        "events": 15,
+        "messages": 1,
+        "media": 1,
+        "reactions": 0
+      },
+      {
+        "hour": 5,
+        "events": 23,
+        "messages": 16,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 6,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 7,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 8,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 9,
+        "events": 38,
+        "messages": 33,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 10,
+        "events": 285,
+        "messages": 126,
+        "media": 0,
+        "reactions": 6
+      },
+      {
+        "hour": 11,
+        "events": 642,
+        "messages": 340,
+        "media": 0,
+        "reactions": 3
+      },
+      {
+        "hour": 12,
+        "events": 1367,
+        "messages": 878,
+        "media": 0,
+        "reactions": 6
+      },
+      {
+        "hour": 13,
+        "events": 514,
+        "messages": 284,
+        "media": 0,
+        "reactions": 3
+      },
+      {
+        "hour": 14,
+        "events": 1050,
+        "messages": 877,
+        "media": 0,
+        "reactions": 6
+      },
+      {
+        "hour": 15,
+        "events": 211,
+        "messages": 142,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 16,
+        "events": 616,
+        "messages": 381,
+        "media": 3,
+        "reactions": 3
+      },
+      {
+        "hour": 17,
+        "events": 676,
+        "messages": 331,
+        "media": 1,
+        "reactions": 8
+      },
+      {
+        "hour": 18,
+        "events": 597,
+        "messages": 246,
+        "media": 0,
+        "reactions": 7
+      },
+      {
+        "hour": 19,
+        "events": 381,
+        "messages": 206,
+        "media": 0,
+        "reactions": 3
+      },
+      {
+        "hour": 20,
+        "events": 81,
+        "messages": 45,
+        "media": 0,
+        "reactions": 5
+      },
+      {
+        "hour": 21,
+        "events": 221,
+        "messages": 150,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 22,
+        "events": 87,
+        "messages": 33,
+        "media": 0,
+        "reactions": 2
+      },
+      {
+        "hour": 23,
+        "events": 90,
+        "messages": 44,
+        "media": 0,
+        "reactions": 0
+      }
+    ],
+    "events": [
+      {
+        "ts": "2026-06-19T03:02:14.104Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.109Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.112Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.114Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.120Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.140Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.164Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.169Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.172Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.176Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.181Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.184Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.186Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.194Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.197Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.198Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.199Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.201Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.202Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.206Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.207Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.209Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.210Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.211Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.212Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.212Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.213Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.215Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.216Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.216Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:14.217Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.927Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.938Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.953Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.970Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.972Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.974Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.975Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.976Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.977Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.978Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.980Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.983Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.984Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.985Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.987Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.989Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:20.990Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.895Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.902Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.906Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.910Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.910Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.911Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.913Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.913Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.914Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.915Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.917Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.920Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.923Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.924Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.926Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.928Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.929Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.930Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.932Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.933Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.936Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.939Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.941Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.942Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.943Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.945Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.946Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.947Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:22.950Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.195Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.196Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.199Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.202Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.205Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.207Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.209Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.210Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.214Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.217Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.218Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.219Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.221Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.222Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.223Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.225Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.228Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.232Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.246Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.248Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.249Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.253Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.256Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.260Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.262Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.263Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.264Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.264Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.265Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.265Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.266Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.266Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.267Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.268Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.269Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.278Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.279Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.280Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.280Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.281Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.281Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.283Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.284Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.285Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.286Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.287Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.289Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.290Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.290Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.291Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.291Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.292Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.293Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.293Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.294Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.295Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.296Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.296Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.296Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.297Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.298Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.298Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.299Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.299Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.300Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.300Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.301Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.301Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.302Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.302Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.303Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.303Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.304Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.304Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.308Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.309Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.310Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.311Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.312Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.312Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.313Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.313Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.314Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.314Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.315Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.315Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.316Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.317Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.318Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.318Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.319Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.319Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.320Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.321Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.321Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.322Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.323Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.324Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.325Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.325Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:24.326Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.884Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.885Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.887Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.888Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.889Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.890Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.891Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.892Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.895Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.895Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.896Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.898Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.899Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.900Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.903Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.904Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.907Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.909Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.909Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.909Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.910Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-19T03:02:27.911Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      }
+    ],
+    "gaps": [
+      {
+        "from": "2026-06-19T05:24:15.868Z",
+        "to": "2026-06-19T09:38:59.881Z",
+        "minutes": 255
+      }
+    ]
+  },
+  "timing": {
+    "byHour": [
+      {
+        "hour": 0,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 1,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 2,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 3,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 4,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 5,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 6,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 7,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 8,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 9,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 10,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 11,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 12,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 13,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 14,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 15,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 16,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 17,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 18,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 19,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 20,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 21,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 22,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 23,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      }
+    ],
+    "avgLatencyMs": 8790293,
+    "p50Ms": 8790293
+  },
+  "duration": {
+    "activeSpanMinutes": 1258,
+    "longestSilenceMin": 255,
+    "silenceGaps": 1
+  },
+  "mindSnapshots": [],
+  "hourlySnapshots": [],
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 3,
+    "samples": [
+      {
+        "ts": "2026-06-19T18:10:50.290Z",
+        "messageId": "3EB08A38825A4C2D443E8F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-19T18:10:50.359Z",
+        "messageId": "3EB08A38825A4C2D443E8F",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-19T23:02:21.237Z",
+        "messageId": "AC1C10B83E5263C44DDB8B208F420A8A",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 3,
+    "avgLatencyMs": 497714,
+    "byCommand": {
+      "sticker": 2,
+      "csticker": 1
+    },
+    "byStatus": {
+      "ok": 3
+    },
+    "byInputType": {
+      "image": 1,
+      "gif": 2
+    },
+    "byOutputType": {
+      "image": 3
+    },
+    "byTargetSource": {
+      "self": 1,
+      "reply": 2
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 6436,
+      "messages": 6409,
+      "reactions": 0,
+      "media": 1695,
+      "links": 187
+    },
+    "byHour": {
+      "0": 267,
+      "1": 163,
+      "2": 177,
+      "3": 288,
+      "4": 183,
+      "5": 158,
+      "6": 95,
+      "7": 61,
+      "8": 51,
+      "9": 14,
+      "10": 17,
+      "11": 133,
+      "12": 272,
+      "13": 228,
+      "14": 399,
+      "15": 261,
+      "16": 256,
+      "17": 149,
+      "18": 386,
+      "19": 591,
+      "20": 473,
+      "21": 751,
+      "22": 649,
+      "23": 414
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 67,
+      "5516994435369@s.whatsapp.net": 25,
+      "5516988137617@s.whatsapp.net": 82,
+      "190546341540031@lid": 562,
+      "131778236952767@lid": 1489,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 16,
+      "5516991476228@s.whatsapp.net": 2,
+      "65197804912879@lid": 47,
+      "6283879987068@s.whatsapp.net": 18,
+      "174165839581324@lid": 169,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 311,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 1203,
+      "5516988776338@s.whatsapp.net": 63,
+      "185967939985556@lid": 1027,
+      "5517991664082@s.whatsapp.net": 41,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 638,
+      "272172178223326@lid": 49,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 23,
+      "238009924509886@lid": 23,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 48,
+      "103659153158378@lid": 44,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 23,
+      "187995030323304@lid": 37,
+      "150242334867642@lid": 30,
+      "137053111091288@lid": 5,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 10,
+      "3689544732728@lid": 86,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 31,
+      "9281743114312@lid": 63,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 40,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 13,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3,
+      "207202157650019@lid": 26,
+      "124841948631110@lid": 15,
+      "69123321135269@lid": 1,
+      "164076609101978@lid": 4,
+      "206579353784338@lid": 2,
+      "5516996184325@s.whatsapp.net": 1,
+      "5516997824041@s.whatsapp.net": 1,
+      "58141777641473@lid": 1,
+      "141167085773019@lid": 1,
+      "49809339740364@lid": 5,
+      "238083022835725@lid": 7,
+      "206476459155457@lid": 1,
+      "224098508644548@lid": 1,
+      "140269471174762@lid": 6,
+      "120363425913528764@g.us": 32
+    },
+    "avgLatencyMs": 8790293
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "currentActivity": "mixando faixa",
-  "activityStartedAt": "2026-06-16T14:00:28.302Z",
-  "phase": "tarde",
+  "currentActivity": null,
+  "activityStartedAt": null,
+  "phase": "manha",
   "obligations": [
     {
       "id": "obligation_1780935846985_421",
@@ -413,7 +413,7 @@
   "sleep": {
     "state": "awake",
     "sleepDebt": 0,
-    "lastSleepAt": "2026-06-16T03:00:27.502Z",
+    "lastSleepAt": "2026-07-01T02:00:13.343Z",
     "tonightPlan": {
       "bedHour": 23,
       "wakeHour": 7
@@ -454,11 +454,95 @@
         "missedAlarm": false,
         "quality": 0.67,
         "state": "awake"
+      },
+      {
+        "ts": "2026-06-17T10:01:22.354Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-18T10:01:23.506Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-19T10:01:25.201Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-20T10:01:26.940Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-21T10:01:27.973Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-22T10:01:28.671Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-23T10:01:29.605Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-24T10:01:31.916Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-26T10:00:02.572Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-27T10:00:05.154Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-28T10:00:09.227Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-29T10:00:31.544Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-06-30T10:01:04.742Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
+      },
+      {
+        "ts": "2026-07-01T10:00:15.594Z",
+        "missedAlarm": false,
+        "quality": 0.67,
+        "state": "awake"
       }
     ],
     "wakeDelayUntil": null,
-    "lastWakeAt": "2026-06-16T10:00:28.071Z"
+    "lastWakeAt": "2026-07-01T10:00:15.593Z"
   },
-  "lastTickAt": "2026-06-16T14:20:28.326Z",
-  "dayKey": "2026-06-16"
+  "lastTickAt": "2026-07-01T12:26:16.207Z",
+  "dayKey": "2026-07-01"
 }

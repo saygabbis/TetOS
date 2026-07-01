@@ -4,9 +4,31 @@
   "tripReason": null,
   "localSeason": "inverno",
   "climateTags": [
+    "urbano",
+    "umido",
     "frio_seco"
   ],
-  "lastUpdated": "2026-06-16T14:20:28.325Z",
-  "tripHistory": [],
-  "culturalNotes": []
+  "lastUpdated": "2026-07-01T12:26:16.203Z",
+  "tripHistory": [
+    {
+      "location": "nyc",
+      "reason": "aprender cultura local",
+      "days": 9,
+      "startedAt": "2026-06-16T14:44:11.159Z",
+      "endsAt": "2026-06-25T14:44:11.159Z",
+      "source": "autonomous_daily",
+      "note": "decidi ir pra Nova York — aprender cultura local"
+    }
+  ],
+  "culturalNotes": [
+    {
+      "ts": "2026-06-16T14:44:11.159Z",
+      "location": "nyc",
+      "text": "quero ver Nova York de perto — aprender cultura local"
+    }
+  ],
+  "tripStartedAt": null,
+  "tripEndsAt": null,
+  "timezone": "America/Sao_Paulo",
+  "lastTripEndedAt": "2026-06-26T04:28:01.899Z"
 }

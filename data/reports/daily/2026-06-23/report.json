@@ -1,0 +1,1809 @@
+{
+  "day": "2026-06-23",
+  "generatedAt": "2026-06-24T00:00:13.395Z",
+  "timezone": "America/Sao_Paulo",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 4873,
+    "byEvent": {
+      "chat.update": 2352,
+      "message.reaction": 57,
+      "group.participants_update": 16,
+      "message.update": 928,
+      "message.receipt_update": 1493,
+      "message.deleted": 21,
+      "message.outgoing": 6
+    }
+  },
+  "timeline": {
+    "hourly": [
+      {
+        "hour": 0,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 1,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 2,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 3,
+        "events": 12,
+        "messages": 1,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 4,
+        "events": 6,
+        "messages": 5,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 5,
+        "events": 4,
+        "messages": 1,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 6,
+        "events": 1,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 7,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 8,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 9,
+        "events": 80,
+        "messages": 49,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 10,
+        "events": 264,
+        "messages": 149,
+        "media": 0,
+        "reactions": 8
+      },
+      {
+        "hour": 11,
+        "events": 173,
+        "messages": 107,
+        "media": 0,
+        "reactions": 6
+      },
+      {
+        "hour": 12,
+        "events": 656,
+        "messages": 291,
+        "media": 0,
+        "reactions": 4
+      },
+      {
+        "hour": 13,
+        "events": 361,
+        "messages": 117,
+        "media": 0,
+        "reactions": 10
+      },
+      {
+        "hour": 14,
+        "events": 692,
+        "messages": 386,
+        "media": 1,
+        "reactions": 9
+      },
+      {
+        "hour": 15,
+        "events": 93,
+        "messages": 50,
+        "media": 0,
+        "reactions": 4
+      },
+      {
+        "hour": 16,
+        "events": 282,
+        "messages": 126,
+        "media": 0,
+        "reactions": 4
+      },
+      {
+        "hour": 17,
+        "events": 498,
+        "messages": 240,
+        "media": 0,
+        "reactions": 3
+      },
+      {
+        "hour": 18,
+        "events": 54,
+        "messages": 23,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 19,
+        "events": 554,
+        "messages": 248,
+        "media": 0,
+        "reactions": 4
+      },
+      {
+        "hour": 20,
+        "events": 179,
+        "messages": 108,
+        "media": 1,
+        "reactions": 0
+      },
+      {
+        "hour": 21,
+        "events": 477,
+        "messages": 287,
+        "media": 0,
+        "reactions": 2
+      },
+      {
+        "hour": 22,
+        "events": 300,
+        "messages": 203,
+        "media": 1,
+        "reactions": 0
+      },
+      {
+        "hour": 23,
+        "events": 187,
+        "messages": 114,
+        "media": 0,
+        "reactions": 0
+      }
+    ],
+    "events": [
+      {
+        "ts": "2026-06-23T03:02:11.077Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:03:42.788Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:03:55.552Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:06:36.240Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_2d860121e561",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:07:34.810Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:23:24.565Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:25:11.176Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:31:08.922Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:31:22.473Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:32:31.412Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:46:58.617Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T03:51:35.036Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T04:13:32.675Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T04:29:00.643Z",
+        "eventType": "message.update",
+        "actorId": "anon_a0a88c2b13f2",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T04:55:00.035Z",
+        "eventType": "message.update",
+        "actorId": "anon_3a9d122bb7a9",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T04:55:00.049Z",
+        "eventType": "message.update",
+        "actorId": "anon_3a9d122bb7a9",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T04:55:00.055Z",
+        "eventType": "message.update",
+        "actorId": "anon_3a9d122bb7a9",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T04:55:00.068Z",
+        "eventType": "message.update",
+        "actorId": "anon_3a9d122bb7a9",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T05:00:27.518Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T05:03:43.566Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T05:04:52.522Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T05:05:18.301Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_3a9d122bb7a9",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T06:39:05.243Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:21:54.952Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:21:55.269Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:21:57.056Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:21:57.133Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:23:28.073Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:23:28.157Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:42:50.834Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:42:52.168Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:43:19.418Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:43:19.469Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:43:53.787Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:43:53.855Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:44:09.093Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:46:56.467Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:46:58.630Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:50:04.463Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:50:04.508Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:50:04.812Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:50:16.036Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:50:16.358Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:56:27.185Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:56:27.279Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:56:28.154Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:56:28.230Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:57:05.577Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:57:05.682Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:57:07.671Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:57:07.780Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.611Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.612Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.612Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.613Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.613Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.613Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.614Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.614Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:06.614Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:13.931Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:13.932Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:13.937Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:13.938Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:13.939Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:28.796Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:28.848Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.541Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.542Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.542Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.543Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.543Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.544Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.544Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.544Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.545Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.546Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.546Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.547Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.547Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.547Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.548Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.548Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.549Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.550Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.880Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.891Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.892Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:35.893Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:51.325Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:51.391Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:51.710Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:57.062Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:57.065Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:58:57.066Z",
+        "eventType": "message.update",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:00.058Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:05.519Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:05.582Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:10.130Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:10.199Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:38.521Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:38.590Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T09:59:49.499Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:00:20.579Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:00:20.653Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:00:29.770Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:00:32.702Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:01:18.499Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:01:18.788Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:03:13.099Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:03:13.181Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:03:24.986Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:03:25.067Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:11:53.604Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:11:53.605Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:11:53.606Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:11:53.608Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:11:53.609Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:11:53.610Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:11:53.611Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.354Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.358Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.361Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.365Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.370Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.374Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.376Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.381Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.383Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.384Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.388Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.390Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.393Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.396Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.397Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.399Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.401Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.408Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.410Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:09.413Z",
+        "eventType": "message.update",
+        "actorId": "anon_b7862403af34",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:12.411Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:42.346Z",
+        "eventType": "message.update",
+        "actorId": "anon_ab651c383ecf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:42.348Z",
+        "eventType": "message.update",
+        "actorId": "anon_ab651c383ecf",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:12:45.316Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:13:32.443Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:13:32.529Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:14:16.686Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:14:56.053Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:14:56.133Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:15:06.065Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:15:06.225Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:39.632Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:39.772Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:41.771Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:41.849Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:53.167Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:53.247Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:59.211Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:16:59.372Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:04.519Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:04.600Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:09.579Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:09.652Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:12.632Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:12.712Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:43.781Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:43.858Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:46.257Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:46.333Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:55.931Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.012Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.483Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.484Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.485Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.487Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.491Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.492Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.493Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.493Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.496Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.496Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.497Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:56.498Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:17:58.150Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:09.165Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:09.265Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:09.617Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:18.594Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:18.671Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:22.226Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:22.330Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:27.021Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:45.633Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:45.715Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:49.820Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:53.974Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:54.058Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:57.078Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:59.762Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-06-23T10:18:59.842Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      }
+    ],
+    "gaps": [
+      {
+        "from": "2026-06-23T05:05:18.301Z",
+        "to": "2026-06-23T06:39:05.243Z",
+        "minutes": 94
+      },
+      {
+        "from": "2026-06-23T06:39:05.243Z",
+        "to": "2026-06-23T09:21:54.952Z",
+        "minutes": 163
+      }
+    ]
+  },
+  "timing": {
+    "byHour": [
+      {
+        "hour": 0,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 1,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 2,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 3,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 4,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 5,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 6,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 7,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 8,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 9,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 10,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 11,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 12,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 13,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 14,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 15,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 16,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 17,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 18,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 19,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 20,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 21,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 22,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 23,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      }
+    ],
+    "avgLatencyMs": 8790293,
+    "p50Ms": 8790293
+  },
+  "duration": {
+    "activeSpanMinutes": 1256,
+    "longestSilenceMin": 163,
+    "silenceGaps": 2
+  },
+  "mindSnapshots": [],
+  "hourlySnapshots": [],
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 21,
+    "samples": [
+      {
+        "ts": "2026-06-23T12:15:46.325Z",
+        "messageId": "3EB0C1130E67F7CEEBE242",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T12:22:30.030Z",
+        "messageId": "3EB0C1130E67F7CEEBE242",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-23T12:58:03.836Z",
+        "messageId": "3EB0521EFEE6311DE9707E",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T12:58:03.877Z",
+        "messageId": "3EB0521EFEE6311DE9707E",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T13:00:37.364Z",
+        "messageId": "3EB05A55FB4124735A23E7",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-23T13:00:37.457Z",
+        "messageId": "3EB05A55FB4124735A23E7",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-23T14:00:05.500Z",
+        "messageId": "3EB03F5AF4B1B1A06B4731",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T14:00:05.704Z",
+        "messageId": "3EB03F5AF4B1B1A06B4731",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T16:25:33.315Z",
+        "messageId": "3EB0AB7246C3E1566B3760",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-23T16:25:33.374Z",
+        "messageId": "3EB0AB7246C3E1566B3760",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-23T16:46:54.406Z",
+        "messageId": "3EB0F7157851F85206A165",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-23T16:46:54.686Z",
+        "messageId": "3EB052FDF9DC4CF6E4BA8B",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-06-23T19:47:20.310Z",
+        "messageId": "3EB032F10585E8DF0971B1",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T19:47:20.325Z",
+        "messageId": "3EB032F10585E8DF0971B1",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T19:47:53.252Z",
+        "messageId": "3EB0EB7A9128441D996B8B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T19:47:53.258Z",
+        "messageId": "3EB0EB7A9128441D996B8B",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T19:50:52.527Z",
+        "messageId": "3EB07D3DC7D710E0F2D981",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T19:50:52.547Z",
+        "messageId": "3EB07D3DC7D710E0F2D981",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T19:51:52.052Z",
+        "messageId": "3EB0968329A949004DEE33",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T19:51:52.065Z",
+        "messageId": "3EB0968329A949004DEE33",
+        "beforeText": null,
+        "reason": "protocol"
+      },
+      {
+        "ts": "2026-06-23T21:13:44.736Z",
+        "messageId": "2A82FE01089DD8F9D54F",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 0,
+    "avgLatencyMs": null,
+    "byCommand": {},
+    "byStatus": {},
+    "byInputType": {},
+    "byOutputType": {},
+    "byTargetSource": {}
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 6436,
+      "messages": 6409,
+      "reactions": 0,
+      "media": 1695,
+      "links": 187
+    },
+    "byHour": {
+      "0": 267,
+      "1": 163,
+      "2": 177,
+      "3": 288,
+      "4": 183,
+      "5": 158,
+      "6": 95,
+      "7": 61,
+      "8": 51,
+      "9": 14,
+      "10": 17,
+      "11": 133,
+      "12": 272,
+      "13": 228,
+      "14": 399,
+      "15": 261,
+      "16": 256,
+      "17": 149,
+      "18": 386,
+      "19": 591,
+      "20": 473,
+      "21": 751,
+      "22": 649,
+      "23": 414
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 67,
+      "5516994435369@s.whatsapp.net": 25,
+      "5516988137617@s.whatsapp.net": 82,
+      "190546341540031@lid": 562,
+      "131778236952767@lid": 1489,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 16,
+      "5516991476228@s.whatsapp.net": 2,
+      "65197804912879@lid": 47,
+      "6283879987068@s.whatsapp.net": 18,
+      "174165839581324@lid": 169,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 311,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 1203,
+      "5516988776338@s.whatsapp.net": 63,
+      "185967939985556@lid": 1027,
+      "5517991664082@s.whatsapp.net": 41,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 638,
+      "272172178223326@lid": 49,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 23,
+      "238009924509886@lid": 23,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 48,
+      "103659153158378@lid": 44,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 23,
+      "187995030323304@lid": 37,
+      "150242334867642@lid": 30,
+      "137053111091288@lid": 5,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 10,
+      "3689544732728@lid": 86,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 31,
+      "9281743114312@lid": 63,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 40,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 13,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3,
+      "207202157650019@lid": 26,
+      "124841948631110@lid": 15,
+      "69123321135269@lid": 1,
+      "164076609101978@lid": 4,
+      "206579353784338@lid": 2,
+      "5516996184325@s.whatsapp.net": 1,
+      "5516997824041@s.whatsapp.net": 1,
+      "58141777641473@lid": 1,
+      "141167085773019@lid": 1,
+      "49809339740364@lid": 5,
+      "238083022835725@lid": 7,
+      "206476459155457@lid": 1,
+      "224098508644548@lid": 1,
+      "140269471174762@lid": 6,
+      "120363425913528764@g.us": 32
+    },
+    "avgLatencyMs": 8790293
+  }
+}
