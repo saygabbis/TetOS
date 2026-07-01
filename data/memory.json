@@ -376,7 +376,19 @@
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "medium"
+        "brevity": "medium",
+        "learned": {
+          "expressions": {},
+          "laughterModes": {
+            "kk": 0,
+            "rs": 0,
+            "ha": 0,
+            "emoji": 0
+          },
+          "preferredLaughter": "kk",
+          "habits": {},
+          "avgKkRun": 0
+        }
       },
       "counts": {
         "abbrev": 26,
@@ -384,7 +396,7 @@
         "emoji": 6,
         "total": 263
       },
-      "lastUpdated": "2026-06-27T07:16:35.890Z",
+      "lastUpdated": "2026-07-01T13:47:53.832Z",
       "channelScope": "direct",
       "conversationClosedAt": null
     },
@@ -489,7 +501,7 @@
       "facts": {
         "name": "Kzer0",
         "lastChannel": "group",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Kzer",
         "waPhone": "5516994435369",
         "waLid": "190546341540031",
@@ -509,7 +521,26 @@
           "120363426863669479",
           "dm-120363426863669479",
           "120363402362643675",
-          "dm-120363402362643675"
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá"
+        ],
+        "nicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {
@@ -524,7 +555,7 @@
         "emoji": 0,
         "total": 2
       },
-      "lastUpdated": "2026-06-27T00:43:43.899Z",
+      "lastUpdated": "2026-07-01T14:13:58.375Z",
       "channelScope": "direct"
     },
     "5516988776338": {
@@ -951,7 +982,7 @@
         "name": "Kzer0",
         "lastChannel": "group",
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Kzer",
         "identityAliases": [
           "190546341540031",
@@ -968,17 +999,33 @@
           "120363425913528764",
           "dm-120363425913528764",
           "gabbis",
-          "kzer"
+          "kzer",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá"
         ],
         "waPhone": "5516994435369",
         "nicknames": [
-          "Kzer"
+          "Kzer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
-        "tetoNicknames": []
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ]
       },
       "style": {},
       "counts": {},
-      "lastUpdated": "2026-06-27T00:43:44.031Z",
+      "lastUpdated": "2026-07-01T14:13:58.382Z",
       "channelScope": "direct"
     },
     "5516996221745": {
@@ -5142,22 +5189,41 @@
     },
     "test_dm_silence": {
       "facts": {
-        "lastChannel": "direct"
+        "lastChannel": "direct",
+        "lastDmSessionId": "direct:test_dm_silence",
+        "nicknames": [
+          "Oiee"
+        ],
+        "tetoNicknames": [
+          "Oiee"
+        ]
       },
       "style": {
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "short"
+        "brevity": "short",
+        "learned": {
+          "expressions": {},
+          "laughterModes": {
+            "kk": 0,
+            "rs": 0,
+            "ha": 0,
+            "emoji": 0
+          },
+          "preferredLaughter": "kk",
+          "habits": {},
+          "avgKkRun": 0
+        }
       },
       "counts": {
         "abbrev": 0,
         "laughter": 0,
         "emoji": 0,
-        "total": 4
+        "total": 5
       },
       "channelScope": "direct",
-      "lastUpdated": "2026-06-09T14:05:02.020Z"
+      "lastUpdated": "2026-07-01T13:47:15.584Z"
     },
     "5516988137617::group:120363425913528764@g.us": {
       "facts": {
@@ -5480,9 +5546,9 @@
     },
     "120363402362643675": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Luan Savio",
         "name": "Luan Savio",
         "identityAliases": [
@@ -5599,31 +5665,44 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
         ],
         "nicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
         "tetoNicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.910Z"
+      "lastUpdated": "2026-07-01T14:13:58.458Z"
     },
     "dm-120363402362643675": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Luan Savio",
         "name": "Luan Savio",
         "identityAliases": [
@@ -5740,25 +5819,38 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
         ],
         "nicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
         "tetoNicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.914Z"
+      "lastUpdated": "2026-07-01T14:13:58.465Z"
     },
     "luan savio": {
       "facts": {
@@ -5817,9 +5909,9 @@
     },
     "120363342938049353": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -5905,7 +5997,10 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
         ],
         "nicknames": [
           "Se",
@@ -5915,7 +6010,12 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
         "tetoNicknames": [
           "Se",
@@ -5925,19 +6025,24 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.900Z"
+      "lastUpdated": "2026-07-01T14:13:58.403Z"
     },
     "dm-120363342938049353": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -6023,7 +6128,10 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
         ],
         "nicknames": [
           "Se",
@@ -6033,7 +6141,12 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
         "tetoNicknames": [
           "Se",
@@ -6043,13 +6156,18 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.905Z"
+      "lastUpdated": "2026-07-01T14:13:58.410Z"
     },
     "gustavo vieira": {
       "facts": {
@@ -6081,8 +6199,8 @@
     },
     "gabbis": {
       "facts": {
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
         "identityAliases": [
@@ -6241,7 +6359,10 @@
           "dm-155641394032704",
           "155641394032704",
           "atendimento - solange",
-          "5516997465775"
+          "5516997465775",
+          "oie",
+          "conheço",
+          "certo"
         ],
         "nicknames": [
           "Oiii",
@@ -6261,7 +6382,10 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Certo"
         ],
         "tetoNicknames": [
           "Oiii",
@@ -6281,14 +6405,17 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Certo"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516994435369"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.959Z"
+      "lastUpdated": "2026-07-01T14:13:58.388Z"
     },
     "oiii": {
       "facts": {
@@ -6484,7 +6611,8 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Certo"
         ],
         "tetoNicknames": [
           "Tô",
@@ -6502,10 +6630,11 @@
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Certo"
         ],
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
         "identityAliases": [
@@ -6542,14 +6671,21 @@
           "120363426863669479",
           "dm-120363426863669479",
           "120363258200906509",
-          "dm-120363258200906509"
+          "dm-120363258200906509",
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "kzer",
+          "oie",
+          "conheço",
+          "certo"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516994435369"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.974Z"
+      "lastUpdated": "2026-07-01T14:13:58.485Z"
     },
     "kkk": {
       "facts": {
@@ -6899,8 +7035,8 @@
           "Nasci",
           "Quer"
         ],
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Gabbis",
         "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
         "identityAliases": [
@@ -6937,14 +7073,21 @@
           "120363426863669479",
           "dm-120363426863669479",
           "120363258200906509",
-          "dm-120363258200906509"
+          "dm-120363258200906509",
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "kzer",
+          "oie",
+          "conheço",
+          "certo"
         ],
-        "waPhone": "5516988137617"
+        "waPhone": "5516994435369"
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.999Z"
+      "lastUpdated": "2026-07-01T14:13:58.498Z"
     },
     "fala": {
       "facts": {
@@ -7459,7 +7602,7 @@
     },
     "120363425913528764": {
       "facts": {
-        "waPhone": "5516988137617",
+        "waPhone": "5516994435369",
         "identityAliases": [
           "6283879987068",
           "120363342938049353",
@@ -7507,33 +7650,46 @@
           "nasci",
           "quer",
           "120363426863669479",
-          "dm-120363426863669479"
+          "dm-120363426863669479",
+          "oie",
+          "conheço",
+          "certo"
         ],
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Kzer",
         "name": "Kzer0",
         "nicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
         "tetoNicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.950Z"
+      "lastUpdated": "2026-07-01T14:13:58.417Z"
     },
     "dm-120363425913528764": {
       "facts": {
-        "waPhone": "5516988137617",
+        "waPhone": "5516994435369",
         "identityAliases": [
           "6283879987068",
           "120363342938049353",
@@ -7581,29 +7737,42 @@
           "nasci",
           "quer",
           "120363426863669479",
-          "dm-120363426863669479"
+          "dm-120363426863669479",
+          "oie",
+          "conheço",
+          "certo"
         ],
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Kzer",
         "name": "Kzer0",
         "nicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
         "tetoNicknames": [
           "Aí",
           "Sou",
           "Nasci",
-          "Quer"
+          "Quer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.955Z"
+      "lastUpdated": "2026-07-01T14:13:58.424Z"
     },
     "aff": {
       "facts": {
@@ -7863,14 +8032,25 @@
     "dm-190546341540031": {
       "facts": {
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
-        "name": "Gabbis(⁠ ⁠˘⁠ ⁠³⁠˘⁠)⁠♥",
-        "displayName": "Gabbis",
+        "waRemoteJid": "190546341540031@lid",
+        "name": "Kzer0",
+        "displayName": "Kzer",
         "nicknames": [
           "Gabbis",
-          "Kzer"
+          "Kzer",
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ],
-        "tetoNicknames": [],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
         "identityAliases": [
           "dm-190546341540031",
           "5516994435369",
@@ -7886,20 +8066,48 @@
           "120363426863669479",
           "dm-120363426863669479",
           "120363402362643675",
-          "dm-120363402362643675"
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá"
         ],
         "lastChannel": "direct",
-        "waPhone": "5516994435369"
+        "waPhone": "5516994435369",
+        "lastDmSessionId": "wa-dm:190546341540031@lid"
       },
-      "style": {},
-      "counts": {},
+      "style": {
+        "learned": {
+          "expressions": {},
+          "laughterModes": {
+            "kk": 0,
+            "rs": 0,
+            "ha": 0,
+            "emoji": 0
+          },
+          "preferredLaughter": "kk",
+          "habits": {},
+          "avgKkRun": 0
+        },
+        "prefersAbbrev": false,
+        "prefersLaughter": false,
+        "prefersEmoji": false,
+        "brevity": "short"
+      },
+      "counts": {
+        "abbrev": 0,
+        "laughter": 0,
+        "emoji": 0,
+        "total": 4
+      },
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T00:43:43.908Z"
+      "lastUpdated": "2026-07-01T14:13:58.505Z"
     },
     "kzer": {
       "facts": {
         "waLid": "190546341540031",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -7917,14 +8125,33 @@
           "120363426863669479",
           "dm-120363426863669479",
           "120363402362643675",
-          "dm-120363402362643675"
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá"
         ],
-        "waPhone": "5516994435369"
+        "waPhone": "5516994435369",
+        "nicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T00:43:44.012Z"
+      "lastUpdated": "2026-07-01T14:13:58.395Z"
     },
     "dm-65197804912879": {
       "facts": {
@@ -11229,9 +11456,9 @@
     },
     "120363258200906509": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -11284,19 +11511,36 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
+        ],
+        "nicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.918Z"
+      "lastUpdated": "2026-07-01T14:13:58.431Z"
     },
     "dm-120363258200906509": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Kzer",
         "name": "Kzer0",
         "identityAliases": [
@@ -11349,13 +11593,30 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
+        ],
+        "nicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.923Z"
+      "lastUpdated": "2026-07-01T14:13:58.438Z"
     },
     "180753866477690": {
       "facts": {
@@ -21225,9 +21486,9 @@
     },
     "120363426863669479": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -21312,19 +21573,36 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
+        ],
+        "nicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.929Z"
+      "lastUpdated": "2026-07-01T14:13:58.445Z"
     },
     "dm-120363426863669479": {
       "facts": {
-        "waPhone": "5516988137617",
-        "waLid": "157947506229421",
-        "waRemoteJid": "120363342938049353@g.us",
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
         "displayName": "Gustavo Vieira",
         "name": "Gustavo Vieira",
         "identityAliases": [
@@ -21409,13 +21687,30 @@
           "120363408554575864",
           "dm-120363408554575864",
           "5516996228023-1617627661",
-          "dm-5516996228023-1617627661"
+          "dm-5516996228023-1617627661",
+          "oie",
+          "conheço",
+          "certo"
+        ],
+        "nicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-06-27T07:16:35.935Z"
+      "lastUpdated": "2026-07-01T14:13:58.451Z"
     },
     "dm-150242334867642": {
       "facts": {
@@ -23043,6 +23338,179 @@
       "counts": {},
       "channelScope": "direct",
       "lastUpdated": "2026-06-26T10:46:46.455Z"
+    },
+    "oiee": {
+      "facts": {
+        "nicknames": [
+          "Oiee"
+        ],
+        "tetoNicknames": [
+          "Oiee"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "direct",
+      "lastUpdated": "2026-07-01T13:47:15.591Z"
+    },
+    "test_grp_silence::group:120@g.us": {
+      "facts": {},
+      "style": {
+        "learned": {
+          "expressions": {},
+          "laughterModes": {
+            "kk": 0,
+            "rs": 0,
+            "ha": 0,
+            "emoji": 0
+          },
+          "preferredLaughter": "kk",
+          "habits": {},
+          "avgKkRun": 0
+        }
+      },
+      "counts": {},
+      "channelScope": "group:120@g.us",
+      "lastUpdated": "2026-07-01T13:47:15.603Z"
+    },
+    "oie": {
+      "facts": {
+        "nicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Oie",
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "direct",
+      "lastUpdated": "2026-07-01T14:13:58.471Z"
+    },
+    "conheço": {
+      "facts": {
+        "nicknames": [
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Conheço",
+          "Tô",
+          "Certo",
+          "Tá"
+        ],
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "direct",
+      "lastUpdated": "2026-07-01T14:13:58.478Z"
+    },
+    "certo": {
+      "facts": {
+        "nicknames": [
+          "Certo",
+          "Tá"
+        ],
+        "tetoNicknames": [
+          "Certo",
+          "Tá"
+        ],
+        "waPhone": "5516994435369",
+        "waLid": "190546341540031",
+        "waRemoteJid": "190546341540031@lid",
+        "displayName": "Kzer",
+        "name": "Kzer0",
+        "identityAliases": [
+          "dm-190546341540031",
+          "5516994435369",
+          "190546341540031",
+          "gabbis",
+          "kzer",
+          "120363342938049353",
+          "dm-120363342938049353",
+          "120363425913528764",
+          "dm-120363425913528764",
+          "120363258200906509",
+          "dm-120363258200906509",
+          "120363426863669479",
+          "dm-120363426863669479",
+          "120363402362643675",
+          "dm-120363402362643675",
+          "oie",
+          "conheço",
+          "tô",
+          "certo",
+          "tá"
+        ]
+      },
+      "style": {},
+      "counts": {},
+      "channelScope": "direct",
+      "lastUpdated": "2026-07-01T14:13:58.492Z"
     }
   },
   "mediumTerm": {
@@ -24082,6 +24550,18 @@
         "summary": "Imagina que delicia abocanhar isso ai",
         "timestamp": "2026-06-18T18:37:42.617Z",
         "channelId": "120363342938049353@g.us"
+      }
+    ],
+    "dm-190546341540031": [
+      {
+        "summary": "Quem sou eu?",
+        "timestamp": "2026-07-01T14:12:52.195Z",
+        "channelId": "190546341540031@lid"
+      },
+      {
+        "summary": "Se me conhece?",
+        "timestamp": "2026-07-01T14:12:57.207Z",
+        "channelId": "190546341540031@lid"
       }
     ]
   }

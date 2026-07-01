@@ -18,7 +18,8 @@
     "test:memory:search:post": "node scripts/test-memory-search-post.js",
     "test:memory:delete": "node scripts/test-memory-delete.js",
     "test:session:clear": "node scripts/test-session-clear.js",
-    "test:all": "node scripts/test-status.js && node scripts/test-chat.js && node scripts/test-memory-save.js && node scripts/test-memory-search.js && node scripts/test-memory-search-post.js && node scripts/test-session-clear.js",
+    "test:architecture": "vitest run tests/architecture",
+    "test:all": "node scripts/test-status.js && node scripts/test-chat.js && node scripts/test-memory-save.js && node scripts/test-memory-search.js && node scripts/test-memory-search-post.js && node scripts/test-session-clear.js && npm run test:architecture",
     "learn:focus": "node src/tools/learningConsole.js",
     "life:distill": "node src/tools/distillAbsorbedKnowledge.js",
     "mind:watch": "node src/tools/mindWatch.js",
@@ -44,5 +45,8 @@
     "@imgly/background-removal-node": {
       "sharp": "$sharp"
     }
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
   }
 }

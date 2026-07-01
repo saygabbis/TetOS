@@ -48,6 +48,20 @@ O runtime instancia:
 - **Logger/MetricsStore**: logs e métricas persistidas.
 - **EventLedger/DailyReportGenerator**: aprendizado e relatórios diários.
 
+## Contratos Arquiteturais
+
+Estes arquivos sao tratados como contrato entre camadas. Ao alterar comportamento de fluxo, atualizar os testes e este documento junto.
+
+| Contrato | Arquivo | Responsabilidade |
+| --- | --- | --- |
+| Modos de resposta | `src/core/pipeline/responseModes.js` | Nomes canonicos para `full`, `react_only`, `sticker_only`, `learn_only`, bloqueios e saidas (`text`, `reaction`, `sticker`, `silent`, `command`, `ignored`). |
+| Identidade WhatsApp | `src/integrations/whatsapp/whatsappIdentityContract.js` | Normaliza `remoteJid`, `userId`, `participantId`, `sessionId`, `channelId` e `channelScope`. |
+| Trace de decisao | `src/infra/observability/decisionTrace.js` | Registra a trilha de decisao por evento: entrada, comando, gate de grupo, ativacao, modo do pipeline e saida. |
+| Parser de comandos de midia | `src/integrations/whatsapp/mediaCommandParser.js` | Decide se texto com prefixo e comando suportado e normaliza aliases como `.stiker`, `.otimizar`, `.remove-bg`. |
+| Servico de comandos de midia | `src/integrations/whatsapp/mediaCommandService.js` | Processa `.sticker`, `.fsticker`, `.csticker`, `.optimize`, `.removebg` e `.toimg` fora do fluxo conversacional. |
+
+Regra pratica: handler de canal coleta contexto e decide gates de entrada; pipeline decide comportamento conversacional; servicos especializados executam comandos diretos sem chamar o LLM.
+
 ## Serviços que Rodam por Trás
 
 ### Sempre que o runtime sobe
@@ -203,6 +217,8 @@ Em grupo:
 
 O `ChannelRegistry` guarda participantes, JIDs, telefones quando disponíveis e modo do canal.
 
+Contrato atual: a montagem de identidade deve passar por `buildWhatsappIdentitySnapshot()` sempre que uma decisao de fluxo for registrada. Isso evita misturar chat (`remoteJid`), pessoa (`userId`), fila (`sessionId`) e escopo de memoria (`channelScope`).
+
 ### 3. Comandos slash de ativação
 
 Arquivo: `src/integrations/whatsapp/tetoSlashCommands.js`
@@ -238,9 +254,9 @@ Comandos:
 
 Fluxo:
 
-1. `parseWhatsAppCommand()` detecta o comando.
+1. `parseWhatsAppCommand()` em `mediaCommandParser.js` detecta o comando.
 2. `.help` responde direto com a lista de comandos.
-3. Para comandos de mídia, `resolveCommandTarget()` procura mídia:
+3. Para comandos de mídia, `MediaCommandService` chama `resolveCommandTarget()` e procura mídia:
    - na própria mensagem
    - no reply
    - no histórico recente do chat
@@ -254,6 +270,8 @@ Fluxo:
 7. Não gera resposta conversacional pelo LLM.
 
 Em modo dual, se o comando chega no número errado, o main pode ignorar ou responder o hint configurado por `WHATSAPP_STICKER_COMMANDS_DISABLED_HINT`.
+
+Contrato atual: comandos de midia sao saida `command` no `decisionTrace` e nao entram em `runMessagePipeline()`.
 
 ## Decisão: Mensagem é Comando ou Conversa?
 
@@ -385,6 +403,8 @@ O pipeline pode retornar sem resposta se:
 - `REPLY_ENABLED=false`.
 - socket main está em modo observe-only.
 
+Os modos retornados pelo pipeline devem usar `RESPONSE_MODES`. Evitar strings soltas como `"react_only"` ou `"timing_silence"` fora de `responseModes.js`.
+
 ### Intenções internas
 
 Antes de chamar o LLM, ele detecta e monta contexto para:
@@ -477,6 +497,15 @@ Depois do pipeline:
 2. Se a decisão é `react` ou modo `react_only`, tenta reagir à mensagem.
 3. Se modo passivo escolheu `sticker_only`, tenta enviar sticker local.
 4. Se não há texto nem ação passiva, fica em silêncio.
+
+Cada evento WhatsApp deve finalizar um `decisionTrace` com uma destas saidas:
+
+- `text`: houve envio de bolha textual.
+- `reaction`: houve reacao.
+- `sticker`: houve sticker passivo.
+- `silent`: o evento foi processado sem resposta.
+- `command`: um comando direto foi executado.
+- `ignored`: o evento foi descartado por filtro, gate ou duplicidade.
 
 ### Digitação e delays
 
@@ -578,3 +607,19 @@ Quando algo não responde, verificar nesta ordem:
 6. Conferir `/status` e `/runtime/summary`.
 7. Se for comando de mídia, confirmar se havia mídia alvo e olhar eventos `command.media`.
 8. Se for LLM, checar modelo, chave, timeout e logs de `whatsapp.model_timeout`.
+
+## Testes de Contrato
+
+Os testes arquiteturais ficam em `tests/architecture` e rodam com:
+
+```bash
+npm run test:architecture
+```
+
+Eles cobrem:
+
+- parser e aliases de comandos de midia.
+- constantes de modos/saidas e decisao passiva de canal.
+- criacao e finalizacao de `decisionTrace`.
+
+`npm run test:all` tambem chama estes testes, mas depende da API local e do provedor LLM configurado para os testes de chat.

@@ -32,6 +32,7 @@ import {
 } from "../channels/userBoundaryDetect.js";
 import { assessActivityFocus } from "../life/activityFocus.js";
 import { contextualSeed, chance } from "../brain/rng.js";
+import { RESPONSE_MODES } from "./responseModes.js";
 
 function chanceBusyAck(userId = "default") {
   return chance(contextualSeed(["busy_ack", userId, new Date().toISOString().slice(0, 13)]), 0.38);
@@ -313,7 +314,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       input,
       tone,
-      policy: { allowed: true, mode: "user_boundary_set" },
+      policy: { allowed: true, mode: RESPONSE_MODES.USER_BOUNDARY_SET },
       closeDecision: "silent"
     };
   }
@@ -458,7 +459,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       input,
       tone,
-      policy: { ...policy, mode: "sleep_hold" },
+      policy: { ...policy, mode: RESPONSE_MODES.SLEEP_HOLD },
       timingPlan
     };
   }
@@ -472,7 +473,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       input,
       tone,
-      policy: { ...policy, mode: "user_boundary" },
+      policy: { ...policy, mode: RESPONSE_MODES.USER_BOUNDARY },
       closeDecision: "silent",
       timingPlan
     };
@@ -487,7 +488,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       input,
       tone,
-      policy: { ...policy, mode: "media_wait" },
+      policy: { ...policy, mode: RESPONSE_MODES.MEDIA_WAIT },
       timingPlan
     };
   }
@@ -504,7 +505,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
         channelId: safeChannelId,
         input,
         tone,
-        policy: { ...policy, mode: "busy_ack" },
+        policy: { ...policy, mode: RESPONSE_MODES.BUSY_ACK },
         timingPlan
       };
     }
@@ -516,7 +517,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       input,
       tone,
-      policy: { ...policy, mode: "busy_hold" },
+      policy: { ...policy, mode: RESPONSE_MODES.BUSY_HOLD },
       timingPlan
     };
   }
@@ -535,7 +536,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       input,
       tone,
-      policy: { ...policy, mode: "timing_silence" },
+      policy: { ...policy, mode: RESPONSE_MODES.TIMING_SILENCE },
       timingPlan
     };
   }
@@ -555,7 +556,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       input,
       tone,
-      policy: { ...policy, mode: "learn_only" }
+      policy: { ...policy, mode: RESPONSE_MODES.LEARN_ONLY }
     };
   }
 

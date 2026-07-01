@@ -1,7 +1,7 @@
 {
-  "currentActivity": null,
-  "activityStartedAt": null,
-  "phase": "manha",
+  "currentActivity": "passeio curto",
+  "activityStartedAt": "2026-07-01T14:05:29.685Z",
+  "phase": "tarde",
   "obligations": [
     {
       "id": "obligation_1780935846985_421",
@@ -543,6 +543,6 @@
     "wakeDelayUntil": null,
     "lastWakeAt": "2026-07-01T10:00:15.593Z"
   },
-  "lastTickAt": "2026-07-01T12:26:16.207Z",
+  "lastTickAt": "2026-07-01T14:13:14.098Z",
   "dayKey": "2026-07-01"
 }

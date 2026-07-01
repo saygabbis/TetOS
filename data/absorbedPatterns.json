@@ -18,19 +18,11 @@
   },
   "topics": [],
   "mediaHabits": {
-    "stickerRate": 0.9359164895348435,
-    "imageRate": 0.43202382404994044,
+    "stickerRate": 0.9371981597441467,
+    "imageRate": 0.44338334756894165,
     "reactionEmoji": {}
   },
   "creativeInsights": [
-    {
-      "id": "insight_1782268536577",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.53,
-      "trigger": "message.update",
-      "ts": "2026-06-24T02:35:36.577Z"
-    },
     {
       "id": "insight_1782268536579",
       "type": "topic",
@@ -422,7 +414,15 @@
       "confidence": 0.56,
       "trigger": "chat.update",
       "ts": "2026-06-26T22:59:55.100Z"
+    },
+    {
+      "id": "insight_1782915182012",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.69,
+      "trigger": "message.update",
+      "ts": "2026-07-01T14:13:02.012Z"
     }
   ],
-  "lastUpdated": "2026-06-28T15:09:37.372Z"
+  "lastUpdated": "2026-07-01T14:13:58.954Z"
 }

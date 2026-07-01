@@ -25131,16 +25131,6 @@
       "createdAt": "2026-06-24T23:41:48.557Z"
     },
     {
-      "id": "ebc24cc1-7510-4f0d-8f95-ce4092aff1ef",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/3EB0A074170C66A12A9B0E-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0A074170C66A12A9B0E-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T00:37:34.534Z"
-    },
-    {
       "id": "360a9413-fa3b-4fcc-9926-e63e4e9ca6b2",
       "userId": "dm-197053250547801",
       "channelId": "197053250547801@lid",
@@ -25179,16 +25169,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0D5D5EEED4B08B63149-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-25T01:13:48.523Z"
-    },
-    {
-      "id": "3f91980d-1449-487c-bf6c-31183ff0fbb8",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "data/media/3EB04CA633923F6C01A7DB-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB04CA633923F6C01A7DB-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-25T01:16:27.959Z"
     },
     {
       "id": "b972c027-fc75-40fc-b9a3-382bef7f45dd",
@@ -25679,6 +25659,26 @@
       "description": "Sticker analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-1782529610952-frame.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-27T03:06:51.218Z"
+    },
+    {
+      "id": "e90eafce-c98d-430e-b9e3-08575d10ea5b",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\ACC27C1E0F72BD4A8636081B51E2A17E-image.jpg",
+      "mediaType": "image",
+      "description": "Imagem analisada localmente. Arquivo persistido em data\\media\\ACC27C1E0F72BD4A8636081B51E2A17E-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T14:13:36.932Z"
+    },
+    {
+      "id": "842b655f-a4c3-4fbd-bbbf-f26c8f44b216",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data\\media\\3EB0C914876CD61E98B91E-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker analisada localmente. Arquivo persistido em data\\media\\3EB0C914876CD61E98B91E-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
+      "source": "local_vision",
+      "createdAt": "2026-07-01T14:13:58.946Z"
     }
   ]
 }

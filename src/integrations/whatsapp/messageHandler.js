@@ -7,6 +7,12 @@ import { jidNormalizedUser, downloadContentFromMessage, normalizeMessageContent 
 import { planWhatsAppReaction } from "./reactionPlanner.js";
 import { persistMedia, fileExtFromDocumentMessage } from "./mediaStore.js";
 import { resolvePassiveModeAction } from "../../core/channels/passiveModeAction.js";
+import { RESPONSE_MODES, RESPONSE_OUTPUTS } from "../../core/pipeline/responseModes.js";
+import {
+  addDecisionStep,
+  createDecisionTrace,
+  finalizeDecisionTrace
+} from "../../infra/observability/decisionTrace.js";
 import { resolveStickerAsset } from "./stickerAssets.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 import { resolveCloseDecision } from "../../core/brain/ConversationPhaseEngine.js";
@@ -37,6 +43,12 @@ import {
 } from "./messageContext.js";
 import { planGroupTurnSegments } from "./groupTurnPlanner.js";
 import { parseTetoSlashCommand, handleTetoSlashCommand } from "./tetoSlashCommands.js";
+import {
+  formatWhatsAppHelpText as formatMediaCommandHelpText,
+  parseWhatsAppCommand as parseMediaCommand
+} from "./mediaCommandParser.js";
+import { buildWhatsappIdentitySnapshot } from "./whatsappIdentityContract.js";
+import { MediaCommandService } from "./mediaCommandService.js";
 import {
   canonicalSessionId,
   canonicalUserId,
@@ -456,6 +468,11 @@ function createConversationOrchestrator(
     const allowReply = runtime.defaults.replyEnabled && !item.mainObserveOnly;
     const sessionId = item.sessionId ?? item.userId;
     const typingUntil = typingByUser.get(item.userId) ?? 0;
+        let outputKind = RESPONSE_OUTPUTS.SILENT;
+        addDecisionStep(item.decisionTrace, "queue.processing", {
+          allowReply,
+          closeDecision: item.closeDecision ?? null
+        });
         const token = Date.now();
         interruptBySession.set(sessionId, token);
         const prevR = reactionStateByUser.get(item.userId) ?? {
@@ -535,8 +552,12 @@ function createConversationOrchestrator(
               if (remaining > 0 && replies.length > 0) {
                 await sleep(remaining);
               }
-              item.passiveMode = out?.policy?.mode ?? "full";
-              if (item.passiveMode === "react_only") {
+              item.passiveMode = out?.policy?.mode ?? RESPONSE_MODES.FULL;
+              addDecisionStep(item.decisionTrace, "pipeline.completed", {
+                mode: item.passiveMode,
+                replyCount: replies.length
+              });
+              if (item.passiveMode === RESPONSE_MODES.REACT_ONLY) {
                 replies = [];
               }
               lastError = null;
@@ -563,7 +584,7 @@ function createConversationOrchestrator(
           }
         } else {
           replies = [];
-          item.passiveMode = "learn_only";
+          item.passiveMode = RESPONSE_MODES.LEARN_ONLY;
           logThinking(runtime, {
             phase: "observe_only",
             userId: item.userId,
@@ -600,7 +621,14 @@ function createConversationOrchestrator(
             /* ignore */
           }
         }
-        if (interruptBySession.get(sessionId) !== token) return;
+        if (interruptBySession.get(sessionId) !== token) {
+          finalizeDecisionTrace(runtime, item.decisionTrace, {
+            activation: "allowed",
+            pipelineMode: item.passiveMode ?? RESPONSE_MODES.FULL,
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
+          return;
+        }
         const passiveAction = resolvePassiveModeAction({
           policy: { allowed: true, mode: item.passiveMode },
           media: item.media,
@@ -618,7 +646,7 @@ function createConversationOrchestrator(
           state: reactionState,
           affinities
         });
-        const forcedReaction = item.closeDecision === "react" || passiveAction.type === "react_only" ? "❤️" : null;
+        const forcedReaction = item.closeDecision === "react" || passiveAction.type === RESPONSE_MODES.REACT_ONLY ? "❤️" : null;
         const emoji = plan.emoji ?? forcedReaction;
         const reactionKey = buildOutgoingQuoteKey(item.messageKey, item.remoteJid, {
           participantId: item.participantId ?? null,
@@ -630,6 +658,7 @@ function createConversationOrchestrator(
             await socket.sendMessage(item.remoteJid, {
               react: { text: emoji, key: reactionKey }
             });
+            outputKind = RESPONSE_OUTPUTS.REACTION;
             reactionStateByUser.set(item.userId, {
               messagesSinceLastReaction: 0,
               lastReactionAt: Date.now()
@@ -650,11 +679,12 @@ function createConversationOrchestrator(
         const softened = runtime.userPatterns
           ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
           : false;
-        if (!reacted && passiveAction.type === "sticker_only" && allowReply) {
+        if (!reacted && passiveAction.type === RESPONSE_MODES.STICKER_ONLY && allowReply) {
           const stickerAsset = resolveStickerAsset(passiveAction.stickerKey, runtime.defaults.stickersPath);
           if (stickerAsset) {
             try {
               await socket.sendMessage(item.remoteJid, { sticker: stickerAsset });
+              outputKind = RESPONSE_OUTPUTS.STICKER;
               runtime.metrics?.increment?.("whatsapp.sticker.sent");
               runtime.logger?.log?.("whatsapp.sticker_sent", {
                 remoteJid: item.remoteJid,
@@ -710,7 +740,15 @@ function createConversationOrchestrator(
             quoteMessageKey: shouldQuote ? item.messageKey ?? null : null,
             quoteMessageKeys: quoteKeys.filter(Boolean).length ? quoteKeys : undefined
           });
+          if (hasOutgoing) {
+            outputKind = RESPONSE_OUTPUTS.TEXT;
+          }
         }
+        finalizeDecisionTrace(runtime, item.decisionTrace, {
+          activation: "allowed",
+          pipelineMode: item.passiveMode ?? RESPONSE_MODES.FULL,
+          output: outputKind
+        });
   }
 
   async function drainSessionQueue(sessionId) {
@@ -984,6 +1022,15 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     maxStickerBytes: runtime.defaults.tetosStickerMaxBytes,
     removeBgApiKeys: runtime.defaults.removeBgApiKeys,
     removeBgModel: runtime.defaults.removeBgModel
+  });
+  const mediaCommandService = new MediaCommandService({
+    runtime,
+    socket,
+    commandQueue,
+    mediaHistoryStore,
+    mediaProcessor,
+    safeSendMessage,
+    logPrefix: waLogPrefix
   });
   const seenMessageIds = new Map();
   const ownerRedirectDedupe = new Map();
@@ -1430,7 +1477,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const unwrappedMessage = unwrapMessage(incoming.message);
         let text = extractText(unwrappedMessage).trim();
         const links = extractLinks(text);
-        const parsedCommand = parseWhatsAppCommand(text, runtime.defaults.commandPrefix);
+        const parsedCommand = parseMediaCommand(text, runtime.defaults.commandPrefix);
         const tetoSlash = parseTetoSlashCommand(text);
         const mediaKind = detectMediaKind(unwrappedMessage);
         const isFromMe = Boolean(incoming.key?.fromMe);
@@ -1461,6 +1508,31 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const sessionId = isGroup && participantId
           ? `wa-group:${baseUserId}:${participantId}`
           : canonicalSessionId(runtime, userId, { remoteJid });
+        const identitySnapshot = buildWhatsappIdentitySnapshot({
+          remoteJid,
+          userId,
+          participantId: isGroup ? participantId : null,
+          sessionId,
+          channelId: remoteJid,
+          isGroup
+        });
+        const decisionTrace = createDecisionTrace({
+          eventId: messageKeyId || null,
+          source: `whatsapp:${role}`,
+          userId,
+          channelId: remoteJid,
+          sessionId,
+          isGroup
+        });
+        decisionTrace.inputType = parsedCommand
+          ? "command"
+          : hasMediaPayload && text
+            ? "mixed"
+            : hasMediaPayload
+              ? "media"
+              : "text";
+        decisionTrace.command = tetoSlash?.command ?? parsedCommand?.command ?? null;
+        addDecisionStep(decisionTrace, "identity.resolved", identitySnapshot);
 
         if (isGroup && participantId) {
           const rawParticipantJid = participantJid || extractParticipant(incoming);
@@ -1485,27 +1557,44 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             activationStore: runtime.tetoActivation,
             socket
           });
-          if (handled.handled) continue;
+          if (handled.handled) {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              activation: tetoSlash.action,
+              output: RESPONSE_OUTPUTS.COMMAND
+            });
+            continue;
+          }
         }
 
         if (parsedCommand?.command === "help") {
           if (role === "media" || role === "full") {
             await socket.sendMessage(remoteJid, {
-              text: formatWhatsAppHelpText(runtime.defaults.commandPrefix)
+              text: formatMediaCommandHelpText(runtime.defaults.commandPrefix)
             });
           }
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.COMMAND
+          });
           continue;
         }
 
         if (role === "media" && !botChatRole) {
-          if (!parsedCommand && !hasMediaPayload) continue;
+          if (!parsedCommand && !hasMediaPayload) {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
+            continue;
+          }
         }
 
         if (role === "main" && parsedCommand) {
           const hint = String(runtime.defaults.whatsappStickerCommandsDisabledHint ?? "").trim();
           if (hint) {
-            await socket.sendMessage(remoteJid, { text: hint });
+              await socket.sendMessage(remoteJid, { text: hint });
           }
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
           continue;
         }
 
@@ -1589,6 +1678,22 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           const triggeredRecall = recalled.length > 0;
           const inContext = triggeredRecall || isReplyToBot;
           const allowGroupReply = explicitAddress || groupEngagementActive || inContext;
+          decisionTrace.groupGate = explicitAddress
+            ? groupAddressKind
+            : groupEngagementActive
+              ? "engagement_window"
+              : triggeredRecall
+                ? "memory_recall"
+                : isReplyToBot
+                  ? "reply_to_bot"
+                  : "ignored";
+          addDecisionStep(decisionTrace, "group.gate", {
+            groupAddressKind,
+            explicitAddress,
+            groupEngagementActive,
+            triggeredRecall,
+            allowGroupReply
+          });
 
           runtime.groupMemory?.append?.({
             channelId: remoteJid,
@@ -1600,6 +1705,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
 
           if (!allowGroupReply) {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
             logThinking(runtime, {
               phase: "group_filtered",
               userId,
@@ -1610,6 +1718,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
         } else {
           isReply = Boolean(stanzaId);
+          decisionTrace.groupGate = isGroup ? decisionTrace.groupGate : "dm";
         }
 
         if (role !== "media" || botChatRole) {
@@ -1865,6 +1974,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 })}`
               );
             }
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
             continue;
           }
           if (!processedCommandDeduper.claim(commandMessageId)) {
@@ -1879,17 +1991,25 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 })}`
               );
             }
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
             continue;
           }
           try {
-            const handled = await handleMediaCommand({
+            const handled = await mediaCommandService.handle({
               incoming,
               parsedCommand,
               remoteJid,
               userId,
               media
             });
-            if (handled) continue;
+            if (handled) {
+              finalizeDecisionTrace(runtime, decisionTrace, {
+                output: RESPONSE_OUTPUTS.COMMAND
+              });
+              continue;
+            }
           } catch (error) {
             if (isWaConnectionError(error)) {
               console.warn(`${waLogPrefix} comando ${parsedCommand.command} — conexao fechada`);
@@ -1899,7 +2019,12 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
         }
 
-        if (role === "media" && !botChatRole) continue;
+        if (role === "media" && !botChatRole) {
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
+          continue;
+        }
 
         const activation = runtime.tetoActivation;
         if (!isGroup && activation?.isActivationRequired?.() && isOwnerContact(runtime, remoteJid, userId)) {
@@ -1917,6 +2042,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           activation.touchDm(userId);
           const dmActive = activation.isDmActive(userId);
           if (!dmActive) {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              activation: "dm_blocked",
+              output: botChatRole && !isFromMe ? RESPONSE_OUTPUTS.TEXT : RESPONSE_OUTPUTS.IGNORED
+            });
             logThinking(runtime, {
               phase: "activation_blocked",
               userId,
@@ -1932,6 +2061,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
         }
         if (isGroup && activation && !activation.isGroupActive(remoteJid)) {
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            activation: "group_blocked",
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
           logThinking(runtime, {
             phase: "activation_blocked",
             userId,
@@ -2026,6 +2159,9 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               quotedMessageId: stanzaId
             });
           }
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
           continue;
         }
 
@@ -2108,12 +2244,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             isGroup
           })
         ) {
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.TEXT
+          });
           continue;
         }
 
         runtime.brainOrchestrator?.reconcileSleepFromSchedule?.();
         const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
         if (sleepSnap.isAvailable === false && !parsedCommand) {
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            pipelineMode: RESPONSE_MODES.SLEEP_HOLD,
+            output: RESPONSE_OUTPUTS.SILENT
+          });
           logThinking(runtime, {
             phase: "sleep_hold",
             userId,
@@ -2125,6 +2268,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         const mediaOnlyInbound = hasMediaPayload && !String(text ?? "").trim() && !parsedCommand;
         if (mediaOnlyInbound && !isDirect && !isReplyToBot && !isReply) {
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            pipelineMode: RESPONSE_MODES.MEDIA_WAIT,
+            output: RESPONSE_OUTPUTS.SILENT
+          });
           logThinking(runtime, {
             phase: "media_wait",
             userId,
@@ -2162,6 +2309,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           pushName: pushName || null,
           participantId: isGroup ? participantId : null,
           participantJid: isGroup ? extractParticipant(incoming) || null : null,
+          decisionTrace,
           preferQuoteReply: true
         });
       } catch (error) {

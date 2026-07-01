@@ -16,9 +16,17 @@
       "lastUpdated": "2026-06-09T15:28:08.036Z"
     },
     "direct:test_dm_silence": {
-      "utterances": [],
+      "utterances": [
+        {
+          "fp": "oiee, o que foi?",
+          "text": "Oiee, o que foi?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-07-01T13:47:15.557Z"
+        }
+      ],
       "topics": {},
-      "lastUpdated": "2026-06-09T14:05:02.018Z"
+      "lastUpdated": "2026-07-01T13:47:15.557Z"
     },
     "wa-group:120363425913528764:5516988137617": {
       "utterances": [],
@@ -84,6 +92,69 @@
       "utterances": [],
       "topics": {},
       "lastUpdated": "2026-06-18T18:37:26.785Z"
+    },
+    "wa-dm:190546341540031@lid": {
+      "utterances": [
+        {
+          "fp": "oie kkkk sumiu hein! veio falar comigo agora?",
+          "text": "Oie kkkk Sumiu hein! Veio falar comigo agora?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-07-01T14:12:34.853Z"
+        },
+        {
+          "fp": "kzer, ne?",
+          "text": "Kzer, né?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-07-01T14:12:51.676Z"
+        },
+        {
+          "fp": "conheco si,m ue!",
+          "text": "Conheço si,m ué!",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-07-01T14:12:56.432Z"
+        },
+        {
+          "fp": "to te lembrando faz dois segundos, esqueceu rapido assim? kkkk",
+          "text": "Tô te lembrando faz dois segundos, esqueceu rápido assim? kkkk",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-07-01T14:12:56.433Z"
+        },
+        {
+          "fp": "certo nada, kzer kkkk",
+          "text": "Certo nada, Kzer kkkk",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-07-01T14:13:28.910Z"
+        },
+        {
+          "fp": "ta com essa cara de quem ta tramando alguma coisa. o que foi?",
+          "text": "Tá com essa cara de quem tá tramando alguma coisa. o que foi?",
+          "role": "assistant",
+          "topic": null,
+          "ts": "2026-07-01T14:13:28.911Z"
+        }
+      ],
+      "topics": {},
+      "lastUpdated": "2026-07-01T14:13:28.911Z"
+    },
+    "wa-dm:157947506229421@s.whatsapp.net": {
+      "utterances": [],
+      "topics": {},
+      "lastUpdated": null
+    },
+    "wa-dm:190546341540031@s.whatsapp.net": {
+      "utterances": [],
+      "topics": {},
+      "lastUpdated": null
+    },
+    "wa-dm:5516988137617@lid": {
+      "utterances": [],
+      "topics": {},
+      "lastUpdated": null
     }
   }
 }

@@ -1,4 +1,5 @@
 import { readJson, writeJson } from "../../infra/utils/fileStore.js";
+import { RESPONSE_MODES } from "../pipeline/responseModes.js";
 
 function normalizeChannelId(channelId, userId = "default") {
   const raw = String(channelId ?? "").trim();
@@ -126,23 +127,23 @@ export class ChannelRegistry {
   } = {}) {
     const channel = this.get(channelId, userId);
     if (!channel.authorized || channel.mode === "blocked" || channel.muted) {
-      return { allowed: false, reason: "blocked" };
+      return { allowed: false, reason: RESPONSE_MODES.BLOCKED };
     }
 
     if (channel.mode !== "passive") {
-      return { allowed: true, reason: channel.mode, mode: "full" };
+      return { allowed: true, reason: channel.mode, mode: RESPONSE_MODES.FULL };
     }
 
     if (isDirectMention || isReply || groupEngagementActive) {
-      return { allowed: true, reason: groupEngagementActive ? "passive-engagement" : "passive-direct", mode: "full" };
+      return { allowed: true, reason: groupEngagementActive ? "passive-engagement" : "passive-direct", mode: RESPONSE_MODES.FULL };
     }
 
     if (isQuestion) {
-      return { allowed: true, reason: "passive-question", mode: "full" };
+      return { allowed: true, reason: "passive-question", mode: RESPONSE_MODES.FULL };
     }
 
     if (Math.random() < 0.18) {
-      return { allowed: true, reason: "passive-random", mode: "react_only" };
+      return { allowed: true, reason: "passive-random", mode: RESPONSE_MODES.REACT_ONLY };
     }
 
     return { allowed: false, reason: "passive-ignore" };
