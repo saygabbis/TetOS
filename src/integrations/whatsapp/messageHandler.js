@@ -582,6 +582,35 @@ function createConversationOrchestrator(
           if (lastError?.message === "model timeout") {
             runtime.logger?.log?.("whatsapp.model_timeout", { userId: item.userId, sessionId: item.sessionId });
           }
+          if ((!replies || replies.length === 0) && lastError) {
+            console.error(`${logPrefix} critical failure in generation, triggering fallback error...\n`);
+            try {
+              const fallbackRaw = await runtime.agent.respond(
+                item.message,
+                {
+                  userId: item.userId,
+                  sessionId: item.sessionId,
+                  fallback: "error",
+                  errorMsg: lastError.message,
+                  skipUserRecord: true
+                },
+                null,
+                "calm"
+              );
+              if (fallbackRaw && !/^\[SEM_RESPOSTA\]/i.test(String(fallbackRaw).trim())) {
+                replies = [fallbackRaw.trim()];
+                replies.actions = [{ type: "message", text: replies[0], quoteId: null }];
+              }
+            } catch (fallbackError) {
+              console.error(`${logPrefix} fallback LLM query failed:`, fallbackError.message);
+            }
+
+            if (!replies || replies.length === 0) {
+              const fallbackText = `Alguem fala pra gabbis to com o probleminha "${lastError.message || "ERRO"}"`;
+              replies = [fallbackText];
+              replies.actions = [{ type: "message", text: fallbackText, quoteId: null }];
+            }
+          }
         } else {
           replies = [];
           item.passiveMode = RESPONSE_MODES.LEARN_ONLY;
@@ -629,6 +658,99 @@ function createConversationOrchestrator(
           });
           return;
         }
+        let executedActions = false;
+        if (replies && Array.isArray(replies.actions) && replies.actions.length > 0 && allowReply) {
+          executedActions = true;
+          const softened = runtime.userPatterns
+            ? !runtime.userPatterns.isLikelyActiveNow(item.userId)
+            : false;
+          for (let index = 0; index < replies.actions.length; index += 1) {
+            const action = replies.actions[index];
+            if (interruptBySession.get(sessionId) !== token) {
+              console.warn(`${logPrefix} execution interrupted (token mismatch)`);
+              break;
+            }
+            if (index > 0) {
+              await sleep(randBetween(800, 1500));
+            }
+            try {
+              if (action.type === "react") {
+                const reactionKey = buildOutgoingQuoteKey(item.messageKey, item.remoteJid, {
+                  participantId: item.participantId ?? null,
+                  participantJid: item.participantJid ?? item.messageKey?.participant ?? null
+                });
+                if (reactionKey && action.emoji) {
+                  console.log(`${logPrefix} executing action reaction: ${action.emoji}`);
+                  await socket.sendMessage(item.remoteJid, {
+                    react: { text: action.emoji, key: reactionKey }
+                  });
+                  outputKind = RESPONSE_OUTPUTS.REACTION;
+                }
+              } else if (action.type === "sticker") {
+                const stickerAsset = resolveStickerAsset(action.key, runtime.defaults.stickersPath);
+                if (stickerAsset) {
+                  console.log(`${logPrefix} executing action sticker: ${action.key}`);
+                  let quote = null;
+                  if (action.quoteId && chatMessageIndex) {
+                    const indexed = chatMessageIndex.get(item.remoteJid, action.quoteId);
+                    quote = buildOutgoingQuoteKey(
+                      indexed ? {
+                        id: indexed.messageId,
+                        remoteJid: indexed.remoteJid || item.remoteJid,
+                        fromMe: indexed.isFromBot,
+                        participant: indexed.isFromBot ? undefined : (indexed.actorId ? `${indexed.actorId}@s.whatsapp.net` : undefined)
+                      } : {
+                        id: action.quoteId,
+                        remoteJid: item.remoteJid,
+                        fromMe: false
+                      },
+                      item.remoteJid,
+                      { participantId: indexed?.actorId }
+                    );
+                  }
+                  const payload = quote ? { sticker: stickerAsset, quoted: quote } : { sticker: stickerAsset };
+                  await socket.sendMessage(item.remoteJid, payload);
+                  outputKind = RESPONSE_OUTPUTS.STICKER;
+                  runtime.metrics?.increment?.("whatsapp.sticker.sent");
+                }
+              } else if (action.type === "message") {
+                console.log(`${logPrefix} executing action message: ${action.text} (quoteId: ${action.quoteId})`);
+                let quoteKey = null;
+                if (action.quoteId && chatMessageIndex) {
+                  const indexed = chatMessageIndex.get(item.remoteJid, action.quoteId);
+                  quoteKey = buildOutgoingQuoteKey(
+                    indexed ? {
+                      id: indexed.messageId,
+                      remoteJid: indexed.remoteJid || item.remoteJid,
+                      fromMe: indexed.isFromBot,
+                      participant: indexed.isFromBot ? undefined : (indexed.actorId ? `${indexed.actorId}@s.whatsapp.net` : undefined)
+                    } : {
+                      id: action.quoteId,
+                      remoteJid: item.remoteJid,
+                      fromMe: false
+                    },
+                    item.remoteJid,
+                    { participantId: indexed?.actorId }
+                  );
+                }
+                await sendReplies(item.remoteJid, item.userId, item.sessionId, [action.text], token, {
+                  softened,
+                  timingPlan,
+                  allowReply,
+                  groupRoster: item.groupRoster ?? null,
+                  participantId: item.participantId ?? null,
+                  participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
+                  quoteMessageKey: quoteKey
+                });
+                outputKind = RESPONSE_OUTPUTS.TEXT;
+              }
+            } catch (actionError) {
+              console.error(`${logPrefix} failed to execute action ${action.type}:`, actionError.message);
+            }
+          }
+        }
+
+        if (!executedActions) {
         const passiveAction = resolvePassiveModeAction({
           policy: { allowed: true, mode: item.passiveMode },
           media: item.media,
@@ -743,6 +865,7 @@ function createConversationOrchestrator(
           if (hasOutgoing) {
             outputKind = RESPONSE_OUTPUTS.TEXT;
           }
+        }
         }
         finalizeDecisionTrace(runtime, item.decisionTrace, {
           activation: "allowed",

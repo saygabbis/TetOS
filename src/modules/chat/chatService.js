@@ -8,6 +8,42 @@ import { slimMetaForStorage } from "../../core/memory/slimMeta.js";
 import { detectTetoNameCall } from "../../integrations/whatsapp/tetoNameDetect.js";
 import { detectUserBoundary } from "../../core/channels/userBoundaryDetect.js";
 
+export function parseActionCommands(rawText) {
+  const actions = [];
+  const text = String(rawText ?? "").trim();
+  
+  // Captura comandos como reagir("❤️"), mensagem("Oi!", "msg_123"), sticker("chave")
+  const commandRegex = /([a-zA-Z]+)\s*\(([\s\S]*?)\)/g;
+  let match;
+  while ((match = commandRegex.exec(text)) !== null) {
+    const cmd = match[1].toLowerCase();
+    const argsRaw = match[2];
+    
+    // Captura strings entre aspas
+    const argRegex = /["']([\s\S]*?)["']/g;
+    const args = [];
+    let argMatch;
+    while ((argMatch = argRegex.exec(argsRaw)) !== null) {
+      args.push(argMatch[1]);
+    }
+    
+    if (cmd === "reagir" || cmd === "react") {
+      if (args[0]) {
+        actions.push({ type: "react", emoji: args[0] });
+      }
+    } else if (cmd === "sticker" || cmd === "figurinha") {
+      if (args[0]) {
+        actions.push({ type: "sticker", key: args[0], quoteId: args[1] || null });
+      }
+    } else if (cmd === "mensagem" || cmd === "message" || cmd === "responder" || cmd === "reply" || cmd === "quote") {
+      if (args[0]) {
+        actions.push({ type: "message", text: args[0], quoteId: args[1] || null });
+      }
+    }
+  }
+  return actions;
+}
+
 export class ChatService {
   constructor(agent, responseProcessor, internalState, { shortTerm = null } = {}) {
     this.agent = agent;
@@ -416,6 +452,20 @@ export class ChatService {
     }
 
 
+    const actions = parseActionCommands(raw);
+    if (actions.length > 0) {
+      const resultParts = actions
+        .filter(a => a.type === "message")
+        .map(a => a.text)
+        .filter(Boolean);
+      
+      resultParts.actions = actions;
+      if (this.internalState?.updateAfter) {
+        this.internalState.updateAfter(resultParts.join(" ").trim());
+      }
+      return resultParts;
+    }
+
     const processor = this.getProcessor(meta);
     const processorContext = {
       tone,
@@ -581,9 +631,13 @@ export class ChatService {
     }
 
     if (!resultParts.length && ChatService.isDirectTetoCall(trimmed)) {
-      return ["oxi, tô aqui kkk"];
+      const resp = ["oxi, tô aqui kkk"];
+      resp.actions = [{ type: "message", text: resp[0], quoteId: null }];
+      return resp;
     }
 
+    const defaultActions = resultParts.map(p => ({ type: "message", text: p, quoteId: null }));
+    resultParts.actions = defaultActions;
     return resultParts;
   }
 }

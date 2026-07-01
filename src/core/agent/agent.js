@@ -69,10 +69,12 @@ export class Agent {
     const assistantJustStatedIdentity = Agent.containsIdentityLoop(lastAssistant?.content);
     const conversationText = historySource
       .map((msg) => {
+        const msgId = msg.meta?.messageId ?? msg.messageId ?? "";
+        const idPrefix = msgId ? `[ID: ${msgId}] ` : "";
         const quote = msg.meta?.quotedMessage
           ? ` [reply a: «${String(msg.meta.quotedMessage).slice(0, 120)}»]`
           : "";
-        return `${msg.role}${quote}: ${msg.content}`;
+        return `${idPrefix}${msg.role}${quote}: ${msg.content}`;
       })
       .join("\n");
 
@@ -91,6 +93,29 @@ export class Agent {
     const metaBlock = Object.keys(metaRest).length
       ? ["[META]", Object.entries(metaRest).map(([k, v]) => `${k}: ${v}`).join("\n")]
       : [];
+
+    const actionCommandsBlock = [
+      "[PROTOCOLO DE COMANDOS DE AÇÃO - OBRIGATÓRIO]",
+      "Você deve responder estritamente gerando uma lista de um ou mais comandos de ação (inspirados no MCP).",
+      "Cada comando deve ser escrito em uma nova linha.",
+      "Comandos válidos disponíveis:",
+      '1. reagir("emoji")',
+      '   Reage à última mensagem recebida com um emoji (ex: ❤️, 😂, 👍, 🔥). Sem limites de cooldown.',
+      '2. mensagem("texto", "id_mensagem_opcional")',
+      '   Envia uma mensagem de texto. Se passar o segundo argumento (id_mensagem_opcional), responderá citando/marcando (quote/reply) o ID especificado.',
+      '   Você pode e deve enviar múltiplas mensagens de texto consecutivas em linhas separadas para simular várias bolhas digitadas por um humano no WhatsApp!',
+      '3. sticker("chave", "id_mensagem_opcional")',
+      '   Envia uma figurinha. Chaves válidas: "teto-linguinha", "teto-pao", "teto-saliente". Opcionalmente cita o ID especificado no segundo argumento.',
+      "",
+      "REGRAS DE OURO:",
+      '- NUNCA coloque texto solto fora dos comandos de ação. Todo texto de resposta deve estar dentro de mensagem("..."), reagir("...") ou sticker("...").',
+      "- Para citar ou responder a uma mensagem específica, procure o prefixo [ID: ...] no histórico e passe a ID exata como o segundo argumento.",
+      '- Se a conversa acabou e não há o que falar, você pode responder apenas com reagir("...") ou usar a instrução silêncio se couber.',
+      "Exemplo de resposta válida contendo múltiplos comandos:",
+      'reagir("😂")',
+      'mensagem("mentira que você fez isso kkk")',
+      'mensagem("não acredito de jeito nenhum", "msg_12345")'
+    ];
 
     const fallbackBlock =
       meta?.fallback === "clarify"
@@ -111,7 +136,16 @@ export class Agent {
                 "O usuário enviou só emoji. Responda com 1 frase curta e natural, sem parecer resposta padrão.",
                 "Não pergunte 'tá tudo bem?' a menos que o emoji indique tristeza clara."
               ]
-            : [];
+            : meta?.fallback === "error"
+              ? [
+                  "[FALLBACK - ERRO TÉCNICO]",
+                  `Ocorreu um erro interno no sistema: "${meta.errorMsg || 'desconhecido'}".`,
+                  "Avise ao usuário sobre isso de forma natural em português e em primeira pessoa (estilo Kasane Teto).",
+                  "Sua mensagem deve obrigatoriamente seguir este modelo: 'Alguem fala pra gabbis to com o probleminha [ERRO]'",
+                  "Substitua '[ERRO]' por uma descrição curtíssima e informal do erro ocorrido (em uma frase curta de chat).",
+                  "IMPORTANTE: Responda em UMA única frase de texto simples. NÃO use comandos de ação (como mensagem ou reagir) neste caso."
+                ]
+              : [];
     const resumeBlock = resumedAfterClose
       ? [
           "[CONVERSA NOVA]",
@@ -761,6 +795,7 @@ export class Agent {
     const slimSkip = hasBrainContext ? [...antiNonsenseBlock] : [...intentBlock, ...antiNonsenseBlock];
 
     return [
+      ...actionCommandsBlock,
       ...hardRulesBlock,
       ...personaBlock,
       ...characterBlock,
@@ -827,11 +862,9 @@ export class Agent {
         ? "User: [iniciativa interna — você decidiu mandar mensagem agora; gere o que quer falar]"
         : `User: ${userMessage}`,
       "[OUTPUT]",
-      meta?.coherenceFix
+      meta?.coherenceFix || meta?.fallback === "error"
         ? "Reply as the assistant (uma bolha só, frase completa):"
-        : hasBrainContext
-          ? "Reply as the assistant (ritmo multi-bolha do [RITMO MULTI-BOLHA]; use --- só entre pensamentos FECHADOS):"
-          : "Reply as the assistant:"
+        : "Reply as the assistant (responda seguindo estritamente o [PROTOCOLO DE COMANDOS DE AÇÃO]):"
     ]
       .filter(Boolean)
       .join("\n\n");
