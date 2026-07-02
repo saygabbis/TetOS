@@ -83,7 +83,7 @@ export class OllamaVisionAnalyzer {
     );
 
     const textPrompt = isSticker
-      ? "Descreva este sticker ou sticker animado em 5 palavras e diga em mais 5 quando usá-lo. Sem formatação."
+      ? "Descreva esta figurinha em português de forma específica: quem ou o quê aparece, expressão/ação e tom (fofo, irônico, engraçado, dramático). Uma frase curta — evite termos genéricos como 'figurinha', 'sticker' ou 'imagem'."
       : needsFrames
         ? "Descreva brevemente o que acontece neste vídeo analisando estes frames, em uma frase natural."
         : "Descreva brevemente esta imagem em português, em uma frase natural.";

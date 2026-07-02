@@ -600,8 +600,11 @@ function createConversationOrchestrator(
         let replies = [];
         const shouldGenerate =
           item.closeDecision !== "silent" && item.closeDecision !== "react";
+        let composingDuringGeneration = false;
+        try {
         if (shouldGenerate) {
           console.log(`${logPrefix} generating reply for ${item.userId}…`);
+          composingDuringGeneration = true;
           if (typeof socket.sendPresenceUpdate === "function") {
             try {
               await socket.sendPresenceUpdate("composing", item.remoteJid);
@@ -672,7 +675,15 @@ function createConversationOrchestrator(
                 replyCount: replies.length
               });
               if (item.passiveMode === RESPONSE_MODES.REACT_ONLY) {
-                replies = [];
+                const reactActions = Array.isArray(replies.actions)
+                  ? replies.actions.filter((a) => a.type === "react")
+                  : [];
+                if (reactActions.length) {
+                  replies = [];
+                  replies.actions = reactActions;
+                } else {
+                  replies = [];
+                }
               }
               lastError = null;
               break;
@@ -1145,6 +1156,15 @@ function createConversationOrchestrator(
           pipelineMode: item.passiveMode ?? RESPONSE_MODES.FULL,
           output: outputKind
         });
+        } finally {
+          if (composingDuringGeneration && typeof socket.sendPresenceUpdate === "function") {
+            try {
+              await socket.sendPresenceUpdate("paused", item.remoteJid);
+            } catch (_) {
+              /* ignore */
+            }
+          }
+        }
   }
 
   async function drainSessionQueue(sessionId) {

@@ -166,7 +166,8 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
       a.type === "save_sticker" ||
       a.type === "repertoire_mode"
   );
-  if (hasSubstantive) {
+  const hasExplicitReactOnly = out.some((a) => a.type === "react") && !hasSubstantive;
+  if (hasSubstantive && !hasExplicitReactOnly) {
     out = out.filter((a) => a.type !== "react");
   }
 

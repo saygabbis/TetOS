@@ -6,7 +6,7 @@ export function describeMediaForPrompt(media, userText = "") {
   if (media.type === "video") hints.push(media.isAnimated ? "A mensagem veio com mídia animada." : "A mensagem veio com vídeo.");
   if (media.type === "gif") hints.push("A mensagem veio com GIF.");
   if (media.type === "audio") hints.push("A mensagem veio com áudio.");
-  if (media.type === "sticker") hints.push(media.isAnimated ? "A mensagem veio com sticker animado." : "A mensagem veio com sticker/figurinha.");
+  if (media.type === "sticker") hints.push(media.isAnimated ? "Figurinha animada recebida (aguardando descrição visual)." : "Figurinha recebida (aguardando descrição visual).");
   if (media.caption) hints.push(`Legenda da mídia: ${media.caption}`);
   if (media.transcript) {
     hints.push(`Descrição visual da mídia (leitor de imagem): ${media.transcript}`);
