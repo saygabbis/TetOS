@@ -7,6 +7,18 @@ function speakerLabel(entry) {
   return entry.pushName || entry.userId || "alguém";
 }
 
+/** Menção, reply ou chamada contextual pelo nome — prioridade no batch/fila de grupo. */
+export function isGroupPriorityEntry(entry = {}) {
+  if (entry.groupPriorityAddress) return true;
+  return Boolean(
+    entry.isDirectMention ||
+    entry.isReplyToBot ||
+    entry.groupAddressKind === "mention" ||
+    entry.groupAddressKind === "reply" ||
+    entry.groupAddressKind === "contextual"
+  );
+}
+
 export function shouldSplitGroupSegment(prev, next) {
   if (!prev || !next) return true;
   const gap = (next.ts ?? 0) - (prev.ts ?? 0);
@@ -49,6 +61,8 @@ export function buildGroupSegment(entries = []) {
     ? list.map((e) => e.message).join("\n")
     : list.map((e) => `[${speakerLabel(e)}]: ${e.message}`).join("\n");
 
+  const groupPriorityAddress = list.some(isGroupPriorityEntry);
+
   return {
     ...last,
     message,
@@ -58,6 +72,7 @@ export function buildGroupSegment(entries = []) {
     batchedCount: list.length,
     segmentSpeakers: [...new Set(list.map((e) => e.userId))],
     segmentMultiSpeaker: !singleSpeaker,
+    groupPriorityAddress,
     ts: last.ts ?? Date.now()
   };
 }

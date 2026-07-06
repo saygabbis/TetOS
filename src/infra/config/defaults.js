@@ -257,6 +257,7 @@ export const DEFAULTS = {
   maxQueueCoalesce: Number(process.env.TETOS_MAX_QUEUE_COALESCE ?? 6),
   /** Após menção/resposta em grupo, segue respondendo o mesmo usuário sem @ (ms). Padrão 2 min. */
   groupEngagementMs: Number(process.env.TETOS_GROUP_ENGAGEMENT_MS ?? 120000),
+  groupMuteMs: Number(process.env.TETOS_GROUP_MUTE_MS ?? 60_000),
   multimodalMaxPerScope: Number(process.env.TETOS_MULTIMODAL_MAX_PER_SCOPE ?? 12),
   visualAnalysesMaxPerScope: Number(process.env.TETOS_VISUAL_MAX_PER_SCOPE ?? 10),
   typingGraceMs: Number(process.env.TETOS_TYPING_GRACE_MS ?? 2400),

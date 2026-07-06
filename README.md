@@ -17,7 +17,8 @@ A TetOS cobre hoje:
 - Integração WhatsApp via Baileys, com modo single ou dual.
 - Comandos de mídia no WhatsApp: `.sticker`, `.fsticker`, `.csticker`, `.toimg`, `.removebg`, `.optimize` e `.help`.
 - Repertório de figurinhas com catálogo (`data/stickers/catalog.json`), auto-save por visão e envio via `sticker("chave")` na resposta do agente.
-- Ativação por DM/grupo com `/teto-ativar`, `/teto-desativar`, `/teto-grupo-ativar` e `/teto-grupo-desativar`.
+- Ativação por DM/grupo com `/teto-ativar`, `/teto-desativar`, `/teto-grupo-ativar` e `/teto-grupo-desativar` (desativar persiste mesmo sem `TETOS_ACTIVATION_REQUIRED`).
+- Comando de agente `calar()` — silencia o chat por ~1 min (ignora menção/reply); `/teto-desativar` e `/teto-grupo-desativar` desligam até reativar.
 - Runtime de presença, timing, vida, emoção, aprendizado e relatórios diários.
 - Execução por PM2.
 

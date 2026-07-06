@@ -19,6 +19,7 @@ export async function handleTetoSlashCommand({
   remoteJid,
   isGroup,
   activationStore,
+  groupEngagement,
   socket
 }) {
   if (!activationStore || !socket?.sendMessage) return { handled: false };
@@ -31,6 +32,7 @@ export async function handleTetoSlashCommand({
         break;
       }
       activationStore.activateDm(userId, { activatedBy: userId });
+      groupEngagement?.unmute?.(remoteJid, userId);
       reply = "ok, teto ativa pra você no privado ✓";
       break;
     case "deactivate_dm":
@@ -39,6 +41,8 @@ export async function handleTetoSlashCommand({
         break;
       }
       activationStore.deactivateDm(userId);
+      groupEngagement?.clear?.(remoteJid, userId);
+      groupEngagement?.unmute?.(remoteJid, userId);
       reply = "teto desativada no privado. manda /teto-ativar quando quiser de novo";
       break;
     case "activate_group":
@@ -47,6 +51,7 @@ export async function handleTetoSlashCommand({
         break;
       }
       activationStore.activateGroup(remoteJid, { activatedBy: userId });
+      groupEngagement?.unmute?.(remoteJid);
       reply = "teto ativa neste grupo ✓ (ainda precisa me marcar ou responder minha msg)";
       break;
     case "deactivate_group":
@@ -55,6 +60,8 @@ export async function handleTetoSlashCommand({
         break;
       }
       activationStore.deactivateGroup(remoteJid);
+      groupEngagement?.clearGroup?.(remoteJid);
+      groupEngagement?.unmute?.(remoteJid);
       reply = "teto desativada neste grupo";
       break;
     default:

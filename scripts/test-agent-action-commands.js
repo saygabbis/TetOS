@@ -42,6 +42,10 @@ const preset = parseActionCommands('sticker("teto-linguinha")');
 assert.equal(preset[0].type, "sticker");
 assert.equal(preset[0].key, "teto-linguinha");
 
+const silence = parseActionCommands('calar("todos")');
+assert.equal(silence[0].type, "silence");
+assert.equal(silence[0].scope, "todos");
+
 const makeSticker = parseActionCommands('sticker("3EB0F91A291E21535654C7", "10s")');
 assert.equal(makeSticker[0].type, "media");
 assert.equal(makeSticker[0].command, "sticker");

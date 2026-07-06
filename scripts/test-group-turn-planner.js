@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import {
   planGroupTurnSegments,
-  shouldSplitGroupSegment
+  shouldSplitGroupSegment,
+  isGroupPriorityEntry
 } from "../src/integrations/whatsapp/groupTurnPlanner.js";
 import {
   buildOutgoingQuoteKey,
@@ -52,6 +53,14 @@ assert.equal(multi.length, 1);
 assert.ok(multi[0].segmentMultiSpeaker);
 assert.ok(multi[0].message.includes("[A]:"));
 assert.ok(multi[0].message.includes("[B]:"));
+assert.equal(isGroupPriorityEntry({ isDirectMention: true }), true);
+assert.equal(isGroupPriorityEntry({ groupAddressKind: "contextual" }), true);
+assert.equal(isGroupPriorityEntry({ groupEngagementActive: true }), false);
+
+const prioritySeg = planGroupTurnSegments([
+  entry({ userId: "111", message: "teto!", ts: 1000, groupAddressKind: "contextual", isDirectMention: true })
+]);
+assert.equal(prioritySeg[0].groupPriorityAddress, true);
 
 assert.equal(shouldSplitGroupSegment(entry({ ts: 1000 }), entry({ userId: "222", isReplyToBot: true, ts: 2000 })), true);
 

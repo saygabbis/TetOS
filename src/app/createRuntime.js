@@ -103,7 +103,8 @@ export function createRuntime() {
     largeGroupSize: DEFAULTS.groupPassiveSize
   });
   const groupEngagement = new GroupEngagementWindow({
-    ttlMs: DEFAULTS.groupEngagementMs
+    ttlMs: DEFAULTS.groupEngagementMs,
+    muteMs: DEFAULTS.groupMuteMs
   });
   const tetoActivation = new TetoActivationStore(DEFAULTS.tetoActivationPath, {
     activationRequired: DEFAULTS.tetoActivationRequired

@@ -25,6 +25,20 @@ assert(cmd?.action === "activate_dm", "parse ativar");
 const gcmd = parseTetoSlashCommand("/teto-grupo-desativar");
 assert(gcmd?.action === "deactivate_group", "parse grupo desativar");
 
+const openDeactPath = "./data/test-activations-open-deact.json";
+if (existsSync(openDeactPath)) rmSync(openDeactPath);
+const storeOpenDeact = new TetoActivationStore(openDeactPath, { activationRequired: false });
+assert(storeOpenDeact.isDmActive("u-open"), "open mode dm ativo por padrao");
+assert(storeOpenDeact.isGroupActive("120@g.us"), "open mode grupo ativo por padrao");
+storeOpenDeact.deactivateDm("u-open");
+assert(!storeOpenDeact.isDmActive("u-open"), "open mode respeita /teto-desativar");
+storeOpenDeact.activateDm("u-open");
+assert(storeOpenDeact.isDmActive("u-open"), "reativar dm funciona");
+storeOpenDeact.deactivateGroup("120@g.us");
+assert(!storeOpenDeact.isGroupActive("120@g.us"), "open mode respeita /teto-grupo-desativar");
+storeOpenDeact.activateGroup("120@g.us");
+assert(storeOpenDeact.isGroupActive("120@g.us"), "reativar grupo funciona");
+
 const touchPath = "./data/test-activations-gated-touch.json";
 if (existsSync(touchPath)) rmSync(touchPath);
 const gatedTouch = new TetoActivationStore(touchPath, { activationRequired: true });

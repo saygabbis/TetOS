@@ -121,6 +121,13 @@ describe("parseActionCommands", () => {
     expect(actions[0]).toMatchObject({ type: "sticker", key: "teto-pao", quoteId: "msg_xyz" });
   });
 
+  it("extrai calar com escopo opcional", () => {
+    const actions = parseActionCommands('calar("todos")');
+    expect(actions).toHaveLength(1);
+    expect(actions[0]).toMatchObject({ type: "silence", scope: "todos" });
+    expect(parseActionCommands("calar()")[0]).toMatchObject({ type: "silence", scope: null });
+  });
+
   it("extrai múltiplos comandos na mesma resposta", () => {
     const raw = `reagir("🔥")\nmensagem("caramba kkk")\nmensagem("não acredito nisso")`;
     const actions = parseActionCommands(raw);

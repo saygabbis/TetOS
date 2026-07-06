@@ -76,6 +76,8 @@ export function parseActionCommands(rawText) {
       actions.push({ type: "repertoire_mode", enabled: true });
     } else if (cmd === "desativarrepertorio" || cmd === "desligarrepertorio") {
       actions.push({ type: "repertoire_mode", enabled: false });
+    } else if (cmd === "calar" || cmd === "silenciar" || cmd === "silencio" || cmd === "quiet") {
+      actions.push({ type: "silence", scope: args[0] ?? null });
     } else if (isRepertoireModeCommand(cmd)) {
       actions.push({ type: "repertoire_mode", enabled: parseRepertoireModeEnabled(args) });
     } else {
@@ -111,7 +113,7 @@ export function resolveOutgoingActions(actions = []) {
     const raw = String(action?.text ?? "").trim();
     const looksLikeCommand =
       action?.type === "message" &&
-      /^(mensagem|message|reagir|react|sticker|figurinha|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\s*\(/i.test(
+      /^(mensagem|message|reagir|react|sticker|figurinha|calar|silenciar|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\s*\(/i.test(
         raw
       );
     if (!looksLikeCommand) {

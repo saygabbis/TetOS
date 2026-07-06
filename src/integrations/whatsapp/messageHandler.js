@@ -42,7 +42,7 @@ import {
   isQuotedMessageFromBot,
   shouldQuoteOutgoing
 } from "./messageContext.js";
-import { planGroupTurnSegments } from "./groupTurnPlanner.js";
+import { planGroupTurnSegments, isGroupPriorityEntry } from "./groupTurnPlanner.js";
 import { parseTetoSlashCommand, handleTetoSlashCommand } from "./tetoSlashCommands.js";
 import {
   formatWhatsAppHelpText as formatMediaCommandHelpText,
@@ -973,6 +973,18 @@ function createConversationOrchestrator(
                   }
                 }
                 outputKind = RESPONSE_OUTPUTS.COMMAND;
+              } else if (action.type === "silence") {
+                const eng = runtime.groupEngagement;
+                if (eng?.muteFromAgent) {
+                  const applied = eng.muteFromAgent(item.remoteJid, item.userId, {
+                    scope: action.scope,
+                    ttlMs: runtime.defaults.groupMuteMs
+                  });
+                  console.log(
+                    `${logPrefix} calar scope=${applied?.scope ?? "channel"} until=${applied?.expiresAt ?? "?"}`
+                  );
+                }
+                outputKind = RESPONSE_OUTPUTS.COMMAND;
               } else if (action.type === "media" || action.type === "toimage") {
                 const command = action.command ?? "toimg";
                 const targetId =
@@ -1200,15 +1212,80 @@ function createConversationOrchestrator(
 
   function enqueueGroupSegment(entry) {
     const channelKey = entry.remoteJid;
-    if (runningByGroupChannel.has(channelKey)) {
+    const priority = isGroupPriorityEntry(entry);
+    if (runningByGroupChannel.has(channelKey) && priority) {
       bumpInterrupt(entry.sessionId ?? entry.userId);
     }
     const queue = queueByGroupChannel.get(channelKey) ?? [];
-    queue.push(entry);
+    if (priority) {
+      queue.unshift(entry);
+    } else {
+      queue.push(entry);
+    }
     queueByGroupChannel.set(channelKey, queue);
     drainGroupChannel(channelKey).catch((error) => {
       console.error("[whatsapp] group channel queue error:", error.message);
     });
+  }
+
+  function processCollectedGroupEntries(channelKey, collected = []) {
+    if (!collected.length) return;
+    const segments = planGroupTurnSegments(collected);
+    segments.sort(
+      (a, b) => Number(Boolean(b.groupPriorityAddress)) - Number(Boolean(a.groupPriorityAddress))
+    );
+    if (segments.length > 1) {
+      console.log(
+        `[whatsapp] grupo ${collected.length} msgs → ${segments.length} resposta(s) com quote (${channelKey})`
+      );
+    } else if ((segments[0]?.batchedCount ?? 1) > 1) {
+      console.log(
+        `[whatsapp] grupo batch ${segments[0].batchedCount} msgs → 1 resposta (${channelKey})`
+      );
+    }
+    for (const seg of segments) {
+      enqueueGroupSegment(seg);
+    }
+  }
+
+  function scheduleGroupIncoming(entry) {
+    const channelKey = entry.remoteJid;
+    const priority = isGroupPriorityEntry(entry);
+    const normalized = { ...entry, ts: entry.ts ?? Date.now(), groupPriorityAddress: priority };
+
+    let pending = pendingByGroupChannel.get(channelKey) ?? { entries: [], timer: null };
+
+    if (pending.timer) clearTimeout(pending.timer);
+
+    if (priority && pending.entries.some((e) => !isGroupPriorityEntry(e))) {
+      const nonPriority = pending.entries.filter((e) => !isGroupPriorityEntry(e));
+      const keepPriority = pending.entries.filter((e) => isGroupPriorityEntry(e));
+      if (nonPriority.length) {
+        processCollectedGroupEntries(channelKey, nonPriority);
+      }
+      pending.entries = keepPriority;
+    }
+
+    pending.entries.push(normalized);
+
+    const stillTyping = pending.entries.some(
+      (e) => (typingByUser.get(e.userId) ?? 0) > Date.now()
+    );
+    const hasPriority = pending.entries.some(isGroupPriorityEntry);
+    const baseBatch = hasPriority
+      ? Math.min(450, timingCfg.groupBatchWindowMs)
+      : timingCfg.groupBatchWindowMs;
+    const batchMs = stillTyping
+      ? Math.min(hasPriority ? 2800 : 6500, Math.round(baseBatch * (hasPriority ? 1.6 : 2.4)))
+      : baseBatch;
+
+    pending.timer = setTimeout(() => {
+      const collected = pending.entries;
+      pendingByGroupChannel.delete(channelKey);
+      processCollectedGroupEntries(channelKey, collected);
+    }, batchMs);
+
+    pendingByGroupChannel.set(channelKey, pending);
   }
 
   function coalesceQueueEntries(entries = []) {
@@ -1227,6 +1304,7 @@ function createConversationOrchestrator(
         isReplyToBot: cur.isReplyToBot || acc.isReplyToBot,
         isDirectMention: cur.isDirectMention || acc.isDirectMention,
         groupEngagementActive: cur.groupEngagementActive || acc.groupEngagementActive,
+        groupPriorityAddress: cur.groupPriorityAddress || acc.groupPriorityAddress,
         groupAddressKind: cur.groupAddressKind ?? acc.groupAddressKind,
         batchedCount: (acc.batchedCount ?? 1) + (cur.batchedCount ?? 1),
         pushName: cur.pushName ?? acc.pushName
@@ -1256,42 +1334,6 @@ function createConversationOrchestrator(
     drainSessionQueue(key).catch((error) => {
       console.error("[whatsapp] queue processing error:", error.message);
     });
-  }
-
-  function scheduleGroupIncoming(entry) {
-    const channelKey = entry.remoteJid;
-    let pending = pendingByGroupChannel.get(channelKey) ?? { entries: [], timer: null };
-
-    if (pending.timer) clearTimeout(pending.timer);
-    pending.entries.push({ ...entry, ts: entry.ts ?? Date.now() });
-
-    const stillTyping = pending.entries.some(
-      (e) => (typingByUser.get(e.userId) ?? 0) > Date.now()
-    );
-    const baseBatch = timingCfg.groupBatchWindowMs;
-    const batchMs = stillTyping
-      ? Math.min(6500, Math.round(baseBatch * 2.4))
-      : baseBatch;
-
-    pending.timer = setTimeout(() => {
-      const collected = pending.entries;
-      pendingByGroupChannel.delete(channelKey);
-      const segments = planGroupTurnSegments(collected);
-      if (segments.length > 1) {
-        console.log(
-          `[whatsapp] grupo ${collected.length} msgs → ${segments.length} resposta(s) com quote (${channelKey})`
-        );
-      } else if ((segments[0]?.batchedCount ?? 1) > 1) {
-        console.log(
-          `[whatsapp] grupo batch ${segments[0].batchedCount} msgs → 1 resposta (${channelKey})`
-        );
-      }
-      for (const seg of segments) {
-        enqueueGroupSegment(seg);
-      }
-    }, batchMs);
-
-    pendingByGroupChannel.set(channelKey, pending);
   }
 
   function scheduleDirectIncoming(entry) {
@@ -1343,6 +1385,7 @@ function createConversationOrchestrator(
           isReplyToBot: entry.isReplyToBot || previous.isReplyToBot,
           isDirectMention: entry.isDirectMention || previous.isDirectMention,
           groupEngagementActive: entry.groupEngagementActive || previous.groupEngagementActive,
+          groupPriorityAddress: entry.groupPriorityAddress || previous.groupPriorityAddress,
           groupAddressKind: entry.groupAddressKind ?? previous.groupAddressKind,
           pushName: entry.pushName ?? previous.pushName,
           isOwner: entry.isOwner || previous.isOwner,
@@ -1955,6 +1998,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             remoteJid,
             isGroup,
             activationStore: runtime.tetoActivation,
+            groupEngagement: runtime.groupEngagement,
             socket
           });
           if (handled.handled) {
@@ -2059,11 +2103,35 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         let groupAddressKind = "none";
 
         if (isGroup && !parsedCommand && !isFromMe) {
+          const engagement = runtime.groupEngagement;
+          if (engagement?.isMuted?.(remoteJid, userId)) {
+            runtime.groupMemory?.append?.({
+              id: incoming.key.id,
+              channelId: remoteJid,
+              userId,
+              speakerName: pushName || null,
+              text: text || `[${mediaKind}]`,
+              addressedToTeto: false,
+              ts: new Date().toISOString(),
+              quotedMessageId: stanzaId || null
+            });
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              groupGate: "muted",
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
+            logThinking(runtime, {
+              phase: "group_filtered",
+              userId,
+              remoteJid,
+              detail: "calar ativo — ignorando menção/janela por 1 min"
+            });
+            continue;
+          }
+
           const hasMention = botMentionedInJids(mentionHint, botJid, botPhone);
           groupAddressKind = classifyTetoAddress(text, { hasMention, isReplyToBot });
           if (isReplyToBot) isReply = true;
 
-          const engagement = runtime.groupEngagement;
           const windowActive = engagement?.isActive?.(remoteJid, userId) ?? false;
           const explicitAddress =
             groupAddressKind === "mention" ||
@@ -2086,24 +2154,16 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
           }
 
-          const recalled = runtime.groupMemory?.recall?.(remoteJid, text) ?? [];
-          const triggeredRecall = recalled.length > 0;
-          const inContext = triggeredRecall || isReplyToBot;
-          const allowGroupReply = explicitAddress || groupEngagementActive || inContext;
+          const allowGroupReply = explicitAddress || groupEngagementActive;
           decisionTrace.groupGate = explicitAddress
             ? groupAddressKind
             : groupEngagementActive
               ? "engagement_window"
-              : triggeredRecall
-                ? "memory_recall"
-                : isReplyToBot
-                  ? "reply_to_bot"
-                  : "ignored";
+              : "ignored";
           addDecisionStep(decisionTrace, "group.gate", {
             groupAddressKind,
             explicitAddress,
             groupEngagementActive,
-            triggeredRecall,
             allowGroupReply
           });
 
@@ -2140,7 +2200,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               phase: "group_filtered",
               userId,
               remoteJid,
-              detail: "registrado em groupMemory; sem resposta (sem menção/janela/recall)"
+              detail: "registrado em groupMemory; sem resposta (sem menção/janela)"
             });
             continue;
           }
@@ -2504,6 +2564,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         const activation = runtime.tetoActivation;
+        if (!isGroup && runtime.groupEngagement?.isMuted?.(remoteJid, userId) && !isFromMe) {
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            groupGate: "muted",
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
+          logThinking(runtime, {
+            phase: "dm_filtered",
+            userId,
+            remoteJid,
+            detail: "calar ativo — ignorando mensagens por 1 min"
+          });
+          continue;
+        }
         if (!isGroup && activation?.isActivationRequired?.() && isOwnerContact(runtime, remoteJid, userId)) {
           if (!activation.isDmActive(userId)) {
             activation.activateDm(userId, { activatedBy: userId, autoOwner: true });
@@ -2798,6 +2871,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           isDirectMention: isGroup ? isDirect : false,
           groupEngagementActive: isGroup ? groupEngagementActive : false,
           groupAddressKind: isGroup ? groupAddressKind : null,
+          groupPriorityAddress: isGroup ? isGroupPriorityEntry({
+            isDirectMention: isDirect,
+            isReplyToBot,
+            groupAddressKind
+          }) : false,
           isReply: isReply || isReplyToBot,
           isReplyToBot,
           quotedMessage,

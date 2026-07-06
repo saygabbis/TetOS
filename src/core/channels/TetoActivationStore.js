@@ -56,18 +56,19 @@ export class TetoActivationStore {
   deactivateDm(userId) {
     const id = String(userId ?? "").trim();
     if (!id) return false;
-    let changed = false;
+    const entry = {
+      active: false,
+      deactivatedAt: new Date().toISOString()
+    };
     for (const alias of dmAliasIds(id)) {
-      if (!this.data.dm[alias]) continue;
       this.data.dm[alias] = {
-        ...this.data.dm[alias],
-        active: false,
-        deactivatedAt: new Date().toISOString()
+        ...(this.data.dm[alias] ?? {}),
+        ...entry,
+        aliasOf: id
       };
-      changed = true;
     }
-    if (changed) this.save();
-    return changed;
+    this.save();
+    return true;
   }
 
   activateGroup(channelId, meta = {}) {
@@ -86,9 +87,8 @@ export class TetoActivationStore {
   deactivateGroup(channelId) {
     const id = String(channelId ?? "").trim();
     if (!id) return false;
-    if (!this.data.groups[id]) return false;
     this.data.groups[id] = {
-      ...this.data.groups[id],
+      ...(this.data.groups[id] ?? {}),
       active: false,
       deactivatedAt: new Date().toISOString()
     };
@@ -96,7 +96,20 @@ export class TetoActivationStore {
     return true;
   }
 
+  isDmExplicitlyOff(userId) {
+    for (const alias of dmAliasIds(userId)) {
+      if (this.data.dm[alias]?.active === false) return true;
+    }
+    return false;
+  }
+
+  isGroupExplicitlyOff(channelId) {
+    const id = String(channelId ?? "").trim();
+    return this.data.groups[id]?.active === false;
+  }
+
   isDmActive(userId) {
+    if (this.isDmExplicitlyOff(userId)) return false;
     if (!this.activationRequired) return true;
     for (const alias of dmAliasIds(userId)) {
       if (this.data.dm[alias]?.active) return true;
@@ -105,8 +118,9 @@ export class TetoActivationStore {
   }
 
   isGroupActive(channelId) {
-    if (!this.activationRequired) return true;
     const id = String(channelId ?? "").trim();
+    if (this.isGroupExplicitlyOff(id)) return false;
+    if (!this.activationRequired) return true;
     return Boolean(this.data.groups[id]?.active);
   }
 
