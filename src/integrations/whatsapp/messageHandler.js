@@ -602,23 +602,15 @@ function createConversationOrchestrator(
           item.closeDecision !== "silent" && item.closeDecision !== "react";
         let composingDuringGeneration = false;
         try {
-        if (shouldGenerate) {
-          console.log(`${logPrefix} generating reply for ${item.userId}…`);
-          composingDuringGeneration = true;
-          if (typeof socket.sendPresenceUpdate === "function") {
-            try {
-              await socket.sendPresenceUpdate("composing", item.remoteJid);
-            } catch (e) {
-              console.warn(`${logPrefix} composing (during generation) failed: ${e.message}`);
-            }
-          }
-        }
         let timingPlan = null;
         const shouldRunPipeline =
           runtime.defaults.replyEnabled ||
           runtime.defaults.learningModeEnabled ||
           item.mainObserveOnly;
         if (shouldRunPipeline) {
+          if (shouldGenerate) {
+            console.log(`${logPrefix} generating reply for ${item.userId}…`);
+          }
           let lastError = null;
           for (let attempt = 0; attempt < 2; attempt += 1) {
             try {
@@ -648,7 +640,12 @@ function createConversationOrchestrator(
                     segmentSpeakers: item.segmentSpeakers ?? null,
                     segmentMultiSpeaker: item.segmentMultiSpeaker ?? false,
                     isOwner: item.isOwner ?? false,
-                    mainObserveOnly: item.mainObserveOnly === true
+                    mainObserveOnly: item.mainObserveOnly === true,
+                    onGenerationStart: async () => {
+                      if (typeof socket.sendPresenceUpdate !== "function") return;
+                      composingDuringGeneration = true;
+                      await socket.sendPresenceUpdate("composing", item.remoteJid);
+                    }
                   })
                 ),
                 new Promise((_, reject) =>
@@ -758,11 +755,11 @@ function createConversationOrchestrator(
             `${logPrefix} empty reply for ${item.userId} (close=${item.closeDecision} mode=${item.passiveMode ?? "?"} msg="${String(item.message ?? "").slice(0, 80)}")`
           );
         }
-        if (hasOutgoing && typeof socket.sendPresenceUpdate === "function") {
+        if (hasOutgoing && !composingDuringGeneration && typeof socket.sendPresenceUpdate === "function") {
           try {
             await socket.sendPresenceUpdate("composing", item.remoteJid);
           } catch (e) {
-            console.warn(`${logPrefix} composing (during generation) failed: ${e.message}`);
+            console.warn(`${logPrefix} composing (before send) failed: ${e.message}`);
           }
         }
 

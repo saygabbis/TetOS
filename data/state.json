@@ -1,22 +1,10 @@
 {
   "mood": "tired",
   "energy": 0,
-  "social": 1,
-  "focus": 1,
-  "lastInteraction": "2026-07-01T20:52:03.555Z",
+  "social": 0.88,
+  "focus": 0.96,
+  "lastInteraction": "2026-07-06T20:47:01.835Z",
   "recentInteractions": [
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 8,
-      "timestamp": "2026-07-01T20:44:13.553Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 66,
-      "timestamp": "2026-07-01T20:44:15.559Z"
-    },
     {
       "type": "user",
       "sentiment": "neutral",
@@ -124,6 +112,18 @@
       "sentiment": "neutral",
       "length": 23,
       "timestamp": "2026-07-01T20:52:05.027Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 8,
+      "timestamp": "2026-07-06T20:47:01.835Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 16,
+      "timestamp": "2026-07-06T20:47:01.858Z"
     }
   ]
 }

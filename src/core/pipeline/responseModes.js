@@ -25,3 +25,14 @@ export const RESPONSE_OUTPUTS = Object.freeze({
 export function isPassiveResponseMode(mode) {
   return mode === RESPONSE_MODES.REACT_ONLY || mode === RESPONSE_MODES.STICKER_ONLY;
 }
+
+/** Indica se deve simular "digitando" antes de chamar o modelo. */
+export function shouldStartTypingIndicator({
+  finalCloseDecision = null,
+  replyEnabled = true,
+  mainObserveOnly = false
+} = {}) {
+  if (!replyEnabled || mainObserveOnly) return false;
+  if (finalCloseDecision === "silent" || finalCloseDecision === "react") return false;
+  return true;
+}

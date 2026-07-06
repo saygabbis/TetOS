@@ -37,7 +37,7 @@ import {
 } from "../channels/userBoundaryDetect.js";
 import { assessActivityFocus } from "../life/activityFocus.js";
 import { contextualSeed, chance } from "../brain/rng.js";
-import { RESPONSE_MODES } from "./responseModes.js";
+import { RESPONSE_MODES, shouldStartTypingIndicator } from "./responseModes.js";
 
 function chanceBusyAck(userId = "default") {
   return chance(contextualSeed(["busy_ack", userId, new Date().toISOString().slice(0, 13)]), 0.38);
@@ -725,6 +725,17 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const groupRoster = isGroup
     ? buildGroupRoster(runtime, safeChannelId, { participants })
     : null;
+
+  if (
+    shouldStartTypingIndicator({
+      finalCloseDecision,
+      replyEnabled: runtime.defaults.replyEnabled,
+      mainObserveOnly
+    }) &&
+    typeof payload.onGenerationStart === "function"
+  ) {
+    await payload.onGenerationStart();
+  }
 
   const replies = await runtime.chatService.handleMessage(
     input,

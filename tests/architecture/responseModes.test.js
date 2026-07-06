@@ -6,7 +6,8 @@ import { ChannelRegistry } from "../../src/core/channels/channelRegistry.js";
 import { resolvePassiveModeAction } from "../../src/core/channels/passiveModeAction.js";
 import {
   isPassiveResponseMode,
-  RESPONSE_MODES
+  RESPONSE_MODES,
+  shouldStartTypingIndicator
 } from "../../src/core/pipeline/responseModes.js";
 
 const tempDirs = [];
@@ -29,6 +30,12 @@ describe("response modes", () => {
     expect(isPassiveResponseMode(RESPONSE_MODES.REACT_ONLY)).toBe(true);
     expect(isPassiveResponseMode(RESPONSE_MODES.STICKER_ONLY)).toBe(true);
     expect(isPassiveResponseMode(RESPONSE_MODES.FULL)).toBe(false);
+  });
+
+  it("suppresses typing for silent and react close decisions", () => {
+    expect(shouldStartTypingIndicator({ finalCloseDecision: "silent" })).toBe(false);
+    expect(shouldStartTypingIndicator({ finalCloseDecision: "react" })).toBe(false);
+    expect(shouldStartTypingIndicator({ finalCloseDecision: "open" })).toBe(true);
   });
 
   it("maps passive policies into actions", () => {
