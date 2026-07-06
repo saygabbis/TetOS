@@ -20,6 +20,9 @@ Este documento resume os pontos de extensão configuráveis no runtime atual.
 | `TETO_WEATHER_ADAPTER` | opcional | `WorldContext` com clima real |
 | `REMOVEBG_API_KEY` / `REMOVEBG_API_KEYS` | remove.bg | `.removebg` em imagem/figurinha estática |
 | `TETOS_REMOVEBG_MODEL` | `small`, `medium`, `large` | Modelo local/API para remoção de fundo |
+| `TETOS_STICKERS_PATH` | Pasta de figurinhas | Repertório local e resolução de assets |
+| `TETOS_STICKER_REPERTOIRE_MODE_PATH` | JSON por usuário | Auto-save de figurinhas recebidas |
+| `TETOS_STICKER_ONLY_CHANCE` | 0–1 | Chance de sticker-only em modo `react_only` (padrão `0.55`) |
 
 ## AdapterRegistry
 
@@ -40,10 +43,15 @@ Arquivos principais:
 - `src/integrations/whatsapp/runner.js`
 - `src/integrations/whatsapp/messageHandler.js`
 - `src/integrations/whatsapp/commandTargetResolver.js`
+- `src/integrations/whatsapp/mediaCommandParser.js`
+- `src/integrations/whatsapp/mediaCommandService.js`
+- `src/integrations/whatsapp/stickerRepertoire.js`
+- `src/integrations/whatsapp/stickerRepertoireModeStore.js`
+- `src/integrations/whatsapp/agentMediaCommands.js`
 - `src/core/media/mediaProcessor.js`
 - `src/core/media/backgroundRemovalService.js`
 
-Comandos atuais:
+Comandos com prefixo `.` (WhatsApp):
 
 - `.sticker`
 - `.fsticker`
@@ -52,6 +60,15 @@ Comandos atuais:
 - `.removebg`
 - `.optimize`
 - `.help`
+
+Comandos de ação do agente (na resposta do LLM):
+
+- `sticker("chave")`
+- `reagir("emoji")` / `react("emoji")`
+- `mensagem("texto")` / `message("texto", "msg_id")`
+- `salvarSticker("message_id")`
+- `modoRepertorio("on"|"off")`
+- `toimg("msg_id")`, `removebg("msg_id")`, etc.
 
 ## Camadas A/B/C
 

@@ -47,6 +47,14 @@ Use o prefixo configurado em `COMMAND_PREFIX` (padrão `.`).
 5. Em imagem ou figurinha estática, teste `.removebg`.
 6. Mande `.help` e confira a lista atual.
 
+## Checklist Repertório e Comandos do Agente
+
+1. Peça para ativar o repertório (`modoRepertorio("on")`) e envie uma figurinha; confira entrada em `data/stickers/catalog.json`.
+2. Peça para salvar uma figurinha específica com `salvarSticker("message_id")`.
+3. Peça para enviar uma figurinha do catálogo e observe `sticker("chave")` no log/resposta.
+4. Teste reação via conversa quando apropriado (`reagir("❤️")` na saída do agente).
+5. Confira se figurinhas enviadas pelo agente usam chaves existentes em `data/stickers/`.
+
 ## O Que Observar no `mind:watch`
 
 - `reasons[]` no timing.
@@ -54,6 +62,7 @@ Use o prefixo configurado em `COMMAND_PREFIX` (padrão `.`).
 - `groupMemory` sendo alimentada em grupo.
 - `closeDecision` quando a conversa pede encerramento.
 - `worldContext` quando viagens/rotinas autônomas dispararem.
+- eventos `repertoire.vision` ao salvar figurinhas com visão.
 
 ## Modo Só Ativação
 

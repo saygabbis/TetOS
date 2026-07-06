@@ -273,6 +273,45 @@ Em modo dual, se o comando chega no número errado, o main pode ignorar ou respo
 
 Contrato atual: comandos de midia sao saida `command` no `decisionTrace` e nao entram em `runMessagePipeline()`.
 
+### 5. Repertório de figurinhas
+
+Arquivos:
+
+- `src/integrations/whatsapp/stickerRepertoire.js`
+- `src/integrations/whatsapp/stickerRepertoireModeStore.js`
+- `data/stickers/catalog.json`
+
+Fluxo:
+
+1. Figurinhas recebidas podem ser salvas em `data/stickers/` com metadados no catálogo.
+2. Com `modoRepertorio("on")` ativo para o usuário, figurinhas recebidas entram no repertório automaticamente.
+3. Visão pode nomear figurinhas (`visionDescription`, `displayName`) ao salvar.
+4. `formatRepertoireForPrompt()` injeta chaves recentes no prompt do agente.
+5. O agente envia figurinhas do repertório com `sticker("chave")` na resposta.
+
+Persistência:
+
+- `TETOS_STICKERS_PATH` (padrão `./data/stickers`)
+- `TETOS_STICKER_REPERTOIRE_MODE_PATH` (padrão `./data/stickerRepertoireMode.json`)
+
+### 6. Comandos de ação do agente
+
+Arquivos:
+
+- `src/modules/chat/chatService.js` (`parseActionCommands`)
+- `src/integrations/whatsapp/agentMediaCommands.js`
+
+Após o LLM responder, `ChatService` extrai comandos embutidos no texto:
+
+- `reagir("❤️")` / `react("👍")` — reação à mensagem
+- `sticker("chave")` — envia figurinha do repertório; segundo arg opcional faz quote
+- `mensagem("texto")` / `message("texto", "msg_id")` — bolha com quote opcional
+- `salvarSticker("message_id")` — salva figurinha no repertório (chave opcional)
+- `modoRepertorio("on"|"off")` — liga/desliga auto-save de figurinhas recebidas
+- equivalentes de mídia por message id: `toimg("msg_id")`, `removebg("msg_id")`, etc.
+
+Esses comandos são executados pelo orchestrator do WhatsApp após a geração, sem passar pelo parser de comandos com prefixo `.`.
+
 ## Decisão: Mensagem é Comando ou Conversa?
 
 Ordem prática:
@@ -495,8 +534,16 @@ Depois do pipeline:
 
 1. Se `replies[]` tem texto, o WhatsApp envia bolhas.
 2. Se a decisão é `react` ou modo `react_only`, tenta reagir à mensagem.
-3. Se modo passivo escolheu `sticker_only`, tenta enviar sticker local.
-4. Se não há texto nem ação passiva, fica em silêncio.
+3. Se modo passivo escolheu `sticker_only`, tenta enviar sticker local via `resolveStickerAsset("ack")` (fallback: `ok`, `thumbs_up`, `heart`).
+4. Se o agente emitiu `sticker("chave")`, envia figurinha do repertório em `data/stickers/`.
+5. Se não há texto nem ação passiva nem sticker do agente, fica em silêncio.
+
+**Dois fluxos de figurinha:**
+
+| Fluxo | Gatilho | Resolução de asset |
+| --- | --- | --- |
+| Passivo | `react_only` + chance configurada | `ack.webp` → `ok.webp` → `thumbs_up.webp` → `heart.webp` |
+| Agente | `sticker("chave")` na resposta do LLM | `data/stickers/{chave}.webp` ou entrada em `catalog.json` |
 
 Cada evento WhatsApp deve finalizar um `decisionTrace` com uma destas saidas:
 
@@ -576,6 +623,8 @@ O runner:
 | `data/reminders.json` | Reminders. |
 | `data/channels.json` | Estado de canais/grupos. |
 | `data/tetoActivations.json` | Ativações DM/grupo. |
+| `data/stickers/catalog.json` | Catálogo do repertório de figurinhas. |
+| `data/stickerRepertoireMode.json` | Modo repertório por usuário. |
 | `data/logs/tetos.log` | Logs estruturados. |
 | `data/metrics.json` | Métricas. |
 | `data/mind-log` | Logs de mente/turnos. |
@@ -607,6 +656,7 @@ Quando algo não responde, verificar nesta ordem:
 6. Conferir `/status` e `/runtime/summary`.
 7. Se for comando de mídia, confirmar se havia mídia alvo e olhar eventos `command.media`.
 8. Se for LLM, checar modelo, chave, timeout e logs de `whatsapp.model_timeout`.
+9. Se figurinha do agente não saiu, conferir `data/stickers/catalog.json` e se o LLM emitiu `sticker("chave")`.
 
 ## Testes de Contrato
 
@@ -618,8 +668,9 @@ npm run test:architecture
 
 Eles cobrem:
 
-- parser e aliases de comandos de midia.
-- constantes de modos/saidas e decisao passiva de canal.
-- criacao e finalizacao de `decisionTrace`.
+- parser e aliases de comandos de midia (`mediaCommandParser.test.js`).
+- constantes de modos/saidas e decisao passiva de canal (`responseModes.test.js`).
+- criacao e finalizacao de `decisionTrace` (`decisionTrace.test.js`).
+- protocolo de comandos de acao do agente (`actionCommands.test.js`).
 
 `npm run test:all` tambem chama estes testes, mas depende da API local e do provedor LLM configurado para os testes de chat.

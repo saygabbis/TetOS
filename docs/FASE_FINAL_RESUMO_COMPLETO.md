@@ -114,7 +114,7 @@ Endpoints importantes:
 - `GET /runtime/summary`
 - `GET /memory/multimodal`
 
-### 9. Sticker-only
+### 9. Sticker-only (passivo)
 
 A fase fechou a estrutura de envio de sticker em modo passivo, com busca de asset, logging e métricas.
 
@@ -124,7 +124,22 @@ Arquivos principais:
 - `src/integrations/whatsapp/messageHandler.js`
 - `src/core/channels/passiveModeAction.js`
 
-Observação atual: o código procura `ack.webp`, `ok.webp`, `thumbs_up.webp` e `heart.webp`, mas a pasta atual contém `teto-linguinha.webp`, `teto-pao.webp` e `teto-saliente.webp`. Para o fluxo passivo funcionar como descrito, adicione os nomes esperados ou ajuste o planner.
+Observação atual: o fluxo passivo ainda pede `ack.webp` (fallback: `ok`, `thumbs_up`, `heart`). Esse caminho é distinto do repertório do agente descrito abaixo.
+
+### 10. Repertório e comandos de ação (evolução pós-fase)
+
+Após a consolidação, o projeto ganhou:
+
+- catálogo em `data/stickers/catalog.json`
+- auto-save com `modoRepertorio("on")`
+- envio via `sticker("chave")` na resposta do agente
+- `parseActionCommands()` em `chatService.js`
+
+Arquivos principais:
+
+- `src/integrations/whatsapp/stickerRepertoire.js`
+- `src/integrations/whatsapp/stickerRepertoireModeStore.js`
+- `src/integrations/whatsapp/agentMediaCommands.js`
 
 ## Ganhos da Fase
 
@@ -141,6 +156,7 @@ Observação atual: o código procura `ack.webp`, `ok.webp`, `thumbs_up.webp` e 
 npm start
 npm run test:status
 npm run test:chat
+npm run test:architecture
 npm run test:brain:all
 ```
 
@@ -156,13 +172,14 @@ Depois valide:
 - `/teto-ativar`
 - `.help`
 - comandos de mídia
+- repertório (`modoRepertorio`, `sticker("chave")`)
 - reminders vencidos
 - `/status`
 
 ## Próximos Passos Recomendados
 
-- Adicionar ou renomear assets de sticker para as chaves esperadas.
-- Criar testes E2E automatizados para WhatsApp, reminders e sticker-only.
+- Adicionar `ack.webp` ou ajustar o planner passivo.
+- Criar testes E2E automatizados para WhatsApp, reminders, repertório e sticker-only.
 - Melhorar UX das mensagens administrativas e de reminder.
 - Evoluir workflows de calendário.
 - Expandir automações contextuais seguras.

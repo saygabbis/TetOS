@@ -17,7 +17,8 @@ A Teto consegue:
 - escolher entre responder, silenciar, reagir ou dar uma despedida curta;
 - tratar confusão do usuário com fallback mais explicativo;
 - responder de forma diferente em DM e grupo;
-- usar personalidade, estado interno, memória e contexto do momento no prompt.
+- usar personalidade, estado interno, memória e contexto do momento no prompt;
+- emitir comandos de ação embutidos na resposta (`sticker()`, `reagir()`, `mensagem()`, etc.).
 
 ## WhatsApp
 
@@ -30,7 +31,8 @@ A integração com WhatsApp via Baileys permite:
 - responder em grupos quando chamada, mencionada ou respondida;
 - registrar mensagens recebidas;
 - reagir a mensagens;
-- enviar stickers em fluxos passivos quando há asset local;
+- enviar stickers em fluxos passivos quando há asset `ack.webp` (ou fallback);
+- enviar stickers do repertório via `sticker("chave")` na resposta do agente;
 - simular typing/presença em DMs;
 - usar delay humano antes de responder;
 - agrupar mensagens próximas antes de gerar resposta;
@@ -87,6 +89,36 @@ A mídia alvo pode vir:
 - na própria mensagem;
 - em reply;
 - do histórico recente de mídia do chat.
+
+## Repertório de Figurinhas
+
+A Teto mantém um repertório local em `data/stickers/`:
+
+- salvar figurinhas manualmente ou via `salvarSticker("message_id")`;
+- ativar auto-save com `modoRepertorio("on")` por usuário;
+- nomear figurinhas com visão (`visionDescription`, `displayName`);
+- catalogar em `data/stickers/catalog.json`;
+- listar chaves recentes no prompt do agente;
+- enviar figurinhas aprendidas com `sticker("chave")` na resposta;
+- fazer quote opcional: `sticker("chave", "msg_id")`.
+
+Persistência:
+
+- `TETOS_STICKERS_PATH` (padrão `./data/stickers`);
+- `TETOS_STICKER_REPERTOIRE_MODE_PATH` (padrão `./data/stickerRepertoireMode.json`).
+
+## Comandos de Ação do Agente
+
+Na resposta do LLM, a Teto pode embutir comandos parseados por `parseActionCommands()`:
+
+- `reagir("❤️")` / `react("👍")` — reação à mensagem;
+- `sticker("chave")` — envia figurinha do repertório;
+- `mensagem("texto")` / `message("texto", "msg_id")` — bolha com quote opcional;
+- `salvarSticker("message_id")` — salva figurinha no repertório;
+- `modoRepertorio("on"|"off")` — liga/desliga auto-save de figurinhas;
+- `toimg("msg_id")`, `removebg("msg_id")`, etc. — processa mídia por message id.
+
+Esses comandos são distintos dos comandos com prefixo `.` no WhatsApp.
 
 ## Mídia e Multimodal
 
@@ -327,6 +359,7 @@ Scripts úteis:
 - `npm run life:distill` destila conhecimento absorvido;
 - `npm run data:sanitize` sanitiza dados;
 - `npm run wa:clear-sessions` limpa sessões do WhatsApp;
+- `npm run test:architecture` valida contratos de parser, modos e `decisionTrace`;
 - `npm run test:brain:all` valida a malha de comportamento;
 - `npm run test:all` roda testes principais da API/memória/chat.
 
@@ -340,7 +373,8 @@ Algumas capacidades dependem de configuração externa:
 - entrega de reminders depende do runner WhatsApp conectado;
 - visão/áudio dependem dos adapters e binários disponíveis;
 - `.removebg` pode usar remove.bg ou fallback local conforme tipo de mídia/configuração;
-- sticker-only passivo precisa de assets com os nomes esperados (`ack.webp`, `ok.webp`, `thumbs_up.webp`, `heart.webp`) ou ajuste no planner.
+- sticker-only passivo precisa de `ack.webp` (ou fallback `ok`, `thumbs_up`, `heart`) — distinto do repertório do agente;
+- envio via `sticker("chave")` depende da chave existir em `data/stickers/` ou no catálogo.
 
 ## Resumo Curto
 
@@ -349,6 +383,7 @@ A Teto não é apenas um chatbot. Ela é um runtime local com:
 - conversa com memória;
 - WhatsApp real;
 - comandos de mídia;
+- repertório de figurinhas;
 - reminders entregáveis;
 - documentos locais;
 - busca;

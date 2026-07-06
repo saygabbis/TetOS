@@ -4,8 +4,9 @@ Este guia é o caminho curto para instalar, subir e validar o projeto no estado 
 
 ## 1. Instalar Dependências
 
+Na raiz do projeto:
+
 ```bash
-cd "C:\Users\Legiao Filmes\Desktop\Kevin\Projetos\Nova pasta\TetOS"
 npm install
 ```
 
@@ -66,6 +67,7 @@ npm run test:chat
 npm test
 npm run test:all
 npm run test:brain:all
+npm run test:architecture
 ```
 
 Para fluxos específicos:
@@ -126,7 +128,9 @@ npm run wa:clear-sessions
 ## 8. Checklist Rápido
 
 - `GET /status` responde.
+- `POST /nudge` força iniciativa quando o runtime está ativo.
 - `npm run test:chat` passa com o LLM configurado.
+- `npm run test:architecture` passa para contratos de parser, modos e `decisionTrace`.
 - `npm run test:brain:all` passa para a malha de comportamento.
 - `npm run start:wa` conecta e recebe mensagens.
 - `/teto-ativar` funciona no DM quando `TETOS_ACTIVATION_REQUIRED=true`.
@@ -138,4 +142,6 @@ npm run wa:clear-sessions
 - `401`: chave cloud/API inválida ou ausente.
 - API não sobe na porta esperada: confira `TETOS_PORT`.
 - WhatsApp não responde: confira `WHATSAPP_ENABLED`, `REPLY_ENABLED`, sessão autenticada e ativação.
-- Figurinhas passivas não saem: `resolveStickerAsset()` procura `ack.webp`, `ok.webp`, `thumbs_up.webp` e `heart.webp` em `TETOS_STICKERS_PATH`.
+- Sticker-only passivo não sai: o planner usa a chave `ack` e `resolveStickerAsset()` procura `ack.webp`, depois `ok.webp`, `thumbs_up.webp` e `heart.webp` em `TETOS_STICKERS_PATH`. Adicione um desses arquivos ou ajuste o planner.
+- Agente não envia figurinha: confira se a chave existe em `data/stickers/` ou em `data/stickers/catalog.json`; o agente usa `sticker("chave")` no repertório, não o fallback passivo.
+- Repertório vazio: ative com `modoRepertorio("on")` ou salve figurinhas com `salvarSticker("message_id")`.

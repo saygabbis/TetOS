@@ -16,6 +16,7 @@ A TetOS cobre hoje:
 - Logs estruturados, métricas persistidas e endpoints de inspeção.
 - Integração WhatsApp via Baileys, com modo single ou dual.
 - Comandos de mídia no WhatsApp: `.sticker`, `.fsticker`, `.csticker`, `.toimg`, `.removebg`, `.optimize` e `.help`.
+- Repertório de figurinhas com catálogo (`data/stickers/catalog.json`), auto-save por visão e envio via `sticker("chave")` na resposta do agente.
 - Ativação por DM/grupo com `/teto-ativar`, `/teto-desativar`, `/teto-grupo-ativar` e `/teto-grupo-desativar`.
 - Runtime de presença, timing, vida, emoção, aprendizado e relatórios diários.
 - Execução por PM2.
@@ -30,8 +31,9 @@ A TetOS cobre hoje:
 
 ## Instalação
 
+Na raiz do projeto:
+
 ```bash
-cd "C:\Users\Legiao Filmes\Desktop\Kevin\Projetos\Nova pasta\TetOS"
 npm install
 ```
 
@@ -92,11 +94,15 @@ WHATSAPP_MEDIA_SESSION_PATH=./data/session-media
 TETOS_REMINDER_SWEEP_MS=60000
 TETOS_REMINDER_MAX_DELIVERY_ATTEMPTS=5
 TETOS_REMINDER_DELIVERY_RETRY_MS=300000
-TETOS_STICKER_ONLY_CHANCE=0.35
+TETOS_STICKER_ONLY_CHANCE=0.55
 TETOS_STICKERS_PATH=./data/stickers
+TETOS_STICKER_REPERTOIRE_MODE_PATH=./data/stickerRepertoireMode.json
 ```
 
-O código de sticker-only passivo procura `ack.webp` e, como fallback, `ok.webp`, `thumbs_up.webp` e `heart.webp`. A pasta atual contém assets `teto-*.webp`; adicione os nomes acima se quiser ativar o envio passivo por fallback sem alterar o código.
+Há dois fluxos de figurinha:
+
+- **Passivo (`react_only`)**: o planner pede a chave `ack` e `resolveStickerAsset()` procura `ack.webp`, depois `ok.webp`, `thumbs_up.webp` e `heart.webp`. Adicione um desses em `data/stickers/` ou ajuste o planner.
+- **Agente/repertório**: a Teto envia figurinhas do catálogo com `sticker("chave")` na resposta. Chaves vêm de `data/stickers/*.webp` e de `data/stickers/catalog.json` (salvas manualmente ou com `modoRepertorio("on")`).
 
 ## Como Subir
 
@@ -133,6 +139,7 @@ npm run pm2:stop
 ```bash
 npm test
 npm run test:all
+npm run test:architecture
 npm run test:brain:all
 npm run test:status
 npm run test:chat
@@ -237,7 +244,8 @@ npm run data:sanitize
 - Sem resposta no WhatsApp: verifique `WHATSAPP_ENABLED`, `REPLY_ENABLED`, sessão autenticada e `TETOS_ACTIVATION_REQUIRED`.
 - Grupo sem resposta: use `/teto-grupo-ativar` quando a ativação estiver obrigatória, ou mencione/responda a Teto conforme a política do grupo.
 - Reminder não entregue: verificar `deliveryError`, `deliveryAttempts`, `retryBlocked` e logs.
-- Sticker-only passivo não apareceu: verifique `TETOS_STICKERS_PATH` e se existem `ack.webp`, `ok.webp`, `thumbs_up.webp` ou `heart.webp`.
+- Sticker-only passivo não apareceu: verifique `TETOS_STICKERS_PATH` e se existem `ack.webp`, `ok.webp`, `thumbs_up.webp` ou `heart.webp` (fluxo passivo, distinto do repertório do agente).
+- Agente não mandou figurinha: confira se a chave existe no catálogo ou em `data/stickers/` e se o LLM emitiu `sticker("chave")` na resposta.
 - Comando de mídia falhou: teste `.help`, confira se a mídia foi enviada como imagem/vídeo/sticker/documento aceito e veja logs em `data/logs/tetos.log`.
 
 ## Estrutura Relevante
@@ -259,17 +267,22 @@ npm run data:sanitize
 - `src/integrations/whatsapp/runner.js`
 - `src/integrations/whatsapp/messageHandler.js`
 - `src/integrations/whatsapp/stickerAssets.js`
+- `src/integrations/whatsapp/stickerRepertoire.js`
+- `src/integrations/whatsapp/agentMediaCommands.js`
 
 ## Documentação Técnica
 
+- `docs/CAPACIDADES_TETO.md` - inventário prático de tudo que a Teto faz hoje.
 - `docs/ARQUITETURA_E_FLUXOS.md` - mapa dos serviços em background, fluxos da API, WhatsApp, comandos, grupos, pipeline e decisões de resposta.
 - `docs/RUNBOOK.md` - instalação, execução e validação rápida.
 - `docs/MANUAL_TEST_WA.md` - roteiro manual para testar WhatsApp.
+- `docs/HUMANIZATION_CHECKLIST.md` - checklist de humanização validado por testes.
 - `docs/TETO_EXTENSIONS.md` - adapters e pontos de extensão.
+- `docs/SESSION_SUMMARY.md` - registro histórico da etapa inicial.
+- `docs/FASE_FINAL_RESUMO_COMPLETO.md` - registro histórico da fase de consolidação.
 
 ## Próximos Passos Opcionais
 
-- Adicionar assets `ack.webp`, `ok.webp`, `thumbs_up.webp` e `heart.webp` ou ajustar o planner para os stickers `teto-*` atuais.
-- Criar testes E2E para WhatsApp, reminders e comandos de mídia.
+- Adicionar `ack.webp` (ou ajustar o planner passivo) para o sticker-only em modo `react_only`.
+- Criar testes E2E para WhatsApp, reminders, repertório e comandos de mídia.
 - Expandir exemplos de payload da API.
-- Revisar `.env.example`, que ainda tem texto com encoding corrompido em comentários.

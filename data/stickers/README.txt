@@ -1,17 +1,28 @@
 Pasta de stickers .webp usados pela TetOS.
 
-Arquivos presentes atualmente:
-- teto-linguinha.webp
-- teto-pao.webp
-- teto-saliente.webp
+## Dois fluxos
 
-O fluxo passivo de sticker-only usa `resolveStickerAsset()` e procura, nesta ordem:
-- a chave solicitada pelo planner, normalmente `ack`
-- ack.webp
-- ok.webp
-- thumbs_up.webp
-- heart.webp
+### 1. Sticker-only passivo (`react_only`)
 
-Para o sticker-only passivo funcionar sem mexer no código, adicione pelo menos `ack.webp` nesta pasta ou ajuste o planner para usar uma das chaves `teto-*`.
+O planner pede a chave `ack`. `resolveStickerAsset()` procura, nesta ordem:
 
-A resolução do asset usa `TETOS_STICKERS_PATH`; o padrão é `./data/stickers`.
+- `ack.webp`
+- `ok.webp`
+- `thumbs_up.webp`
+- `heart.webp`
+
+Para esse fluxo funcionar sem alterar código, adicione pelo menos `ack.webp` nesta pasta.
+
+### 2. Repertório do agente
+
+Figurinhas salvas em `data/stickers/*.webp` com metadados em `catalog.json`.
+
+- Chaves aprendidas (ex.: `teto-mill-jardas.webp`) entram no catálogo automaticamente.
+- O agente envia com `sticker("chave")` na resposta.
+- Auto-save liga com `modoRepertorio("on")` por usuário.
+- Salva manual com `salvarSticker("message_id")`.
+
+## Configuração
+
+- `TETOS_STICKERS_PATH` — pasta desta pasta (padrão `./data/stickers`)
+- `TETOS_STICKER_REPERTOIRE_MODE_PATH` — estado do modo repertório (padrão `./data/stickerRepertoireMode.json`)

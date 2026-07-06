@@ -14,4 +14,5 @@ Validado por testes automatizados e wiring no código.
 - [x] Ativação `/teto-ativar` e `/teto-grupo-ativar` - `test-teto-activation.js`.
 - [x] WorldContext v2 com viagens raras/autônomas - `test-world-context-v2.js`.
 - [x] Comandos de mídia integrados ao WhatsApp - `messageHandler.js`.
+- [x] Comandos de ação do agente (`sticker`, `reagir`, `salvarSticker`) - `test-agent-action-commands.js`, `actionCommands.test.js`.
 - [ ] Teste manual no WhatsApp - ver `docs/MANUAL_TEST_WA.md`.
