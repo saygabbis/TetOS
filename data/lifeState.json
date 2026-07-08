@@ -1,7 +1,7 @@
 {
-  "currentActivity": null,
-  "activityStartedAt": null,
-  "phase": "madrugada",
+  "currentActivity": "estudo de mix",
+  "activityStartedAt": "2026-07-08T14:00:26.514Z",
+  "phase": "tarde",
   "obligations": [
     {
       "id": "obligation_1780935846985_421",
@@ -411,20 +411,14 @@
   "goals": [],
   "privateThoughts": [],
   "sleep": {
-    "state": "drowsy",
-    "sleepDebt": 0.5750000000000002,
-    "lastSleepAt": "2026-07-08T05:54:04.438Z",
+    "state": "groggy",
+    "sleepDebt": 1,
+    "lastSleepAt": "2026-07-08T06:16:08.030Z",
     "tonightPlan": {
       "bedHour": 23,
       "wakeHour": 7
     },
     "alarmHistory": [
-      {
-        "ts": "2026-06-12T16:18:10.922Z",
-        "missedAlarm": false,
-        "quality": 0.68,
-        "state": "awake"
-      },
       {
         "ts": "2026-06-12T16:19:15.012Z",
         "missedAlarm": false,
@@ -544,18 +538,25 @@
         "missedAlarm": false,
         "quality": 0.67,
         "state": "awake"
+      },
+      {
+        "ts": "2026-07-08T10:00:08.511Z",
+        "missedAlarm": false,
+        "quality": 0.34,
+        "state": "groggy",
+        "disturbed": true
       }
     ],
     "wakeDelayUntil": null,
-    "lastWakeAt": "2026-07-07T10:00:16.524Z",
-    "temporaryWakeUntil": "2026-07-08T06:07:42.803Z",
-    "disturbanceCount": 4,
-    "lastDisturbedAt": "2026-07-08T06:01:32.342Z",
+    "lastWakeAt": "2026-07-08T10:00:08.511Z",
+    "temporaryWakeUntil": null,
+    "disturbanceCount": 5,
+    "lastDisturbedAt": "2026-07-08T06:08:39.592Z",
     "disturbedNightKey": "2026-07-08",
-    "tempWakeStartedAt": "2026-07-08T06:01:32.342Z",
-    "tempWakeExtensionCount": 5,
-    "tempWakeGrogginess": 0.92
+    "tempWakeStartedAt": null,
+    "tempWakeExtensionCount": 0,
+    "tempWakeGrogginess": 0
   },
-  "lastTickAt": "2026-07-08T06:03:45.955Z",
+  "lastTickAt": "2026-07-08T14:00:26.516Z",
   "dayKey": "2026-07-08"
 }

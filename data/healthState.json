@@ -1,24 +1,5 @@
 {
-  "active": [
-    {
-      "id": "resfriado_1783378482726",
-      "type": "resfriado",
-      "status": "active",
-      "onsetAt": "2026-07-06T22:54:42.726Z",
-      "severity": 0.8299999999999998,
-      "reason": "regional_sp",
-      "region": "sp",
-      "triggers": [
-        "urbano",
-        "umido",
-        "frio_seco"
-      ],
-      "recoveryDays": 4,
-      "chronic": false,
-      "recoveryProgress": 0.9648437500000078,
-      "lastFlareAt": "2026-07-08T06:03:45.954Z"
-    }
-  ],
+  "active": [],
   "history": [
     {
       "id": "resfriado_1781554344674",
@@ -55,11 +36,30 @@
       "recoveryProgress": 1,
       "lastFlareAt": "2026-06-18T18:37:29.510Z",
       "recoveredAt": "2026-06-20T01:43:26.270Z"
+    },
+    {
+      "id": "resfriado_1783378482726",
+      "type": "resfriado",
+      "status": "recovered",
+      "onsetAt": "2026-07-06T22:54:42.726Z",
+      "severity": 1,
+      "reason": "regional_sp",
+      "region": "sp",
+      "triggers": [
+        "urbano",
+        "umido",
+        "frio_seco"
+      ],
+      "recoveryDays": 4,
+      "chronic": false,
+      "recoveryProgress": 1,
+      "lastFlareAt": "2026-07-08T06:11:57.289Z",
+      "recoveredAt": "2026-07-08T06:48:08.123Z"
     }
   ],
   "regionalModifiers": {
     "sp": {
-      "updatedAt": "2026-07-08T06:03:45.954Z"
+      "updatedAt": "2026-07-08T13:18:25.848Z"
     },
     "nyc": {
       "updatedAt": "2026-06-18T18:37:29.510Z"
