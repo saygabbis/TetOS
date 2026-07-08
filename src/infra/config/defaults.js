@@ -134,6 +134,8 @@ export const DEFAULTS = {
   stickersPath: process.env.TETOS_STICKERS_PATH ?? "./data/stickers",
   stickerRepertoireModePath:
     process.env.TETOS_STICKER_REPERTOIRE_MODE_PATH ?? "./data/stickerRepertoireMode.json",
+  viewOnceMirrorPath: process.env.TETOS_VIEW_ONCE_MIRROR_PATH ?? "./data/viewOnceMirror.json",
+  visualKnowledgePath: process.env.TETOS_VISUAL_KNOWLEDGE_PATH ?? "./data/visualKnowledge.json",
   remindersPath: process.env.TETOS_REMINDERS_PATH ?? "./data/reminders.json",
   multimodalMemoryPath: process.env.TETOS_MULTIMODAL_MEMORY_PATH ?? "./data/multimodalMemory.json",
   reminderSweepMs: Number(process.env.TETOS_REMINDER_SWEEP_MS ?? 60000),
@@ -173,6 +175,9 @@ export const DEFAULTS = {
   commandPrefix: process.env.COMMAND_PREFIX ?? ".",
   commandMediaHistoryLimit: Number(process.env.COMMAND_MEDIA_HISTORY_LIMIT ?? 30),
   commandMediaDerivedPath: process.env.COMMAND_MEDIA_DERIVED_PATH ?? "./data/media/derived",
+  /** Caminho opcional do binário yt-dlp; vazio = youtube-dl-exec / PATH */
+  ytDlpPath: String(process.env.TETOS_YT_DLP_PATH ?? "").trim() || null,
+  ytDlpTimeoutMs: Number(process.env.TETOS_YT_DLP_TIMEOUT_MS ?? 120000),
   /**
    * Teto em KiB para figurinha no WhatsApp.
    * Animadas: o pipeline limita a ~500 KiB e 5s (limite real do app).
@@ -202,6 +207,15 @@ export const DEFAULTS = {
   thirdPartyAnonymization: process.env.THIRD_PARTY_ANONYMIZATION ?? "strong",
   /** Telefone da dona — admin, ledger e relatórios (memória de chat usa dm-LID como todos). */
   learningTargetUserId: process.env.LEARNING_TARGET_USER_ID ?? "",
+  /** Telefone E.164 da conta WhatsApp da Teto (bot) — NÃO é a dona. */
+  botWaPhone: String(process.env.TETOS_BOT_WA_PHONE ?? "")
+    .replace(/\D/g, "")
+    .trim(),
+  /** JID/LID da conta da Teto — para não tratar o bot como contato humano. */
+  botWaJids: (process.env.TETOS_BOT_WA_JID ?? process.env.TETOS_BOT_WA_JIDS ?? "")
+    .split(/[,;]/)
+    .map((item) => item.trim().toLowerCase().split(":")[0])
+    .filter(Boolean),
   /** JID/LID do PV da dona com a Teto — reconhece owner sem virar perfil padrão. */
   ownerWaJids: (process.env.TETOS_OWNER_WA_JID ?? process.env.TETOS_OWNER_WA_JIDS ?? "")
     .split(/[,;]/)
@@ -229,6 +243,8 @@ export const DEFAULTS = {
   healthStatePath: process.env.TETOS_HEALTH_STATE_PATH ?? "./data/healthState.json",
   socialGraphPath: process.env.TETOS_SOCIAL_GRAPH_PATH ?? "./data/socialGraph.json",
   trustBondsPath: process.env.TETOS_TRUST_BONDS_PATH ?? "./data/trustBonds.json",
+  relationshipStatePath:
+    process.env.TETOS_RELATIONSHIP_STATE_PATH ?? "./data/relationshipState.json",
   worldContextPath: process.env.TETOS_WORLD_CONTEXT_PATH ?? "./data/worldContext.json",
   musicStatePath: process.env.TETOS_MUSIC_STATE_PATH ?? "./data/musicState.json",
   musicDiscographyPath: process.env.TETOS_MUSIC_DISCOGRAPHY_PATH ?? "./data/tetoDiscography.json",
@@ -273,6 +289,18 @@ export const DEFAULTS = {
   visionModel: String(process.env.TETOS_VISION_MODEL ?? "").trim(),
   visionTimeoutMs: Number(process.env.TETOS_VISION_TIMEOUT_MS ?? 60000),
   mediaEnrichEnabled: String(process.env.TETOS_MEDIA_ENRICH_ENABLED ?? "true").toLowerCase() === "true",
+  audioTranscribeEnabled:
+    String(process.env.TETOS_AUDIO_TRANSCRIBE_ENABLED ?? "true").toLowerCase() === "true",
+  whisperModel: String(process.env.TETOS_WHISPER_MODEL ?? "small").trim() || "small",
+  whisperLanguage: String(process.env.TETOS_WHISPER_LANGUAGE ?? "pt").trim() || "pt",
+  pythonPath: String(process.env.TETOS_PYTHON_PATH ?? "python").trim() || "python",
+  imageGenEnabled: String(process.env.TETOS_IMAGE_GEN_ENABLED ?? "true").toLowerCase() === "true",
+  imageGenProvider: String(process.env.TETOS_IMAGE_GEN_PROVIDER ?? "pollinations")
+    .trim()
+    .toLowerCase(),
+  hfToken: String(process.env.TETOS_HF_TOKEN ?? "").trim(),
+  imageGenMaxPer10Min: Number(process.env.TETOS_IMAGE_GEN_MAX_PER_10MIN ?? 3),
+  imageGenOutputDir: process.env.TETOS_IMAGE_GEN_OUTPUT_DIR ?? "./data/media/generated",
   videoAdapter: process.env.TETOS_VIDEO_ADAPTER ?? "ffmpeg_frames",
   webReaderEnabled: String(process.env.TETOS_WEB_READER_ENABLED ?? "true").toLowerCase() === "true",
   /** false = responde a qualquer contato (comportamento atual); true = só /teto-ativar e /teto-grupo-ativar */

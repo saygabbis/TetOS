@@ -59,6 +59,13 @@ export class TimingEngine {
 
   stageAvailabilityGate(plan, ctx, reasons) {
     const sleep = ctx.sleep ?? ctx.life?.sleep ?? {};
+    if (sleep.isTemporarilyAwake) {
+      plan.thinkDelayMs += 1400;
+      plan.readDelayMs += 900;
+      plan.typingProfile = "drowsy";
+      reasons.push("disturbed_wake");
+      return;
+    }
     if (sleep.isAvailable === false || ["deep_sleep", "light_sleep", "nap", "drowsy", "insomnia", "restless"].includes(sleep.state)) {
       plan.silenceAppropriate = true;
       plan.shouldInitiateConversation = false;
@@ -164,6 +171,11 @@ export class TimingEngine {
     if (sleepState(ctx) === "underslept") {
       plan.thinkDelayMs += 900;
       reasons.push("underslept");
+    }
+    if (sleepState(ctx) === "groggy") {
+      plan.thinkDelayMs += 1100;
+      plan.typingProfile = "drowsy";
+      reasons.push("groggy");
     }
   }
 

@@ -19,6 +19,12 @@ import {
   normalizeAgentMediaCommand,
   parseRepertoireModeEnabled
 } from "../../integrations/whatsapp/agentMediaCommands.js";
+import {
+  AGENT_URL_DOWNLOAD_COMMAND_PATTERN,
+  buildUrlDownloadAction,
+  isAgentUrlDownloadCommand
+} from "../../integrations/whatsapp/agentDownloadCommands.js";
+import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/messageContext.js";
 
 export function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -63,6 +69,10 @@ export function parseActionCommands(rawText) {
       if (args[0]) {
         actions.push({ type: "message", text: args[0], quoteId: args[1] || null });
       }
+    } else if (cmd === "gerarimagem" || cmd === "generateimage" || cmd === "gerar") {
+      if (args[0]) {
+        actions.push({ type: "generate_image", prompt: args[0], caption: args[1] || null });
+      }
     } else if (isSaveStickerCommand(cmd)) {
       if (args[0]) {
         actions.push({
@@ -80,6 +90,11 @@ export function parseActionCommands(rawText) {
       actions.push({ type: "silence", scope: args[0] ?? null });
     } else if (isRepertoireModeCommand(cmd)) {
       actions.push({ type: "repertoire_mode", enabled: parseRepertoireModeEnabled(args) });
+    } else if (isAgentUrlDownloadCommand(cmd)) {
+      if (args[0]) {
+        const urlAction = buildUrlDownloadAction(cmd, args[0], args.slice(1));
+        if (urlAction) actions.push(urlAction);
+      }
     } else {
       const mediaCmd = normalizeAgentMediaCommand(cmd);
       if (AGENT_MEDIA_COMMANDS.includes(mediaCmd) && mediaCmd !== "sticker" && args[0]) {
@@ -107,15 +122,16 @@ function returnWithActions(actions) {
 }
 
 /** Expande ações cujo text ainda contém comando cru (fallback do processor). */
+const EMBEDDED_COMMAND_RE = new RegExp(
+  `^(mensagem|message|reagir|react|sticker|figurinha|calar|silenciar|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
+  "i"
+);
+
 export function resolveOutgoingActions(actions = []) {
   const out = [];
   for (const action of actions) {
     const raw = String(action?.text ?? "").trim();
-    const looksLikeCommand =
-      action?.type === "message" &&
-      /^(mensagem|message|reagir|react|sticker|figurinha|calar|silenciar|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\s*\(/i.test(
-        raw
-      );
+    const looksLikeCommand = action?.type === "message" && EMBEDDED_COMMAND_RE.test(raw);
     if (!looksLikeCommand) {
       out.push(action);
       continue;
@@ -138,11 +154,43 @@ function normActionMessageId(id) {
     .trim();
 }
 
+function buildDefaultQuoteId(meta = {}) {
+  return normActionMessageId(
+    resolveOutgoingQuoteId({
+      messageKey: meta?.messageKey,
+      messageId: meta?.messageId,
+      quotedMessageId: meta?.quotedMessageId,
+      quotedMessage: meta?.quotedMessage,
+      replyThreadContext: meta?.replyThreadContext,
+      isReply: meta?.isReply,
+      isReplyToBot: meta?.isReplyToBot,
+      isGroup: meta?.isGroup,
+      isDirectMention: meta?.isDirectMention,
+      groupPriorityAddress: meta?.groupPriorityAddress,
+      groupEngagementActive: meta?.groupEngagementActive,
+      media: meta?.media,
+      batchedCount: meta?.batchedCount,
+      sleepCatchUp: meta?.sleepCatchUp
+    })
+  );
+}
+
+function applyDefaultQuoteToActions(actions = [], defaultQuoteId) {
+  if (!defaultQuoteId) return actions;
+  return actions.map((a) =>
+    !a.quoteId && (a.type === "message" || a.type === "sticker")
+      ? { ...a, quoteId: defaultQuoteId }
+      : a
+  );
+}
+
 /** Evita reply na msg que acabou de chegar, excesso de reagir e prioriza stickers. */
 export function sanitizeOutgoingActions(actions = [], meta = {}) {
   if (!Array.isArray(actions) || !actions.length) return actions;
 
+  const explicitReact = actions.some((a) => a.type === "react");
   const triggerId = normActionMessageId(meta?.messageKey?.id ?? meta?.messageId ?? null);
+  const replyTargetId = normActionMessageId(meta?.quotedMessageId ?? null);
   const recentIds = new Set(
     (meta?.recentHistory ?? [])
       .slice(-4)
@@ -155,6 +203,11 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
     if ((action.type !== "message" && action.type !== "sticker") || !action.quoteId) return action;
     const qid = normActionMessageId(action.quoteId);
     if (!qid) return { ...action, quoteId: null };
+    if (qid === triggerId) {
+      if (replyTargetId && qid === replyTargetId) return action;
+      return { ...action, quoteId: null };
+    }
+    if (replyTargetId && qid === replyTargetId) return action;
     if (recentIds.has(qid)) return { ...action, quoteId: null };
     return action;
   });
@@ -166,10 +219,15 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
       a.type === "media" ||
       a.type === "toimage" ||
       a.type === "save_sticker" ||
-      a.type === "repertoire_mode"
+      a.type === "repertoire_mode" ||
+      a.type === "generate_image"
   );
   const hasExplicitReactOnly = out.some((a) => a.type === "react") && !hasSubstantive;
-  if (hasSubstantive && !hasExplicitReactOnly) {
+  const allowReactWithMessage =
+    explicitReact ||
+    meta?.closeDecision === "react" ||
+    out.some((a) => a.type === "message" && String(a.text ?? "").trim().length <= 120);
+  if (hasSubstantive && !hasExplicitReactOnly && !allowReactWithMessage) {
     out = out.filter((a) => a.type !== "react");
   }
 
@@ -584,7 +642,10 @@ export class ChatService {
     }
 
 
-    const actions = sanitizeOutgoingActions(parseActionCommands(raw), meta);
+    const actions = applyDefaultQuoteToActions(
+      sanitizeOutgoingActions(parseActionCommands(raw), meta),
+      buildDefaultQuoteId(meta)
+    );
     if (actions.length > 0) {
       if (this.internalState?.updateAfter) {
         const preview = actions
@@ -739,6 +800,13 @@ export class ChatService {
         resultParts = [resultParts[0]];
       }
       if (
+        (meta?.batchedCount ?? 1) > 1 &&
+        !meta?.isGroup &&
+        resultParts.length > 1
+      ) {
+        resultParts = [resultParts.join(" ").replace(/\s{2,}/g, " ").trim()];
+      }
+      if (
         (closureDecision === "brief_farewell" ||
           closureDecision === "silent" ||
           ChatService.isConversationClosure(trimmed)) &&
@@ -775,9 +843,18 @@ export class ChatService {
       return returnWithActions(lateParsed);
     }
 
+    const defaultQuoteId = buildDefaultQuoteId(meta);
+
     const defaultActions = resultParts.flatMap((p) => {
       const inner = parseActionCommands(p);
-      return inner.length > 0 ? inner : [{ type: "message", text: p, quoteId: null }];
+      if (inner.length > 0) {
+        return inner.map((a) =>
+          !a.quoteId && defaultQuoteId && (a.type === "message" || a.type === "sticker")
+            ? { ...a, quoteId: defaultQuoteId }
+            : a
+        );
+      }
+      return [{ type: "message", text: p, quoteId: defaultQuoteId }];
     });
     return returnWithActions(defaultActions);
   }

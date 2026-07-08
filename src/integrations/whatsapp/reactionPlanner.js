@@ -16,9 +16,9 @@ export function planStickerOnly({ policy, isGroup = false, hasMedia = false } = 
   return { useSticker: false };
 }
 
-const COOLDOWN_MS = 45_000;
-const MIN_MESSAGES_BETWEEN = 2;
-const BASE_MATCH_CHANCE = 0.45;
+const COOLDOWN_MS = 28_000;
+const MIN_MESSAGES_BETWEEN = 1;
+const BASE_MATCH_CHANCE = 0.52;
 
 const E = {
   heart: "❤️",

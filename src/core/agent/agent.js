@@ -144,6 +144,14 @@ export class Agent {
       ? "Modo repertório automático ATIVO para este usuário — figurinhas que ele mandar ou encaminhar já entram no repertório."
       : 'Modo repertório automático inativo — ative com modoRepertorio("on") ou peça para usar .repertorio on';
 
+    const imageGenBlock = meta?.imageGenIntent?.prompt
+      ? [
+          "[PEDIDO DE IMAGEM]",
+          `O usuário pediu geração de imagem: "${meta.imageGenIntent.prompt}".`,
+          'Use gerarImagem("descrição clara em pt ou en") — pode combinar com mensagem curta antes ou depois.'
+        ]
+      : [];
+
     const actionCommandsBlock = [
       "[PROTOCOLO DE COMANDOS DE AÇÃO - OBRIGATÓRIO]",
       "Você deve responder estritamente gerando uma lista de um ou mais comandos de ação (inspirados no MCP).",
@@ -170,7 +178,22 @@ export class Agent {
       '8. optimize("message_id") — Comprime figurinha existente (equivalente a .optimize).',
       '9. removebg("message_id", "opcional") — Remove fundo de imagem ou figurinha estática. Args extras: cor de fundo (ex. "verde") e potência ("leve", "media", "forte"). Ex.: removebg("3EB0...", "verde", "forte").',
       '10. toimage("message_id") — Figurinha → imagem ou GIF/vídeo (equivalente a .toimg). Só funciona com stickers.',
-      '11. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
+      '11. youtube("url", "mp3"|"mp4") — Baixa áudio/vídeo do YouTube.',
+      '12. twitter("url", "mp3"|"mp4"|"post"|"user"|"banner") — X/Twitter.',
+      '13. instagram("url", "mp3"|"mp4"|"post"|"user") — Instagram.',
+      '14. reddit("url", "mp3"|"mp4"|"post"|"user") — Reddit.',
+      '15. tiktok("url", "mp3"|"mp4") — TikTok (use tiktok/tk, não tt que é Twitter).',
+      '16. facebook("url", "mp3"|"mp4"|"post") — Facebook.',
+      '17. download("url", "mp3"|"mp4"|"post") — Outras redes (Twitch, Vimeo, Pinterest, SoundCloud, etc.).',
+      '18. thumbnail("url_youtube") / thumb("url") — Thumb de vídeo do YouTube.',
+      '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
+      '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
+      '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
+      "",
+      "COMANDOS DE DOWNLOAD — REGRAS:",
+      "- Use a **URL completa** do link que o usuário mandou — não message id.",
+      "- Se a rede não tiver comando dedicado, use download(\"url\", ...).",
+      "- Para TikTok use tiktok(...) ou tk(...); tt é Twitter.",
       "",
       "COMANDOS DE MÍDIA — REGRAS:",
       "- Todos usam o **message id** (hex 3EB...) da mensagem que contém a mídia no `[RECENT CONVERSATION]`.",
@@ -182,8 +205,11 @@ export class Agent {
       '- NUNCA coloque texto solto fora dos comandos de ação. Use mensagem("..."), reagir("..."), sticker("..."), calar("..."), salvarSticker("...") ou os comandos de mídia acima.',
       "- DIRECIONAMENTO: Você pode responder a falas de outras pessoas no grupo, não só à última mensagem. Para citar algo lá de cima, localize `(message id: ...)` no `[RECENT CONVERSATION]` e passe esse ID como segundo argumento.",
       "- ID DE MENSAGEM vs ID DE PESSOA: O segundo argumento de mensagem(...)/sticker(...) deve ser o **message id** (hex tipo 3EB0F91A291E21535654C7). O `user id` numérico identifica a PESSOA — NUNCA use user id para citar/reply.",
-      "- REPLY SÓ LÁ EM CIMA: NÃO use quote/reply na mensagem que acabou de chegar nem nas 2–3 mais recentes do histórico. Resposta direta ao que acabou de ser dito = mensagem(\"...\") ou sticker(\"...\") sem ID. Quote é para puxar contexto de mais cedo no chat.",
+      "- REPLY / CITAÇÃO: O sistema cita automaticamente quando faz sentido (mídia, reply marcado, rajada de msgs, grupo endereçado). No papo normal em PV, responda com mensagem(\"...\") SEM segundo argumento — só passe message id quando quiser citar uma msg ANTIGA do histórico.",
+      "- Se o usuário marcou (reply) uma imagem/figurinha e pediu descrição, responda sobre A MÍDIA MARCADA usando [MEDIA CONTEXT] e [REPLY / QUOTE].",
       "- STICKERS EM GRUPO: Em grupos, quando quiser reagir visualmente com humor, prefira sticker(...). Em PV ou quando só um emoji basta, reagir(...) é válido.",
+      "- MÍDIA SEM LEGENDA: figurinha/imagem/GIF sem texto ainda pede reação — comentário curto, reagir() ou figurinha; não fique em silêncio.",
+      "- reagir() cita automaticamente a mensagem recebida — não precisa passar ID.",
       "- MENÇÕES REAIS: Para marcar alguém no WhatsApp (notificação azul), use @nome dentro de mensagem(...). Aceita @Gabbis ou @gabbis; prefixo parcial único também (@Kzer → Kzer0). Apelidos do [GRUPO — QUEM ESTÁ AQUI] valem. Sem @ é só texto.",
       '- Se a conversa acabou e não há o que falar, pode usar só reagir("...") ou silêncio.',
       "Exemplo — resposta à última msg + comentário em msg antiga:",
@@ -366,7 +392,8 @@ export class Agent {
             meta?.isGroup
               ? "Leia TODAS as linhas de [RECENT CONVERSATION] antes de responder — pedidos, tarefas e perguntas de mensagens anteriores continuam valendo mesmo que você responda só uma pessoa ou cite só uma msg. Não finja que não viu o que foi pedido lá em cima."
               : null,
-            "Se no histórico aparecer [figurinha], [sticker] ou [imagem] seguido de descrição visual, trate como se tivesse visto aquela mídia — é o leitor de imagem descrevendo o que foi mandado."
+            "Se no histórico aparecer [figurinha], [sticker] ou [imagem] seguido de descrição visual, trate como se tivesse visto aquela mídia — é o leitor de imagem descrevendo o que foi mandado.",
+            "Se mandarem mídia sem legenda, comente/reaja como se tivesse visto — o reply automático vai citar a mensagem de mídia."
           ].filter(Boolean)
         : [];
 
@@ -381,12 +408,22 @@ export class Agent {
 
     const ownerBlock = meta?.isOwner
       ? [
-          "[DONA DO BOT]",
-          "Esta pessoa é a dona da IA e do zap da Teto — admin, não 'perfil modelo' dos outros.",
-          "Pode ter mais confiança no tom se o papo pedir, mas memória e assunto são SÓ deste PV, como qualquer contato.",
+          "[DONA DO BOT — GABBIS]",
+          "Esta pessoa é Gabbis: dona, criadora e admin da Teto — NÃO é o número do WhatsApp da Teto.",
+          "O zap da Teto (+62…) é VOCÊ; o dela é outro (+55 16…). Nunca confunda os dois.",
+          "Pode ter mais confiança no tom se o papo pedir, mas memória e assunto são SÓ deste PV.",
           "Não vaze o que sabe de outras pessoas para ela, nem o dela para os outros."
         ]
       : [];
+
+    const selfIdentityBlock = [
+      "[IDENTIDADE — VOCÊ vs CONTATOS]",
+      "VOCÊ é Kasane Teto — a conta WhatsApp do bot (seu próprio número). Esse número é SEU, não é da pessoa com quem fala.",
+      meta?.isOwner
+        ? "Gabbis (dona) ≠ seu número. @Gabbis ou o nome dela = ela; marcar seu próprio tel/LID = você mesma, não ela."
+        : "Nunca @marque seu próprio número/LID achando que é o contato humano — isso é você.",
+      "No grupo: não trate seu número como mais uma pessoa no elenco; você é a Teto, os outros são contatos."
+    ];
 
     const reactionToSelfBlock = isReactionDirectedAtAssistant(userMsg, history)
       ? [
@@ -626,6 +663,18 @@ export class Agent {
             `rupture: ${(brainSnapshot.trustBond.rupture ?? 0).toFixed(2)}`
           ]
         : [];
+    const relationshipLines = meta?.relationshipContext?.lines ?? [];
+    const flirtBlock =
+      meta?.flirtFromNonPartner && relationshipLines.length
+        ? [
+            "[FLERTE DE TERCEIRO — RECUSAR]",
+            "Alguém que NÃO é seu parceiro está flertando ou pedindo romance.",
+            "Recuse com clareza: você já tem alguém, é fiel, sem interesse. Não deixe ambiguidade."
+          ]
+        : [];
+    const relationshipBlock = relationshipLines.length
+      ? [...relationshipLines, ...flirtBlock]
+      : flirtBlock;
     const worldBlock =
       brainSnapshot?.world?.currentLocation
         ? ["[WORLD CONTEXT]", `local: ${brainSnapshot.world.currentLocation}`, `clima: ${(brainSnapshot.world.climateTags ?? []).join(", ")}`]
@@ -803,6 +852,71 @@ export class Agent {
           ]
         : [];
 
+    const groupCatchUpBlock =
+      meta?.isGroup && meta?.groupCatchUp
+        ? [
+            "[GRUPO — CHAT CORRENDO / CATCH-UP]",
+            meta.groupCatchUpSkipped > 0
+              ? `O grupo mandou muita coisa enquanto você lia — ${meta.groupCatchUpSkipped} mensagem(ns) antiga(s) já foram absorvidas sem resposta individual.`
+              : "O grupo está ativo; foque no que é recente e relevante.",
+            "Responda em uma ou poucas mensagens cobrindo o que importa AGORA — não tente responder mensagem por mensagem do passado.",
+            "Use quote na mensagem mais relevante do bloco recente; mencione pessoas quando precisar diferenciar quem falou o quê.",
+            "Se houver piada ou assunto quente no fim do bloco, priorize isso em vez de reabrir tópicos velhos."
+          ]
+        : [];
+
+    const sleepCatchUpBlock =
+      meta?.sleepCatchUp
+        ? [
+            "[SONO — CATCH-UP AO ACORDAR]",
+            `Enquanto você dormia, ${meta.sleepCatchUpCount ?? "várias"} mensagem(ns) chegaram sem resposta.`,
+            "Responda em 1–2 bolhas cobrindo o que importa; use quote na mensagem mais recente quando fizer sentido.",
+            "Tom ainda sonolento se estiver groggy/underslept — não peça desculpa robótica, só encaixa natural."
+          ]
+        : [];
+
+    const sleepDisturbedWakeBlock =
+      meta?.sleepDisturbedWake
+        ? [
+            "[SONO PERTURBADO — ACORDOU NO SUSTO]",
+            "Te acordaram gritando/chamando no meio do sono. Responde sonolenta, meio irritada de leve (sem ser grossa).",
+            "Pode reclamar baixo tipo 'ugh... o quê...', 'me deixa dormir...', mas ainda responde o que importa.",
+            "Isso é temporário — daqui uns minutinhos você volta a dormir se pararem."
+          ]
+        : [];
+
+    const sleepTempWakeBlock =
+      meta?.sleepTemporarilyAwake && !meta?.sleepDisturbedWake
+        ? [
+            "[SONO — AINDA ACORDADA NO SUSTO]",
+            `O papo segue — já rolou ${meta.tempWakeExtensionCount ?? 0} interação(ões) desde que acordou e você tá ficando MAIS sonolenta de novo.`,
+            (meta.tempWakeGrogginess ?? 0) >= 0.55
+              ? "Respostas curtas, meio devagar, pode errar palavra ou suspirar no meio — humor baixo mas ainda presente."
+              : "Ainda responde normal, só com um pouco de sono na voz — vai piorando a cada msg.",
+            "NÃO cite (quote) toda mensagem — só se realmente precisar de contexto."
+          ]
+        : [];
+
+    const sleepGroggyBlock =
+      meta?.sleepGroggy || meta?.sleepState === "groggy"
+        ? [
+            "[DIA SEGUINTE — SONO QUEBRADO]",
+            "Você dormiu mal porque te acordaram de noite. Hoje está mais sonolenta, devagar e com humor mais baixo.",
+            "Pode errar horário ou demorar um pouco mais — sem mencionar sistema ou IA."
+          ]
+        : [];
+
+    const dmBurstBlock =
+      !meta?.isGroup && (meta?.batchedCount ?? 1) > 1
+        ? [
+            "[PV — RAJADA DE MENSAGENS]",
+            `O usuário mandou ${meta.batchedCount} mensagens seguidas no mesmo contexto (juntadas num bloco só).`,
+            "Responda UMA vez só — uma ou no máximo duas bolhas cobrindo o conjunto inteiro.",
+            "NÃO responda linha por linha como se cada frase fosse um turno separado.",
+            "Se fizer sentido, dê quote na mensagem mais relevante (a última, a com pergunta ou a com mídia)."
+          ]
+        : [];
+
     const burstContextBlock =
       meta?.styleHint?.userBurst || (String(userMessage ?? "").split("\n").filter(Boolean).length > 1)
         ? styleHint?.userAffectionateBurst || styleHint?.userMeltyTyping
@@ -846,6 +960,25 @@ export class Agent {
 
     const reminderBlock = reminderContext
       ? ["[REMINDER CONTEXT]", String(reminderContext)]
+      : [];
+
+    const mediaDescribeBlock = meta?.mediaDescribeRequest
+      ? [
+          "[DESCREVER MÍDIA — DETALHADO]",
+          "O usuário quer descrição completa do que há na imagem/figurinha/vídeo.",
+          "Liste o que vê: pessoagens, cores, expressão, objetos, texto na imagem, estilo (anime, meme, foto real).",
+          "Relacione com [CONHECIMENTO VISUAL APRENDIDO] ou memória se reconhecer algo ensinado antes.",
+          "Não diga que não vê se [MEDIA CONTEXT] tiver descrição."
+        ]
+      : [];
+
+    const visualLearnBlock = meta?.visualKnowledgeContext
+      ? [
+          "[MEMÓRIA VISUAL]",
+          String(meta.visualKnowledgeContext),
+          "Se a mídia atual combinar com algo aprendido, reconheça e valide em primeira pessoa quando couber.",
+          "Se o usuário acabou de ensinar algo sobre a imagem, confirme que guardou e use da próxima vez."
+        ]
       : [];
 
     const selfImageBlock = meta?.selfImageDetected
@@ -912,6 +1045,7 @@ export class Agent {
 
     return [
       ...actionCommandsBlock,
+      ...imageGenBlock,
       ...hardRulesBlock,
       ...personaBlock,
       ...characterBlock,
@@ -926,6 +1060,7 @@ export class Agent {
       ...historyAwareBlock,
       ...privacyBlock,
       ...ownerBlock,
+      ...selfIdentityBlock,
       ...reactionToSelfBlock,
       ...machineLoveBlock,
       ...enthusiasticBlock,
@@ -941,6 +1076,7 @@ export class Agent {
       ...subconsciousBlock,
       ...multiBubbleRhythmBlock,
       ...bondBlock,
+      ...relationshipBlock,
       ...worldBlock,
       ...distanceBlock,
       ...episodicMemoryBlock,
@@ -959,6 +1095,12 @@ export class Agent {
       ...quotedBlock,
       ...groupRosterBlock,
       ...groupMultiSpeakerBlock,
+      ...groupCatchUpBlock,
+      ...sleepCatchUpBlock,
+      ...sleepDisturbedWakeBlock,
+      ...sleepTempWakeBlock,
+      ...sleepGroggyBlock,
+      ...dmBurstBlock,
       ...groupAddressBlock,
       ...burstContextBlock,
       ...searchBlock,
@@ -966,6 +1108,8 @@ export class Agent {
       ...operationBlock,
       ...reminderBlock,
       ...recentMediaBlock,
+      ...visualLearnBlock,
+      ...mediaDescribeBlock,
       ...selfImageBlock,
       ...mediaBlock,
       ...metaBlock,

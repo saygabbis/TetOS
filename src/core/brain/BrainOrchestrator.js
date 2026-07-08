@@ -10,6 +10,7 @@ import { AutonomousEvolution } from "../life/AutonomousEvolution.js";
 import { LifeNarrator } from "../life/LifeNarrator.js";
 import { SocialGraph } from "../social/SocialGraph.js";
 import { TrustIntimacySystem } from "../social/TrustIntimacySystem.js";
+import { RelationshipCommitmentStore } from "../social/RelationshipCommitmentStore.js";
 import { MusicWorld } from "../music/MusicWorld.js";
 import { TimingEngine } from "../timing/TimingEngine.js";
 import { MemoryOrchestrator } from "../memory/MemoryOrchestrator.js";
@@ -58,6 +59,11 @@ export class BrainOrchestrator {
     this.world = new WorldContext(config.worldContextPath, { bus: this.bus, journalAppend });
     this.social = new SocialGraph(config.socialGraphPath, { bus: this.bus, journalAppend });
     this.trust = new TrustIntimacySystem(config.trustBondsPath, { bus: this.bus });
+    this.relationship =
+      config.relationshipStore ??
+      new RelationshipCommitmentStore(config.relationshipStatePath ?? "./data/relationshipState.json", {
+        bus: this.bus
+      });
     this.music = new MusicWorld(config.discographyPath, config.musicStatePath, {
       bus: this.bus,
       searchAdapter: config.searchAdapter
@@ -207,6 +213,9 @@ export class BrainOrchestrator {
           new Date().getHours()
         )
       : null;
+    const relationship = turnContext.userId
+      ? this.relationship.getSnapshot(turnContext.userId, { longTerm: this.memory?.longTerm })
+      : this.relationship.getState();
 
     return {
       ts: new Date().toISOString(),
@@ -219,6 +228,7 @@ export class BrainOrchestrator {
       social: this.social.getSnapshot(),
       music: this.music.getSnapshot(),
       trustBond,
+      relationship,
       autonomous: this.autonomous.getSnapshot(),
       absorbed: this.absorbed.getPatterns(),
       repetition: this.repetition.getSnapshot(turnContext.sessionId),

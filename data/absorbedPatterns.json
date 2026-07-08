@@ -18,179 +18,11 @@
   },
   "topics": [],
   "mediaHabits": {
-    "stickerRate": 0.9949738918258932,
-    "imageRate": 0.4968626320223691,
+    "stickerRate": 0.9950744139893754,
+    "imageRate": 0.5069253793819217,
     "reactionEmoji": {}
   },
   "creativeInsights": [
-    {
-      "id": "insight_1782928585490",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.68,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T17:56:25.490Z"
-    },
-    {
-      "id": "insight_1782928625297",
-      "type": "rhythm",
-      "text": "pico de conversa por volta das 14h",
-      "confidence": 0.65,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T17:57:05.297Z"
-    },
-    {
-      "id": "insight_1782928628247",
-      "type": "social",
-      "text": "grupo fica mais ativo à noite",
-      "confidence": 0.49,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T17:57:08.247Z"
-    },
-    {
-      "id": "insight_1782928797698",
-      "type": "social",
-      "text": "grupo fica mais ativo à noite",
-      "confidence": 0.69,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T17:59:57.698Z"
-    },
-    {
-      "id": "insight_1782928797701",
-      "type": "rhythm",
-      "text": "pico de conversa por volta das 14h",
-      "confidence": 0.4,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T17:59:57.701Z"
-    },
-    {
-      "id": "insight_1782928800822",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T18:00:00.822Z"
-    },
-    {
-      "id": "insight_1782929308384",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.56,
-      "trigger": "message.outgoing",
-      "ts": "2026-07-01T18:08:28.384Z"
-    },
-    {
-      "id": "insight_1782929395387",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.48000000000000004,
-      "trigger": "chat.update",
-      "ts": "2026-07-01T18:09:55.387Z"
-    },
-    {
-      "id": "insight_1782929695550",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.48000000000000004,
-      "trigger": "chat.update",
-      "ts": "2026-07-01T18:14:55.551Z"
-    },
-    {
-      "id": "insight_1782929844907",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T18:17:24.907Z"
-    },
-    {
-      "id": "insight_1782929867061",
-      "type": "rhythm",
-      "text": "pico de conversa por volta das 15h",
-      "confidence": 0.4,
-      "trigger": "message.incoming",
-      "ts": "2026-07-01T18:17:47.061Z"
-    },
-    {
-      "id": "insight_1782930804220",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.68,
-      "trigger": "chat.update",
-      "ts": "2026-07-01T18:33:24.220Z"
-    },
-    {
-      "id": "insight_1782930819201",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-07-01T18:33:39.202Z"
-    },
-    {
-      "id": "insight_1782930889294",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.48000000000000004,
-      "trigger": "chat.update",
-      "ts": "2026-07-01T18:34:49.295Z"
-    },
-    {
-      "id": "insight_1782931135623",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T18:38:55.623Z"
-    },
-    {
-      "id": "insight_1782931508764",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.51,
-      "trigger": "message.reaction",
-      "ts": "2026-07-01T18:45:08.765Z"
-    },
-    {
-      "id": "insight_1782931852465",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T18:50:52.465Z"
-    },
-    {
-      "id": "insight_1782931871533",
-      "type": "rhythm",
-      "text": "pico de conversa por volta das 15h",
-      "confidence": 0.4,
-      "trigger": "message.incoming",
-      "ts": "2026-07-01T18:51:11.533Z"
-    },
-    {
-      "id": "insight_1782931932156",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.68,
-      "trigger": "chat.update",
-      "ts": "2026-07-01T18:52:12.156Z"
-    },
-    {
-      "id": "insight_1782932210402",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.48000000000000004,
-      "trigger": "chat.update",
-      "ts": "2026-07-01T18:56:50.402Z"
-    },
-    {
-      "id": "insight_1782932391467",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-01T18:59:51.467Z"
-    },
     {
       "id": "insight_1782932576750",
       "type": "media",
@@ -422,7 +254,175 @@
       "confidence": 0.52,
       "trigger": "chat.update",
       "ts": "2026-07-08T01:20:30.938Z"
+    },
+    {
+      "id": "insight_1783479848144",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.47000000000000003,
+      "trigger": "message.update",
+      "ts": "2026-07-08T03:04:08.144Z"
+    },
+    {
+      "id": "insight_1783479969770",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.56,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T03:06:09.770Z"
+    },
+    {
+      "id": "insight_1783479987010",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.47000000000000003,
+      "trigger": "message.update",
+      "ts": "2026-07-08T03:06:27.010Z"
+    },
+    {
+      "id": "insight_1783479987015",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 0h",
+      "confidence": 0.45,
+      "trigger": "message.update",
+      "ts": "2026-07-08T03:06:27.015Z"
+    },
+    {
+      "id": "insight_1783480681265",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.56,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T03:18:01.265Z"
+    },
+    {
+      "id": "insight_1783482026260",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.5700000000000001,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T03:40:26.260Z"
+    },
+    {
+      "id": "insight_1783482346829",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.56,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T03:45:46.829Z"
+    },
+    {
+      "id": "insight_1783482347166",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 0h",
+      "confidence": 0.45,
+      "trigger": "message.update",
+      "ts": "2026-07-08T03:45:47.166Z"
+    },
+    {
+      "id": "insight_1783482599267",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.56,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T03:49:59.267Z"
+    },
+    {
+      "id": "insight_1783482605885",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.5700000000000001,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T03:50:05.885Z"
+    },
+    {
+      "id": "insight_1783482644507",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 0h",
+      "confidence": 0.45,
+      "trigger": "message.update",
+      "ts": "2026-07-08T03:50:44.507Z"
+    },
+    {
+      "id": "insight_1783482689330",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.51,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T03:51:29.330Z"
+    },
+    {
+      "id": "insight_1783482873396",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.47000000000000003,
+      "trigger": "message.update",
+      "ts": "2026-07-08T03:54:33.396Z"
+    },
+    {
+      "id": "insight_1783484631334",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.64,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T04:23:51.334Z"
+    },
+    {
+      "id": "insight_1783488388210",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.69,
+      "trigger": "chat.update",
+      "ts": "2026-07-08T05:26:28.210Z"
+    },
+    {
+      "id": "insight_1783488558323",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.51,
+      "trigger": "message.incoming",
+      "ts": "2026-07-08T05:29:18.323Z"
+    },
+    {
+      "id": "insight_1783488607060",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.47000000000000003,
+      "trigger": "message.update",
+      "ts": "2026-07-08T05:30:07.060Z"
+    },
+    {
+      "id": "insight_1783488712666",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 2h",
+      "confidence": 0.55,
+      "trigger": "message.incoming",
+      "ts": "2026-07-08T05:31:52.666Z"
+    },
+    {
+      "id": "insight_1783490512602",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.54,
+      "trigger": "message.update",
+      "ts": "2026-07-08T06:01:52.602Z"
+    },
+    {
+      "id": "insight_1783490615607",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.48000000000000004,
+      "trigger": "message.update",
+      "ts": "2026-07-08T06:03:35.607Z"
+    },
+    {
+      "id": "insight_1783490617157",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.49,
+      "trigger": "message.update",
+      "ts": "2026-07-08T06:03:37.157Z"
     }
   ],
-  "lastUpdated": "2026-07-08T02:32:32.699Z"
+  "lastUpdated": "2026-07-08T06:03:43.474Z"
 }

@@ -81,11 +81,19 @@ export function enrichTimelineEntryText(entry = {}, visionByMessageId = null) {
 
 export function formatMediaInputText({ text = "", media = null } = {}) {
   const caption = String(text ?? "").trim();
-  const vision = String(media?.transcript ?? media?.caption ?? "").trim();
+  const rawVision = String(media?.transcript ?? media?.caption ?? "").trim();
   const kind = media?.type ?? "mídia";
+  const vision =
+    media?.type === "audio" && rawVision
+      ? media?.transcriptSource === "whisper"
+        ? `[áudio transcrito: ${rawVision}]`
+        : rawVision.startsWith("[áudio transcrito:")
+          ? rawVision
+          : `[áudio: ${rawVision}]`
+      : rawVision;
 
   if (caption && vision && !caption.includes(vision.slice(0, 20))) {
-    return `${caption} [${kind}: ${vision}]`;
+    return `${caption} ${vision}`;
   }
   if (vision) return vision;
   if (caption) return caption;

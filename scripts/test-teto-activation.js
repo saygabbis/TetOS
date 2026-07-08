@@ -21,9 +21,13 @@ storeGated.activateGroup("120@g.us", { activatedBy: "u2" });
 assert(storeGated.isGroupActive("120@g.us"), "group activate");
 
 const cmd = parseTetoSlashCommand("/teto-ativar");
-assert(cmd?.action === "activate_dm", "parse ativar");
+assert(cmd?.action === "activate_dm", "parse ativar com /");
+const dotCmd = parseTetoSlashCommand(".teto-ativar");
+assert(dotCmd?.action === "activate_dm", "parse ativar com .");
 const gcmd = parseTetoSlashCommand("/teto-grupo-desativar");
 assert(gcmd?.action === "deactivate_group", "parse grupo desativar");
+const dotGcmd = parseTetoSlashCommand(".teto-grupo-desativar");
+assert(dotGcmd?.action === "deactivate_group", "parse grupo desativar com .");
 
 const openDeactPath = "./data/test-activations-open-deact.json";
 if (existsSync(openDeactPath)) rmSync(openDeactPath);

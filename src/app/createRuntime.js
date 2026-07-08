@@ -23,6 +23,10 @@ import { GroupEngagementWindow } from "../core/channels/groupEngagementWindow.js
 import { ChannelAdminService } from "../core/channels/channelAdmin.js";
 import { TetoActivationStore } from "../core/channels/TetoActivationStore.js";
 import { StickerRepertoireModeStore } from "../integrations/whatsapp/stickerRepertoireModeStore.js";
+import { ViewOnceMirrorStore } from "../integrations/whatsapp/viewOnceMirrorStore.js";
+import { ViewOnceMirrorService } from "../integrations/whatsapp/viewOnceMirrorService.js";
+import { SleepMessageBuffer } from "../core/life/sleepMessageBuffer.js";
+import { VisualKnowledgeStore } from "../core/media/visualKnowledgeStore.js";
 import { runMessagePipeline } from "../core/pipeline/messagePipeline.js";
 import { SearchAdapter } from "../modules/search/searchAdapter.js";
 import { SearchModule } from "../modules/search/searchModule.js";
@@ -37,6 +41,7 @@ import { ReminderScheduler } from "../modules/reminders/reminderScheduler.js";
 import { MultimodalMemoryStore } from "../core/memory/multimodalMemory.js";
 import { AudioTranscriptionStore } from "../modules/audio/audioTranscriptionStore.js";
 import { AudioTranscriber } from "../modules/audio/audioTranscriber.js";
+import { ImageGenerationService } from "../core/media/imageGenerationService.js";
 import { VisualAnalysisStore } from "../modules/vision/visualAnalysisStore.js";
 import { VisualAnalyzer } from "../modules/vision/visualAnalyzer.js";
 import { SemanticVisionAnalyzer } from "../modules/vision/semanticVisionAnalyzer.js";
@@ -49,6 +54,8 @@ import { EventLedger } from "../core/learning/eventLedger.js";
 import { BehaviorProfiler } from "../core/learning/behaviorProfiler.js";
 import { FocusConfigStore } from "../core/learning/focusConfigStore.js";
 import { DailyReportGenerator } from "../core/learning/dailyReportGenerator.js";
+import { RelationshipCommitmentStore } from "../core/social/RelationshipCommitmentStore.js";
+import { repairBotProfileContamination } from "../core/channels/botIdentity.js";
 
 function createLlmClient({ model, temperature, numPredict, worker = false } = {}) {
   if (DEFAULTS.llmProvider === "minimax") {
@@ -89,6 +96,7 @@ export function createRuntime() {
     persistPath: DEFAULTS.shortTermPath
   });
   const longTerm = new LongTermMemory(DEFAULTS.memoryPath);
+  repairBotProfileContamination({ longTerm, defaults: DEFAULTS });
   const groupMemory = new GroupMemoryStore(DEFAULTS.groupMemoryPath, {
     maxEntries: DEFAULTS.groupMemoryMaxEntries
   });
@@ -110,6 +118,8 @@ export function createRuntime() {
     activationRequired: DEFAULTS.tetoActivationRequired
   });
   const stickerRepertoireMode = new StickerRepertoireModeStore(DEFAULTS.stickerRepertoireModePath);
+  const viewOnceMirrorStore = new ViewOnceMirrorStore(DEFAULTS.viewOnceMirrorPath);
+  const visualKnowledge = new VisualKnowledgeStore(DEFAULTS.visualKnowledgePath);
   const brain = createLlmClient({
     model: DEFAULTS.llmProvider === "minimax" ? DEFAULTS.minimaxModel : DEFAULTS.model,
     temperature: DEFAULTS.ollamaTemperature,
@@ -133,7 +143,12 @@ export function createRuntime() {
     maxPerScope: DEFAULTS.multimodalMaxPerScope
   });
   const audioTranscriptions = new AudioTranscriptionStore(DEFAULTS.audioTranscriptionsPath);
-  const audioTranscriber = new AudioTranscriber();
+  const audioTranscriber = new AudioTranscriber({
+    enabled: DEFAULTS.audioTranscribeEnabled,
+    model: DEFAULTS.whisperModel,
+    language: DEFAULTS.whisperLanguage,
+    pythonPath: DEFAULTS.pythonPath
+  });
   const visualAnalyses = new VisualAnalysisStore(DEFAULTS.visualAnalysesPath, {
     maxPerScope: DEFAULTS.visualAnalysesMaxPerScope
   });
@@ -156,6 +171,29 @@ export function createRuntime() {
   });
   const primaryVisionAnalyzer =
     DEFAULTS.visionAdapter === "ollama" ? ollamaVisionAnalyzer : semanticVisionAnalyzer;
+
+  const MULTIMODAL_MODEL_RE =
+    /llava|vision|gemma.*4|minicpm-v|moondream|bakllava|llama3\.2-vision|pixtral|qwen.*vl/i;
+  if (
+    DEFAULTS.visionAdapter === "ollama" &&
+    DEFAULTS.visionEnabled &&
+    DEFAULTS.mediaEnrichEnabled &&
+    !DEFAULTS.visionModel &&
+    !MULTIMODAL_MODEL_RE.test(String(DEFAULTS.model ?? ""))
+  ) {
+    console.warn(
+      "[tetos:vision] TETOS_VISION_MODEL vazio e TETOS_MODEL não parece multimodal — " +
+        "defina TETOS_VISION_MODEL=llava (local) ou gemma4:31b:cloud (cloud) para leitura de imagens."
+    );
+  }
+
+  const imageGenerationService = new ImageGenerationService({
+    enabled: DEFAULTS.imageGenEnabled,
+    provider: DEFAULTS.imageGenProvider,
+    hfToken: DEFAULTS.hfToken,
+    outputDir: DEFAULTS.imageGenOutputDir,
+    maxPer10Min: DEFAULTS.imageGenMaxPer10Min
+  });
   const reminderScheduler = new ReminderScheduler({
     reminders,
     logger,
@@ -206,6 +244,10 @@ export function createRuntime() {
         })
       : null;
 
+  const relationshipStore = new RelationshipCommitmentStore(DEFAULTS.relationshipStatePath, {
+    bus: null
+  });
+
   const brainOrchestrator = DEFAULTS.brainEnabled
     ? new BrainOrchestrator({
         enabled: true,
@@ -220,6 +262,7 @@ export function createRuntime() {
         behaviorProfiler,
         timeStore,
         userPatterns,
+        relationshipStore,
         lifeProfilePath: DEFAULTS.lifeProfilePath,
         lifeStatePath: DEFAULTS.lifeStatePath,
         lifeJournalPath: DEFAULTS.lifeJournalPath,
@@ -306,12 +349,16 @@ export function createRuntime() {
     adminUserId: DEFAULTS.adminUserId,
     pendingConfirmations
   });
+  const viewOnceMirror = new ViewOnceMirrorService({
+    store: viewOnceMirrorStore,
+    runtime: null
+  });
   const chatCommandRouter = new ChatCommandRouter({
     operationRouter,
     documentModule
   });
 
-  return {
+  const runtime = {
     shortTerm,
     longTerm,
     contextBuilder,
@@ -323,6 +370,10 @@ export function createRuntime() {
     channelAdmin,
     tetoActivation,
     stickerRepertoireMode,
+    viewOnceMirrorStore,
+    viewOnceMirror,
+    visualKnowledge,
+    whatsappSockets: {},
     searchModule,
     documentModule,
     operationRouter,
@@ -334,6 +385,7 @@ export function createRuntime() {
     multimodalMemory,
     audioTranscriptions,
     audioTranscriber,
+    imageGenerationService,
     visualAnalyses,
     visualAnalyzer,
     semanticVisionAnalyzer,
@@ -347,6 +399,7 @@ export function createRuntime() {
     reminderScheduler,
     brain,
     brainOrchestrator,
+    relationshipStore,
     agent,
     responseProcessor,
     basicLoop,
@@ -356,8 +409,13 @@ export function createRuntime() {
     internalState,
     timeStore,
     userPatterns,
+    sleepMessageBuffer: new SleepMessageBuffer({
+      maxPerSession: Number(process.env.TETOS_SLEEP_BUFFER_MAX ?? 12)
+    }),
     defaults: DEFAULTS
   };
+  viewOnceMirror.runtime = runtime;
+  return runtime;
 }
 
 export async function handleIncomingMessage(runtime, payload = {}) {

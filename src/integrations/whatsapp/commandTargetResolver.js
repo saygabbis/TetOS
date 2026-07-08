@@ -79,11 +79,12 @@ export async function resolveCommandTarget({
         preferredExt: quotedContent.documentMessage ? fileExtFromDocumentMessage(quotedContent.documentMessage) : null,
         decryptMediaAs
       });
-      const isStickerAnim =
-        quotedType === "sticker"
-          ? await probeStickerIsAnimated(path, { isAnimatedHint: stickerMsg?.isAnimated })
-          : quotedType === "gif" ||
-            Boolean(stickerMsg?.isAnimated === true || stickerMsg?.isAnimated === "true");
+      const isStickerAnim = await probeStickerIsAnimated(path, {
+        isAnimatedHint:
+          quotedType === "gif" ||
+          stickerMsg?.isAnimated === true ||
+          stickerMsg?.isAnimated === "true"
+      });
       return {
         source: "reply",
         media: {
@@ -99,16 +100,13 @@ export async function resolveCommandTarget({
 
   const fallback = historyStore.latest(remoteJid, userId);
   if (fallback?.media?.path) {
-    if (fallback.media.type === "sticker") {
-      const isAnimated = await probeStickerIsAnimated(fallback.media.path, {
-        isAnimatedHint: fallback.media.isAnimated
-      });
-      return {
-        source: "history",
-        media: { ...fallback.media, isAnimated }
-      };
-    }
-    return { source: "history", media: fallback.media };
+    const isAnimated = await probeStickerIsAnimated(fallback.media.path, {
+      isAnimatedHint: fallback.media.isAnimated
+    });
+    return {
+      source: "history",
+      media: { ...fallback.media, isAnimated }
+    };
   }
 
   return { source: "none", media: null };

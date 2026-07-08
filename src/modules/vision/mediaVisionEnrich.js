@@ -217,7 +217,11 @@ export async function enrichMediaVision(
       mediaType,
       ok: Boolean(result)
     });
-    return result;
+    if (result) return result;
+    console.log(
+      "[vision:fallback]",
+      JSON.stringify({ reason: "ollama_failed", filePath, mediaType, next: "blip_pil" })
+    );
   }
 
   const ext = extname(filePath).toLowerCase();

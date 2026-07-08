@@ -4,6 +4,7 @@ import {
   isLikelyPhoneNumber,
   resolveIdentityEntry
 } from "./waIdentity.js";
+import { isBotIdentity } from "./botIdentity.js";
 
 function isPhoneId(id = "") {
   return isLikelyPhoneNumber(id);
@@ -56,7 +57,14 @@ export function buildGroupRoster(runtime, channelId, { participants = [] } = {})
   }
 
   const members = [...ids]
-    .filter((id) => id && id !== "teto" && !id.startsWith("grp_") && !id.startsWith("dm-"))
+    .filter(
+      (id) =>
+        id &&
+        id !== "teto" &&
+        !id.startsWith("grp_") &&
+        !id.startsWith("dm-") &&
+        !isBotIdentity(runtime, id)
+    )
     .map((userId) => {
       const nameInfo = resolveIdentityEntry(userId, identityIndex, runtime.groupMemory, channelId);
       const linkedPhone = phoneLinks[userId] ?? nameInfo.waPhone ?? null;
@@ -139,6 +147,7 @@ export function formatGroupRosterBlock(roster) {
     "LID, telefone e apelidos são a MESMA pessoa quando listados juntos — use sempre o NOME.",
     "Apelidos que a Teto deu (Teto chama: ...) ou que a pessoa pediu (prefere: ...) valem no grupo.",
     "Nunca cite @187995... ou id numérico cru; diga o nome (ex.: Gabbis, Duda).",
+    "O número/LID da própria Teto (conta do bot) NÃO é um membro do grupo — não marque como se fosse Gabbis ou outra pessoa.",
     "TRADUTOR DE MENÇÕES: você pode escrever @Gabbis ou @gabbis (maiúscula/minúscula) — o sistema traduz para a menção real no WhatsApp.",
     "Prefixo parcial também vale se for único no grupo: @Kzer pode marcar quem se chama Kzer0 (desde que não haja outra pessoa com nome parecido).",
     "Apelidos listados (também:, Teto chama:) também funcionam com @ — ex.: @Kzer se for apelido da pessoa.",

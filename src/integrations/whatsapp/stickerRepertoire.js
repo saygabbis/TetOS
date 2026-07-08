@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { readJson, writeJson } from "../../infra/utils/fileStore.js";
 import { enrichMediaVision } from "../../modules/vision/mediaVisionEnrich.js";
@@ -92,6 +92,54 @@ function findCatalogByMessageId(basePath, messageId) {
     if (String(catalog.entries[i]?.messageId ?? "") === mid) return catalog.entries[i];
   }
   return null;
+}
+
+export function findRepertoireEntryByMessageId(basePath, messageId) {
+  return findCatalogByMessageId(basePath, messageId);
+}
+
+export function isBuiltinRepertoireKey(key) {
+  const k = String(key ?? "").trim().toLowerCase();
+  return Boolean(k && BUILTIN_KEYS.has(k));
+}
+
+/**
+ * Remove figurinha do repertório (arquivo + catálogo).
+ */
+export function removeStickerFromRepertoire({
+  basePath = "./data/stickers",
+  messageId = null,
+  key = null
+} = {}) {
+  const catalog = loadStickerCatalog(basePath);
+  let entry = null;
+  const slugKey = slugifyStickerKey(key);
+  if (slugKey) {
+    entry = (catalog.entries ?? []).find((e) => e.key === slugKey) ?? null;
+  } else if (messageId) {
+    entry = findCatalogByMessageId(basePath, messageId);
+  }
+  if (!entry?.key) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (isBuiltinRepertoireKey(entry.key)) {
+    return { ok: false, reason: "builtin", key: entry.key };
+  }
+
+  const filePath = join(basePath, `${entry.key}.webp`);
+  if (existsSync(filePath)) {
+    unlinkSync(filePath);
+  }
+
+  catalog.entries = (catalog.entries ?? []).filter((e) => e.key !== entry.key);
+  writeJson(catalogPath(basePath), catalog);
+
+  return {
+    ok: true,
+    key: entry.key,
+    displayName: entry.displayName ?? null,
+    messageId: entry.messageId ?? null
+  };
 }
 
 /**
@@ -214,6 +262,7 @@ export async function saveStickerToRepertoireWithVision({
 
   let visionDescription = fromTranscript || fromVisualStore;
   let visionSource = fromTranscript ? "media.transcript" : fromVisualStore ? "visualAnalyses" : null;
+  const userKey = slugifyStickerKey(key);
 
   logRepertoireVision(runtime, "vision_sources_checked", {
     messageId,
@@ -224,7 +273,7 @@ export async function saveStickerToRepertoireWithVision({
     visionModel: runtime?.defaults?.visionModel || runtime?.defaults?.model || null
   });
 
-  if (!visionDescription && runtime && !skipVision) {
+  if (!visionDescription && runtime && !skipVision && !userKey) {
     logRepertoireVision(runtime, "vision_enrich_call", { messageId, sourcePath });
     visionDescription = await enrichMediaVision(runtime, {
       filePath: sourcePath,
@@ -247,6 +296,11 @@ export async function saveStickerToRepertoireWithVision({
         source: "repertoire"
       });
     }
+  } else if (!visionDescription && userKey) {
+    logRepertoireVision(runtime, "vision_skipped", {
+      messageId,
+      reason: "user_key_provided"
+    });
   } else if (!visionDescription) {
     logRepertoireVision(runtime, "vision_skipped", {
       messageId,
@@ -255,7 +309,6 @@ export async function saveStickerToRepertoireWithVision({
   }
 
   const sanitizedForNaming = sanitizeVisionDescription(visionDescription);
-  const userKey = slugifyStickerKey(key);
   let autoNamed = false;
   let resolvedKey = userKey;
   if (!resolvedKey) {

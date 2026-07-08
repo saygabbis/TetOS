@@ -237,11 +237,84 @@ export function applyQuotedContextToPayload(payload = {}, quoteKey = null, index
   return out;
 }
 
+const VISUAL_MEDIA_TYPES = new Set(["image", "video", "gif", "sticker", "audio"]);
+
+function isQuotedMediaContext(item = {}) {
+  const quotedText = String(
+    item?.replyThreadContext?.quoted?.text ?? item?.quotedMessage ?? ""
+  ).trim();
+  if (!quotedText) return false;
+  return /^\[(sticker|image|video|gif|audio|media|figurinha|imagem)\]/i.test(quotedText);
+}
+
+/**
+ * ID da mensagem que a resposta deve citar no WhatsApp.
+ * Prioriza a mídia marcada no reply; senão a mídia que acabou de chegar.
+ */
+export function resolveOutgoingQuoteId(item = {}) {
+  const triggerId = item?.messageKey?.id ?? null;
+  const quotedId = item?.quotedMessageId ?? null;
+  const mediaType = item?.media?.type ?? null;
+  const isGroup = Boolean(item?.isGroup);
+
+  if (quotedId && (item?.isReply || item?.quotedMessage || isQuotedMediaContext(item))) {
+    return quotedId;
+  }
+
+  if (triggerId && mediaType && VISUAL_MEDIA_TYPES.has(mediaType)) {
+    return triggerId;
+  }
+
+  if (quotedId && item?.isReply) {
+    return quotedId;
+  }
+
+  if ((item?.batchedCount ?? 1) > 1 && triggerId) {
+    return triggerId;
+  }
+
+  if (item?.sleepCatchUp && triggerId) {
+    return triggerId;
+  }
+
+  // Grupo: citar quando endereçada ou em conversa ativa.
+  if (
+    isGroup &&
+    triggerId &&
+    (item?.isDirectMention ||
+      item?.isReplyToBot ||
+      item?.groupPriorityAddress ||
+      item?.groupEngagementActive ||
+      item?.isReply)
+  ) {
+    return triggerId;
+  }
+
+  return null;
+}
+
 export function shouldQuoteOutgoing(item = {}) {
-  if (!item?.messageKey?.id) return false;
-  if (item.isReplyToBot) return true;
-  if (Boolean(item.quotedMessageId)) return true;
-  if (item.isReply && Boolean(item.quotedMessageId)) return true;
-  if ((item.batchedCount ?? 1) > 1) return true;
-  return false;
+  return Boolean(resolveOutgoingQuoteId(item));
+}
+
+export function buildQuoteKeyFromMessageId(
+  chatMessageIndex,
+  remoteJid,
+  quoteId,
+  { participantJid = null, participantId = null } = {}
+) {
+  const rawId = String(quoteId ?? "").trim();
+  if (!rawId || !remoteJid) return null;
+  const resolvedId =
+    chatMessageIndex?.resolveQuoteMessageId?.(remoteJid, rawId) ?? rawId;
+  const indexed = chatMessageIndex?.get?.(remoteJid, resolvedId);
+  return buildOutgoingQuoteKey(
+    {
+      id: resolvedId,
+      fromMe: Boolean(indexed?.isFromBot),
+      participant: indexed?.participantJid ?? participantJid ?? null
+    },
+    remoteJid,
+    { participantId, participantJid: indexed?.participantJid ?? participantJid ?? null }
+  );
 }

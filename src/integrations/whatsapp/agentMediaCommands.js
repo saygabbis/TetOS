@@ -7,7 +7,8 @@ export const AGENT_MEDIA_COMMANDS = Object.freeze([
   "csticker",
   "optimize",
   "removebg",
-  "toimg"
+  "toimg",
+  "convert"
 ]);
 
 export const SAVE_STICKER_COMMANDS = Object.freeze([
@@ -45,7 +46,9 @@ export const AGENT_MEDIA_COMMAND_ALIASES = Object.freeze({
   optimize: "optimize",
   rmbg: "removebg",
   "remove-bg": "removebg",
-  removebg: "removebg"
+  removebg: "removebg",
+  convert: "convert",
+  converter: "convert"
 });
 
 export const PRESET_STICKER_KEYS = Object.freeze(
@@ -86,6 +89,12 @@ export function isPresetStickerKey(key, { stickersPath = null } = {}) {
   return true;
 }
 
+export function buildGenerateImageAction(prompt, caption = null) {
+  const clean = String(prompt ?? "").trim();
+  if (!clean) return null;
+  return { type: "generate_image", prompt: clean, caption: caption || null };
+}
+
 export function buildMediaAction(command, messageId, extraArgs = []) {
   const cmd = normalizeAgentMediaCommand(command);
   if (!AGENT_MEDIA_COMMANDS.includes(cmd) || !messageId) return null;
@@ -98,7 +107,7 @@ export function buildMediaAction(command, messageId, extraArgs = []) {
 }
 
 export const AGENT_MEDIA_COMMAND_PATTERN =
-  "sticker|figurinizar|fsticker|ffigurinha|csticker|cfigurinha|optimize|otimizar|optimizar|removebg|rmbg|toimage|toimg|toimagem";
+  "sticker|figurinizar|fsticker|ffigurinha|csticker|cfigurinha|optimize|otimizar|optimizar|removebg|rmbg|toimage|toimg|toimagem|convert|converter";
 
 export const SAVE_STICKER_COMMAND_PATTERN =
   "salvarsticker|salvarrepertorio|adicionarrepertorio|adicionarsticker|guardarsticker|savesticker|salvarepertorio";

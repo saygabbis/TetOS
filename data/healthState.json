@@ -5,7 +5,7 @@
       "type": "resfriado",
       "status": "active",
       "onsetAt": "2026-07-06T22:54:42.726Z",
-      "severity": 0.43,
+      "severity": 0.8299999999999998,
       "reason": "regional_sp",
       "region": "sp",
       "triggers": [
@@ -15,8 +15,8 @@
       ],
       "recoveryDays": 4,
       "chronic": false,
-      "recoveryProgress": 0.7825520833333385,
-      "lastFlareAt": "2026-07-06T22:57:55.681Z"
+      "recoveryProgress": 0.9648437500000078,
+      "lastFlareAt": "2026-07-08T06:03:45.954Z"
     }
   ],
   "history": [
@@ -59,7 +59,7 @@
   ],
   "regionalModifiers": {
     "sp": {
-      "updatedAt": "2026-07-06T23:47:10.953Z"
+      "updatedAt": "2026-07-08T06:03:45.954Z"
     },
     "nyc": {
       "updatedAt": "2026-06-18T18:37:29.510Z"

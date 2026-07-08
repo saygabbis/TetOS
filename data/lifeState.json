@@ -1,7 +1,7 @@
 {
-  "currentActivity": "jogar",
-  "activityStartedAt": "2026-07-07T21:30:25.183Z",
-  "phase": "fim_de_noite",
+  "currentActivity": null,
+  "activityStartedAt": null,
+  "phase": "madrugada",
   "obligations": [
     {
       "id": "obligation_1780935846985_421",
@@ -411,9 +411,9 @@
   "goals": [],
   "privateThoughts": [],
   "sleep": {
-    "state": "awake",
-    "sleepDebt": 0,
-    "lastSleepAt": "2026-07-07T02:00:15.742Z",
+    "state": "drowsy",
+    "sleepDebt": 0.5750000000000002,
+    "lastSleepAt": "2026-07-08T05:54:04.438Z",
     "tonightPlan": {
       "bedHour": 23,
       "wakeHour": 7
@@ -547,8 +547,15 @@
       }
     ],
     "wakeDelayUntil": null,
-    "lastWakeAt": "2026-07-07T10:00:16.524Z"
+    "lastWakeAt": "2026-07-07T10:00:16.524Z",
+    "temporaryWakeUntil": "2026-07-08T06:07:42.803Z",
+    "disturbanceCount": 4,
+    "lastDisturbedAt": "2026-07-08T06:01:32.342Z",
+    "disturbedNightKey": "2026-07-08",
+    "tempWakeStartedAt": "2026-07-08T06:01:32.342Z",
+    "tempWakeExtensionCount": 5,
+    "tempWakeGrogginess": 0.92
   },
-  "lastTickAt": "2026-07-08T02:35:23.243Z",
+  "lastTickAt": "2026-07-08T06:03:45.955Z",
   "dayKey": "2026-07-08"
 }

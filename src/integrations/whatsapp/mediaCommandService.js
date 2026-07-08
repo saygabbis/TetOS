@@ -8,6 +8,14 @@ import {
   REMOVE_BG_MODEL_LABELS,
   resolveRemoveBgOptions
 } from "../../core/media/removeBgOptionsParse.js";
+import { UrlDownloadService } from "../../core/media/urlDownloadService.js";
+import { convertMedia, normalizeConvertFormat } from "../../core/media/mediaConverter.js";
+import { parseUrlDownloadArgs } from "./urlDownloadArgsParse.js";
+import { isUrlMediaCommand } from "./mediaCommandParser.js";
+import {
+  applyQuotedContextToPayload,
+  buildOutgoingQuoteKey
+} from "./messageContext.js";
 
 function isWaConnectionError(error) {
   const msg = String(error?.message ?? error ?? "");
@@ -18,6 +26,18 @@ function isWaConnectionError(error) {
   );
 }
 
+const PREVIEW_OUTPUT_COMMANDS = new Set([
+  "youtube",
+  "twitter",
+  "instagram",
+  "reddit",
+  "tiktok",
+  "facebook",
+  "download",
+  "thumbnail",
+  "convert"
+]);
+
 export class MediaCommandService {
   constructor({
     runtime,
@@ -26,6 +46,7 @@ export class MediaCommandService {
     mediaHistoryStore,
     mediaProcessor,
     safeSendMessage,
+    chatMessageIndex = null,
     logPrefix = "[whatsapp]"
   } = {}) {
     this.runtime = runtime;
@@ -33,9 +54,17 @@ export class MediaCommandService {
     this.commandQueue = commandQueue;
     this.mediaHistoryStore = mediaHistoryStore;
     this.mediaProcessor = mediaProcessor;
+    this._rawSend = safeSendMessage;
     this.safeSendMessage = safeSendMessage;
+    this.chatMessageIndex = chatMessageIndex;
     this.logPrefix = logPrefix;
+    this._commandQuoteContext = null;
     this.agentMediaInFlight = new Map();
+    this.urlDownloader = new UrlDownloadService({
+      outputDir: runtime?.defaults?.commandMediaDerivedPath ?? "./data/media/derived",
+      ytDlpPath: runtime?.defaults?.ytDlpPath ?? null,
+      ytDlpTimeoutMs: runtime?.defaults?.ytDlpTimeoutMs ?? 120000
+    });
   }
 
   appendCommandEvent(event) {
@@ -58,8 +87,44 @@ export class MediaCommandService {
     }
   }
 
+  buildCommandQuoteKey(remoteJid, incoming) {
+    const key = incoming?.key;
+    if (!key?.id) return null;
+    const participantJid = key.participant ?? incoming?.participant ?? null;
+    return buildOutgoingQuoteKey(key, remoteJid, { participantJid });
+  }
+
+  async sendCommandReply(remoteJid, incoming, payload) {
+    const quoteKey = this.buildCommandQuoteKey(remoteJid, incoming);
+    if (!quoteKey) return this._rawSend(remoteJid, payload);
+    const indexed = this.chatMessageIndex?.get?.(remoteJid, quoteKey.id) ?? null;
+    const full = applyQuotedContextToPayload(payload, quoteKey, indexed);
+    return this._rawSend(remoteJid, full);
+  }
+
+  async sendWithActiveQuote(remoteJid, payload) {
+    const ctx = this._commandQuoteContext;
+    if (ctx?.incoming && ctx.remoteJid === remoteJid) {
+      return this.sendCommandReply(remoteJid, ctx.incoming, payload);
+    }
+    return this._rawSend(remoteJid, payload);
+  }
+
   async handle({ incoming, parsedCommand, remoteJid, userId, media }) {
+    if (parsedCommand?.command === "gerar") {
+      return this.handleGenerateImage({ parsedCommand, remoteJid, userId, incoming });
+    }
+
+    if (isUrlMediaCommand(parsedCommand.command)) {
+      return this.handleUrlCommand({ parsedCommand, remoteJid, userId, incoming });
+    }
+
     return this.commandQueue.enqueue(remoteJid, async () => {
+      this._commandQuoteContext = { remoteJid, incoming };
+      const send = (payload) => this.sendWithActiveQuote(remoteJid, payload);
+      const prevSend = this.safeSendMessage;
+      this.safeSendMessage = send;
+      try {
       const startedAt = Date.now();
       const resolved = await resolveCommandTarget({
         incoming,
@@ -73,9 +138,11 @@ export class MediaCommandService {
       });
 
       if (!resolved?.media?.path) {
-        await this.safeSendMessage(remoteJid, {
-          text: "Nao achei midia valida. Manda a imagem/GIF no anexo, responde (reply) a uma midia, ou manda a midia e depois o comando."
-        });
+        const hint =
+          parsedCommand.command === "convert"
+            ? "Nao achei midia valida. Responde (reply) ou anexa a imagem/video/audio e manda o comando, ex.: .convert mp4"
+            : "Nao achei midia valida. Manda a imagem/GIF no anexo, responde (reply) a uma midia, ou manda a midia e depois o comando.";
+        await this.safeSendMessage(remoteJid, { text: hint });
         this.appendCommandEvent({
           commandName: parsedCommand.command,
           status: "error",
@@ -154,7 +221,98 @@ export class MediaCommandService {
         this.audit(errorEvent);
         return true;
       }
+      } finally {
+        this.safeSendMessage = prevSend;
+        this._commandQuoteContext = null;
+      }
     });
+  }
+
+  async handleUrlCommand({ parsedCommand, remoteJid, userId, incoming = null }) {
+    return this.commandQueue.enqueue(remoteJid, async () => {
+      this._commandQuoteContext = incoming ? { remoteJid, incoming } : null;
+      const send = (payload) => this.sendWithActiveQuote(remoteJid, payload);
+      const prevSend = this.safeSendMessage;
+      this.safeSendMessage = send;
+      try {
+      const startedAt = Date.now();
+      const parsed = parseUrlDownloadArgs(parsedCommand.command, parsedCommand.args);
+      if (parsed.error) {
+        await this.safeSendMessage(remoteJid, { text: parsed.error });
+        this.appendCommandEvent({
+          commandName: parsedCommand.command,
+          status: "error",
+          reason: parsed.error,
+          remoteJid,
+          actorId: userId
+        });
+        return true;
+      }
+
+      try {
+        await this.sendPresence("composing", remoteJid);
+        await this.safeSendMessage(remoteJid, { text: "Baixando... pode demorar um pouco." });
+        const output = await this.urlDownloader.downloadByCommand(
+          parsed.command,
+          parsed.url,
+          parsed.mode,
+          parsed.quality
+        );
+        await this.sendPresence("paused", remoteJid);
+        const outputs = Array.isArray(output?.outputs) ? output.outputs : [output];
+        for (const item of outputs) {
+          await this.sendMediaOutput(item, remoteJid);
+        }
+
+        const okEvent = {
+          commandName: parsedCommand.command,
+          status: "ok",
+          targetSource: "url",
+          inputType: "url",
+          outputType: output.kind,
+          remoteJid,
+          actorId: userId,
+          elapsedMs: Date.now() - startedAt
+        };
+        this.audit(okEvent);
+        this.appendCommandEvent(okEvent);
+        return true;
+      } catch (error) {
+        await this.sendPresence("paused", remoteJid);
+        if (isWaConnectionError(error)) return true;
+        const failText =
+          "Nao consegui baixar — link privado, expirado ou plataforma bloqueou. Detalhe: " +
+          String(error.message ?? error);
+        await this.safeSendMessage(remoteJid, { text: failText });
+        this.appendCommandEvent({
+          commandName: parsedCommand.command,
+          status: "error",
+          reason: error.message,
+          targetSource: "url",
+          remoteJid,
+          actorId: userId
+        });
+        return true;
+      }
+      } finally {
+        this.safeSendMessage = prevSend;
+        this._commandQuoteContext = null;
+      }
+    });
+  }
+
+  async runUrlDownloadCommand({
+    command,
+    url,
+    args = [],
+    remoteJid,
+    userId = null
+  } = {}) {
+    const parsedCommand = {
+      command: String(command ?? "").toLowerCase(),
+      args: [url, ...(args ?? [])].filter(Boolean)
+    };
+    return this.handleUrlCommand({ parsedCommand, remoteJid, userId });
   }
 
   async processCommand(parsedCommand, resolved, remoteJid) {
@@ -215,6 +373,25 @@ export class MediaCommandService {
       return this.mediaProcessor.toMediaFromSticker(resolved.media);
     }
 
+    if (parsedCommand.command === "convert") {
+      const format = normalizeConvertFormat(parsedCommand.args?.[0]);
+      if (!format) {
+        await this.safeSendMessage(remoteJid, {
+          text: "Informe o formato de saida, ex.: .convert mp4 ou .convert png"
+        });
+        return true;
+      }
+      await this.sendPresence("composing", remoteJid);
+      await this.safeSendMessage(remoteJid, { text: `Convertendo para .${format}...` });
+      const output = await convertMedia(
+        resolved.media.path,
+        format,
+        this.runtime.defaults.commandMediaDerivedPath
+      );
+      await this.sendPresence("paused", remoteJid);
+      return output;
+    }
+
     throw new Error(`unsupported media command: ${parsedCommand.command}`);
   }
 
@@ -235,6 +412,11 @@ export class MediaCommandService {
       return;
     }
 
+    if (PREVIEW_OUTPUT_COMMANDS.has(parsedCommand.command)) {
+      await this.sendMediaOutput(output, remoteJid);
+      return;
+    }
+
     await this.safeSendMessage(remoteJid, { sticker: outBuffer });
 
     if (
@@ -249,6 +431,35 @@ export class MediaCommandService {
         text: `Figurinha otimizada: ${beforeKb} KiB -> ${afterKb} KiB. Pode mandar .optimize de novo pra comprimir mais.`
       });
     }
+  }
+
+  async sendMediaOutput(output, remoteJid) {
+    if (!output?.path || !existsSync(output.path)) return;
+    const outBuffer = readFileSync(output.path);
+    const mimetype = output.mimetype ?? "application/octet-stream";
+    const fileName = output.fileName ?? "arquivo";
+
+    if (output.kind === "video") {
+      await this.safeSendMessage(remoteJid, {
+        video: outBuffer,
+        mimetype,
+        gifPlayback: mimetype === "image/gif" || fileName.endsWith(".gif")
+      });
+    } else if (output.kind === "audio") {
+      await this.safeSendMessage(remoteJid, {
+        audio: outBuffer,
+        mimetype,
+        ptt: false
+      });
+    } else if (output.kind === "image") {
+      await this.safeSendMessage(remoteJid, { image: outBuffer, mimetype });
+    }
+
+    await this.safeSendMessage(remoteJid, {
+      document: outBuffer,
+      mimetype,
+      fileName
+    });
   }
 
   async runAgentMediaCommand({
@@ -332,6 +543,11 @@ export class MediaCommandService {
             await this.safeSendMessage(remoteJid, { text: statusText });
             await this.sendPresence("paused", remoteJid);
           }
+        } else if (cmd === "convert") {
+          await this.sendPresence("composing", remoteJid);
+          await this.safeSendMessage(remoteJid, {
+            text: `Convertendo para .${normalizeConvertFormat(parsedCommand.args?.[0]) ?? "?"}...`
+          });
         }
 
         const output = await this.processCommand(parsedCommand, resolved, remoteJid);
@@ -420,5 +636,47 @@ export class MediaCommandService {
       mimetype: "image/png",
       fileName: "sticker-convertido.png"
     });
+  }
+
+  async handleGenerateImage({ parsedCommand, remoteJid, userId, incoming = null }) {
+    const prompt = (parsedCommand.args ?? []).join(" ").trim();
+    if (!prompt) {
+      const prefix = this.runtime?.defaults?.commandPrefix ?? ".";
+      await this.safeSendMessage(remoteJid, {
+        text: `uso: ${prefix}gerar <descrição da imagem>`
+      });
+      return true;
+    }
+
+    await this.sendPresence("composing", remoteJid);
+    const result = await this.runtime?.imageGenerationService?.generate?.({
+      prompt,
+      userId
+    });
+    await this.sendPresence("paused", remoteJid);
+
+    if (result?.ok && result.buffer) {
+      await this.safeSendMessage(remoteJid, { image: result.buffer });
+      this.appendCommandEvent({
+        commandName: "gerar",
+        status: "ok",
+        remoteJid,
+        actorId: userId,
+        prompt: prompt.slice(0, 120)
+      });
+      return true;
+    }
+
+    await this.safeSendMessage(remoteJid, {
+      text: `não consegui gerar: ${result?.error ?? "erro desconhecido"}`
+    });
+    this.appendCommandEvent({
+      commandName: "gerar",
+      status: "error",
+      remoteJid,
+      actorId: userId,
+      error: result?.error ?? "unknown"
+    });
+    return true;
   }
 }

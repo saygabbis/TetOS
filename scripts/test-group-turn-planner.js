@@ -76,6 +76,7 @@ assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isReplyToBot: true }
 assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, quotedMessageId: "abc" }), true);
 assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, batchedCount: 2 }), true);
 assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: true }), false);
-assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, preferQuoteReply: true }), false);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: false }), true);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: true, isDirectMention: true }), true);
 
 console.log("test-group-turn-planner: ok");

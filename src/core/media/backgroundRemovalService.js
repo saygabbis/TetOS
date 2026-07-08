@@ -429,13 +429,21 @@ export function isAnimatedMedia(inputPath) {
 export async function isAnimatedImage(inputPath) {
   const ext = extname(inputPath).toLowerCase();
   if (ext === ".gif") return true;
-  if (ext === ".webp") {
-    try {
-      const head = readFileSync(inputPath);
-      return head.includes(Buffer.from("ANIM"));
-    } catch {
-      return false;
+  try {
+    const head = readFileSync(inputPath);
+    if (head.length >= 6) {
+      const sig = head.toString("ascii", 0, 6);
+      if (sig.startsWith("GIF87") || sig.startsWith("GIF89")) return true;
     }
+    if (
+      head.length >= 12 &&
+      head.toString("ascii", 0, 4) === "RIFF" &&
+      head.toString("ascii", 8, 12) === "WEBP"
+    ) {
+      return head.includes(Buffer.from("ANIM"));
+    }
+  } catch {
+    return false;
   }
   return false;
 }

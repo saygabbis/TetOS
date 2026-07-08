@@ -17,6 +17,28 @@ async function streamToBuffer(stream) {
 
 const DOC_EXT_ALLOW = new Set(["png", "jpg", "jpeg", "webp", "gif", "mp4", "webm", "mov", "m4v", "mkv"]);
 
+function detectExtFromBuffer(buffer) {
+  if (!buffer?.length) return null;
+  if (buffer.length >= 6) {
+    const gifSig = buffer.toString("ascii", 0, 6);
+    if (gifSig.startsWith("GIF87") || gifSig.startsWith("GIF89")) return "gif";
+  }
+  if (
+    buffer.length >= 12 &&
+    buffer.toString("ascii", 0, 4) === "RIFF" &&
+    buffer.toString("ascii", 8, 12) === "WEBP"
+  ) {
+    return "webp";
+  }
+  if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return "jpg";
+  }
+  if (buffer.length >= 8 && buffer.toString("ascii", 4, 8) === "ftyp") return "mp4";
+  if (buffer.length >= 4 && buffer.toString("ascii", 0, 4) === "OggS") return "ogg";
+  if (buffer.length >= 4 && buffer.toString("ascii", 0, 4) === "\x89PNG") return "png";
+  return null;
+}
+
 /**
  * Extensão de arquivo sugerida para mídia baixada de `documentMessage` (evita .mp4 em GIF, etc.).
  */
@@ -72,9 +94,13 @@ export async function persistMedia({
   const streamType =
     decryptMediaAs ||
     (type === "sticker" ? "sticker" : type);
-  const filePath = join(basePath, `${id}.${ext}`);
   const stream = await downloadContentFromMessage(content, streamType);
   const buffer = await streamToBuffer(stream);
+  const sniffedExt = detectExtFromBuffer(buffer);
+  if (sniffedExt && DOC_EXT_ALLOW.has(sniffedExt)) {
+    ext = sniffedExt === "jpeg" ? "jpg" : sniffedExt;
+  }
+  const filePath = join(basePath, `${id}.${ext}`);
   writeFileSync(filePath, buffer);
   return filePath;
 }

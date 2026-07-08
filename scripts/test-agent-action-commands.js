@@ -79,4 +79,25 @@ const mixed = parseActionCommands(
 );
 assert.equal(mixed.length, 3);
 
+const ytDl = parseActionCommands('youtube("https://youtu.be/abc", "mp3")');
+assert.equal(ytDl[0].type, "url_download");
+assert.equal(ytDl[0].command, "youtube");
+assert.equal(ytDl[0].url, "https://youtu.be/abc");
+assert.deepEqual(ytDl[0].args, ["mp3"]);
+
+const redditDl = parseActionCommands('reddit("https://reddit.com/r/a/comments/b/c", "post")');
+assert.equal(redditDl[0].type, "url_download");
+assert.equal(redditDl[0].command, "reddit");
+
+const genericDl = parseActionCommands('download("https://vimeo.com/123")');
+assert.equal(genericDl[0].command, "download");
+
+const thumbDl = parseActionCommands('thumb("https://youtu.be/abc")');
+assert.equal(thumbDl[0].command, "thumbnail");
+
+const convertCmd = parseActionCommands('convert("3EB0ABC1234567890DEF1", "png")');
+assert.equal(convertCmd[0].type, "media");
+assert.equal(convertCmd[0].command, "convert");
+assert.deepEqual(convertCmd[0].args, ["png"]);
+
 console.log("test-agent-action-commands: ok");

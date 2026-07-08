@@ -1,4 +1,9 @@
-import { dmUserId, isOwnerContact, normalizeJidKey } from "./userActivity.js";
+import {
+  botIdentityIds,
+  isBotIdentity,
+  sanitizeIdentityAliases
+} from "./botIdentity.js";
+import { isOwnerContact, dmUserId, normalizeJidKey } from "./userActivity.js";
 
 /** "Gabbis( ˘ ³˘ )♥" → "Gabbis" */
 export function cleanDisplayName(raw = "") {
@@ -231,6 +236,25 @@ export function recordWaIdentity(
     isGroup = false
   } = {}
 ) {
+  // #region agent log
+  fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
+    body: JSON.stringify({
+      sessionId: "794dcc",
+      runId: "post-fix",
+      hypothesisId: "A",
+      location: "waIdentity.js:recordWaIdentity",
+      message: "recordWaIdentity entry",
+      data: {
+        hasNormalizeJidKey: typeof normalizeJidKey === "function",
+        isGroup: Boolean(isGroup),
+        hasRemoteJid: Boolean(remoteJid)
+      },
+      timestamp: Date.now()
+    })
+  }).catch(() => {});
+  // #endregion
   const profileKey = String(userId ?? "").trim();
   if (!profileKey || !runtime?.longTerm?.updateProfile) return;
 
@@ -263,17 +287,22 @@ export function recordWaIdentity(
   }
   Object.assign(facts, mergeProfileNicknames(facts, { pushName }));
 
-  facts.identityAliases = [
-    ...new Set([
-      ...identityAliasKeys(profileKey, facts),
-      ...identityAliasKeys(profileKey, existing)
-    ])
-  ];
+  facts.identityAliases = sanitizeIdentityAliases(
+    [
+      ...new Set([
+        ...identityAliasKeys(profileKey, facts),
+        ...identityAliasKeys(profileKey, existing)
+      ])
+    ],
+    runtime,
+    profileKey
+  );
 
   runtime.longTerm.updateProfile(profileKey, { facts });
 
   for (const alias of facts.identityAliases) {
     if (alias === profileKey) continue;
+    if (isBotIdentity(runtime, alias) !== isBotIdentity(runtime, profileKey)) continue;
     const aliasProfile = runtime.longTerm.getProfile?.(alias)?.facts ?? {};
     runtime.longTerm.updateProfile(alias, {
       facts: {
@@ -283,7 +312,11 @@ export function recordWaIdentity(
         ...(facts.displayName && !aliasProfile.displayName
           ? { displayName: facts.displayName, name: facts.name ?? pushName }
           : {}),
-        identityAliases: [...new Set([...(aliasProfile.identityAliases ?? []), ...facts.identityAliases])]
+        identityAliases: sanitizeIdentityAliases(
+          [...new Set([...(aliasProfile.identityAliases ?? []), ...facts.identityAliases])],
+          runtime,
+          alias
+        )
       }
     });
   }
@@ -334,6 +367,7 @@ export function buildIdentityIndex(runtime) {
   };
 
   for (const [profileKey, prof] of Object.entries(profiles)) {
+    if (isBotIdentity(runtime, profileKey)) continue;
     const facts = prof?.facts ?? {};
     const names = collectNameVariants(facts);
     if (!names.displayName) continue;
@@ -361,6 +395,27 @@ export function buildIdentityIndex(runtime) {
     if (facts.waLid) {
       put(facts.waLid, { ...entry, mentionJid: `${facts.waLid}@lid` });
       put(`dm-${facts.waLid}`, entry);
+    }
+  }
+
+  const botPhone = String(
+    runtime?.whatsappBotPhoneE164 ?? runtime?.defaults?.botWaPhone ?? ""
+  )
+    .replace(/\D/g, "")
+    .trim();
+  if (botPhone) {
+    const selfEntry = {
+      displayName: "Teto",
+      preferredName: "Teto",
+      canonicalUserId: "teto",
+      waPhone: botPhone,
+      mentionJid: `${botPhone}@s.whatsapp.net`,
+      aliases: [...botIdentityIds(runtime)],
+      isSelf: true,
+      source: "bot_self"
+    };
+    for (const id of botIdentityIds(runtime)) {
+      put(id, selfEntry);
     }
   }
 
@@ -449,6 +504,11 @@ export function normalizeIncomingMentions(text = "", identityIndex, mentionedJid
       identityIndex.get(`dm-${id}`) ??
       identityIndex.get(`dm-${id}@lid`);
     if (!entry?.displayName) return null;
+    if (entry.isSelf) {
+      const re = new RegExp(`@${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`, "g");
+      if (re.test(out)) out = out.replace(re, "@Teto");
+      return entry;
+    }
     const re = new RegExp(`@${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`, "g");
     if (re.test(out)) {
       out = out.replace(re, `@${entry.displayName}`);
@@ -464,6 +524,7 @@ export function normalizeIncomingMentions(text = "", identityIndex, mentionedJid
     const entry =
       identityIndex.get(digits) ??
       identityIndex.get(`dm-${digits}`);
+    if (entry?.isSelf) return "@Teto";
     return entry?.displayName ? `@${entry.displayName}` : full;
   });
 
@@ -483,20 +544,24 @@ export function normalizeIncomingMentions(text = "", identityIndex, mentionedJid
 export function linkedIdentityIds(runtime, userId) {
   const uid = String(userId ?? "").trim();
   if (!uid) return ["default"];
+  if (isBotIdentity(runtime, uid)) return ["teto"];
 
   const ids = new Set([uid]);
   const prof = runtime?.longTerm?.getProfile?.(uid)?.facts ?? {};
   for (const alias of identityAliasKeys(uid, prof)) {
-    ids.add(alias);
+    if (!isBotIdentity(runtime, alias)) ids.add(alias);
   }
 
   for (const [profileKey, profile] of Object.entries(runtime?.longTerm?.data?.profiles ?? {})) {
+    if (isBotIdentity(runtime, profileKey)) continue;
     const aliases = profile?.facts?.identityAliases ?? [];
     if (aliases.includes(uid) || profileKey === uid) {
       ids.add(profileKey);
-      for (const a of aliases) ids.add(a);
+      for (const a of aliases) {
+        if (!isBotIdentity(runtime, a)) ids.add(a);
+      }
     }
   }
 
-  return [...ids].filter(Boolean);
+  return [...ids].filter((id) => id && !isBotIdentity(runtime, id));
 }

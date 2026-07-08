@@ -12,7 +12,19 @@ export function applyExtendedChecks(plan, ctx, reasons) {
   const seed = contextualSeed([hour, emotion.mood, ctx.message?.length]);
 
   // Disponibilidade expandida
-  if (sleep.state === "drowsy") { plan.thinkDelayMs += 400; reasons.push("drowsy"); }
+  if (sleep.state === "drowsy" && !sleep.isTemporarilyAwake) { plan.thinkDelayMs += 400; reasons.push("drowsy"); }
+  if (sleep.isTemporarilyAwake) {
+    const groggy = Math.min(1, Math.max(0, sleep.tempWakeGrogginess ?? 0.22));
+    plan.thinkDelayMs += 1200 + Math.floor(groggy * 1800);
+    plan.readDelayMs += 700 + Math.floor(groggy * 1200);
+    plan.typingProfile = groggy >= 0.5 ? "drowsy" : plan.typingProfile ?? "normal";
+    reasons.push(groggy >= 0.5 ? "temp_wake_groggy" : "disturbed_wake");
+  }
+  if (sleep.state === "groggy") {
+    plan.thinkDelayMs += 1200;
+    plan.typingProfile = "drowsy";
+    reasons.push("groggy");
+  }
   if (sleep.state === "wired") { plan.thinkDelayMs *= 0.85; reasons.push("wired"); }
   if (sleep.state === "insomnia") { plan.thinkDelayMs += 700; reasons.push("insomnia"); }
   if (sleep.state === "overslept") { plan.thinkDelayMs += 300; reasons.push("overslept"); }

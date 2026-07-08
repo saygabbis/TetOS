@@ -15,6 +15,11 @@ import { detectTetoInMediaDescription } from "../character/tetoSelfRecognition.j
 import { hasVocativeToTeto } from "../../modules/chat/coherenceGuards.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 import { detectVulnerability } from "../brain/vulnerabilityDetect.js";
+import { detectImageGenerationIntent } from "../media/imageGenerationIntent.js";
+import {
+  detectVisualTeaching,
+  isMediaDescribeRequest
+} from "../media/visualKnowledgeIntent.js";
 import { mergeBrainCloseDecision } from "../brain/ConversationPhaseEngine.js";
 import { isOwnerContact, touchUserActivity } from "../channels/userActivity.js";
 import {
@@ -215,6 +220,16 @@ export async function runMessagePipeline(runtime, payload = {}) {
     participantId = null,
     segmentSpeakers = null,
     segmentMultiSpeaker = false,
+    groupCatchUp = false,
+    groupCatchUpSkipped = 0,
+    sleepCatchUp = false,
+    sleepCatchUpCount = 0,
+    sleepDisturbedWake = false,
+    sleepTemporarilyAwake = false,
+    tempWakeGrogginess = 0,
+    tempWakeExtensionCount = 0,
+    sleepGroggy = false,
+    batchedCount = 1,
     isOwner: isOwnerFlag = null,
     mainObserveOnly = false
   } = payload;
@@ -445,7 +460,15 @@ export async function runMessagePipeline(runtime, payload = {}) {
     media?.type &&
     !String(message ?? "").trim() &&
     !effectiveMention &&
-    !isReply;
+    !isReply &&
+    !shouldRespondToMediaOnly({
+      media,
+      isDirect: effectiveMention,
+      isReply,
+      isReplyToBot: Boolean(isReplyToBot),
+      hasVisionOrTranscript: Boolean(String(media?.transcript ?? "").trim()),
+      userId: safeUserId
+    });
 
   const busyHighFocus =
     !isGroup &&
@@ -685,10 +708,61 @@ export async function runMessagePipeline(runtime, payload = {}) {
     mediaType: media?.type ?? null
   });
 
+  const visualKnowledgeMatches =
+    visionText && runtime.visualKnowledge?.match
+      ? runtime.visualKnowledge.match(visionText, {
+          userId: safeUserId,
+          channelId: safeChannelId,
+          limit: 3
+        })
+      : [];
+  const visualKnowledgePrompt = runtime.visualKnowledge?.formatForPrompt?.(visualKnowledgeMatches);
+
+  const teachingOnQuoted =
+    isReply && quotedMessageId && !media?.type
+      ? detectVisualTeaching(input)
+      : null;
+  const teachingOnCurrent = detectVisualTeaching(input);
+  const teaching = teachingOnCurrent ?? teachingOnQuoted;
+
+  if (teaching && runtime.visualKnowledge?.learn) {
+    const teachVision =
+      visionText ||
+      String(quotedMessage ?? replyThreadContext?.quoted?.text ?? "").trim();
+    if (teachVision) {
+      runtime.visualKnowledge.learn({
+        userId: safeUserId,
+        channelId: safeChannelId,
+        label: teaching.label,
+        visionText: teachVision,
+        taughtByText: teaching.sourceText,
+        messageId: media ? messageKey?.id : quotedMessageId ?? messageKey?.id,
+        confidence: teaching.confidence
+      });
+      runtime.selectiveMemory?.remember?.({
+        userId: safeUserId ?? "default",
+        channelId: safeChannelId,
+        content: `[visual] ${teaching.label}: ${teachVision.slice(0, 160)}`,
+        source: "visual_teaching"
+      });
+    }
+  }
+
+  const learnedSelfFromKnowledge = visualKnowledgeMatches.some(
+    (m) => m.label === "kasane_teto" && (m.matchScore ?? 0) >= 0.35
+  );
+  const mediaDescribeRequest = isMediaDescribeRequest(input);
+
   const mediaContext = [
     describeMediaForPrompt(media, input) ?? buildMediaContext(media),
-    selfImageDetection.isLikelySelf
+    selfImageDetection.isLikelySelf || learnedSelfFromKnowledge
       ? "[AUTO-RECONHECIMENTO] A mídia parece representar a Kasane Teto (você)."
+      : null,
+    visualKnowledgePrompt
+      ? `[CONHECIMENTO VISUAL APRENDIDO]\n${visualKnowledgePrompt}\nUse isso para validar o que vê — se bater com a mídia atual, reconheça com confiança.`
+      : null,
+    mediaDescribeRequest
+      ? "[PEDIDO DE DESCRIÇÃO DETALHADA] Descreva TUDO que vê na mídia (objetos, cores, expressão, texto na imagem, estilo). Relacione com memória/conhecimento aprendido se souber identificar algo."
       : null
   ]
     .filter(Boolean)
@@ -698,6 +772,56 @@ export async function runMessagePipeline(runtime, payload = {}) {
     mentionsMachineLove(input) && runtime.brainOrchestrator?.music?.getMachineLoveLoreBlock
       ? runtime.brainOrchestrator.music.getMachineLoveLoreBlock()
       : null;
+
+  const profileForRel =
+    runtime.longTerm.getProfile(safeUserId ?? "default", channelScope) ?? existingProfile;
+  const partnerDisplayName =
+    profileForRel?.facts?.preferredName ||
+    profileForRel?.facts?.displayName ||
+    profileForRel?.facts?.name ||
+    pushName ||
+    null;
+
+  let relationshipMeta = null;
+  if (runtime.relationshipStore && safeUserId) {
+    const relTurn = runtime.relationshipStore.processTurn({
+      message: input,
+      userId: safeUserId,
+      displayName: partnerDisplayName,
+      runtime,
+      trustBond:
+        brainTurn?.snapshot?.trustBond ??
+        runtime.brainOrchestrator?.trust?.getBond?.(safeUserId, channelScope) ??
+        null,
+      isGroup
+    });
+    relationshipMeta = {
+      relationshipContext: relTurn.promptContext,
+      flirtFromNonPartner: Boolean(relTurn.flirtFromNonPartner),
+      relationshipChanged: Boolean(relTurn.changed),
+      relationshipEvent: relTurn.event ?? null
+    };
+    if (relTurn.changed && runtime.brainOrchestrator?.memory?.recordEpisode) {
+      const statusLabel = relTurn.promptContext?.lines?.[1] ?? "relacionamento atualizado";
+      runtime.brainOrchestrator.memory.recordEpisode({
+        userId: safeUserId ?? "default",
+        channelId: safeChannelId,
+        channelScope: isGroup ? `group:${safeChannelId}` : "direct",
+        summary: `[relacionamento] ${statusLabel}`.slice(0, 280),
+        userMessage: input,
+        assistantReplies: [],
+        tone: "warm",
+        ts: new Date().toISOString(),
+        salience: 0.85
+      });
+      runtime.selectiveMemory?.remember?.({
+        userId: safeUserId ?? "default",
+        channelId: safeChannelId,
+        content: statusLabel.slice(0, 200),
+        source: "relationship_milestone"
+      });
+    }
+  }
 
   const primaryOperation = confirmationResult ?? slashCommandResult ?? operationResult;
 
@@ -747,8 +871,12 @@ export async function runMessagePipeline(runtime, payload = {}) {
       quotedMessage,
       quotedMessageId,
       replyThreadContext,
+      isReply: Boolean(isReply),
       isReplyToBot: Boolean(isReplyToBot),
       messageKey,
+      media,
+      mediaDescribeRequest,
+      visualKnowledgeContext: visualKnowledgePrompt,
       styleHint: enrichedStyleHint,
       recentHistoryCount: channelTimeline.entries.length || normalizedHistory?.length || 0,
       recentHistory,
@@ -759,7 +887,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       documentContext,
       reminderContext,
       mediaContext,
-      selfImageDetected: selfImageDetection.isLikelySelf,
+      selfImageDetected: selfImageDetection.isLikelySelf || learnedSelfFromKnowledge,
       closeDecision: finalCloseDecision,
       brainBlocks: brainTurn?.blocks ?? null,
       brainSnapshot: brainTurn?.snapshot ?? null,
@@ -772,11 +900,24 @@ export async function runMessagePipeline(runtime, payload = {}) {
       participantId: participantId || null,
       segmentSpeakers: Array.isArray(segmentSpeakers) ? segmentSpeakers : null,
       segmentMultiSpeaker: Boolean(segmentMultiSpeaker),
+      groupCatchUp: Boolean(groupCatchUp),
+      groupCatchUpSkipped: Number(groupCatchUpSkipped) || 0,
+      sleepCatchUp: Boolean(sleepCatchUp),
+      sleepCatchUpCount: Number(sleepCatchUpCount) || 0,
+      sleepDisturbedWake: Boolean(sleepDisturbedWake),
+      sleepTemporarilyAwake: Boolean(sleepTemporarilyAwake),
+      tempWakeGrogginess: Number(tempWakeGrogginess) || 0,
+      tempWakeExtensionCount: Number(tempWakeExtensionCount) || 0,
+      sleepGroggy: Boolean(sleepGroggy) || sleepSnap.state === "groggy",
+      batchedCount: Number(batchedCount) || 1,
+      sleepState: sleepSnap.state ?? null,
       isOwner,
       musicLoreBlock,
       repertoireModeActive: Boolean(runtime.stickerRepertoireMode?.isActive?.(safeUserId)),
       stickersPath: runtime.defaults.stickersPath,
+      imageGenIntent: detectImageGenerationIntent(input),
       historicalMultimodalContext,
+      ...(relationshipMeta ?? {}),
       ...searchMeta,
       ...operationMeta
     },

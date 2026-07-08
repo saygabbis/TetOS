@@ -70,6 +70,14 @@ export class LifeNarrator {
     if (bond?.rupture > 0.4) lines.push("vínculo: guardada, ainda magoada");
     if (bond?.intimacy > 0.7) lines.push("vínculo: à vontade com essa pessoa");
 
+    const rel = snapshot.relationship;
+    if (rel?.status && rel.status !== "single") {
+      const who = rel.partnerDisplayName ?? "meu parceiro";
+      lines.push(`comprometida: ${rel.statusLabel ?? rel.status} com ${who}`);
+      if (rel.isPartner) lines.push("coração: com quem ama — presente e leal");
+      else lines.push("coração: fiel — recusar flerte de terceiros");
+    }
+
     const phase = snapshot.conversationPhase;
     if (phase?.phase && phase.phase !== "active") {
       lines.push(`conversa: ${phase.phase} (${phase.recommendedAction ?? "respond"})`);

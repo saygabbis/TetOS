@@ -5,9 +5,22 @@ const COMMANDS = {
   "teto-grupo-desativar": "deactivate_group"
 };
 
-export function parseTetoSlashCommand(text = "") {
+const COMMAND_NAMES = Object.keys(COMMANDS).join("|");
+
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function formatTetoActivationCommand(name, prefix = ".") {
+  const p = prefix || ".";
+  return `${p}${name}`;
+}
+
+export function parseTetoSlashCommand(text = "", prefix = ".") {
   const raw = String(text ?? "").trim();
-  const match = raw.match(/^\/(teto-(?:ativar|desativar|grupo-ativar|grupo-desativar))\b/i);
+  const p = escapeRegExp(prefix || ".");
+  const pattern = new RegExp(`^(?:\\/|${p})(${COMMAND_NAMES})\\b`, "i");
+  const match = raw.match(pattern);
   if (!match) return null;
   const key = match[1].toLowerCase();
   return { action: COMMANDS[key], command: key };
@@ -20,15 +33,18 @@ export async function handleTetoSlashCommand({
   isGroup,
   activationStore,
   groupEngagement,
-  socket
-}) {
+  socket,
+  commandPrefix = "."
+} = {}) {
   if (!activationStore || !socket?.sendMessage) return { handled: false };
+
+  const act = (name) => formatTetoActivationCommand(name, commandPrefix);
 
   let reply = null;
   switch (action) {
     case "activate_dm":
       if (isGroup) {
-        reply = "use isso no privado: /teto-ativar";
+        reply = `use isso no privado: ${act("teto-ativar")}`;
         break;
       }
       activationStore.activateDm(userId, { activatedBy: userId });
@@ -37,17 +53,17 @@ export async function handleTetoSlashCommand({
       break;
     case "deactivate_dm":
       if (isGroup) {
-        reply = "use isso no privado: /teto-desativar";
+        reply = `use isso no privado: ${act("teto-desativar")}`;
         break;
       }
       activationStore.deactivateDm(userId);
       groupEngagement?.clear?.(remoteJid, userId);
       groupEngagement?.unmute?.(remoteJid, userId);
-      reply = "teto desativada no privado. manda /teto-ativar quando quiser de novo";
+      reply = `teto desativada no privado. manda ${act("teto-ativar")} quando quiser de novo`;
       break;
     case "activate_group":
       if (!isGroup) {
-        reply = "use isso dentro do grupo: /teto-grupo-ativar";
+        reply = `use isso dentro do grupo: ${act("teto-grupo-ativar")}`;
         break;
       }
       activationStore.activateGroup(remoteJid, { activatedBy: userId });
@@ -56,7 +72,7 @@ export async function handleTetoSlashCommand({
       break;
     case "deactivate_group":
       if (!isGroup) {
-        reply = "use isso dentro do grupo: /teto-grupo-desativar";
+        reply = `use isso dentro do grupo: ${act("teto-grupo-desativar")}`;
         break;
       }
       activationStore.deactivateGroup(remoteJid);

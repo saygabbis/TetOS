@@ -500,6 +500,8 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
     });
 
     attachChatLedgerListeners(socket, runtime);
+    runtime.whatsappSockets ??= {};
+    runtime.whatsappSockets.full = socket;
     registerMessageHandler({ socket, runtime, role: "full" });
   };
 
@@ -610,6 +612,8 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
     });
 
     attachChatLedgerListeners(mainSocket, runtime);
+    runtime.whatsappSockets ??= {};
+    runtime.whatsappSockets.main = mainSocket;
     registerMessageHandler({ socket: mainSocket, runtime, role: "main" });
   };
 
@@ -686,6 +690,8 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
     });
 
     attachChatLedgerListeners(mediaSocket, runtime);
+    runtime.whatsappSockets ??= {};
+    runtime.whatsappSockets.media = mediaSocket;
     registerMessageHandler({ socket: mediaSocket, runtime, role: "media" });
   };
 
