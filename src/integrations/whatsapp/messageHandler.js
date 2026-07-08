@@ -45,7 +45,6 @@ import {
   buildQuoteKeyFromMessageId
 } from "./messageContext.js";
 import { resolveVerifiedQuoteKey } from "./quoteMessageResolver.js";
-import { resolveVerifiedQuoteKey } from "./quoteMessageResolver.js";
 import { buildBotActorIds } from "../../core/channels/botIdentity.js";
 import {
   parseTetoSlashCommand,
