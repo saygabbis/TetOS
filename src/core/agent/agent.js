@@ -9,6 +9,12 @@ import { formatGroupRosterBlock } from "../channels/groupRoster.js";
 import { buildMultiBubbleRhythmBlock } from "../../modules/chat/bubbleComposer.js";
 import { formatConversationPhaseBlock } from "../brain/ConversationPhaseEngine.js";
 import { formatRepertoireForPrompt } from "../../integrations/whatsapp/stickerRepertoire.js";
+import {
+  buildAgentDownloadCommandsPromptLines,
+  buildAgentDownloadExampleLines,
+  buildAgentDownloadRulesPromptLines,
+  buildUrlDownloadIntentPromptBlock
+} from "../../integrations/whatsapp/agentDownloadCommands.js";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 
 export class Agent {
@@ -126,7 +132,7 @@ export class Agent {
     const META_ALLOWLIST = new Set([
       "userId", "sessionId", "channelId", "isGroup", "isOwner",
       "channelMode", "groupAddressKind", "speakerName", "participantId",
-      "quotedMessageId", "isReplyToBot", "selfImageDetected", "closeDecision",
+      "quotedMessageId", "incomingMessageId", "isReplyToBot", "selfImageDetected", "closeDecision",
       "groupEngagementActive", "tone", "userPronouns", "musicLoreBlock",
       "brainOrchestratorEnabled", "recentHistoryCount"
     ]);
@@ -151,6 +157,12 @@ export class Agent {
           'Use gerarImagem("descrição clara em pt ou en") — pode combinar com mensagem curta antes ou depois.'
         ]
       : [];
+
+    const urlDownloadBlock = buildUrlDownloadIntentPromptBlock(meta?.urlDownloadIntent);
+
+    const downloadCommandLines = buildAgentDownloadCommandsPromptLines({ startNumber: 11 });
+    const downloadRulesLines = buildAgentDownloadRulesPromptLines();
+    const downloadExampleLines = buildAgentDownloadExampleLines();
 
     const actionCommandsBlock = [
       "[PROTOCOLO DE COMANDOS DE AÇÃO - OBRIGATÓRIO]",
@@ -178,31 +190,21 @@ export class Agent {
       '8. optimize("message_id") — Comprime figurinha existente (equivalente a .optimize).',
       '9. removebg("message_id", "opcional") — Remove fundo de imagem ou figurinha estática. Args extras: cor de fundo (ex. "verde") e potência ("leve", "media", "forte"). Ex.: removebg("3EB0...", "verde", "forte").',
       '10. toimage("message_id") — Figurinha → imagem ou GIF/vídeo (equivalente a .toimg). Só funciona com stickers.',
-      '11. youtube("url", "mp3"|"mp4") — Baixa áudio/vídeo do YouTube.',
-      '12. twitter("url", "mp3"|"mp4"|"post"|"user"|"banner") — X/Twitter.',
-      '13. instagram("url", "mp3"|"mp4"|"post"|"user") — Instagram.',
-      '14. reddit("url", "mp3"|"mp4"|"post"|"user") — Reddit.',
-      '15. tiktok("url", "mp3"|"mp4") — TikTok (use tiktok/tk, não tt que é Twitter).',
-      '16. facebook("url", "mp3"|"mp4"|"post") — Facebook.',
-      '17. download("url", "mp3"|"mp4"|"post") — Outras redes (Twitch, Vimeo, Pinterest, SoundCloud, etc.).',
-      '18. thumbnail("url_youtube") / thumb("url") — Thumb de vídeo do YouTube.',
+      ...downloadCommandLines,
       '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
       '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
       '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
       "",
-      "COMANDOS DE DOWNLOAD — REGRAS:",
-      "- Use a **URL completa** do link que o usuário mandou — não message id.",
-      "- Se a rede não tiver comando dedicado, use download(\"url\", ...).",
-      "- Para TikTok use tiktok(...) ou tk(...); tt é Twitter.",
-      "",
+      ...downloadRulesLines,
       "COMANDOS DE MÍDIA — REGRAS:",
-      "- Todos usam o **message id** (hex 3EB...) da mensagem que contém a mídia no `[RECENT CONVERSATION]`.",
+      "- Todos usam o **message id** (hex 3EB... ou AC...) da mensagem que contém a mídia no `[RECENT CONVERSATION]` ou em `[META] quotedMessageId` quando o usuário deu reply na figurinha/imagem.",
+      "- Se o usuário marcou (reply) uma figurinha/imagem e pediu converter (.toimg, virar imagem, figurinha, remove fundo), use o **quotedMessageId** do [META] ou o id da mensagem marcada — NÃO peça de novo qual mídia.",
       "- NUNCA use user id numérico — só message id.",
       "- sticker/fsticker/csticker aceitam imagem, vídeo ou GIF da mensagem citada.",
       "- Quando alguém mandar uma figurinha legal e pedir pra você guardar/aprender, use salvarSticker ou modoRepertorio(\"on\") se quiser salvar tudo automaticamente.",
       "",
       "REGRAS DE OURO:",
-      '- NUNCA coloque texto solto fora dos comandos de ação. Use mensagem("..."), reagir("..."), sticker("..."), calar("..."), salvarSticker("...") ou os comandos de mídia acima.',
+      '- NUNCA coloque texto solto fora dos comandos de ação. Use mensagem("..."), reagir("..."), sticker("..."), calar("..."), salvarSticker("..."), comandos de download (youtube, tiktok, download, etc.) ou comandos de mídia acima.',
       "- DIRECIONAMENTO: Você pode responder a falas de outras pessoas no grupo, não só à última mensagem. Para citar algo lá de cima, localize `(message id: ...)` no `[RECENT CONVERSATION]` e passe esse ID como segundo argumento.",
       "- ID DE MENSAGEM vs ID DE PESSOA: O segundo argumento de mensagem(...)/sticker(...) deve ser o **message id** (hex tipo 3EB0F91A291E21535654C7). O `user id` numérico identifica a PESSOA — NUNCA use user id para citar/reply.",
       "- REPLY / CITAÇÃO: O sistema cita automaticamente quando faz sentido (mídia, reply marcado, rajada de msgs, grupo endereçado). No papo normal em PV, responda com mensagem(\"...\") SEM segundo argumento — só passe message id quando quiser citar uma msg ANTIGA do histórico.",
@@ -215,7 +217,9 @@ export class Agent {
       "Exemplo — resposta à última msg + comentário em msg antiga:",
       'sticker("teto-linguinha")',
       'mensagem("sobre o que você falou agora, concordo kkk")',
-      'mensagem("aquilo lá em cima faz sentido sim", "3EB0131C49E0EDE0EC4313")'
+      'mensagem("aquilo lá em cima faz sentido sim", "3EB0131C49E0EDE0EC4313")',
+      "",
+      ...downloadExampleLines
     ];
 
     const fallbackBlock =
@@ -828,10 +832,15 @@ export class Agent {
     const quotedBlock = quotedText
       ? [
           "[REPLY / QUOTE]",
-          `O usuário marcou (reply) esta mensagem sua ou do chat: «${quotedText.slice(0, 500)}»`,
-          "A mensagem DELE/ DELA agora é resposta DIRETA a isso — não ignore o quote.",
-          threadSnippet ? `Fio recente:\n${threadSnippet}` : null,
-          "Responda ao que foi marcado + ao texto novo dele(a). Não pergunte de novo o que o quote já contextualiza."
+          `O usuário marcou (reply) esta mensagem do chat: «${quotedText.slice(0, 500)}»`,
+          meta?.quotedMessageId
+            ? `quotedMessageId (mensagem MARCADA por ele): ${meta.quotedMessageId} — use SOMENTE em toimage(), sticker(), removebg(), etc. quando o pedido for sobre ESSA mídia.`
+            : null,
+          meta?.incomingMessageId || meta?.messageKey?.id
+            ? `incomingMessageId (mensagem DELE/ DELA agora): ${meta.incomingMessageId ?? meta.messageKey?.id} — é a bolha de texto/mídia que acabou de chegar; NÃO confunda com quotedMessageId.`
+            : null,
+          "Responda ao texto novo dele(a). O quote marcado é só CONTEXTO — a resposta no WhatsApp deve citar a mensagem dele (incomingMessageId), não a mídia antiga, salvo pedido explícito sobre a mídia marcada.",
+          threadSnippet ? `Fio recente:\n${threadSnippet}` : null
         ].filter(Boolean)
       : meta?.isReplyToBot
         ? [
@@ -1046,6 +1055,7 @@ export class Agent {
     return [
       ...actionCommandsBlock,
       ...imageGenBlock,
+      ...urlDownloadBlock,
       ...hardRulesBlock,
       ...personaBlock,
       ...characterBlock,
@@ -1165,11 +1175,11 @@ export class Agent {
         : "[TONE: playful — leve, espontânea, pode brincar e rir no ritmo do usuário; não ser reclusa nem só 'educada' — ainda com noção]";
     const fullPrompt = `${prompt}\n\n${toneInstruction}`;
 
-    console.log(
-      `\n[agent] === FULL PROMPT (userId=${meta?.userId ?? "?"}, session=${sessionKey}) ===\n` +
-      fullPrompt +
-      `\n[agent] === END FULL PROMPT ===\n`
-    );
+    //console.log(
+    //  `\n[agent] === FULL PROMPT (userId=${meta?.userId ?? "?"}, session=${sessionKey}) ===\n` +
+    //  fullPrompt +
+    //  `\n[agent] === END FULL PROMPT ===\n`
+    //);
 
     const reply = await this.brain.generate(fullPrompt);
 

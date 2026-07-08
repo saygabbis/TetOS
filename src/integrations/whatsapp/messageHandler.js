@@ -44,6 +44,8 @@ import {
   resolveOutgoingQuoteId,
   buildQuoteKeyFromMessageId
 } from "./messageContext.js";
+import { resolveVerifiedQuoteKey } from "./quoteMessageResolver.js";
+import { resolveVerifiedQuoteKey } from "./quoteMessageResolver.js";
 import { buildBotActorIds } from "../../core/channels/botIdentity.js";
 import {
   parseTetoSlashCommand,
@@ -56,6 +58,7 @@ import {
 } from "./mediaCommandParser.js";
 import { buildWhatsappIdentitySnapshot } from "./whatsappIdentityContract.js";
 import { MediaCommandService } from "./mediaCommandService.js";
+import { buildWaDocumentPayload, buildWaGifPlaybackPayload } from "./waMediaPayload.js";
 import { resolveMediaByMessageId } from "./agentMediaResolver.js";
 import {
   saveStickerToRepertoire,
@@ -596,6 +599,7 @@ function createConversationOrchestrator(
     return {
       messageKey: item.messageKey,
       messageId: item.messageKey?.id ?? item.messageId ?? null,
+      message: item.message ?? "",
       quotedMessageId: item.quotedMessageId ?? null,
       quotedMessage: item.quotedMessage ?? null,
       replyThreadContext: item.replyThreadContext ?? null,
@@ -668,6 +672,39 @@ function createConversationOrchestrator(
     enqueue(deferred);
   }
 
+  function buildVerifiedQuoteKey(remoteJid, quoteId, {
+    participantJid = null,
+    participantId = null,
+    hintText = null
+  } = {}) {
+    if (!quoteId) return null;
+    const resolved = resolveVerifiedQuoteKey({
+      channelId: remoteJid,
+      remoteJid,
+      quoteId,
+      chatMessageIndex,
+      getWaMessageById,
+      groupMemory: runtime.groupMemory,
+      participantJid,
+      participantId,
+      hintText
+    });
+    if (!resolved.quoteKey) {
+      if (resolved.reason === "not_found" && resolved.requestedId) {
+        console.warn(
+          `${logPrefix} quote id inexistente (${resolved.requestedId}) — enviando sem reply`
+        );
+      }
+      return null;
+    }
+    if (resolved.resolvedFrom && resolved.resolvedFrom !== resolved.messageId) {
+      console.log(
+        `${logPrefix} quote ${resolved.resolvedFrom} → ${resolved.messageId} (${resolved.reason})`
+      );
+    }
+    return resolved.quoteKey;
+  }
+
   function resolveQuotedWaMessage(quoteKey, remoteJid) {
     const id = quoteKey?.id;
     if (!id) return null;
@@ -692,6 +729,31 @@ function createConversationOrchestrator(
       key,
       message: text ? { conversation: text } : { extendedTextMessage: { text: "…" } }
     };
+  }
+
+  function resolveActionQuoteKey(quoteId, item, { hintText = null } = {}) {
+    if (!quoteId) return null;
+    const resolved = resolveVerifiedQuoteKey({
+      channelId: item.remoteJid,
+      remoteJid: item.remoteJid,
+      quoteId,
+      chatMessageIndex,
+      getWaMessageById,
+      groupMemory: runtime.groupMemory,
+      participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
+      participantId: item.participantId ?? null,
+      hintText
+    });
+    if (!resolved.quoteKey && resolved.reason === "not_found") {
+      console.warn(
+        `${logPrefix} quote inválido (${resolved.requestedId}) — enviando sem reply`
+      );
+    } else if (resolved.resolvedFrom && resolved.resolvedFrom !== resolved.messageId) {
+      console.log(
+        `${logPrefix} quote corrigido ${resolved.resolvedFrom} → ${resolved.messageId} (${resolved.reason})`
+      );
+    }
+    return resolved.quoteKey;
   }
 
   async function sendReplies(remoteJid, userId, sessionId, replies = [], token = 0, options = {}) {
@@ -757,10 +819,13 @@ function createConversationOrchestrator(
         const rawQuote =
           perBubbleQuotes[index] ??
           (index === 0 ? quoteKey : null);
-        const normalizedQuote = buildOutgoingQuoteKey(rawQuote, remoteJid, {
-          participantId: options?.participantId ?? null,
-          participantJid: options?.participantJid ?? null
-        });
+        let normalizedQuote = null;
+        if (rawQuote?.id) {
+          normalizedQuote = buildVerifiedQuoteKey(remoteJid, rawQuote.id, {
+            participantJid: options?.participantJid ?? rawQuote.participant ?? null,
+            participantId: options?.participantId ?? null
+          });
+        }
         if (index === 0 && normalizedQuote?.id) {
           console.log(`${logPrefix} outgoing quote id=${normalizedQuote.id} → ${remoteJid}`);
         }
@@ -777,28 +842,9 @@ function createConversationOrchestrator(
             : null;
         const quotedWa = resolveQuotedWaMessage(normalizedQuote, remoteJid);
         let payload = { text: mentionText, ...mentionPayload };
-        if (!quotedWa && normalizedQuote?.id) {
+        if (!quotedWa && normalizedQuote?.id && indexedRow) {
           payload = applyQuotedContextToPayload(payload, normalizedQuote, indexedRow);
         }
-        // #region agent log
-        fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-          body: JSON.stringify({
-            sessionId: "794dcc",
-            runId: "quote-fix",
-            hypothesisId: "Q",
-            location: "messageHandler.js:sendReplies",
-            message: "outgoing quote",
-            data: {
-              quoteId: normalizedQuote?.id ?? null,
-              hasQuotedWa: Boolean(quotedWa),
-              hasContextInfo: Boolean(payload?.contextInfo?.stanzaId)
-            },
-            timestamp: Date.now()
-          })
-        }).catch(() => {});
-        // #endregion
         const sendTask = quotedWa
           ? socket.sendMessage(remoteJid, payload, { quoted: quotedWa })
           : socket.sendMessage(remoteJid, payload);
@@ -845,25 +891,6 @@ function createConversationOrchestrator(
   async function processQueueItem(item) {
     const allowReply = runtime.defaults.replyEnabled && !item.mainObserveOnly;
     const sessionId = item.sessionId ?? item.userId;
-    // #region agent log
-    fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-      body: JSON.stringify({
-        sessionId: "794dcc",
-        runId: "batch-fix",
-        hypothesisId: "D",
-        location: "messageHandler.js:processQueueItem",
-        message: "processing queue item",
-        data: {
-          batchedCount: item.batchedCount ?? 1,
-          hasMedia: Boolean(item.media?.type),
-          messagePreview: String(item.message ?? "").slice(0, 80)
-        },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
     const typingUntil = typingByUser.get(item.userId) ?? 0;
         let outputKind = RESPONSE_OUTPUTS.SILENT;
         addDecisionStep(item.decisionTrace, "queue.processing", {
@@ -1123,68 +1150,6 @@ function createConversationOrchestrator(
               await sleep(randBetween(800, 1500));
             }
             try {
-              const resolveActionQuoteKey = (quoteId) => {
-                if (!quoteId) return null;
-                const resolvedId =
-                  chatMessageIndex?.resolveQuoteMessageId?.(item.remoteJid, quoteId) ?? quoteId;
-                let indexed = chatMessageIndex?.get(item.remoteJid, resolvedId);
-                if (!indexed && runtime.groupMemory) {
-                  const gmFound = runtime.groupMemory.cache?.find(e => e.id === resolvedId && e.channelId === item.remoteJid);
-                  if (gmFound) {
-                    indexed = {
-                      messageId: gmFound.id,
-                      remoteJid: gmFound.channelId,
-                      isFromBot: gmFound.userId === "teto",
-                      actorId: gmFound.userId
-                    };
-                  }
-                }
-                let participantJid = undefined;
-                if (indexed) {
-                  if (indexed.participantJid) {
-                    participantJid = indexed.participantJid;
-                  } else if (indexed.isFromBot) {
-                    const botJid = jidNormalizedUser(socket?.user?.id || socket?.user?.jid || "");
-                    participantJid = botJid || undefined;
-                  } else if (indexed.actorId) {
-                    const member = item.groupRoster?.members?.find(m => m.userId === indexed.actorId || m.canonicalUserId === indexed.actorId);
-                    if (member?.mentionJid) {
-                      participantJid = member.mentionJid;
-                    } else if (String(indexed.actorId).includes("@")) {
-                      participantJid = indexed.actorId;
-                    } else if (/^\d{14,}$/.test(indexed.actorId)) {
-                      participantJid = `${indexed.actorId}@lid`;
-                    } else {
-                      participantJid = `${indexed.actorId}@s.whatsapp.net`;
-                    }
-                  }
-                  const built = buildOutgoingQuoteKey(
-                    {
-                      id: indexed.messageId,
-                      remoteJid: indexed.remoteJid || item.remoteJid,
-                      fromMe: indexed.isFromBot,
-                      participant: participantJid
-                    },
-                    item.remoteJid,
-                    { participantJid }
-                  );
-                  return built;
-                } else {
-                  participantJid = item.participantJid ?? item.messageKey?.participant ?? null;
-                  const built = buildOutgoingQuoteKey(
-                    {
-                      id: resolvedId,
-                      remoteJid: item.remoteJid,
-                      fromMe: false,
-                      participant: participantJid
-                    },
-                    item.remoteJid,
-                    { participantJid }
-                  );
-                  return built;
-                }
-              };
-
               if (action.type === "react") {
                 const reactionKey = buildOutgoingQuoteKey(item.messageKey, item.remoteJid, {
                   participantId: item.participantId ?? null,
@@ -1202,7 +1167,7 @@ function createConversationOrchestrator(
                 const stickerAsset = resolveStickerAsset(action.key, runtime.defaults.stickersPath);
                 if (stickerAsset) {
                   console.log(`${logPrefix} executing action sticker: ${action.key}`);
-                  const quote = resolveActionQuoteKey(action.quoteId);
+                  const quote = resolveActionQuoteKey(action.quoteId, item);
                   const indexedRow =
                     quote?.id && chatMessageIndex
                       ? chatMessageIndex.get(item.remoteJid, quote.id)
@@ -1228,7 +1193,10 @@ function createConversationOrchestrator(
                   chatId: item.remoteJid,
                   mediaHistoryStore,
                   basePath: runtime.defaults.whatsappMediaPath,
-                  visualAnalyses: runtime.visualAnalyses
+                  visualAnalyses: runtime.visualAnalyses,
+                  getWaMessageById,
+                  triggerMessageId: item.messageKey?.id ?? null,
+                  downloadContentFromMessage
                 });
                 if (resolved?.media?.type !== "sticker" || !resolved.media.path) {
                   await sendReplies(
@@ -1259,21 +1227,6 @@ function createConversationOrchestrator(
                     runtime.repertoireHandledMessageIds = new Map();
                   }
                   runtime.repertoireHandledMessageIds.set(targetId, Date.now());
-                  // #region agent log
-                  fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-                    body: JSON.stringify({
-                      sessionId: "794dcc",
-                      runId: "sticker-save-fix",
-                      hypothesisId: "G",
-                      location: "messageHandler.js:save_sticker",
-                      message: "save_sticker done",
-                      data: { messageId: targetId, userKeyProvided, skipVision: userKeyProvided },
-                      timestamp: Date.now()
-                    })
-                  }).catch(() => {});
-                  // #endregion
                   logRepertoireVision(runtime, "manual_save_ok", {
                     key: saved.key,
                     messageId: targetId,
@@ -1301,7 +1254,9 @@ function createConversationOrchestrator(
                     targetId,
                     {
                       participantId: item.participantId ?? null,
-                      participantJid: item.participantJid ?? item.messageKey?.participant ?? null
+                      participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
+                      getWaMessageById,
+                      groupMemory: runtime.groupMemory
                     }
                   );
                   await sendReplies(
@@ -1376,8 +1331,14 @@ function createConversationOrchestrator(
                   chatId: item.remoteJid,
                   mediaHistoryStore,
                   basePath: runtime.defaults.whatsappMediaPath,
-                  visualAnalyses: runtime.visualAnalyses
+                  visualAnalyses: runtime.visualAnalyses,
+                  getWaMessageById,
+                  triggerMessageId: item.messageKey?.id ?? null,
+                  downloadContentFromMessage
                 });
+                // #region agent log
+                fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',runId:'post-fix',location:'messageHandler.js:mediaAction',message:'agent media action execute',data:{command,actionMessageId:action.messageId,targetId,resolvedSource:resolved?.source??null,hasMediaPath:Boolean(resolved?.media?.path),mediaType:resolved?.media?.type??null,itemQuotedId:item.quotedMessageId??null,triggerMessageId:item.messageKey?.id??null},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
                 console.log(
                   `${logPrefix} executing action ${command}: ${targetId} (source=${resolved?.source ?? "none"})`
                 );
@@ -1431,30 +1392,8 @@ function createConversationOrchestrator(
                   (autoQuotedThisTurn ? null : resolveOutgoingQuoteId(item));
                 if (!explicitQuote && autoQuoteId) {
                   autoQuotedThisTurn = true;
-                  // #region agent log
-                  fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-                    body: JSON.stringify({
-                      sessionId: "794dcc",
-                      runId: "quote-sleep-fix",
-                      hypothesisId: "H1",
-                      location: "messageHandler.js:autoQuote",
-                      message: "auto quote applied",
-                      data: {
-                        quoteId: autoQuoteId,
-                        triggerId: item?.messageKey?.id ?? null,
-                        isReply: Boolean(item?.isReply),
-                        batchedCount: item?.batchedCount ?? 1,
-                        sleepDisturbedWake: Boolean(item?.sleepDisturbedWake),
-                        sleepTemporarilyAwake: Boolean(item?.sleepTemporarilyAwake)
-                      },
-                      timestamp: Date.now()
-                    })
-                  }).catch(() => {});
-                  // #endregion
                 }
-                const quoteKey = resolveActionQuoteKey(autoQuoteId);
+                const quoteKey = resolveActionQuoteKey(autoQuoteId, item);
                 await sendReplies(item.remoteJid, item.userId, item.sessionId, [action.text], token, {
                   softened,
                   timingPlan,
@@ -1637,13 +1576,15 @@ function createConversationOrchestrator(
             await sleep(debounceMs);
           }
           const quoteTargetId = resolveOutgoingQuoteId(item);
-          const shouldQuote = Boolean(quoteTargetId);
           const quoteKeyForSend = quoteTargetId
             ? buildQuoteKeyFromMessageId(chatMessageIndex, item.remoteJid, quoteTargetId, {
                 participantId: item.participantId ?? null,
-                participantJid: item.participantJid ?? item.messageKey?.participant ?? null
+                participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
+                getWaMessageById,
+                groupMemory: runtime.groupMemory
               })
             : null;
+          const shouldQuote = Boolean(quoteKeyForSend);
           const quoteKeys = Array.isArray(item.quoteMessageKeys)
             ? item.quoteMessageKeys
             : shouldQuote
@@ -1839,42 +1780,12 @@ function createConversationOrchestrator(
 
     if (runningBySession.has(key) && shouldBumpInterruptOnEnqueue(entry)) {
       bumpInterrupt(key);
-      // #region agent log
-      fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-        body: JSON.stringify({
-          sessionId: "794dcc",
-          runId: "sticker-save-fix",
-          hypothesisId: "E",
-          location: "messageHandler.js:enqueue:bumpInterrupt",
-          message: "interrupt bumped on enqueue",
-          data: { sessionId: key, preview: String(entry.message ?? "").slice(0, 60) },
-          timestamp: Date.now()
-        })
-      }).catch(() => {});
-      // #endregion
     }
 
     const last = queue[queue.length - 1];
     const mergedWithLast = last ? mergeDirectEntries(last, entry) : null;
     if (mergedWithLast && queue.length < maxCoalesce) {
       queue[queue.length - 1] = mergedWithLast;
-      // #region agent log
-      fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-        body: JSON.stringify({
-          sessionId: "794dcc",
-          runId: "batch-fix",
-          hypothesisId: "B",
-          location: "messageHandler.js:enqueue",
-          message: "coalesced with queue tail",
-          data: { batchedCount: mergedWithLast.batchedCount, sessionId: key },
-          timestamp: Date.now()
-        })
-      }).catch(() => {});
-      // #endregion
     } else if (queue.length >= maxCoalesce - 1) {
       queue = coalesceQueueEntries([...queue, entry]);
       console.warn(`[whatsapp] fila ${key} cheia — ${maxCoalesce} msgs fundidas em 1 resposta`);
@@ -1896,21 +1807,6 @@ function createConversationOrchestrator(
       const merged = prev ? mergeDirectEntries(prev, entry) : { ...entry, batchedCount: entry.batchedCount ?? 1 };
       if (merged) {
         deferredBySession.set(key, merged);
-        // #region agent log
-        fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-          body: JSON.stringify({
-            sessionId: "794dcc",
-            runId: "batch-fix",
-            hypothesisId: "C",
-            location: "messageHandler.js:scheduleDirectIncoming",
-            message: "deferred while processing",
-            data: { batchedCount: merged.batchedCount, sessionId: key },
-            timestamp: Date.now()
-          })
-        }).catch(() => {});
-        // #endregion
       } else {
         deferredBySession.set(key, { ...entry, batchedCount: entry.batchedCount ?? 1 });
       }
@@ -1966,21 +1862,6 @@ function createConversationOrchestrator(
       pendingBySession.delete(key);
       if (merged.batchedCount > 1) {
         console.log(`[whatsapp] batch ${merged.batchedCount} msgs → 1 reply (${key})`);
-        // #region agent log
-        fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-          body: JSON.stringify({
-            sessionId: "794dcc",
-            runId: "batch-fix",
-            hypothesisId: "A",
-            location: "messageHandler.js:scheduleDirectIncoming:flush",
-            message: "pending batch flushed",
-            data: { batchedCount: merged.batchedCount, sessionId: key },
-            timestamp: Date.now()
-          })
-        }).catch(() => {});
-        // #endregion
       }
       enqueue(merged);
     }, batchMs);
@@ -2344,37 +2225,41 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         if (parsedCommand.command === "toimg") {
           if (output.kind === "video") {
+            const gifPath = output.toimgGifPath;
+            const gifBuffer = gifPath && existsSync(gifPath) ? readFileSync(gifPath) : null;
+            const gifDocMeta = {
+              mimetype: "image/gif",
+              fileName: "sticker-convertido.gif"
+            };
+
             if (outBuffer) {
               const playbackMime = output.toimgPlaybackMime ?? "video/mp4";
-              const playbackPayload = {
-                video: outBuffer,
-                gifPlayback: true,
-                mimetype: playbackMime,
-                ...(playbackMime === "video/mp4" &&
-                typeof output.toimgPlaybackSeconds === "number"
-                  ? { seconds: output.toimgPlaybackSeconds }
-                  : {})
-              };
-
-
-              await safeSendMessage(remoteJid, playbackPayload);
-            }
-            const gifDoc = output.toimgGifPath;
-            if (gifDoc && existsSync(gifDoc)) {
-
-              await safeSendMessage(remoteJid, {
-                document: readFileSync(gifDoc),
-                mimetype: "image/gif",
-                fileName: "sticker-convertido.gif"
-              });
+              await safeSendMessage(
+                remoteJid,
+                buildWaGifPlaybackPayload(outBuffer, {
+                  mimetype: playbackMime,
+                  seconds: output.toimgPlaybackSeconds
+                })
+              );
+              if (gifBuffer) {
+                await safeSendMessage(remoteJid, buildWaDocumentPayload(gifBuffer, gifDocMeta));
+              }
+            } else if (gifBuffer) {
+              await safeSendMessage(
+                remoteJid,
+                buildWaGifPlaybackPayload(gifBuffer, { mimetype: "image/gif" })
+              );
+              await safeSendMessage(remoteJid, buildWaDocumentPayload(gifBuffer, gifDocMeta));
             }
           } else {
             await safeSendMessage(remoteJid, { image: outBuffer });
-            await safeSendMessage(remoteJid, {
-              document: outBuffer,
-              mimetype: "image/png",
-              fileName: "sticker-convertido.png"
-            });
+            await safeSendMessage(
+              remoteJid,
+              buildWaDocumentPayload(outBuffer, {
+                mimetype: "image/png",
+                fileName: "sticker-convertido.png"
+              })
+            );
           }
         } else if (output.kind === "video") {
 
@@ -3667,24 +3552,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           runtime.brainOrchestrator?.life?.sleep?.isTemporarilyAwake?.()
         ) {
           runtime.brainOrchestrator?.life?.sleep?.extendTemporaryWakeOnInteraction?.();
-          // #region agent log
-          fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-            body: JSON.stringify({
-              sessionId: "794dcc",
-              runId: "quote-sleep-fix",
-              hypothesisId: "H5",
-              location: "messageHandler.js:extendTempWake",
-              message: "temp wake extended on interaction",
-              data: {
-                extensions: runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.()?.tempWakeExtensionCount ?? 0,
-                grogginess: runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.()?.tempWakeGrogginess ?? 0
-              },
-              timestamp: Date.now()
-            })
-          }).catch(() => {});
-          // #endregion
         }
 
         const sleepSnapAfter = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? sleepSnap;
@@ -3786,21 +3653,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           sleepGroggy: sleepSnapAfter.state === "groggy"
         });
       } catch (error) {
-        // #region agent log
-        fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-          body: JSON.stringify({
-            sessionId: "794dcc",
-            runId: "post-fix",
-            hypothesisId: "A",
-            location: "messageHandler.js:catch",
-            message: "handler error",
-            data: { err: String(error?.message ?? error) },
-            timestamp: Date.now()
-          })
-        }).catch(() => {});
-        // #endregion
         console.error("[whatsapp] message handler error:", error.message);
       }
     }

@@ -962,8 +962,8 @@ async function ffmpegAnimatedWebpFallbackToMp4(inputPath, outputMp4) {
  * 1) Sharp gera GIF (mantém alpha / transparência para o documento).
  * 2) Tenta MP4 (H.264) para autoplay no chat.
  * 3) Se falhar, reencode agressivo do GIF → MP4 reproduzível (evita GIF enorme na bolha).
- * 4) Bolha **só MP4** (WhatsApp não lida bem com GIF grande em `videoMessage`). Último recurso: só documento GIF.
- * `toimgGifPath` é sempre o GIF completo para o documento.
+ * 4) Bolha MP4 com gifPlayback + GIF completo como documento; fallback: GIF inline + documento.
+ * `toimgGifPath` guarda o GIF completo para fallback de envio inline.
  */
 async function animatedStickerToVideo(inputPath, outputDir) {
   ensureDir(outputDir);

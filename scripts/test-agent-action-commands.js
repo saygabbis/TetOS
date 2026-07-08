@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { parseActionCommands } from "../src/modules/chat/chatService.js";
+import { detectAgentUrlDownloadIntent } from "../src/core/media/agentUrlDownloadIntent.js";
 import { isPresetStickerKey, normalizeAgentMediaCommand } from "../src/integrations/whatsapp/agentMediaCommands.js";
 import {
   deriveStickerKeyFromVision,
@@ -95,9 +96,38 @@ assert.equal(genericDl[0].command, "download");
 const thumbDl = parseActionCommands('thumb("https://youtu.be/abc")');
 assert.equal(thumbDl[0].command, "thumbnail");
 
+const ytAlias = parseActionCommands('yt("https://youtu.be/abc", "mp3")');
+assert.equal(ytAlias[0].type, "url_download");
+assert.equal(ytAlias[0].command, "youtube");
+
+const xAlias = parseActionCommands('x("https://x.com/user/status/1", "post")');
+assert.equal(xAlias[0].command, "twitter");
+
+const instaAlias = parseActionCommands('insta("https://instagram.com/p/abc")');
+assert.equal(instaAlias[0].command, "instagram");
+
+const tkAlias = parseActionCommands('tk("https://tiktok.com/@u/video/1")');
+assert.equal(tkAlias[0].command, "tiktok");
+
+const fbAlias = parseActionCommands('fb("https://facebook.com/watch/?v=1")');
+assert.equal(fbAlias[0].command, "facebook");
+
+const baixarAlias = parseActionCommands('baixar("https://vimeo.com/123")');
+assert.equal(baixarAlias[0].command, "download");
+
+const unquotedUrl = parseActionCommands('youtube(https://youtu.be/abc, mp3)');
+assert.equal(unquotedUrl[0].type, "url_download");
+assert.equal(unquotedUrl[0].url, "https://youtu.be/abc");
+assert.deepEqual(unquotedUrl[0].args, ["mp3"]);
+
 const convertCmd = parseActionCommands('convert("3EB0ABC1234567890DEF1", "png")');
 assert.equal(convertCmd[0].type, "media");
 assert.equal(convertCmd[0].command, "convert");
 assert.deepEqual(convertCmd[0].args, ["png"]);
+
+const urlIntent = detectAgentUrlDownloadIntent("Teto baixa em mp3 https://youtu.be/abc", {});
+assert.equal(urlIntent.command, "youtube");
+assert.equal(urlIntent.url, "https://youtu.be/abc");
+assert.deepEqual(urlIntent.args, ["mp3"]);
 
 console.log("test-agent-action-commands: ok");

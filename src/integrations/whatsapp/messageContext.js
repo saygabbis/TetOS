@@ -1,3 +1,6 @@
+import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
+import { isMediaDescribeRequest } from "../../core/media/visualKnowledgeIntent.js";
+import { resolveVerifiedQuoteKey } from "./quoteMessageResolver.js";
 import { detectTetoNameCall, isLikelyVocativeNameCall } from "./tetoNameDetect.js";
 
 /** Extrai contextInfo (quote, menções) de qualquer tipo de mensagem WA. */
@@ -247,26 +250,46 @@ function isQuotedMediaContext(item = {}) {
   return /^\[(sticker|image|video|gif|audio|media|figurinha|imagem)\]/i.test(quotedText);
 }
 
+/** Reply de texto sobre mídia marcada — citar a mídia, não a bolha de texto. */
+function shouldQuoteRepliedMediaInsteadOfTrigger(item = {}) {
+  const quotedId = item?.quotedMessageId ?? null;
+  if (!quotedId || !isQuotedMediaContext(item)) return false;
+
+  const userText = String(item?.message ?? "").trim();
+  if (!userText) return false;
+
+  if (item?.mediaDescribeRequest || isMediaDescribeRequest(userText)) return true;
+
+  const mediaIntent = detectAgentMediaReplyIntent(userText, {
+    quotedMessageId: quotedId,
+    isReply: item?.isReply,
+    quotedMessage: item?.quotedMessage
+  });
+  return Boolean(mediaIntent?.messageId);
+}
+
 /**
  * ID da mensagem que a resposta deve citar no WhatsApp.
- * Prioriza a mídia marcada no reply; senão a mídia que acabou de chegar.
+ * - Mensagem recebida com mídia → citar essa mensagem (triggerId).
+ * - Reply de texto → citar a mensagem DO USUÁRIO (triggerId), não o que ele marcou.
+ * - Exceção: pedido explícito sobre mídia marcada (descrever, converter, etc.) → quotedMessageId.
  */
 export function resolveOutgoingQuoteId(item = {}) {
-  const triggerId = item?.messageKey?.id ?? null;
+  const triggerId = item?.messageKey?.id ?? item?.messageId ?? null;
   const quotedId = item?.quotedMessageId ?? null;
   const mediaType = item?.media?.type ?? null;
   const isGroup = Boolean(item?.isGroup);
+  const incomingIsMedia = Boolean(mediaType && VISUAL_MEDIA_TYPES.has(mediaType));
 
-  if (quotedId && (item?.isReply || item?.quotedMessage || isQuotedMediaContext(item))) {
-    return quotedId;
-  }
-
-  if (triggerId && mediaType && VISUAL_MEDIA_TYPES.has(mediaType)) {
+  if (triggerId && incomingIsMedia) {
     return triggerId;
   }
 
-  if (quotedId && item?.isReply) {
-    return quotedId;
+  if (triggerId && item?.isReply && !incomingIsMedia) {
+    if (quotedId && shouldQuoteRepliedMediaInsteadOfTrigger(item)) {
+      return quotedId;
+    }
+    return triggerId;
   }
 
   if ((item?.batchedCount ?? 1) > 1 && triggerId) {
@@ -290,6 +313,10 @@ export function resolveOutgoingQuoteId(item = {}) {
     return triggerId;
   }
 
+  if (triggerId && item?.isReplyToBot && !incomingIsMedia) {
+    return triggerId;
+  }
+
   return null;
 }
 
@@ -301,20 +328,43 @@ export function buildQuoteKeyFromMessageId(
   chatMessageIndex,
   remoteJid,
   quoteId,
-  { participantJid = null, participantId = null } = {}
+  {
+    participantJid = null,
+    participantId = null,
+    getWaMessageById = null,
+    groupMemory = null,
+    hintText = null
+  } = {}
 ) {
   const rawId = String(quoteId ?? "").trim();
   if (!rawId || !remoteJid) return null;
-  const resolvedId =
-    chatMessageIndex?.resolveQuoteMessageId?.(remoteJid, rawId) ?? rawId;
-  const indexed = chatMessageIndex?.get?.(remoteJid, resolvedId);
-  return buildOutgoingQuoteKey(
-    {
-      id: resolvedId,
-      fromMe: Boolean(indexed?.isFromBot),
-      participant: indexed?.participantJid ?? participantJid ?? null
-    },
+
+  const resolved = resolveVerifiedQuoteKey({
+    channelId: remoteJid,
     remoteJid,
-    { participantId, participantJid: indexed?.participantJid ?? participantJid ?? null }
-  );
+    quoteId: rawId,
+    chatMessageIndex,
+    getWaMessageById,
+    groupMemory,
+    participantJid,
+    participantId,
+    hintText
+  });
+
+  if (!resolved.quoteKey) {
+    if (resolved.reason === "not_found" && resolved.requestedId) {
+      console.warn(
+        `[quote] id inexistente ou distante (${resolved.requestedId}) — enviando sem reply`
+      );
+    }
+    return null;
+  }
+
+  if (resolved.resolvedFrom && resolved.resolvedFrom !== resolved.messageId) {
+    console.log(
+      `[quote] ${resolved.resolvedFrom} → ${resolved.messageId} (${resolved.reason}, conf=${(resolved.confidence ?? 0).toFixed(2)})`
+    );
+  }
+
+  return resolved.quoteKey;
 }

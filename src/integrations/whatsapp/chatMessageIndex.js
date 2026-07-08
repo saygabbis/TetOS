@@ -71,15 +71,14 @@ export class ChatMessageIndex {
       .trim();
     if (!raw) return null;
     if (this.get(channelId, raw)) return raw;
-    if (/^[0-9A-F]{12,}$/i.test(raw) && /[A-F]/i.test(raw)) return raw;
-    if (!/^\d{10,}$/.test(raw)) return raw;
+    if (!/^\d{10,}$/.test(raw)) return null;
     const thread = this.getThread(channelId, 60);
     for (let i = thread.length - 1; i >= 0; i -= 1) {
       const row = thread[i];
       if (row?.isFromBot || row?.actorId === "teto") continue;
       if (String(row.actorId ?? "") === raw) return row.messageId;
     }
-    return raw;
+    return null;
   }
 
   findBotMessageByText(channelId, quotedText = "") {

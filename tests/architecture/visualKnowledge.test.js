@@ -23,10 +23,11 @@ describe("resolveOutgoingQuoteId", () => {
     );
   });
 
-  it("quotes marked media when user replies to image", () => {
+  it("quotes marked media when user asks to describe replied image", () => {
     expect(
       resolveOutgoingQuoteId({
         messageKey: { id: "TXT1" },
+        message: "descreve essa imagem",
         quotedMessageId: "IMG9",
         isReply: true,
         quotedMessage: "[imagem] gato",
@@ -34,19 +35,46 @@ describe("resolveOutgoingQuoteId", () => {
       })
     ).toBe("IMG9");
   });
+
+  it("quotes user text when replying to image conversationally", () => {
+    expect(
+      resolveOutgoingQuoteId({
+        messageKey: { id: "TXT1" },
+        message: "achei lindo",
+        quotedMessageId: "IMG9",
+        isReply: true,
+        quotedMessage: "[imagem] gato",
+        replyThreadContext: { quoted: { text: "[imagem] gato" } }
+      })
+    ).toBe("TXT1");
+  });
 });
 
 describe("sanitizeOutgoingActions quote targets", () => {
-  it("keeps quote to replied media id even if recent", () => {
+  it("keeps quote to replied media id when explicitly set on action", () => {
     const actions = sanitizeOutgoingActions(
       [{ type: "message", text: "achei lindo", quoteId: "IMG9" }],
       {
         messageKey: { id: "TXT1" },
         quotedMessageId: "IMG9",
+        isReply: true,
         recentHistory: [{ messageId: "IMG9" }, { messageId: "TXT1" }]
       }
     );
     expect(actions[0].quoteId).toBe("IMG9");
+  });
+
+  it("keeps quote on incoming message for conversational reply", () => {
+    const actions = sanitizeOutgoingActions(
+      [{ type: "message", text: "uai o que foi", quoteId: "TXT1" }],
+      {
+        messageKey: { id: "TXT1" },
+        quotedMessageId: "GIF1",
+        isReply: true,
+        recentHistory: [{ messageId: "GIF1" }, { messageId: "TXT1" }]
+      }
+    );
+    expect(actions[0].quoteId).toBe("TXT1");
   });
 });
 

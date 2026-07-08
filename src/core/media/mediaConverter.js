@@ -1,8 +1,9 @@
-import { existsSync, mkdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, statSync, unlinkSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 import sharp from "sharp";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import { encodeGifToMp4, looksLikeGifFile, mp4OkForPlayback, prepareMp4ForWaPlayback } from "./gifToMp4Encoder.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -73,7 +74,8 @@ export function isSupportedConvertFormat(format) {
   return Boolean(f && SUPPORTED_CONVERT_FORMATS.includes(f));
 }
 
-export async function convertMedia(inputPath, targetFormat, outputDir) {
+export async function convertMedia(inputPath, targetFormat, outputDir, options = {}) {
+  const sourceMediaType = options.sourceMediaType ?? null;
   if (!inputPath || !existsSync(inputPath)) {
     throw new Error("arquivo de entrada invalido");
   }
@@ -98,30 +100,92 @@ export async function convertMedia(inputPath, targetFormat, outputDir) {
     else if (format === "gif") pipeline = pipeline.gif();
     await pipeline.toFile(outputPath);
   } else if (srcKind === "image" && dstKind === "video") {
-    const tmpPng = join(outputDir, `${base}-frame.png`);
-    await sharp(inputPath).png().toFile(tmpPng);
-    await runFfmpeg(
-      ffmpeg(tmpPng)
-        .inputOptions(["-loop", "1"])
-        .outputOptions([
-          "-c:v",
-          "libx264",
-          "-t",
-          "3",
-          "-pix_fmt",
-          "yuv420p",
-          "-movflags",
-          "+faststart"
-        ])
-        .toFormat("mp4")
-        .save(outputPath)
-    );
-    try {
-      const { unlinkSync } = await import("node:fs");
-      unlinkSync(tmpPng);
-    } catch {
-      /* ignore */
+    let fromAnimatedGif = false;
+    let playbackSeconds;
+    const isGif = looksLikeGifFile(inputPath);
+    // #region agent log
+    fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
+      body: JSON.stringify({
+        sessionId: "20737f",
+        hypothesisId: "H1-H3",
+        location: "mediaConverter.js:image-to-video",
+        message: "branch decision",
+        data: {
+          inputPath,
+          srcKind,
+          dstKind,
+          inputExt: extname(inputPath),
+          inputSize: statSync(inputPath).size,
+          isGif,
+          branch: isGif ? "encodeGifToMp4" : "sharpSingleFrame"
+        },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
+    if (isGif) {
+      const playback = await encodeGifToMp4(inputPath, outputPath);
+      fromAnimatedGif = true;
+      playbackSeconds = playback.seconds;
+    } else {
+      const tmpPng = join(outputDir, `${base}-frame.png`);
+      await sharp(inputPath).png().toFile(tmpPng);
+      await runFfmpeg(
+        ffmpeg(tmpPng)
+          .inputOptions(["-loop", "1"])
+          .outputOptions([
+            "-c:v",
+            "libx264",
+            "-t",
+            "3",
+            "-pix_fmt",
+            "yuv420p",
+            "-vf",
+            "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+            "-movflags",
+            "+faststart"
+          ])
+          .toFormat("mp4")
+          .save(outputPath)
+      );
+      try {
+        unlinkSync(tmpPng);
+      } catch {
+        /* ignore */
+      }
     }
+
+    if (!existsSync(outputPath) || statSync(outputPath).size < 1) {
+      throw new Error("conversao nao gerou arquivo valido");
+    }
+
+    const outSize = statSync(outputPath).size;
+    const result = {
+      path: outputPath,
+      kind: dstKind,
+      mimetype: MIME_BY_EXT[outExt] ?? "application/octet-stream",
+      fileName: `${base}-convertido.${outExt}`,
+      ...(fromAnimatedGif
+        ? { gifPlayback: true, seconds: playbackSeconds }
+        : {})
+    };
+    // #region agent log
+    fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
+      body: JSON.stringify({
+        sessionId: "20737f",
+        hypothesisId: "H3-H4",
+        location: "mediaConverter.js:image-to-video-result",
+        message: "image to video conversion done",
+        data: { outSize, fromAnimatedGif, playbackSeconds, gifPlayback: result.gifPlayback ?? false },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
+    return result;
   } else if ((srcKind === "video" || srcKind === "image") && (dstKind === "video" || dstKind === "image")) {
     if (format === "gif" && srcKind === "video") {
       await runFfmpeg(
@@ -130,12 +194,101 @@ export async function convertMedia(inputPath, targetFormat, outputDir) {
           .save(outputPath)
       );
     } else if (format === "mp4" || format === "webm") {
+      if (format === "mp4") {
+        const inputProbe = mp4OkForPlayback(inputPath);
+        if (inputProbe.ok) {
+          const playback = prepareMp4ForWaPlayback(inputPath, outputPath);
+          const useGifPlayback = sourceMediaType === "gif";
+          // #region agent log
+          fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
+            body: JSON.stringify({
+              sessionId: "20737f",
+              runId: "post-fix",
+              hypothesisId: "H2-fix",
+              location: "mediaConverter.js:mp4-passthrough",
+              message: "valid mp4 passthrough",
+              data: {
+                inputSize: statSync(inputPath).size,
+                outSize: statSync(outputPath).size,
+                sourceMediaType,
+                gifPlayback: useGifPlayback,
+                seconds: playback.seconds,
+                inputProbeOk: inputProbe.ok
+              },
+              timestamp: Date.now()
+            })
+          }).catch(() => {});
+          // #endregion
+          return {
+            path: outputPath,
+            kind: dstKind,
+            mimetype: MIME_BY_EXT[outExt] ?? "application/octet-stream",
+            fileName: `${base}-convertido.${outExt}`,
+            ...(useGifPlayback ? { gifPlayback: true, seconds: playback.seconds } : {})
+          };
+        }
+        if (looksLikeGifFile(inputPath)) {
+          const playback = await encodeGifToMp4(inputPath, outputPath);
+          return {
+            path: outputPath,
+            kind: dstKind,
+            mimetype: MIME_BY_EXT[outExt] ?? "application/octet-stream",
+            fileName: `${base}-convertido.${outExt}`,
+            gifPlayback: true,
+            seconds: playback.seconds
+          };
+        }
+      }
+      // #region agent log
+      fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
+        body: JSON.stringify({
+          sessionId: "20737f",
+          hypothesisId: "H2",
+          location: "mediaConverter.js:video-reencode",
+          message: "video/image generic reencode branch",
+          data: {
+            inputPath,
+            srcKind,
+            format,
+            inputExt: extname(inputPath),
+            inputSize: existsSync(inputPath) ? statSync(inputPath).size : 0,
+            looksLikeGif: looksLikeGifFile(inputPath)
+          },
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+      // #endregion
       await runFfmpeg(
         ffmpeg(inputPath)
-          .outputOptions(["-c:v", "libx264", "-c:a", "aac", "-movflags", "+faststart"])
+          .outputOptions([
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv420p",
+            "-vf",
+            "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+            "-movflags",
+            "+faststart",
+            "-an",
+            "-profile:v",
+            "baseline",
+            "-level",
+            "3.1"
+          ])
           .toFormat(format)
           .save(outputPath)
       );
+      if (format === "mp4") {
+        try {
+          prepareMp4ForWaPlayback(outputPath, outputPath);
+        } catch {
+          /* mantém saída do reencode */
+        }
+      }
     } else if (dstKind === "image") {
       await runFfmpeg(
         ffmpeg(inputPath).outputOptions(["-frames:v", "1"]).save(outputPath)
@@ -165,10 +318,14 @@ export async function convertMedia(inputPath, targetFormat, outputDir) {
     throw new Error("conversao nao gerou arquivo valido");
   }
 
+  const finalProbe = format === "mp4" ? mp4OkForPlayback(outputPath) : { ok: false };
   return {
     path: outputPath,
     kind: dstKind,
     mimetype: MIME_BY_EXT[outExt] ?? "application/octet-stream",
-    fileName: `${base}-convertido.${outExt}`
+    fileName: `${base}-convertido.${outExt}`,
+    ...(format === "mp4" && sourceMediaType === "gif" && finalProbe.ok
+      ? { gifPlayback: true, seconds: finalProbe.seconds }
+      : {})
   };
 }

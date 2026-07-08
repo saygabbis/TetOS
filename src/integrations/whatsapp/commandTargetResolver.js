@@ -1,6 +1,9 @@
 import { normalizeMessageContent } from "baileys";
 import { probeStickerIsAnimated } from "../../core/media/stickerAnimation.js";
 import { fileExtFromDocumentMessage } from "./mediaStore.js";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { extname } from "node:path";
+import { looksLikeGifFile } from "../../core/media/gifToMp4Encoder.js";
 
 function unwrapMessage(message = {}) {
   const normalized = normalizeMessageContent(message);
@@ -79,6 +82,34 @@ export async function resolveCommandTarget({
         preferredExt: quotedContent.documentMessage ? fileExtFromDocumentMessage(quotedContent.documentMessage) : null,
         decryptMediaAs
       });
+      // #region agent log
+      try {
+        const head = existsSync(path) ? readFileSync(path, { start: 0, end: 5 }).toString("ascii") : "";
+        fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
+          body: JSON.stringify({
+            sessionId: "20737f",
+            hypothesisId: "H1-H2",
+            location: "commandTargetResolver.js:persist",
+            message: "convert target resolved from reply",
+            data: {
+              quotedType,
+              fromDocument,
+              decryptMediaAs,
+              path,
+              ext: extname(path),
+              sizeBytes: existsSync(path) ? statSync(path).size : 0,
+              headSig: head,
+              looksLikeGif: looksLikeGifFile(path),
+              docMime: quotedContent.documentMessage?.mimetype ?? null,
+              docName: quotedContent.documentMessage?.fileName ?? null
+            },
+            timestamp: Date.now()
+          })
+        }).catch(() => {});
+      } catch {}
+      // #endregion
       const isStickerAnim = await probeStickerIsAnimated(path, {
         isAnimatedHint:
           quotedType === "gif" ||

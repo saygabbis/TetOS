@@ -16,6 +16,7 @@ import { hasVocativeToTeto } from "../../modules/chat/coherenceGuards.js";
 import { ChatService } from "../../modules/chat/chatService.js";
 import { detectVulnerability } from "../brain/vulnerabilityDetect.js";
 import { detectImageGenerationIntent } from "../media/imageGenerationIntent.js";
+import { detectAgentUrlDownloadIntent } from "../media/agentUrlDownloadIntent.js";
 import {
   detectVisualTeaching,
   isMediaDescribeRequest
@@ -861,6 +862,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
     await payload.onGenerationStart();
   }
 
+  // #region agent log
+  fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',location:'messagePipeline.js:beforeHandleMessage',message:'pipeline meta for agent',data:{inputPreview:String(input??'').slice(0,80),quotedMessageId:quotedMessageId??null,isReply:Boolean(isReply),quotedPreview:String(quotedMessage??'').slice(0,60),mediaType:media?.type??null,messageId:messageKey?.id??null},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
+  // #endregion
   const replies = await runtime.chatService.handleMessage(
     input,
     {
@@ -870,6 +874,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       groupRoster,
       quotedMessage,
       quotedMessageId,
+      incomingMessageId: messageKey?.id ?? payload?.messageId ?? null,
       replyThreadContext,
       isReply: Boolean(isReply),
       isReplyToBot: Boolean(isReplyToBot),
@@ -916,6 +921,11 @@ export async function runMessagePipeline(runtime, payload = {}) {
       repertoireModeActive: Boolean(runtime.stickerRepertoireMode?.isActive?.(safeUserId)),
       stickersPath: runtime.defaults.stickersPath,
       imageGenIntent: detectImageGenerationIntent(input),
+      urlDownloadIntent: detectAgentUrlDownloadIntent(input, {
+        quotedMessage,
+        quotedMessageId,
+        isReply
+      }),
       historicalMultimodalContext,
       ...(relationshipMeta ?? {}),
       ...searchMeta,

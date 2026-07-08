@@ -16,6 +16,11 @@ import {
   applyQuotedContextToPayload,
   buildOutgoingQuoteKey
 } from "./messageContext.js";
+import {
+  buildWaDocumentPayload,
+  buildWaGifPlaybackPayload,
+  buildWaMediaPayload
+} from "./waMediaPayload.js";
 
 function isWaConnectionError(error) {
   const msg = String(error?.message ?? error ?? "");
@@ -121,7 +126,10 @@ export class MediaCommandService {
 
     return this.commandQueue.enqueue(remoteJid, async () => {
       this._commandQuoteContext = { remoteJid, incoming };
-      const send = (payload) => this.sendWithActiveQuote(remoteJid, payload);
+      const send = (arg1, arg2) => {
+        const payload = arg2 !== undefined ? arg2 : arg1;
+        return this.sendWithActiveQuote(remoteJid, payload);
+      };
       const prevSend = this.safeSendMessage;
       this.safeSendMessage = send;
       try {
@@ -231,7 +239,10 @@ export class MediaCommandService {
   async handleUrlCommand({ parsedCommand, remoteJid, userId, incoming = null }) {
     return this.commandQueue.enqueue(remoteJid, async () => {
       this._commandQuoteContext = incoming ? { remoteJid, incoming } : null;
-      const send = (payload) => this.sendWithActiveQuote(remoteJid, payload);
+      const send = (arg1, arg2) => {
+        const payload = arg2 !== undefined ? arg2 : arg1;
+        return this.sendWithActiveQuote(remoteJid, payload);
+      };
       const prevSend = this.safeSendMessage;
       this.safeSendMessage = send;
       try {
@@ -386,7 +397,8 @@ export class MediaCommandService {
       const output = await convertMedia(
         resolved.media.path,
         format,
-        this.runtime.defaults.commandMediaDerivedPath
+        this.runtime.defaults.commandMediaDerivedPath,
+        { sourceMediaType: resolved.media.type }
       );
       await this.sendPresence("paused", remoteJid);
       return output;
@@ -399,11 +411,13 @@ export class MediaCommandService {
     const outBuffer = output.path ? readFileSync(output.path) : null;
 
     if (parsedCommand.command === "removebg") {
-      await this.safeSendMessage(remoteJid, {
-        document: outBuffer,
-        mimetype: output.mimetype ?? "image/png",
-        fileName: output.fileName ?? "sem-fundo.png"
-      });
+      await this.safeSendMessage(
+        remoteJid,
+        buildWaDocumentPayload(outBuffer, {
+          mimetype: output.mimetype ?? "image/png",
+          fileName: output.fileName ?? "sem-fundo.png"
+        })
+      );
       return;
     }
 
@@ -436,30 +450,33 @@ export class MediaCommandService {
   async sendMediaOutput(output, remoteJid) {
     if (!output?.path || !existsSync(output.path)) return;
     const outBuffer = readFileSync(output.path);
-    const mimetype = output.mimetype ?? "application/octet-stream";
-    const fileName = output.fileName ?? "arquivo";
-
-    if (output.kind === "video") {
-      await this.safeSendMessage(remoteJid, {
-        video: outBuffer,
-        mimetype,
-        gifPlayback: mimetype === "image/gif" || fileName.endsWith(".gif")
-      });
-    } else if (output.kind === "audio") {
-      await this.safeSendMessage(remoteJid, {
-        audio: outBuffer,
-        mimetype,
-        ptt: false
-      });
-    } else if (output.kind === "image") {
-      await this.safeSendMessage(remoteJid, { image: outBuffer, mimetype });
-    }
-
-    await this.safeSendMessage(remoteJid, {
-      document: outBuffer,
-      mimetype,
-      fileName
-    });
+    const payload = buildWaMediaPayload(outBuffer, output);
+    // #region agent log
+    fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
+      body: JSON.stringify({
+        sessionId: "20737f",
+        hypothesisId: "H4",
+        location: "mediaCommandService.js:sendMediaOutput",
+        message: "wa send payload",
+        data: {
+          outSize: outBuffer.length,
+          kind: output.kind,
+          mimetype: output.mimetype,
+          gifPlayback: output.gifPlayback ?? null,
+          seconds: output.seconds ?? null,
+          payloadKeys: Object.keys(payload),
+          waGifPlayback: payload.gifPlayback ?? null,
+          waMimetype: payload.mimetype ?? null,
+          waSeconds: payload.seconds ?? null
+        },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
+    await this.safeSendMessage(remoteJid, payload);
+    await this.safeSendMessage(remoteJid, buildWaDocumentPayload(outBuffer, output));
   }
 
   async runAgentMediaCommand({
@@ -608,34 +625,46 @@ export class MediaCommandService {
 
   async sendToImgOutput(output, outBuffer, remoteJid) {
     if (output.kind === "video") {
+      const gifPath = output.toimgGifPath;
+      const gifBuffer = gifPath && existsSync(gifPath) ? readFileSync(gifPath) : null;
+      const gifDocMeta = {
+        mimetype: "image/gif",
+        fileName: "sticker-convertido.gif"
+      };
+
       if (outBuffer) {
         const playbackMime = output.toimgPlaybackMime ?? "video/mp4";
-        await this.safeSendMessage(remoteJid, {
-          video: outBuffer,
-          gifPlayback: true,
-          mimetype: playbackMime,
-          ...(playbackMime === "video/mp4" && typeof output.toimgPlaybackSeconds === "number"
-            ? { seconds: output.toimgPlaybackSeconds }
-            : {})
-        });
+        await this.safeSendMessage(
+          remoteJid,
+          buildWaGifPlaybackPayload(outBuffer, {
+            mimetype: playbackMime,
+            seconds: output.toimgPlaybackSeconds
+          })
+        );
+        if (gifBuffer) {
+          await this.safeSendMessage(remoteJid, buildWaDocumentPayload(gifBuffer, gifDocMeta));
+        }
+        return;
       }
-      const gifDoc = output.toimgGifPath;
-      if (gifDoc && existsSync(gifDoc)) {
-        await this.safeSendMessage(remoteJid, {
-          document: readFileSync(gifDoc),
-          mimetype: "image/gif",
-          fileName: "sticker-convertido.gif"
-        });
+
+      if (gifBuffer) {
+        await this.safeSendMessage(
+          remoteJid,
+          buildWaGifPlaybackPayload(gifBuffer, { mimetype: "image/gif" })
+        );
+        await this.safeSendMessage(remoteJid, buildWaDocumentPayload(gifBuffer, gifDocMeta));
       }
       return;
     }
 
     await this.safeSendMessage(remoteJid, { image: outBuffer });
-    await this.safeSendMessage(remoteJid, {
-      document: outBuffer,
-      mimetype: "image/png",
-      fileName: "sticker-convertido.png"
-    });
+    await this.safeSendMessage(
+      remoteJid,
+      buildWaDocumentPayload(outBuffer, {
+        mimetype: "image/png",
+        fileName: "sticker-convertido.png"
+      })
+    );
   }
 
   async handleGenerateImage({ parsedCommand, remoteJid, userId, incoming = null }) {

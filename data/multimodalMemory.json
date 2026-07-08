@@ -95,7 +95,7 @@
       "userId": "157947506229421",
       "channelId": "120363425913528764@g.us",
       "mediaType": "sticker",
-      "mediaPath": "data\\media\\ACAB6998D93DBE8EFB8BCCBA924DAC8F-sticker.webp",
+      "mediaPath": "./data/media/_archive/knowledge/5d05ae6a47011bc1166c.jpg",
       "text": "Sticker animada: Menina anime rosa segurando números. Comemorar data ou idade específica.",
       "createdAt": "2026-07-01T20:46:00.791Z",
       "messageId": "ACAB6998D93DBE8EFB8BCCBA924DAC8F"
@@ -115,7 +115,7 @@
       "userId": "5516993061143",
       "channelId": "120363425913528764@g.us",
       "mediaType": "sticker",
-      "mediaPath": "data\\media\\3EB0FC216AB810D7319361-sticker.webp",
+      "mediaPath": "./data/media/_archive/knowledge/6472c524f8db5e6347b0.jpg",
       "text": "Sticker: Personagem rosa, pera, texto confuso. Para dúvidas sobre alguém desconhecido.",
       "createdAt": "2026-07-01T20:51:33.132Z",
       "messageId": "3EB0FC216AB810D7319361"
@@ -185,7 +185,7 @@
       "userId": "dm-157947506229421",
       "channelId": "157947506229421@lid",
       "mediaType": "image",
-      "mediaPath": "data\\media\\3EB0AC99F2D5E97BB0DBC4-image.jpg",
+      "mediaPath": "./data/media/_archive/knowledge/a7f209670a80d2fffd2e.jpg",
       "text": "Imagem: Três garotas em estilo anime com cabelos de cores diferentes (rosa, azul e loiro) vestindo uniformes escolares semelhantes. oq tem nessa imagem?",
       "createdAt": "2026-07-08T05:26:51.475Z",
       "messageId": "3EB0AC99F2D5E97BB0DBC4"
@@ -195,7 +195,7 @@
       "userId": "dm-157947506229421",
       "channelId": "157947506229421@lid",
       "mediaType": "image",
-      "mediaPath": "data\\media\\3EB0AC99F2D5E97BB0DBC4-image.jpg",
+      "mediaPath": "./data/media/_archive/knowledge/a7f209670a80d2fffd2e.jpg",
       "text": "Imagem: Três garotas em estilo anime com cabelos de cores diferentes (rosa, azul e loiro) vestindo uniformes escolares semelhantes. oq tem nessa imagem?",
       "createdAt": "2026-07-08T05:26:55.756Z",
       "messageId": "3EB0AC99F2D5E97BB0DBC4"
@@ -349,6 +349,36 @@
       "text": "Faz comigo\n[sticker]",
       "createdAt": "2026-07-08T12:51:39.521Z",
       "messageId": "ACA8F9B9CEE000B069D0FE947942A4E2"
+    },
+    {
+      "id": "ed185413-1c8b-4f60-a61e-01329782e607",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaType": "audio",
+      "mediaPath": "data\\media\\3EB0E078F560D0C53E8A8F-audio.ogg",
+      "text": "Áudio recebido por WhatsApp. Arquivo: data\\media\\3EB0E078F560D0C53E8A8F-audio.ogg Tipo: audio/mpeg Duração aproximada: 249s Tamanho: 8019597 bytes Não foi possível transcrever automaticamente; trate como áudio recebido e peça confirmação breve se o conteúdo for necessário.",
+      "createdAt": "2026-07-08T15:25:07.917Z",
+      "messageId": "3EB0E078F560D0C53E8A8F"
+    },
+    {
+      "id": "08ff3932-c4d4-4e2f-88d2-5ed6c2849928",
+      "userId": "5516993061143",
+      "channelId": "120363425913528764@g.us",
+      "mediaType": "audio",
+      "mediaPath": "data\\media\\3EB08DFAF62C57EE0DB92E-audio.ogg",
+      "text": "Áudio recebido por WhatsApp. Arquivo: data\\media\\3EB08DFAF62C57EE0DB92E-audio.ogg Tipo: audio/mpeg Duração aproximada: 176s Tamanho: 5735013 bytes Não foi possível transcrever automaticamente; trate como áudio recebido e peça confirmação breve se o conteúdo for necessário.",
+      "createdAt": "2026-07-08T16:20:30.032Z",
+      "messageId": "3EB08DFAF62C57EE0DB92E"
+    },
+    {
+      "id": "03acf2a3-5774-4319-bcf3-ca564c8f659a",
+      "userId": "157947506229421",
+      "channelId": "120363425913528764@g.us",
+      "mediaType": "sticker",
+      "mediaPath": "data\\media\\3EB01F06380CB724FAE589-sticker.webp",
+      "text": "[sticker]",
+      "createdAt": "2026-07-08T19:32:28.324Z",
+      "messageId": "3EB01F06380CB724FAE589"
     }
   ]
 }

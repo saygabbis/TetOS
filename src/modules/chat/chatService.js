@@ -22,9 +22,12 @@ import {
 import {
   AGENT_URL_DOWNLOAD_COMMAND_PATTERN,
   buildUrlDownloadAction,
-  isAgentUrlDownloadCommand
+  isAgentUrlDownloadCommand,
+  parseAgentCommandArgs
 } from "../../integrations/whatsapp/agentDownloadCommands.js";
+import { detectAgentUrlDownloadIntent } from "../../core/media/agentUrlDownloadIntent.js";
 import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/messageContext.js";
+import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
 
 export function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -44,14 +47,7 @@ export function parseActionCommands(rawText) {
   while ((match = commandRegex.exec(text)) !== null) {
     const cmd = match[1].toLowerCase();
     const argsRaw = match[2];
-    
-    // Captura strings entre aspas
-    const argRegex = /["']([\s\S]*?)["']/g;
-    const args = [];
-    let argMatch;
-    while ((argMatch = argRegex.exec(argsRaw)) !== null) {
-      args.push(argMatch[1]);
-    }
+    const args = parseAgentCommandArgs(argsRaw);
     
     if (cmd === "reagir" || cmd === "react") {
       if (args[0]) {
@@ -154,11 +150,12 @@ function normActionMessageId(id) {
     .trim();
 }
 
-function buildDefaultQuoteId(meta = {}) {
+function buildDefaultQuoteId(meta = {}, userMessage = "") {
   return normActionMessageId(
     resolveOutgoingQuoteId({
       messageKey: meta?.messageKey,
       messageId: meta?.messageId,
+      message: userMessage,
       quotedMessageId: meta?.quotedMessageId,
       quotedMessage: meta?.quotedMessage,
       replyThreadContext: meta?.replyThreadContext,
@@ -169,6 +166,7 @@ function buildDefaultQuoteId(meta = {}) {
       groupPriorityAddress: meta?.groupPriorityAddress,
       groupEngagementActive: meta?.groupEngagementActive,
       media: meta?.media,
+      mediaDescribeRequest: meta?.mediaDescribeRequest,
       batchedCount: meta?.batchedCount,
       sleepCatchUp: meta?.sleepCatchUp
     })
@@ -182,6 +180,30 @@ function applyDefaultQuoteToActions(actions = [], defaultQuoteId) {
       ? { ...a, quoteId: defaultQuoteId }
       : a
   );
+}
+
+function enrichParsedActions(actions, trimmed, meta) {
+  let out = actions;
+
+  const hasMediaAction = out.some((a) => a.type === "media" || a.type === "toimage");
+  if (!hasMediaAction) {
+    const replyIntent = detectAgentMediaReplyIntent(trimmed, meta);
+    if (replyIntent?.messageId) {
+      const injected = buildMediaAction(replyIntent.command, replyIntent.messageId);
+      if (injected) out = [injected, ...out];
+    }
+  }
+
+  const hasUrlDownload = out.some((a) => a.type === "url_download");
+  if (!hasUrlDownload) {
+    const urlIntent = detectAgentUrlDownloadIntent(trimmed, meta);
+    if (urlIntent?.url) {
+      const injected = buildUrlDownloadAction(urlIntent.command, urlIntent.url, urlIntent.args);
+      if (injected) out = [injected, ...out];
+    }
+  }
+
+  return out;
 }
 
 /** Evita reply na msg que acabou de chegar, excesso de reagir e prioriza stickers. */
@@ -204,6 +226,8 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
     const qid = normActionMessageId(action.quoteId);
     if (!qid) return { ...action, quoteId: null };
     if (qid === triggerId) {
+      // Reply conversacional: manter citação na mensagem que acabou de chegar.
+      if (meta?.isReply) return action;
       if (replyTargetId && qid === replyTargetId) return action;
       return { ...action, quoteId: null };
     }
@@ -218,6 +242,7 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
       a.type === "sticker" ||
       a.type === "media" ||
       a.type === "toimage" ||
+      a.type === "url_download" ||
       a.type === "save_sticker" ||
       a.type === "repertoire_mode" ||
       a.type === "generate_image"
@@ -642,10 +667,18 @@ export class ChatService {
     }
 
 
-    const actions = applyDefaultQuoteToActions(
-      sanitizeOutgoingActions(parseActionCommands(raw), meta),
-      buildDefaultQuoteId(meta)
+    const replyIntent = detectAgentMediaReplyIntent(trimmed, meta);
+    let actions = enrichParsedActions(
+      applyDefaultQuoteToActions(
+        sanitizeOutgoingActions(parseActionCommands(raw), meta),
+        buildDefaultQuoteId(meta, trimmed)
+      ),
+      trimmed,
+      meta
     );
+    // #region agent log
+    fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',location:'chatService.js:handleMessage',message:'agent actions parsed',data:{inputPreview:trimmed.slice(0,80),rawPreview:String(raw??'').slice(0,120),quotedMessageId:meta?.quotedMessageId??null,isReply:Boolean(meta?.isReply),quotedPreview:String(meta?.quotedMessage??'').slice(0,60),replyIntent,actionTypes:actions.map(a=>a.type),actionCommands:actions.filter(a=>a.type==='media'||a.type==='toimage').map(a=>({type:a.type,command:a.command,messageId:a.messageId}))},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     if (actions.length > 0) {
       if (this.internalState?.updateAfter) {
         const preview = actions
@@ -835,15 +868,19 @@ export class ChatService {
       ]);
     }
 
-    const lateParsed = sanitizeOutgoingActions(
-      parseActionCommands(resultParts.join("\n---\n") || raw),
+    const lateParsed = enrichParsedActions(
+      sanitizeOutgoingActions(
+        parseActionCommands(resultParts.join("\n---\n") || raw),
+        meta
+      ),
+      trimmed,
       meta
     );
     if (lateParsed.length > 0) {
       return returnWithActions(lateParsed);
     }
 
-    const defaultQuoteId = buildDefaultQuoteId(meta);
+    const defaultQuoteId = buildDefaultQuoteId(meta, trimmed);
 
     const defaultActions = resultParts.flatMap((p) => {
       const inner = parseActionCommands(p);

@@ -21,16 +21,30 @@ describe("resolveOutgoingQuoteId", () => {
     expect(shouldQuoteOutgoing({ messageKey: { id: "DM1" }, isGroup: false })).toBe(false);
   });
 
-  it("quotes DM when replying to quoted media", () => {
+  it("quotes DM when replying to quoted media with describe intent", () => {
     expect(
       resolveOutgoingQuoteId({
         messageKey: { id: "DM2" },
+        message: "descreve essa figurinha",
         isGroup: false,
         isReply: true,
         quotedMessageId: "STICKER1",
         quotedMessage: "[sticker]"
       })
     ).toBe("STICKER1");
+  });
+
+  it("quotes user text message when replying to quoted media conversationally", () => {
+    expect(
+      resolveOutgoingQuoteId({
+        messageKey: { id: "DM2" },
+        message: "Uai",
+        isGroup: false,
+        isReply: true,
+        quotedMessageId: "GIF1",
+        quotedMessage: "[gif] cachorro"
+      })
+    ).toBe("DM2");
   });
 
   it("quotes DM batched burst on last trigger", () => {

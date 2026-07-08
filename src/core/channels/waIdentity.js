@@ -236,25 +236,6 @@ export function recordWaIdentity(
     isGroup = false
   } = {}
 ) {
-  // #region agent log
-  fetch("http://127.0.0.1:7413/ingest/9b6d7840-160a-4c9a-aa91-af8b0d66f64e", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "794dcc" },
-    body: JSON.stringify({
-      sessionId: "794dcc",
-      runId: "post-fix",
-      hypothesisId: "A",
-      location: "waIdentity.js:recordWaIdentity",
-      message: "recordWaIdentity entry",
-      data: {
-        hasNormalizeJidKey: typeof normalizeJidKey === "function",
-        isGroup: Boolean(isGroup),
-        hasRemoteJid: Boolean(remoteJid)
-      },
-      timestamp: Date.now()
-    })
-  }).catch(() => {});
-  // #endregion
   const profileKey = String(userId ?? "").trim();
   if (!profileKey || !runtime?.longTerm?.updateProfile) return;
 

@@ -14,10 +14,10 @@ describe("reply and quote helpers", () => {
     ).toBe(true);
   });
 
-  it("keeps quoteId when it matches trigger message", () => {
+  it("keeps quoteId when it matches trigger message on conversational reply", () => {
     const actions = sanitizeOutgoingActions(
       [{ type: "message", text: "blz", quoteId: "TRIG1" }],
-      { messageKey: { id: "TRIG1" }, isReplyToBot: true }
+      { messageKey: { id: "TRIG1" }, isReply: true, isReplyToBot: true }
     );
     expect(actions[0].quoteId).toBe("TRIG1");
   });
