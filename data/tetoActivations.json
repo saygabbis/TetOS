@@ -1,10 +1,11 @@
 {
   "dm": {
     "157947506229421": {
-      "active": false,
-      "autoAdded": true,
-      "activatedAt": "2026-06-08T18:06:43.933Z",
-      "deactivatedAt": "2026-06-08T20:00:00.000Z"
+      "active": true,
+      "activatedAt": "2026-07-06T21:04:15.661Z",
+      "activatedBy": "dm-157947506229421",
+      "autoOwner": true,
+      "aliasOf": "dm-157947506229421"
     },
     "5516988137617": {
       "active": true,
@@ -13,8 +14,10 @@
     },
     "dm-157947506229421": {
       "active": true,
-      "activatedAt": "2026-06-09T15:54:52.146Z",
-      "activatedBy": "dm-157947506229421"
+      "activatedAt": "2026-07-06T21:04:15.661Z",
+      "activatedBy": "dm-157947506229421",
+      "autoOwner": true,
+      "aliasOf": "dm-157947506229421"
     },
     "dm-190546341540031": {
       "active": true,
@@ -48,6 +51,6 @@
     }
   },
   "meta": {
-    "lastUpdated": "2026-07-01T16:13:36.413Z"
+    "lastUpdated": "2026-07-06T21:04:15.661Z"
   }
 }

@@ -1,0 +1,2426 @@
+{
+  "day": "2026-07-06",
+  "generatedAt": "2026-07-07T00:00:26.055Z",
+  "timezone": "America/Sao_Paulo",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 1277,
+    "byEvent": {
+      "group.participants_update": 4,
+      "chat.update": 226,
+      "message.update": 68,
+      "message.receipt_update": 907,
+      "group.update": 2,
+      "message.incoming": 64,
+      "message.deleted": 1,
+      "message.reaction": 1,
+      "message.outgoing": 2,
+      "command.media": 2
+    }
+  },
+  "timeline": {
+    "hourly": [
+      {
+        "hour": 0,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 1,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 2,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 3,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 4,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 5,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 6,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 7,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 8,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 9,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 10,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 11,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 12,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 13,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 14,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 15,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 16,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 17,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 18,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 19,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 20,
+        "events": 9,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 21,
+        "events": 1059,
+        "messages": 966,
+        "media": 20,
+        "reactions": 1
+      },
+      {
+        "hour": 22,
+        "events": 41,
+        "messages": 13,
+        "media": 1,
+        "reactions": 0
+      },
+      {
+        "hour": 23,
+        "events": 168,
+        "messages": 64,
+        "media": 12,
+        "reactions": 0
+      }
+    ],
+    "events": [
+      {
+        "ts": "2026-07-06T20:51:32.559Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:52:08.963Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:58:30.610Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:58:53.137Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:58:53.138Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:58:53.139Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:58:53.139Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:58:53.140Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T20:58:53.140Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.710Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.713Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.715Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.717Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.719Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.721Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.723Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.724Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.726Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.728Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.730Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.731Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.733Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.734Z",
+        "eventType": "message.update",
+        "actorId": "anon_2b1d85ff9247",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.737Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.737Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.738Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.738Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.739Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.739Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.739Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.740Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.740Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.741Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.744Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.744Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.745Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.745Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.746Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.746Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.747Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.747Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.748Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.748Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.749Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.749Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.749Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.750Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.751Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.752Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.752Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.753Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.753Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.753Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.754Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.754Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.755Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.755Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.756Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.756Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.757Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.757Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.757Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.758Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.758Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.758Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.759Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.759Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.759Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.760Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.760Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.760Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.761Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.762Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.763Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.765Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.768Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.770Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.771Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.773Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.774Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.774Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.775Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.776Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.776Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.777Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.778Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.778Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.779Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.779Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.780Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.781Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.782Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.782Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.783Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.783Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.784Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.784Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.785Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.785Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.786Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.786Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.787Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.788Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.788Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.788Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.789Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.789Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.790Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.790Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.791Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.791Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.791Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.792Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.792Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.793Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.793Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.793Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.794Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.794Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.795Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.795Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.795Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.796Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.796Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.796Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.797Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.797Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.797Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.798Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.798Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.799Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.799Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.800Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.800Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.801Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.802Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.802Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.803Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.804Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.804Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.804Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.805Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.806Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.807Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.807Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.807Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.808Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.808Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.808Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.809Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.809Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.809Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.810Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.810Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.811Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.811Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.812Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.812Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.813Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.813Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.813Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.814Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.814Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.814Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.815Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.815Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.816Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.816Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.816Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.817Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.817Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.818Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.818Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.818Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.819Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.819Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.820Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.820Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.820Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.821Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.821Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.821Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.822Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.822Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.822Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.823Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.823Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.823Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.824Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.824Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.824Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.825Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.825Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.825Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.826Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.826Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.827Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.827Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.828Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-06T21:04:14.830Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      }
+    ],
+    "gaps": []
+  },
+  "timing": {
+    "byHour": [
+      {
+        "hour": 0,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 1,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 2,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 3,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 4,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 5,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 6,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 7,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 8,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 9,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 10,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 11,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 12,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 13,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 14,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 15,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 16,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 17,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 18,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 19,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 20,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 21,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 22,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 23,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      }
+    ],
+    "avgLatencyMs": 8790293,
+    "p50Ms": 8790293
+  },
+  "duration": {
+    "activeSpanMinutes": 183,
+    "longestSilenceMin": 0,
+    "silenceGaps": 0
+  },
+  "mindSnapshots": [
+    {
+      "ts": "2026-07-06T21:05:45.302Z",
+      "turnId": "wa-dm:190546341540031@lid-1783371945302",
+      "input": {
+        "message": "Fala\nBlz ent 👍",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.522,
+          "intimacy": 0.404
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "Oieee! Sumiu hein kkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T21:15:04.240Z",
+      "turnId": "wa-dm:190546341540031@lid-1783372504240",
+      "input": {
+        "message": "Alaaaa",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.53,
+          "intimacy": 0.41000000000000003
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "Alaaaa nada kkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T21:15:35.668Z",
+      "turnId": "wa-dm:190546341540031@lid-1783372535667",
+      "input": {
+        "message": "Eu já te mandei um monte fia",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.538,
+          "intimacy": 0.41600000000000004
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "me mandou nada! quero coisa NOVA, de qualidade"
+      }
+    },
+    {
+      "ts": "2026-07-06T21:15:42.173Z",
+      "turnId": "wa-dm:190546341540031@lid-1783372542173",
+      "input": {
+        "message": "Cadê vc usando",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.546,
+          "intimacy": 0.42200000000000004
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "calmaaa kkkkk eu tô selecionando os melhores pra ocasiões especiais!"
+      }
+    },
+    {
+      "ts": "2026-07-06T22:54:47.652Z",
+      "turnId": "wa-dm:190546341540031@lid-1783378487652",
+      "input": {
+        "message": "Faz figurinha",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.562,
+          "intimacy": 0.43400000000000005
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "prontooo, olha aí kkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T22:58:07.082Z",
+      "turnId": "wa-dm:190546341540031@lid-1783378687082",
+      "input": {
+        "message": "Te ta fazer de novo mas com aquela sem tentar fazer ela caber, pode cortar tlgd?",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.5700000000000001,
+          "intimacy": 0.44000000000000006
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "ahhh entendi, quer o crop então! deixa comigo kkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:35:15.404Z",
+      "turnId": "wa-dm:190546341540031@lid-1783380915403",
+      "input": {
+        "message": "Teto teto teto",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.5780000000000001,
+          "intimacy": 0.44600000000000006
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "O QUE FOI?? KKKKK"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:35:36.666Z",
+      "turnId": "wa-dm:190546341540031@lid-1783380936665",
+      "input": {
+        "message": "Qq vc tem a dizer sobre a gabbis",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.5860000000000001,
+          "intimacy": 0.45200000000000007
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "uai, mas a gabbis não é você?? kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:38:41.135Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381121134",
+      "input": {
+        "message": "Oxi",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.5940000000000001,
+          "intimacy": 0.4580000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "uai, o oxi foi pra mim?? kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:38:43.464Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381123464",
+      "input": {
+        "message": "Oxi",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6020000000000001,
+          "intimacy": 0.4640000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "uai, agora você que tá com a cara de "
+      }
+    },
+    {
+      "ts": "2026-07-06T23:38:48.438Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381128438",
+      "input": {
+        "message": "Qual é meu nome?",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6100000000000001,
+          "intimacy": 0.4700000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "Kzer, ué! kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:38:56.174Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381136174",
+      "input": {
+        "message": "Quem sou eu",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6180000000000001,
+          "intimacy": 0.4760000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "você é o Kzer, ué! kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:39:06.185Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381146185",
+      "input": {
+        "message": "Oq está vendo aí",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6260000000000001,
+          "intimacy": 0.4820000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "tô ouvindo umas demos novas aqui e tentando não surtar com a mixagem kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:39:20.757Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381160757",
+      "input": {
+        "message": "Uai, ent oq foi essa sua mensagem",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6340000000000001,
+          "intimacy": 0.4880000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "ah mds, eu achei que era você kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:39:43.755Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381183755",
+      "input": {
+        "message": "Você não sabe quem é?",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6420000000000001,
+          "intimacy": 0.4940000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "SABER DE ONDE? kkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:40:09.680Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381209680",
+      "input": {
+        "message": ".",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6500000000000001,
+          "intimacy": 0.5000000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "não vai me responder com um ponto mesmo??"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:41:00.399Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381260399",
+      "input": {
+        "message": "Sacou?",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6580000000000001,
+          "intimacy": 0.5060000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "sacou o que? kkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:41:27.200Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381287200",
+      "input": {
+        "message": "N vê minhas figurinhas?",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6660000000000001,
+          "intimacy": 0.5120000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "veio, eu vejo sim! kkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:41:54.856Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381314856",
+      "input": {
+        "message": "Ent q fig é essa",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6740000000000002,
+          "intimacy": 0.5180000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "ué, agora você que quer saber? kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:46:31.991Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381591991",
+      "input": {
+        "message": "Aff",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6820000000000002,
+          "intimacy": 0.5240000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "fica bravo agora kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:46:38.958Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381598958",
+      "input": {
+        "message": "Tava falando dow vc vê nela",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6900000000000002,
+          "intimacy": 0.5300000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "ahhh, entendi! kkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:46:47.102Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381607102",
+      "input": {
+        "message": "Mas acho q vc n tem essa info",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.6980000000000002,
+          "intimacy": 0.5360000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "quem disse que eu não tenho? kkk"
+      }
+    },
+    {
+      "ts": "2026-07-06T23:47:22.689Z",
+      "turnId": "wa-dm:190546341540031@lid-1783381642689",
+      "input": {
+        "message": "Ent oq tá nessa fig",
+        "channelId": "190546341540031@lid",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 0.7060000000000002,
+          "intimacy": 0.5420000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 2,
+        "preview": "está testando minha visão agora? kkk"
+      }
+    }
+  ],
+  "hourlySnapshots": [
+    {
+      "hour": 21,
+      "samples": 4,
+      "trust": {
+        "trust": 0.546,
+        "intimacy": 0.42200000000000004
+      },
+      "world": {
+        "currentLocation": "sp",
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": "irritated"
+    },
+    {
+      "hour": 22,
+      "samples": 2,
+      "trust": {
+        "trust": 0.5700000000000001,
+        "intimacy": 0.44000000000000006
+      },
+      "world": {
+        "currentLocation": "sp",
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": "irritated"
+    },
+    {
+      "hour": 23,
+      "samples": 17,
+      "trust": {
+        "trust": 0.7060000000000002,
+        "intimacy": 0.5420000000000001
+      },
+      "world": {
+        "currentLocation": "sp",
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": "irritated"
+    }
+  ],
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 1,
+    "samples": [
+      {
+        "ts": "2026-07-06T21:05:34.159Z",
+        "messageId": "AC5C3EADEB9B82172E53B75E443C47E6",
+        "beforeText": null,
+        "reason": "protocol"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 2,
+    "avgLatencyMs": 153675,
+    "byCommand": {
+      "sticker": 1,
+      "csticker": 1
+    },
+    "byStatus": {
+      "ok": 2
+    },
+    "byInputType": {
+      "gif": 2
+    },
+    "byOutputType": {
+      "image": 2
+    },
+    "byTargetSource": {
+      "history": 2
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 6438,
+      "messages": 6409,
+      "reactions": 2,
+      "media": 1695,
+      "links": 187
+    },
+    "byHour": {
+      "0": 267,
+      "1": 163,
+      "2": 177,
+      "3": 288,
+      "4": 183,
+      "5": 158,
+      "6": 95,
+      "7": 61,
+      "8": 51,
+      "9": 14,
+      "10": 17,
+      "11": 133,
+      "12": 272,
+      "13": 228,
+      "14": 399,
+      "15": 261,
+      "16": 256,
+      "17": 151,
+      "18": 386,
+      "19": 591,
+      "20": 473,
+      "21": 751,
+      "22": 649,
+      "23": 414
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 67,
+      "5516994435369@s.whatsapp.net": 25,
+      "5516988137617@s.whatsapp.net": 82,
+      "190546341540031@lid": 562,
+      "131778236952767@lid": 1489,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 16,
+      "5516991476228@s.whatsapp.net": 2,
+      "65197804912879@lid": 47,
+      "6283879987068@s.whatsapp.net": 18,
+      "174165839581324@lid": 169,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 311,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 1203,
+      "5516988776338@s.whatsapp.net": 63,
+      "185967939985556@lid": 1027,
+      "5517991664082@s.whatsapp.net": 41,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 638,
+      "272172178223326@lid": 49,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 23,
+      "238009924509886@lid": 23,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 48,
+      "103659153158378@lid": 44,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 23,
+      "187995030323304@lid": 37,
+      "150242334867642@lid": 30,
+      "137053111091288@lid": 5,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 10,
+      "3689544732728@lid": 86,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 31,
+      "9281743114312@lid": 63,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 40,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 13,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3,
+      "207202157650019@lid": 26,
+      "124841948631110@lid": 15,
+      "69123321135269@lid": 1,
+      "164076609101978@lid": 4,
+      "206579353784338@lid": 2,
+      "5516996184325@s.whatsapp.net": 1,
+      "5516997824041@s.whatsapp.net": 1,
+      "58141777641473@lid": 1,
+      "141167085773019@lid": 1,
+      "49809339740364@lid": 5,
+      "238083022835725@lid": 7,
+      "206476459155457@lid": 1,
+      "224098508644548@lid": 1,
+      "140269471174762@lid": 6,
+      "120363425913528764@g.us": 34
+    },
+    "avgLatencyMs": 8790293
+  }
+}
