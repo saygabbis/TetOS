@@ -52,6 +52,11 @@ import {
   formatTetoActivationCommand
 } from "./tetoSlashCommands.js";
 import {
+  parseTetosCommand,
+  handleTetosCommand,
+  isQuotedTetosOneShot
+} from "./tetosCommand.js";
+import {
   formatWhatsAppHelpText as formatMediaCommandHelpText,
   parseWhatsAppCommand as parseMediaCommand
 } from "./mediaCommandParser.js";
@@ -410,7 +415,8 @@ function formatWhatsAppHelpText(prefix = ".") {
     `${c("removebg")} — Remove fundo de imagem ou figurinha estatica (API remove.bg em media/forte). GIF/video/figurinha animada: so modelo local, sem gastar creditos. Fundo transparente (padrao) ou cor: ${c("removebg")} verde. Potencia: leve, media, forte. Envia como documento (PNG/GIF/MP4).`,
     `${c("toimg")} — Figurinha → imagem ou GIF/vídeo (reply ou anexo à figurinha).`,
     `${c("repertorio")} on|off — Modo repertório: salva automaticamente figurinhas que você mandar/encaminhar.`,
-    `${c("repertorio")} remover — Remove figurinha do repertório (marque a figurinha com reply/quote antes).`
+    `${c("repertorio")} remover — Remove figurinha do repertório (marque a figurinha com reply/quote antes).`,
+    `${c("tetos")} <mensagem> — Pergunta pontual à IA (sem conversa contínua nem janela de contexto).`
   ].join("\n");
 }
 
@@ -2484,6 +2490,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const parsedCommand = parseMediaCommand(text, runtime.defaults.commandPrefix);
         const commandPrefix = runtime.defaults.commandPrefix;
         const tetoSlash = parseTetoSlashCommand(text, commandPrefix);
+        const tetosCmd = parseTetosCommand(text, commandPrefix);
         const mediaKind = detectMediaKind(unwrappedMessage);
         const botJid = botJidForHandler || jidNormalizedUser(socket?.user?.id ?? socket?.user?.jid ?? "");
         const participantJid = isGroup ? extractParticipantJid(incoming) : "";
@@ -2699,6 +2706,54 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
         }
 
+        if (tetosCmd && !isFromMe && (role !== "media" || botChatRole)) {
+          if (type === "append") {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              tetosCommand: "append_replay",
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
+            continue;
+          }
+          const handled = await handleTetosCommand({
+            prompt: tetosCmd.prompt,
+            runtime,
+            safeSendMessage,
+            remoteJid,
+            botPhone,
+            mentionHint: contextInfo?.mentionedJid ?? [],
+            commandPrefix,
+            socket,
+            chatMessageIndex
+          });
+          if (handled.handled) {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              tetosCommand: true,
+              output: RESPONSE_OUTPUTS.COMMAND
+            });
+            continue;
+          }
+        }
+
+        if (
+          !isFromMe &&
+          !parsedCommand &&
+          !tetosCmd &&
+          stanzaId &&
+          isQuotedTetosOneShot(chatMessageIndex, remoteJid, stanzaId)
+        ) {
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            tetosOneShotReply: true,
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
+          logThinking(runtime, {
+            phase: "tetos_one_shot_reply",
+            userId,
+            remoteJid,
+            detail: "reply na resposta do .tetos — ignorado (sem janela de conversa)"
+          });
+          continue;
+        }
+
         const mentionHint = contextInfo?.mentionedJid ?? [];
         const identityIndex = buildIdentityIndex(runtime);
         if (text && (isGroup || mentionHint.length)) {
@@ -2709,7 +2764,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         let groupEngagementActive = false;
         let groupAddressKind = "none";
 
-        if (isGroup && !parsedCommand && !isFromMe) {
+        if (isGroup && !parsedCommand && !tetosCmd && !isFromMe) {
           const engagement = runtime.groupEngagement;
           if (engagement?.isMuted?.(remoteJid, userId)) {
             runtime.groupMemory?.append?.({

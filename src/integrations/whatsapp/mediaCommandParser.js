@@ -100,6 +100,7 @@ export function formatWhatsAppHelpText(prefix = ".") {
     "",
     `📋 *Geral*`,
     `${dot} ${c("help")} — esta lista (${p}ajuda, ${p}comandos)`,
+    `${dot} *${c("tetos")}* \`<mensagem>\` — pergunta pontual à IA (sem conversa contínua)`,
     `${dot} ${c("repertorio")} on|off — auto-salva figurinhas recebidas`,
     `${dot} ${c("repertorio")} remover — tira do repertório (marque a figurinha com reply antes)`,
     "",
