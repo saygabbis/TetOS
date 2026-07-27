@@ -20,7 +20,7 @@
       "messageId": null,
       "confidence": 0.7,
       "learnedAt": "2026-07-08T04:54:06.469Z",
-      "hits": 15
+      "hits": 17
     },
     {
       "id": "84fd43cd-eeb6-4939-9455-207ddd95c7cf",
@@ -42,7 +42,7 @@
       "messageId": null,
       "confidence": 0.7,
       "learnedAt": "2026-07-08T05:15:12.300Z",
-      "hits": 14
+      "hits": 16
     },
     {
       "id": "c9d8ffd5-59ee-4e0a-9382-000290d46c59",
@@ -64,7 +64,7 @@
       "messageId": null,
       "confidence": 0.7,
       "learnedAt": "2026-07-08T05:34:34.569Z",
-      "hits": 13
+      "hits": 15
     },
     {
       "id": "5b00e52f-4956-4a74-a4f8-8e34b5a19036",
@@ -329,9 +329,53 @@
       "confidence": 0.7,
       "learnedAt": "2026-07-08T20:59:04.817Z",
       "hits": 0
+    },
+    {
+      "id": "243015d6-0b65-411d-bf01-aff4791c4f77",
+      "userId": "u1",
+      "channelId": null,
+      "scope": "u1",
+      "label": "kasane_teto",
+      "keywords": [
+        "garota",
+        "anime",
+        "cabelo",
+        "rosa",
+        "twin",
+        "drills",
+        "baguete"
+      ],
+      "visionSample": "garota anime cabelo rosa twin drills baguete",
+      "taughtByText": "isso sou eu",
+      "messageId": null,
+      "confidence": 0.7,
+      "learnedAt": "2026-07-27T20:44:12.170Z",
+      "hits": 0
+    },
+    {
+      "id": "67044f45-85d4-42fa-b8a0-9fd6a2cd2475",
+      "userId": "u1",
+      "channelId": null,
+      "scope": "u1",
+      "label": "kasane_teto",
+      "keywords": [
+        "garota",
+        "anime",
+        "cabelo",
+        "rosa",
+        "twin",
+        "drills",
+        "baguete"
+      ],
+      "visionSample": "garota anime cabelo rosa twin drills baguete",
+      "taughtByText": "isso sou eu",
+      "messageId": null,
+      "confidence": 0.7,
+      "learnedAt": "2026-07-27T20:45:58.325Z",
+      "hits": 0
     }
   ],
   "meta": {
-    "lastUpdated": "2026-07-08T20:59:04.820Z"
+    "lastUpdated": "2026-07-27T20:45:58.328Z"
   }
 }

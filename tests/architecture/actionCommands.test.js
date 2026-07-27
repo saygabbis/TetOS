@@ -52,39 +52,11 @@ function createBrain() {
 }
 
 // ---------------------------------------------------------------------------
-// Setup
+// Setup (apenas testes com LLM)
 // ---------------------------------------------------------------------------
 
-let agent;
-let tempDirs = [];
-
-beforeAll(() => {
-  const shortTermDir = makeTempDir();
-  const longTermDir = makeTempDir();
-  tempDirs.push(shortTermDir, longTermDir);
-
-  const shortTerm = new ShortTermMemory(20, {
-    persistPath: join(shortTermDir, "short.json")
-  });
-  const longTerm = new LongTermMemory(join(longTermDir, "long.json"));
-  const contextBuilder = new ContextBuilder(longTerm);
-  const brain = createBrain();
-  const personality = loadPersonality(DEFAULTS.personalityPath);
-  const character = loadCharacter(DEFAULTS.characterPath);
-
-  agent = new Agent({
-    personality,
-    character,
-    shortTerm,
-    longTerm,
-    brain,
-    contextBuilder
-  });
-
-  return () => {
-    tempDirs.forEach((d) => rmSync(d, { recursive: true, force: true }));
-  };
-});
+const skipLlmIntegration =
+  process.env.CI === "true" || process.env.TETOS_SKIP_LLM_TESTS === "1";
 
 // ---------------------------------------------------------------------------
 // Testes do parser (unitários, sem LLM)
@@ -147,7 +119,38 @@ describe("parseActionCommands", () => {
 // Testes de integração com a LLM
 // ---------------------------------------------------------------------------
 
-describe("LLM → Protocolo de Comandos de Ação", () => {
+describe.skipIf(skipLlmIntegration)("LLM → Protocolo de Comandos de Ação", () => {
+  let agent;
+  let tempDirs = [];
+
+  beforeAll(() => {
+    const shortTermDir = makeTempDir();
+    const longTermDir = makeTempDir();
+    tempDirs.push(shortTermDir, longTermDir);
+
+    const shortTerm = new ShortTermMemory(20, {
+      persistPath: join(shortTermDir, "short.json")
+    });
+    const longTerm = new LongTermMemory(join(longTermDir, "long.json"));
+    const contextBuilder = new ContextBuilder(longTerm);
+    const brain = createBrain();
+    const personality = loadPersonality(DEFAULTS.personalityPath);
+    const character = loadCharacter(DEFAULTS.characterPath);
+
+    agent = new Agent({
+      personality,
+      character,
+      shortTerm,
+      longTerm,
+      brain,
+      contextBuilder
+    });
+
+    return () => {
+      tempDirs.forEach((d) => rmSync(d, { recursive: true, force: true }));
+    };
+  });
+
   it(
     "gera pelo menos um comando de ação para uma mensagem de chat normal",
     { timeout: 60_000 },
