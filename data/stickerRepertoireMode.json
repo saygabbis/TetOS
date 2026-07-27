@@ -13,9 +13,27 @@
       "enabledBy": "dm-190546341540031",
       "lastChannelId": null,
       "aliasOf": "dm-190546341540031"
+    },
+    "dm-157947506229421": {
+      "active": false,
+      "enabledAt": "2026-07-15T13:12:50.931Z",
+      "enabledBy": "dm-157947506229421",
+      "lastChannelId": "157947506229421@lid",
+      "channelId": "157947506229421@lid",
+      "aliasOf": "dm-157947506229421",
+      "disabledAt": "2026-07-26T15:37:58.526Z"
+    },
+    "157947506229421": {
+      "active": false,
+      "enabledAt": "2026-07-15T13:12:50.931Z",
+      "enabledBy": "dm-157947506229421",
+      "lastChannelId": "157947506229421@lid",
+      "channelId": "157947506229421@lid",
+      "aliasOf": "dm-157947506229421",
+      "disabledAt": "2026-07-26T15:37:58.526Z"
     }
   },
   "meta": {
-    "lastUpdated": "2026-07-01T20:22:59.440Z"
+    "lastUpdated": "2026-07-26T15:37:58.526Z"
   }
 }
