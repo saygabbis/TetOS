@@ -1051,12 +1051,7 @@ export class Agent {
     ];
 
     const tetosCommandBlock = meta?.tetosCommand
-      ? [
-          "[.TETOS — CONSULTA PONTUAL]",
-          "Comando .tetos: responda só ao pedido abaixo com sua persona normal.",
-          "Não abra conversa longa nem faça follow-up desnecessário.",
-          "Uma resposta direta — sem esticar o papo depois."
-        ]
+      ? []
       : [];
 
     const slimSkip = hasBrainContext ? [...antiNonsenseBlock] : [...intentBlock, ...antiNonsenseBlock];
