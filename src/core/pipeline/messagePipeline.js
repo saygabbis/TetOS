@@ -232,9 +232,11 @@ export async function runMessagePipeline(runtime, payload = {}) {
     sleepGroggy = false,
     batchedCount = 1,
     isOwner: isOwnerFlag = null,
-    mainObserveOnly = false
+    mainObserveOnly = false,
+    tetosCommand = false
   } = payload;
-  const effectiveCloseDecision = closeDecision ?? null;
+  const isTetosBypass = Boolean(tetosCommand);
+  const effectiveCloseDecision = isTetosBypass ? "open" : (closeDecision ?? null);
   const safeUserId = typeof userId === "string" ? userId.slice(0, runtime.defaults.maxIdLength) : userId;
   const safeSessionId = typeof sessionId === "string" ? sessionId.slice(0, runtime.defaults.maxIdLength) : sessionId;
   const safeChannelId = typeof channelId === "string" && channelId.trim()
@@ -332,7 +334,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     );
   }
 
-  if (boundaryDetected.level === "hard" && !isGroup) {
+  if (boundaryDetected.level === "hard" && !isGroup && !isTetosBypass) {
     runtime.metrics?.increment?.("pipeline.boundary.set");
     runtime.shortTerm?.add?.(
       { role: "user", content: input, meta: { userId: safeUserId, boundary: true } },
@@ -384,9 +386,10 @@ export async function runMessagePipeline(runtime, payload = {}) {
     });
   }
 
-  const finalCloseDecision =
-    mergeBrainCloseDecision(effectiveCloseDecision, brainTurn?.snapshot?.conversationPhase) ??
-    effectiveCloseDecision;
+  const finalCloseDecision = isTetosBypass
+    ? "open"
+    : mergeBrainCloseDecision(effectiveCloseDecision, brainTurn?.snapshot?.conversationPhase) ??
+      effectiveCloseDecision;
 
   const timingPlan = brainTurn?.timingPlan ?? null;
   const enrichedStyleHint = {
@@ -410,14 +413,16 @@ export async function runMessagePipeline(runtime, payload = {}) {
     isGroup,
     participants
   });
-  const policy = runtime.channelRegistry.shouldRespond({
-    channelId: safeChannelId,
-    userId: safeUserId ?? "default",
-    isDirectMention: effectiveMention,
-    isReply,
-    isQuestion: isDirectQuestion,
-    groupEngagementActive: Boolean(groupEngagementActive)
-  });
+  const policy = isTetosBypass
+    ? { allowed: true, reason: "tetos-command", mode: RESPONSE_MODES.FULL }
+    : runtime.channelRegistry.shouldRespond({
+        channelId: safeChannelId,
+        userId: safeUserId ?? "default",
+        isDirectMention: effectiveMention,
+        isReply,
+        isQuestion: isDirectQuestion,
+        groupEngagementActive: Boolean(groupEngagementActive)
+      });
 
   runtime.logger?.log?.("pipeline.policy", {
     userId: safeUserId ?? "default",
@@ -427,7 +432,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
   });
   runtime.metrics?.increment?.("pipeline.policy.checked");
 
-  if (!policy.allowed) {
+  if (!policy.allowed && !isTetosBypass) {
     runtime.metrics?.increment?.("pipeline.policy.blocked");
     return {
       replies: [],
@@ -488,7 +493,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     finalCloseDecision !== "respond" &&
     !directSubstantive;
 
-  if (asleepUnavailable) {
+  if (asleepUnavailable && !isTetosBypass) {
     runtime.metrics?.increment?.("pipeline.sleep.unavailable");
     runtime.logger?.log?.("pipeline.sleep_hold", { userId: safeUserId, sleepState: sleepSnap.state });
     return {
@@ -503,7 +508,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
-  if (boundaryBlocksReply) {
+  if (boundaryBlocksReply && !isTetosBypass) {
     runtime.metrics?.increment?.("pipeline.boundary.hold");
     return {
       replies: [],
@@ -532,7 +537,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
-  if (busyHighFocus && finalCloseDecision !== "respond") {
+  if (busyHighFocus && finalCloseDecision !== "respond" && !isTetosBypass) {
     const busyReply = activityFocus.busyRemainingMin
       ? `pera, tô em ${activityFocus.activity} — já te respondo`
       : null;
@@ -561,7 +566,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
-  if (timingSilenceSkip) {
+  if (timingSilenceSkip && !isTetosBypass) {
     runtime.metrics?.increment?.("pipeline.timing.silence");
     runtime.logger?.log?.("pipeline.timing_silence", {
       userId: safeUserId,
@@ -917,6 +922,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       batchedCount: Number(batchedCount) || 1,
       sleepState: sleepSnap.state ?? null,
       isOwner,
+      tetosCommand: isTetosBypass,
       musicLoreBlock,
       repertoireModeActive: Boolean(runtime.stickerRepertoireMode?.isActive?.(safeUserId)),
       stickersPath: runtime.defaults.stickersPath,
@@ -982,7 +988,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     if (
       replies.length === 0 &&
       (finalCloseDecision === "silent" || finalCloseDecision === "react") &&
-      !userBoundary.active
+      !userBoundary.active &&
+      !isTetosBypass
     ) {
       runtime.initiationEngine?.scheduleFromTurn?.({
         userId: safeUserId,

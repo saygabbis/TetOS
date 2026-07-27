@@ -24,34 +24,51 @@ function pickRecentEntries(sorted = []) {
   return sorted.filter((e) => keys.has(entryKey(e)));
 }
 
+function buildPrioritySegments(entries = []) {
+  return entries
+    .map((entry) => buildGroupSegment([entry]))
+    .filter(Boolean)
+    .map((seg) => ({ ...seg, groupPriorityAddress: true }));
+}
+
 /**
  * Rajada em grupo: não enfileira dezenas de respostas — absorve o passado e responde só ao recente.
+ * Entradas prioritárias (.tetos, menção, reply) nunca são descartadas.
  */
 export function planFloodAwareGroupSegments(entries = []) {
   const sorted = [...entries].sort((a, b) => (a.ts ?? 0) - (b.ts ?? 0));
-  const normalSegments = planGroupTurnSegments(sorted);
+  const priorityEntries = sorted.filter((e) => isGroupPriorityEntry(e));
+  const normalEntries = sorted.filter((e) => !isGroupPriorityEntry(e));
+  const prioritySegments = buildPrioritySegments(priorityEntries);
+  const normalSegments = planGroupTurnSegments(normalEntries);
   const flood =
-    sorted.length >= MSG_THRESHOLD || normalSegments.length > SEGMENT_CAP;
+    normalEntries.length >= MSG_THRESHOLD || normalSegments.length > SEGMENT_CAP;
 
   if (!flood) {
-    return { mode: "normal", segments: normalSegments, droppedCount: 0 };
+    return {
+      mode: "normal",
+      segments: [...prioritySegments, ...normalSegments],
+      droppedCount: 0
+    };
   }
 
-  const recentEntries = pickRecentEntries(sorted);
-  const droppedCount = Math.max(0, sorted.length - recentEntries.length);
+  const recentEntries = pickRecentEntries(normalEntries);
+  const droppedCount = Math.max(0, normalEntries.length - recentEntries.length);
   const catchUpSegment = buildGroupSegment(recentEntries);
 
-  if (!catchUpSegment) {
+  if (!catchUpSegment && !prioritySegments.length) {
     return { mode: "catchup", segments: [], droppedCount };
   }
 
-  catchUpSegment.groupCatchUp = true;
-  catchUpSegment.groupCatchUpSkipped = droppedCount;
-  catchUpSegment.groupFloodMode = true;
+  if (catchUpSegment) {
+    catchUpSegment.groupCatchUp = true;
+    catchUpSegment.groupCatchUpSkipped = droppedCount;
+    catchUpSegment.groupFloodMode = true;
+  }
 
   return {
     mode: "catchup",
-    segments: [catchUpSegment],
+    segments: [...prioritySegments, ...(catchUpSegment ? [catchUpSegment] : [])],
     droppedCount
   };
 }
@@ -88,7 +105,7 @@ export function compactGroupQueueSegments(queue = []) {
 
   const compacted = [...priority, merged];
   if (compacted.length > GROUP_QUEUE_DEPTH_CAP) {
-    return [...priority.slice(-1), merged];
+    return [...priority.slice(-Math.max(1, GROUP_QUEUE_DEPTH_CAP - 1)), merged];
   }
   return compacted;
 }

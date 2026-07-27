@@ -7,9 +7,10 @@ function speakerLabel(entry) {
   return entry.pushName || entry.userId || "alguém";
 }
 
-/** Menção, reply ou chamada contextual pelo nome — prioridade no batch/fila de grupo. */
+/** Menção, reply, comando ou chamada contextual — prioridade no batch/fila de grupo. */
 export function isGroupPriorityEntry(entry = {}) {
   if (entry.groupPriorityAddress) return true;
+  if (entry.tetosCommand || entry.parsedCommand) return true;
   return Boolean(
     entry.isDirectMention ||
     entry.isReplyToBot ||

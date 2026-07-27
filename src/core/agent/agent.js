@@ -1050,6 +1050,15 @@ export class Agent {
       "Se errarem seu nome na despedida: correção leve (é Teto kkk) + tchau numa frase — sem bronca nem estender o papo."
     ];
 
+    const tetosCommandBlock = meta?.tetosCommand
+      ? [
+          "[.TETOS — CONSULTA PONTUAL]",
+          "Comando .tetos: responda só ao pedido abaixo com sua persona normal.",
+          "Não abra conversa longa nem faça follow-up desnecessário.",
+          "Uma resposta direta — sem esticar o papo depois."
+        ]
+      : [];
+
     const slimSkip = hasBrainContext ? [...antiNonsenseBlock] : [...intentBlock, ...antiNonsenseBlock];
 
     return [
@@ -1125,6 +1134,7 @@ export class Agent {
       ...metaBlock,
       ...reinforceBlock,
       ...fallbackBlock,
+      ...tetosCommandBlock,
       "[INPUT]",
       isInitiative && !String(userMessage ?? "").trim()
         ? "User: [iniciativa interna — você decidiu mandar mensagem agora; gere o que quer falar]"

@@ -53,7 +53,8 @@ import {
 } from "./tetoSlashCommands.js";
 import {
   parseTetosCommand,
-  handleTetosCommand,
+  resolveTetosMessage,
+  formatTetosUsage,
   isQuotedTetosOneShot
 } from "./tetosCommand.js";
 import {
@@ -870,7 +871,8 @@ function createConversationOrchestrator(
             isFromBot: true,
             remoteJid,
             quotedMessageId: normalizedQuote?.id ?? null,
-            participantJid: socket?.user?.id ? jidNormalizedUser(socket.user.id) : null
+            participantJid: socket?.user?.id ? jidNormalizedUser(socket.user.id) : null,
+            tetosOneShot: Boolean(options?.tetosCommand)
           });
         }
         if (index < replies.length - 1) {
@@ -966,6 +968,7 @@ function createConversationOrchestrator(
                     batchedCount: item.batchedCount ?? 1,
                     isOwner: item.isOwner ?? false,
                     mainObserveOnly: item.mainObserveOnly === true,
+                    tetosCommand: item.tetosCommand === true,
                     onGenerationStart: async () => {
                       if (typeof socket.sendPresenceUpdate !== "function") return;
                       composingDuringGeneration = true;
@@ -1580,15 +1583,16 @@ function createConversationOrchestrator(
             const debounceMs = randBetween(timingCfg.interruptDebounceMinMs, timingCfg.interruptDebounceMaxMs);
             await sleep(debounceMs);
           }
-          const quoteTargetId = resolveOutgoingQuoteId(item);
-          const quoteKeyForSend = quoteTargetId
-            ? buildQuoteKeyFromMessageId(chatMessageIndex, item.remoteJid, quoteTargetId, {
-                participantId: item.participantId ?? null,
-                participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
-                getWaMessageById,
-                groupMemory: runtime.groupMemory
-              })
-            : null;
+          const quoteTargetId = item.tetosCommand ? null : resolveOutgoingQuoteId(item);
+          const quoteKeyForSend =
+            !item.tetosCommand && quoteTargetId
+              ? buildQuoteKeyFromMessageId(chatMessageIndex, item.remoteJid, quoteTargetId, {
+                  participantId: item.participantId ?? null,
+                  participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
+                  getWaMessageById,
+                  groupMemory: runtime.groupMemory
+                })
+              : null;
           const shouldQuote = Boolean(quoteKeyForSend);
           const quoteKeys = Array.isArray(item.quoteMessageKeys)
             ? item.quoteMessageKeys
@@ -1606,7 +1610,8 @@ function createConversationOrchestrator(
             participantId: item.participantId ?? null,
             participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
             quoteMessageKey: shouldQuote ? quoteKeyForSend : null,
-            quoteMessageKeys: quoteKeys.filter(Boolean).length ? quoteKeys : undefined
+            quoteMessageKeys: quoteKeys.filter(Boolean).length ? quoteKeys : undefined,
+            tetosCommand: item.tetosCommand === true
           });
           if (hasOutgoing) {
             outputKind = RESPONSE_OUTPUTS.TEXT;
@@ -2549,8 +2554,35 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             : hasMediaPayload
               ? "media"
               : "text";
-        decisionTrace.command = tetoSlash?.command ?? parsedCommand?.command ?? null;
+        decisionTrace.command = tetoSlash?.command ?? parsedCommand?.command ?? (tetosCmd ? "tetos" : null);
         addDecisionStep(decisionTrace, "identity.resolved", identitySnapshot);
+
+        let isTetosCommand = false;
+        let tetosMessage = "";
+
+        if (tetosCmd && !isFromMe && (role !== "media" || botChatRole)) {
+          if (type === "append") {
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              tetosCommand: "append_replay",
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
+            continue;
+          }
+          const tetosContextEarly = extractContextInfo(unwrappedMessage);
+          tetosMessage = resolveTetosMessage(tetosCmd, {
+            botPhone: botPhoneForHandler || extractPhone(botJid),
+            mentionHint: tetosContextEarly?.mentionedJid ?? []
+          });
+          if (!tetosMessage) {
+            await safeSendMessage(remoteJid, { text: formatTetosUsage(commandPrefix) });
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              tetosCommand: true,
+              output: RESPONSE_OUTPUTS.COMMAND
+            });
+            continue;
+          }
+          isTetosCommand = true;
+        }
 
         const viewUnicaCmd = runtime.viewOnceMirror?.parseCommand?.(text, commandPrefix);
         if (viewUnicaCmd && !isFromMe) {
@@ -2652,7 +2684,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         if (role === "media" && !botChatRole) {
-          if (!parsedCommand && !hasMediaPayload) {
+          if (!parsedCommand && !tetosCmd && !hasMediaPayload) {
             finalizeDecisionTrace(runtime, decisionTrace, {
               output: RESPONSE_OUTPUTS.IGNORED
             });
@@ -2704,34 +2736,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             remoteJid,
             detail: `quote id=${stanzaId} texto="${(quotedFromProto || quotedSnapshot?.text || "").slice(0, 80)}"`
           });
-        }
-
-        if (tetosCmd && !isFromMe && (role !== "media" || botChatRole)) {
-          if (type === "append") {
-            finalizeDecisionTrace(runtime, decisionTrace, {
-              tetosCommand: "append_replay",
-              output: RESPONSE_OUTPUTS.IGNORED
-            });
-            continue;
-          }
-          const handled = await handleTetosCommand({
-            prompt: tetosCmd.prompt,
-            runtime,
-            safeSendMessage,
-            remoteJid,
-            botPhone,
-            mentionHint: contextInfo?.mentionedJid ?? [],
-            commandPrefix,
-            socket,
-            chatMessageIndex
-          });
-          if (handled.handled) {
-            finalizeDecisionTrace(runtime, decisionTrace, {
-              tetosCommand: true,
-              output: RESPONSE_OUTPUTS.COMMAND
-            });
-            continue;
-          }
         }
 
         if (
@@ -2898,6 +2902,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             remoteJid,
             detail: `decision=${closeDecision} phase=${resolved.analysis?.phase ?? "?"} conf=${(resolved.analysis?.confidence ?? 0).toFixed(2)}`
           });
+        }
+
+        if (isTetosCommand) {
+          closeDecision = "open";
         }
 
         if (role !== "media" || botChatRole) {
@@ -3315,7 +3323,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         if (!isGroup && activation) {
           activation.touchDm(userId);
           const dmActive = activation.isDmActive(userId);
-          if (!dmActive) {
+          if (!dmActive && !isTetosCommand) {
             finalizeDecisionTrace(runtime, decisionTrace, {
               activation: "dm_blocked",
               output: botChatRole && !isFromMe ? RESPONSE_OUTPUTS.TEXT : RESPONSE_OUTPUTS.IGNORED
@@ -3334,7 +3342,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             continue;
           }
         }
-        if (isGroup && activation && !activation.isGroupActive(remoteJid)) {
+        if (isGroup && activation && !activation.isGroupActive(remoteJid) && !isTetosCommand) {
           finalizeDecisionTrace(runtime, decisionTrace, {
             activation: "group_blocked",
             output: RESPONSE_OUTPUTS.IGNORED
@@ -3530,7 +3538,10 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           runtime.metrics?.increment?.(`whatsapp.media.${media.type}`);
         }
 
-        const effectiveMessage = formatMediaInputText({ text, media });
+        let effectiveMessage = formatMediaInputText({ text, media });
+        if (isTetosCommand) {
+          effectiveMessage = tetosMessage;
+        }
 
         const isOwner = isOwnerContact(runtime, remoteJid, userId);
 
@@ -3555,7 +3566,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const wasTempAwakeBefore = Boolean(sleepSnap.isTemporarilyAwake);
         let sleepDisturbedWake = false;
 
-        if (sleepSnap.isAvailable === false && !parsedCommand) {
+        if (sleepSnap.isAvailable === false && !parsedCommand && !isTetosCommand) {
           const flood = trackSleepDisturbanceFlood(sessionId, effectiveMessage);
           const disturbScore = scoreSleepDisturbance(effectiveMessage, { floodCount: flood.count });
           const disturbResult = runtime.brainOrchestrator?.life?.sleep?.attemptDisturbanceWake?.({
@@ -3602,6 +3613,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         if (
           wasTempAwakeBefore &&
           !parsedCommand &&
+          !isTetosCommand &&
           !isFromMe &&
           runtime.brainOrchestrator?.life?.sleep?.isTemporarilyAwake?.()
         ) {
@@ -3610,7 +3622,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         const sleepSnapAfter = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? sleepSnap;
 
-        const mediaOnlyInbound = hasMediaPayload && !String(text ?? "").trim() && !parsedCommand;
+        const mediaOnlyInbound = hasMediaPayload && !String(text ?? "").trim() && !parsedCommand && !isTetosCommand;
         const hasVisionOrTranscript = Boolean(String(media?.transcript ?? "").trim());
         const allowMediaConversation = shouldRespondToMediaOnly({
           media,
@@ -3680,13 +3692,18 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             return isGroup && participantId ? [participantId] : [userId];
           })(),
           isDirectMention: isGroup ? isDirect : false,
-          groupEngagementActive: isGroup ? groupEngagementActive : false,
+          groupEngagementActive: isTetosCommand ? false : isGroup ? groupEngagementActive : false,
           groupAddressKind: isGroup ? groupAddressKind : null,
-          groupPriorityAddress: isGroup ? isGroupPriorityEntry({
-            isDirectMention: isDirect,
-            isReplyToBot,
-            groupAddressKind
-          }) : false,
+          groupPriorityAddress: isTetosCommand
+            ? true
+            : isGroup
+              ? isGroupPriorityEntry({
+                  isDirectMention: isDirect,
+                  isReplyToBot,
+                  groupAddressKind,
+                  tetosCommand: false
+                })
+              : false,
           isReply: isReply || isReplyToBot,
           isReplyToBot,
           quotedMessage,
@@ -3700,6 +3717,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           participantJid: isGroup ? extractParticipant(incoming) || null : null,
           decisionTrace,
           preferQuoteReply: false,
+          tetosCommand: isTetosCommand,
           sleepDisturbedWake,
           sleepTemporarilyAwake: Boolean(sleepSnapAfter.isTemporarilyAwake),
           tempWakeGrogginess: sleepSnapAfter.tempWakeGrogginess ?? 0,
