@@ -26,6 +26,24 @@ assert(
   "menção @ por telefone bate com bot"
 );
 assert(
+  botMentionedInJids(
+    ["174165839581324@lid"],
+    "6283879987068@s.whatsapp.net",
+    "6283879987068",
+    { botActorIds: new Set(["174165839581324", "6283879987068", "teto"]) }
+  ),
+  "menção @ por LID opaco bate com botActorIds"
+);
+assert(
+  classifyTetoAddress("@Teto guarda essa figurinha", { hasMention: false, isReplyToBot: false }) === "mention",
+  "@Teto normalizado conta como menção"
+);
+assert(
+  classifyTetoAddress("teto guarda de novo essa figurinha", { hasMention: false, isReplyToBot: false }) ===
+    "contextual",
+  "imperativo 'teto guarda' é chamada contextual"
+);
+assert(
   botMentionedInJids(["5516988137617:73@lid"], "5516988137617@s.whatsapp.net", "5516988137617"),
   "menção @ com sufixo :NN no LID"
 );

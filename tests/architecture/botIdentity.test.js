@@ -25,8 +25,9 @@ describe("bot identity separation", () => {
     expect(isBotIdentity(runtime, "dm-5516988137617")).toBe(false);
   });
 
-  it("bot actor ids exclude owner phone", () => {
-    const ids = buildBotActorIds(runtime, "6283879987068");
+  it("bot actor ids include connected jid lid", () => {
+    const ids = buildBotActorIds(runtime, "6283879987068", "174165839581324@lid");
+    expect(ids.has("174165839581324")).toBe(true);
     expect(ids.has("6283879987068")).toBe(true);
     expect(ids.has("5516988137617")).toBe(false);
     expect(ids.has("teto")).toBe(true);

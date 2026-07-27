@@ -90,13 +90,18 @@ export function resolveCanonicalHumanUserId(runtime, userId, { remoteJid = null,
   return uid;
 }
 
-export function buildBotActorIds(runtime, botPhone = "") {
+export function buildBotActorIds(runtime, botPhone = "", botJid = "") {
   const ids = new Set(["teto", "self"]);
   for (const id of botIdentityIds(runtime)) ids.add(id);
   const phone = String(botPhone ?? "").replace(/\D/g, "").trim();
   if (phone) {
     ids.add(phone);
     ids.add(`dm-${phone}`);
+  }
+  const local = extractLocalPart(botJid);
+  if (local) {
+    ids.add(local);
+    ids.add(`dm-${local}`);
   }
   return ids;
 }

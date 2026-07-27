@@ -34,7 +34,8 @@ export async function handleTetoSlashCommand({
   activationStore,
   groupEngagement,
   socket,
-  commandPrefix = "."
+  commandPrefix = ".",
+  abortGroupChannel = null
 } = {}) {
   if (!activationStore || !socket?.sendMessage) return { handled: false };
 
@@ -78,6 +79,7 @@ export async function handleTetoSlashCommand({
       activationStore.deactivateGroup(remoteJid);
       groupEngagement?.clearGroup?.(remoteJid);
       groupEngagement?.unmute?.(remoteJid);
+      abortGroupChannel?.(remoteJid);
       reply = "teto desativada neste grupo";
       break;
     default:

@@ -28,8 +28,23 @@ function normalizeJidPhone(jid = "") {
     .replace(/\D/g, "");
 }
 
-/** @ mention do WhatsApp bate com o JID/telefone do bot? */
-export function botMentionedInJids(mentionedJids = [], botJid = "", botPhone = "") {
+function mentionLocalId(jid = "") {
+  return String(jid ?? "").split(":")[0].replace(/@.+$/, "").trim();
+}
+
+function matchesBotActorId(localId = "", botActorIds = null) {
+  const local = String(localId ?? "").trim();
+  if (!local || !(botActorIds instanceof Set) || botActorIds.size === 0) return false;
+  return botActorIds.has(local) || botActorIds.has(`dm-${local}`);
+}
+
+/** @ mention do WhatsApp bate com o JID/telefone/LID do bot? */
+export function botMentionedInJids(
+  mentionedJids = [],
+  botJid = "",
+  botPhone = "",
+  { botActorIds = null } = {}
+) {
   if (!Array.isArray(mentionedJids) || mentionedJids.length === 0) return false;
   const botPhoneDigits = normalizeJidPhone(botPhone || botJid);
   const botJidNorm = String(botJid ?? "").split(":")[0].toLowerCase();
@@ -38,9 +53,21 @@ export function botMentionedInJids(mentionedJids = [], botJid = "", botPhone = "
     const jid = String(raw ?? "").split(":")[0].toLowerCase();
     if (!jid) return false;
     if (botJidNorm && jid === botJidNorm) return true;
+    if (matchesBotActorId(mentionLocalId(jid), botActorIds)) return true;
     const mentionPhone = normalizeJidPhone(jid);
     return Boolean(botPhoneDigits && mentionPhone && mentionPhone === botPhoneDigits);
   });
+}
+
+/** Menção @ normalizada para a Teto (após identity index). */
+function hasNormalizedTetoMention(text = "") {
+  const t = String(text ?? "").trim();
+  if (!t) return false;
+  return (
+    /@teto\b/i.test(t) ||
+    /@kasane\s+teto\b/i.test(t) ||
+    /@kasane\s+teto\s*🩸/i.test(t)
+  );
 }
 
 const NAME_RE = /\b(teto|tete|tetozinha)\b/i;
@@ -70,7 +97,11 @@ function isContextualNameCall(text = "") {
   if (/\b(minha\s+)?tetozinha\b/i.test(t)) return true;
   if (/\be\s+a[ií]\s+teto\b/i.test(t)) return true;
   if (/\b(ei|oi|hey)\s+(teto|tetozinha)\b/i.test(t)) return true;
-  if (/\b(teto|tetozinha)[,]?\s+(como|vc|você|voce|me|faz|conta|olha|vem|cadê|cade|pode|ajuda|responde|fala)\b/i.test(t)) {
+  if (
+    /\b(teto|tetozinha)[,]?\s+(como|vc|você|voce|me|faz|conta|olha|vem|cadê|cade|pode|ajuda|responde|fala|guarda|salva|usa|manda|pega|coloca|aprende|memoriza|grava)\b/i.test(
+      t
+    )
+  ) {
     return true;
   }
   if (/\b(teto|tetozinha)\s*[,]?\s*(qual|quem|onde|quando|por\s*que|pq|sera|será)\b/i.test(t)) return true;
@@ -84,7 +115,9 @@ function isContextualNameCall(text = "") {
  * mention | reply | contextual | name_ambiguous | none
  */
 export function classifyTetoAddress(text = "", { hasMention = false, isReplyToBot = false } = {}) {
-  if (hasMention || /@\d{4,}/.test(String(text ?? ""))) return "mention";
+  if (hasMention || /@\d{4,}/.test(String(text ?? "")) || hasNormalizedTetoMention(text)) {
+    return "mention";
+  }
   if (isReplyToBot) return "reply";
 
   const t = String(text ?? "").trim();
@@ -161,11 +194,12 @@ export function isQuotedMessageFromBot(
     contextInfo?.participantAlt ??
     contextInfo?.quotedMessage?.key?.participant ??
     null;
-  if (participant && (botJid || botPhone)) {
-    if (botMentionedInJids([participant], botJid, botPhone)) return true;
+  if (participant && (botJid || botPhone || botActorIds?.size)) {
+    if (botMentionedInJids([participant], botJid, botPhone, { botActorIds })) return true;
     const pPhone = normalizeJidPhone(participant);
     const bPhone = normalizeJidPhone(botPhone || botJid);
     if (pPhone && bPhone && pPhone === bPhone) return true;
+    if (matchesBotActorId(mentionLocalId(participant), botActorIds)) return true;
   }
 
   if (quotedText && messageIndex && channelId) {

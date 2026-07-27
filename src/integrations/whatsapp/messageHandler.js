@@ -598,6 +598,9 @@ function createConversationOrchestrator(
   const deferredBySession = new Map();
   const typingByUser = new Map();
   const interruptBySession = new Map();
+  /** Incrementado ao desativar grupo — invalida turnos enfileirados/em voo. */
+  const groupChannelEpoch = new Map();
+  const currentSessionByGroupChannel = new Map();
   /** @type {Map<string, { messagesSinceLastReaction: number, lastReactionAt: number }>} */
   const reactionStateByUser = new Map();
 
@@ -898,12 +901,29 @@ function createConversationOrchestrator(
   async function processQueueItem(item) {
     const allowReply = runtime.defaults.replyEnabled && !item.mainObserveOnly;
     const sessionId = item.sessionId ?? item.userId;
+    const groupEpoch =
+      item.isGroup && item.remoteJid ? (groupChannelEpoch.get(item.remoteJid) ?? 0) : null;
+    const activation = runtime.tetoActivation;
     const typingUntil = typingByUser.get(item.userId) ?? 0;
         let outputKind = RESPONSE_OUTPUTS.SILENT;
         addDecisionStep(item.decisionTrace, "queue.processing", {
           allowReply,
           closeDecision: item.closeDecision ?? null
         });
+        const abortGroupTurn = (reason) => {
+          addDecisionStep(item.decisionTrace, "queue.aborted", { reason });
+          finalizeDecisionTrace(runtime, item.decisionTrace, {
+            activation: "group_blocked",
+            output: RESPONSE_OUTPUTS.IGNORED
+          });
+        };
+        if (shouldDropGroupQueueItem(item, groupEpoch, activation)) {
+          abortGroupTurn("group_deactivated");
+          return;
+        }
+        if (item.isGroup && item.remoteJid) {
+          currentSessionByGroupChannel.set(item.remoteJid, sessionId);
+        }
         const token = Date.now();
         interruptBySession.set(sessionId, token);
         const prevR = reactionStateByUser.get(item.userId) ?? {
@@ -1002,6 +1022,10 @@ function createConversationOrchestrator(
               }
               if (remaining > 0 && replies.length > 0) {
                 await sleep(remaining);
+              }
+              if (shouldDropGroupQueueItem(item, groupEpoch, activation)) {
+                abortGroupTurn("group_deactivated_post_gen");
+                return;
               }
               item.passiveMode = out?.policy?.mode ?? RESPONSE_MODES.FULL;
               addDecisionStep(item.decisionTrace, "pipeline.completed", {
@@ -1115,6 +1139,10 @@ function createConversationOrchestrator(
             pipelineMode: item.passiveMode ?? RESPONSE_MODES.FULL,
             output: RESPONSE_OUTPUTS.IGNORED
           });
+          return;
+        }
+        if (shouldDropGroupQueueItem(item, groupEpoch, activation)) {
+          abortGroupTurn("group_deactivated_pre_send");
           return;
         }
         let executedActions = false;
@@ -1624,6 +1652,13 @@ function createConversationOrchestrator(
           output: outputKind
         });
         } finally {
+          if (
+            item.isGroup &&
+            item.remoteJid &&
+            currentSessionByGroupChannel.get(item.remoteJid) === sessionId
+          ) {
+            currentSessionByGroupChannel.delete(item.remoteJid);
+          }
           if (composingDuringGeneration && typeof socket.sendPresenceUpdate === "function") {
             try {
               await socket.sendPresenceUpdate("paused", item.remoteJid);
@@ -1909,6 +1944,57 @@ function createConversationOrchestrator(
     interruptBySession.set(sessionId, Date.now());
   }
 
+  function shouldDropGroupQueueItem(item, groupEpoch, activation) {
+    if (!item?.isGroup || !item.remoteJid) return false;
+    if (item.tetosCommand) return false;
+    const channelKey = item.remoteJid;
+    if ((groupChannelEpoch.get(channelKey) ?? 0) !== groupEpoch) return true;
+    if (activation && !activation.isGroupActive(channelKey)) return true;
+    return false;
+  }
+
+  function abortGroupChannel(channelKey) {
+    const id = String(channelKey ?? "").trim();
+    if (!id) return { clearedPending: 0, clearedQueue: 0, interruptedSessions: 0 };
+
+    groupChannelEpoch.set(id, (groupChannelEpoch.get(id) ?? 0) + 1);
+
+    const sessions = new Set();
+    const pending = pendingByGroupChannel.get(id);
+    if (pending?.timer) clearTimeout(pending.timer);
+    for (const entry of pending?.entries ?? []) {
+      const sid = entry.sessionId ?? entry.userId;
+      if (sid) sessions.add(sid);
+    }
+    const clearedPending = pending?.entries?.length ?? 0;
+    pendingByGroupChannel.delete(id);
+
+    const queue = queueByGroupChannel.get(id) ?? [];
+    for (const item of queue) {
+      const sid = item.sessionId ?? item.userId;
+      if (sid) sessions.add(sid);
+    }
+    const clearedQueue = queue.length;
+    queueByGroupChannel.delete(id);
+
+    const active = currentSessionByGroupChannel.get(id);
+    if (active) sessions.add(active);
+
+    for (const sid of sessions) bumpInterrupt(sid);
+
+    if (clearedPending || clearedQueue || sessions.size) {
+      console.log(
+        `[whatsapp] grupo abortado: pendente=${clearedPending} fila=${clearedQueue} sessoes=${sessions.size} (${id})`
+      );
+    }
+
+    return {
+      clearedPending,
+      clearedQueue,
+      interruptedSessions: sessions.size
+    };
+  }
+
   function shouldBumpInterruptOnEnqueue(entry = {}) {
     const text = String(entry.message ?? "").trim();
     if (!text) return false;
@@ -1941,7 +2027,13 @@ function createConversationOrchestrator(
     typingByUser.delete(userId);
   }
 
-  return { scheduleIncoming, onPresenceUpdate, bumpInterrupt, clearTypingGrace };
+  return {
+    scheduleIncoming,
+    onPresenceUpdate,
+    bumpInterrupt,
+    clearTypingGrace,
+    abortGroupChannel
+  };
 }
 
 export function registerMessageHandler({ socket, runtime, role = "full" }) {
@@ -2647,7 +2739,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             activationStore: runtime.tetoActivation,
             groupEngagement: runtime.groupEngagement,
             socket,
-            commandPrefix
+            commandPrefix,
+            abortGroupChannel: orchestrator?.abortGroupChannel
           });
           if (handled.handled) {
             finalizeDecisionTrace(runtime, decisionTrace, {
@@ -2718,7 +2811,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const stanzaId = contextInfo?.stanzaId ?? null;
         const quotedSnapshot = stanzaId ? messageSnapshotById.get(stanzaId) : null;
         const botPhone = botPhoneForHandler || extractPhone(botJid);
-        const botActorIds = buildBotActorIds(runtime, botPhone);
+        const botActorIds = buildBotActorIds(runtime, botPhone, botJid);
         const quotedFromProto = extractQuotedText(contextInfo?.quotedMessage);
         const isReplyToBot = isQuotedMessageFromBot(contextInfo, {
           botJid,
@@ -2794,7 +2887,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             continue;
           }
 
-          const hasMention = botMentionedInJids(mentionHint, botJid, botPhone);
+          const hasMention = botMentionedInJids(mentionHint, botJid, botPhone, { botActorIds });
           groupAddressKind = classifyTetoAddress(text, { hasMention, isReplyToBot });
           if (isReplyToBot) isReply = true;
 

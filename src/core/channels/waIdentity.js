@@ -379,24 +379,32 @@ export function buildIdentityIndex(runtime) {
     }
   }
 
+  const botIds = botIdentityIds(runtime);
   const botPhone = String(
     runtime?.whatsappBotPhoneE164 ?? runtime?.defaults?.botWaPhone ?? ""
   )
     .replace(/\D/g, "")
     .trim();
-  if (botPhone) {
+  if (botIds.size) {
     const selfEntry = {
       displayName: "Teto",
       preferredName: "Teto",
       canonicalUserId: "teto",
-      waPhone: botPhone,
-      mentionJid: `${botPhone}@s.whatsapp.net`,
-      aliases: [...botIdentityIds(runtime)],
+      waPhone: botPhone || null,
+      mentionJid: botPhone ? `${botPhone}@s.whatsapp.net` : null,
+      aliases: [...botIds],
       isSelf: true,
       source: "bot_self"
     };
-    for (const id of botIdentityIds(runtime)) {
+    for (const id of botIds) {
       put(id, selfEntry);
+      if (id.startsWith("dm-")) put(id.slice(3), selfEntry);
+    }
+    for (const jid of runtime?.defaults?.botWaJids ?? []) {
+      const local = extractLocalPart(jid);
+      if (!local) continue;
+      put(local, { ...selfEntry, mentionJid: jid.includes("@") ? jid : `${local}@lid` });
+      put(`dm-${local}`, selfEntry);
     }
   }
 
