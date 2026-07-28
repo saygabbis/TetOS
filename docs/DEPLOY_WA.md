@@ -10,7 +10,7 @@ Em produção, o projeto roda dentro de uma **GNU screen** chamada **`TetOS`** �
 |-------|----------|-------------|-----------|
 | **CI** | `.github/workflows/cicd.yml` (job `test`) | Push/PR na `main` que alterem código | `npm ci` + `npm run test:ci` |
 | **CD** | `.github/workflows/cicd.yml` (job `deploy`) | Push na `main` com mudança de código (após testes) ou manual | SSH no servidor → `git pull` → `scripts/deploy-wa.sh` → reinicia na screen `TetOS` |
-| **Backup** | `.github/workflows/backup-vps.yml` | Manual (Actions) | **Para a TetOS** → SSH na VPS → commit de `data/` → push na `main` → **permanece parada** |
+| **Backup** | `.github/workflows/backup-vps.yml` | Manual (Actions) | **Encerra a TetOS** → SSH na VPS → commit de `data/` → push na `main` → **permanece encerrada** |
 
 > **Backup da VPS:** commits na `main` que alterem **apenas** `data/`, `docs/`, etc. **não disparam** CI/CD. Só mudanças em `src/`, `scripts/`, `tests/`, `package.json`, `.github/` ou `.nvmrc` acionam o pipeline. Deploy manual continua disponível em **Actions → CI/CD → Run workflow**.
 
@@ -238,20 +238,20 @@ export TETOS_START_CMD="npm run start:wa"  # padrão
 
 ## 4. Backup da VPS (GitHub Actions)
 
-Arquivo: `.github/workflows/backup-vps.yml` (nome **Backup VPS (para a TetOS)** no GitHub Actions).
+Arquivo: `.github/workflows/backup-vps.yml` (nome **Backup VPS (encerra a TetOS)** no GitHub Actions).
 
-> **⚠️ AVISO:** Este workflow **para** o runner WhatsApp na screen `TetOS`, faz o backup e **deixa a aplicação parada**. Não há restart automático. Para subir de novo: `screen -r TetOS` + `npm run start:wa`, ou rode o workflow **CI/CD**.
+> **⚠️ AVISO:** Este workflow **encerra** o runner WhatsApp na screen `TetOS`, faz o backup e **deixa a aplicação encerrada**. Não há restart automático. Para subir de novo: `screen -r TetOS` + `npm run start:wa`, ou rode o workflow **CI/CD**.
 
 ### Como usar
 
-1. Vá em **Actions** → **Backup VPS (para a TetOS)** → **Run workflow**
+1. Vá em **Actions** → **Backup VPS (encerra a TetOS)** → **Run workflow**
 2. Leia o aviso exibido antes de confirmar
 3. Opcional: preencha uma mensagem para o commit
 4. O workflow conecta na VPS via SSH e executa `scripts/backup-vps.sh`
 
 ### Fluxo do backup
 
-1. **Para** o runner (`Ctrl+C` na screen `TetOS`, ou `pkill` se necessário)
+1. **Encerra** o runner (`Ctrl+C` na screen `TetOS`, ou `pkill` se necessário)
 2. Sincroniza com `origin/main` (stash temporário das alterações locais)
 3. Commita apenas `data/` (respeitando `.gitignore`)
 4. Push na `main`

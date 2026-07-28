@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Backup do estado da VPS: commita arquivos versionáveis e envia para origin/main.
 #
-# AVISO: Este script PARA o runner WhatsApp (screen TetOS) antes do backup
-# e deixa a aplicação PARADA ao final — não reinicia automaticamente.
+# AVISO: Este script ENCERRA o runner WhatsApp (screen TetOS) antes do backup
+# e deixa a aplicação ENCERRADA ao final — não reinicia automaticamente.
 #
 # Usa o git/SSH já configurado no usuário da VPS (sem token).
 # Respeita .gitignore (ex.: data/session/, .env não entram no commit).
@@ -33,11 +33,11 @@ runner_running() {
 
 stop_tetos_runner() {
   echo "[backup-vps] =============================================="
-  echo "[backup-vps] AVISO: Parando TetOS para backup consistente..."
+  echo "[backup-vps] AVISO: Encerrando TetOS para backup consistente..."
   echo "[backup-vps] =============================================="
 
   if ! command -v screen >/dev/null 2>&1; then
-    echo "[backup-vps] AVISO: GNU screen não encontrado — tentando parar processo direto."
+    echo "[backup-vps] AVISO: GNU screen não encontrado — tentando encerrar processo direto."
     if runner_running; then
       pkill -TERM -f "$RUNNER_MATCH" || true
       sleep 3
@@ -59,36 +59,36 @@ stop_tetos_runner() {
     echo "[backup-vps] Runner ativo fora da screen — enviando SIGTERM..."
     pkill -TERM -f "$RUNNER_MATCH" || true
   else
-    echo "[backup-vps] TetOS já parece estar parada."
+    echo "[backup-vps] TetOS já parece estar encerrada."
     return
   fi
 
   for _ in $(seq 1 "$STOP_WAIT_SECS"); do
     if ! runner_running; then
-      echo "[backup-vps] Runner parado."
+      echo "[backup-vps] Runner encerrado."
       return
     fi
     sleep 1
   done
 
   if runner_running; then
-    echo "[backup-vps] AVISO: Runner ainda ativo após ${STOP_WAIT_SECS}s — forçando parada..."
+    echo "[backup-vps] AVISO: Runner ainda ativo após ${STOP_WAIT_SECS}s — forçando encerramento..."
     pkill -KILL -f "$RUNNER_MATCH" || true
     sleep 2
   fi
 
   if runner_running; then
-    echo "[backup-vps] ERRO: não foi possível parar o runner." >&2
+    echo "[backup-vps] ERRO: não foi possível encerrar o runner." >&2
     exit 1
   fi
 
-  echo "[backup-vps] Runner parado com sucesso."
+  echo "[backup-vps] Runner encerrado com sucesso."
 }
 
 print_stopped_warning() {
   echo ""
   echo "[backup-vps] =============================================="
-  echo "[backup-vps] AVISO: TetOS permanece PARADA após este backup."
+  echo "[backup-vps] AVISO: TetOS permanece ENCERRADA após este backup."
   echo "[backup-vps] O bot NÃO foi reiniciado automaticamente."
   echo "[backup-vps]"
   echo "[backup-vps] Para subir de novo na VPS:"
