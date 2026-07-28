@@ -8,8 +8,11 @@ Em produção, o projeto roda dentro de uma **GNU screen** chamada **`TetOS`** �
 
 | Etapa | Workflow | Quando roda | O que faz |
 |-------|----------|-------------|-----------|
-| **CI** | `.github/workflows/cicd.yml` (job `test`) | Push e PR na `main` | `npm ci` + `npm run test:ci` |
-| **CD** | `.github/workflows/cicd.yml` (job `deploy`) | Push na `main` (após testes) ou manual | SSH no servidor → `git pull` → `scripts/deploy-wa.sh` → reinicia na screen `TetOS` |
+| **CI** | `.github/workflows/cicd.yml` (job `test`) | Push/PR na `main` que alterem código | `npm ci` + `npm run test:ci` |
+| **CD** | `.github/workflows/cicd.yml` (job `deploy`) | Push na `main` com mudança de código (após testes) ou manual | SSH no servidor → `git pull` → `scripts/deploy-wa.sh` → reinicia na screen `TetOS` |
+| **Backup** | `.github/workflows/backup-vps.yml` | Manual (Actions) | SSH na VPS → commit de `data/` → push na `main` |
+
+> **Backup da VPS:** commits na `main` que alterem **apenas** `data/`, `docs/`, etc. **não disparam** CI/CD. Só mudanças em `src/`, `scripts/`, `tests/`, `package.json`, `.github/` ou `.nvmrc` acionam o pipeline. Deploy manual continua disponível em **Actions → CI/CD → Run workflow**.
 
 Fluxo após merge na `main`:
 
@@ -146,6 +149,40 @@ O usuário SSH precisa de:
 - Executar `git`, `npm`, `screen`
 - Ler o `.env` (não versionado)
 - Acessar a screen `TetOS` (mesmo usuário que criou a sessão)
+- Fazer `git push` via SSH no GitHub (para o workflow de backup)
+
+### 2.3 Git SSH na VPS (para backup)
+
+O backup usa o `git push` do próprio usuário da VPS — **sem token**.
+
+No servidor, o clone deve usar remote SSH:
+
+```bash
+cd /opt/tetos
+git remote -v
+# origin  git@github.com:SEU_USUARIO/TetOS.git (fetch)
+# origin  git@github.com:SEU_USUARIO/TetOS.git (push)
+```
+
+Se estiver em HTTPS, troque:
+
+```bash
+git remote set-url origin git@github.com:SEU_USUARIO/TetOS.git
+```
+
+Gere uma chave SSH **no servidor** (se ainda não tiver) e adicione em GitHub → **Settings → SSH keys**:
+
+```bash
+ssh-keygen -t ed25519 -C "tetos-vps-backup" -f ~/.ssh/id_ed25519_github -N ""
+cat ~/.ssh/id_ed25519_github.pub
+```
+
+Teste:
+
+```bash
+ssh -T git@github.com
+git push origin main --dry-run
+```
 
 ---
 
@@ -199,7 +236,55 @@ export TETOS_START_CMD="npm run start:wa"  # padrão
 
 ---
 
-## 4. Deploy manual
+## 4. Backup da VPS (GitHub Actions)
+
+Arquivo: `.github/workflows/backup-vps.yml` (nome **Backup VPS** no GitHub Actions).
+
+### Como usar
+
+1. Vá em **Actions** → **Backup VPS** → **Run workflow**
+2. Opcional: preencha uma mensagem para o commit
+3. O workflow conecta na VPS via SSH e executa `scripts/backup-vps.sh`
+
+### O que é commitado
+
+Por padrão, apenas alterações em `data/` que **não** estão no `.gitignore`:
+
+- ✅ `data/memory.json`, `data/personality.json`, relatórios, etc.
+- ❌ `data/session/` (sessão WhatsApp)
+- ❌ `data/mind-log/`, `data/short-term/`
+- ❌ `.env`
+
+Se não houver mudanças versionáveis, o workflow termina sem criar commit.
+
+### Por que não dispara deploy
+
+O workflow **CI/CD** só reage a mudanças em `src/`, `scripts/`, `tests/`, etc. Commits de backup (só `data/`) **não reiniciam** a aplicação.
+
+### Mensagem do commit
+
+Formato automático:
+
+```
+backup(vps): 2026-07-28T18:30:00Z
+```
+
+Com mensagem customizada no workflow:
+
+```
+backup(vps): snapshot antes de migração
+```
+
+### Backup manual no servidor
+
+```bash
+cd /opt/tetos
+bash scripts/backup-vps.sh "minha mensagem"
+```
+
+---
+
+## 5. Deploy manual
 
 ### Pelo GitHub Actions
 
@@ -217,7 +302,7 @@ bash scripts/deploy-wa.sh
 
 ---
 
-## 5. Operação e monitoramento (screen)
+## 6. Operação e monitoramento (screen)
 
 ```bash
 # Listar screens
@@ -247,7 +332,7 @@ Após deploy, valide:
 
 ---
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 
 | Problema | Causa provável | Solução |
 |----------|----------------|---------|
@@ -263,7 +348,7 @@ Após deploy, valide:
 
 ---
 
-## 7. Segurança
+## 8. Segurança
 
 - **Nunca** commite `.env` ou `data/session/`.
 - Use um usuário Linux dedicado ao deploy (não `root`).
@@ -273,7 +358,7 @@ Após deploy, valide:
 
 ---
 
-## 8. Expandir no futuro
+## 9. Expandir no futuro
 
 Esta base pode evoluir para:
 
@@ -285,4 +370,6 @@ Esta base pode evoluir para:
 Arquivos relacionados:
 
 - `scripts/deploy-wa.sh` — script de deploy no servidor (screen `TetOS`)
+- `scripts/backup-vps.sh` — script de backup (commit + push na `main`)
 - `.github/workflows/cicd.yml` — pipeline CI/CD (testes + deploy)
+- `.github/workflows/backup-vps.yml` — backup manual da VPS

@@ -1,0 +1,32 @@
+name: Backup VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: Mensagem opcional do commit (prefixo backup(vps) é adicionado)
+        required: false
+        default: ""
+
+concurrency:
+  group: backup-vps
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Backup VPS → main
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Commitar estado da VPS e push na main
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+            bash scripts/backup-vps.sh "${{ inputs.message }}"
