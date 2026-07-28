@@ -1,10 +1,10 @@
-name: Backup VPS
+name: "Backup VPS (para a TetOS)"
 
 on:
   workflow_dispatch:
     inputs:
       message:
-        description: Mensagem opcional do commit (prefixo backup(vps) é adicionado)
+        description: "⚠️ PARA a TetOS, faz backup na main e DEIXA PARADA (não reinicia). Mensagem opcional do commit."
         required: false
         default: ""
 
@@ -14,12 +14,16 @@ concurrency:
 
 jobs:
   backup:
-    name: Backup VPS → main
+    name: "Backup VPS — Encerrar TetOS"
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
-      - name: Commitar estado da VPS e push na main
+      - name: "⚠️ Aviso — aplicação será parada"
+        run: |
+          echo "::warning title=TetOS será parada::Este workflow PARA o runner WhatsApp na VPS, faz backup de data/ na main e NÃO reinicia a aplicação. Suba de novo manualmente (screen) ou rode o workflow CI/CD."
+
+      - name: Parar TetOS, backup e push na main
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
