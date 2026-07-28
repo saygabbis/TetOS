@@ -2,12 +2,14 @@
 
 Este guia descreve como configurar **CI** (testes automáticos) e **CD** (deploy automático do runner WhatsApp) com GitHub Actions.
 
+Em produção, o projeto roda dentro de uma **GNU screen** chamada **`TetOS`** — não via PM2.
+
 ## Visão geral
 
 | Etapa | Workflow | Quando roda | O que faz |
 |-------|----------|-------------|-----------|
-| **CI** | `.github/workflows/ci.yml` (job `test`) | Push e PR na `main` | `npm ci` + `npm run test:ci` |
-| **CD** | `.github/workflows/ci.yml` (job `deploy`) | Push na `main` (após testes) ou manual | SSH no servidor → `git pull` → `scripts/deploy-wa.sh` → PM2 `tetos-wa` |
+| **CI** | `.github/workflows/cicd.yml` (job `test`) | Push e PR na `main` | `npm ci` + `npm run test:ci` |
+| **CD** | `.github/workflows/cicd.yml` (job `deploy`) | Push na `main` (após testes) ou manual | SSH no servidor → `git pull` → `scripts/deploy-wa.sh` → reinicia na screen `TetOS` |
 
 Fluxo após merge na `main`:
 
@@ -16,17 +18,17 @@ flowchart LR
   A[Push na main] --> B[CI — testes]
   B -->|sucesso| C[CD — SSH no servidor]
   C --> D[npm ci --omit=dev]
-  D --> E[pm2 restart tetos-wa]
+  D --> E[reinicia npm run start:wa na screen TetOS]
 ```
 
 O runner em produção equivale a:
 
 ```bash
+screen -r TetOS
+# dentro da screen:
 npm run start:wa
 # node src/integrations/whatsapp/runner.js
 ```
-
-Gerenciado pelo PM2 como processo `tetos-wa` (ver `scripts/pm2.config.cjs`).
 
 ---
 
@@ -36,7 +38,7 @@ Requisitos:
 
 - **Ubuntu/Debian** (ou Linux compatível)
 - **Node.js 20+** (mesma versão do `.nvmrc`)
-- **PM2** global
+- **GNU screen**
 - **Git** com acesso ao repositório
 - Porta SSH aberta para o GitHub Actions
 
@@ -48,11 +50,11 @@ sudo apt-get install -y nodejs
 node -v   # deve ser v20.x
 ```
 
-### 1.2 Instalar PM2
+### 1.2 Instalar GNU screen
 
 ```bash
-sudo npm install -g pm2
-pm2 startup    # siga as instruções para iniciar PM2 no boot
+sudo apt-get install -y screen
+screen -v
 ```
 
 ### 1.3 Clonar o repositório
@@ -83,19 +85,28 @@ REPLY_ENABLED=true
 
 Configure também o LLM (`TETOS_LLM_PROVIDER`, chaves de API, etc.) conforme o [RUNBOOK](./RUNBOOK.md).
 
-> **Sessão WhatsApp:** `data/session/` não vai para o Git. No primeiro start, escaneie o QR Code no terminal do servidor (`pm2 logs tetos-wa`).
+> **Sessão WhatsApp:** `data/session/` não vai para o Git. No primeiro start, escaneie o QR Code dentro da screen (`screen -r TetOS`).
 
-### 1.5 Primeiro start manual
+### 1.5 Primeiro start manual (screen TetOS)
 
 ```bash
 cd /opt/tetos
 npm ci
-pm2 start scripts/pm2.config.cjs --only tetos-wa
-pm2 save
-pm2 logs tetos-wa
+screen -S TetOS
+npm run start:wa
 ```
 
-Confirme que o bot conectou antes de ativar o CD automático.
+Escaneie o QR Code se necessário. Para sair **sem parar** o processo:
+
+```
+Ctrl+A, depois D
+```
+
+Confirme que o bot conectou antes de ativar o CD automático:
+
+```bash
+screen -ls    # deve listar algo como 12345.TetOS (Detached)
+```
 
 ---
 
@@ -109,11 +120,10 @@ No repositório: **Settings → Secrets and variables → Actions → New reposi
 | `SSH_USER` | Sim | `deploy` | Usuário SSH |
 | `SSH_PRIVATE_KEY` | Sim | conteúdo da chave privada | Chave **sem senha** para o Actions |
 | `DEPLOY_PATH` | Sim | `/opt/tetos` | Caminho do clone no servidor |
-| `SSH_PORT` | Não | `22` | Porta SSH (padrão: 22) |
 
 ### 2.1 Gerar chave SSH para deploy
 
-No seu computador local:
+No seu computador Linux:
 
 ```bash
 ssh-keygen -t ed25519 -C "github-actions-tetos-wa" -f ~/.ssh/tetos_wa_deploy -N ""
@@ -133,20 +143,15 @@ ssh -i ~/.ssh/tetos_wa_deploy deploy@SEU_SERVIDOR "cd /opt/tetos && git status"
 O usuário SSH precisa de:
 
 - Leitura/escrita em `DEPLOY_PATH`
-- Executar `git`, `npm`, `pm2`
+- Executar `git`, `npm`, `screen`
 - Ler o `.env` (não versionado)
-
-Exemplo de `authorized_keys` com restrições opcionais:
-
-```
-command="cd /opt/tetos && $SSH_ORIGINAL_COMMAND" ssh-ed25519 AAAA... github-actions-tetos-wa
-```
+- Acessar a screen `TetOS` (mesmo usuário que criou a sessão)
 
 ---
 
 ## 3. Workflow unificado
 
-Arquivo: `.github/workflows/ci.yml` (nome **CI/CD** no GitHub Actions).
+Arquivo: `.github/workflows/cicd.yml` (nome **CI/CD** no GitHub Actions).
 
 ### Job `test` — CI
 
@@ -161,8 +166,7 @@ Para validar localmente antes de abrir PR:
 
 ```bash
 npm ci
-$env:CI='true'; npm run test:ci   # PowerShell
-# CI=true npm run test:ci         # Linux/macOS
+CI=true npm run test:ci
 ```
 
 ### Job `deploy` — CD
@@ -183,8 +187,15 @@ O script `scripts/deploy-wa.sh`:
 
 - Verifica se `.env` existe
 - Roda `npm ci --omit=dev`
-- Reinicia `tetos-wa` no PM2 (ou inicia se for a primeira vez)
-- Executa `pm2 save`
+- Se a screen **`TetOS`** já existe: envia `Ctrl+C` e relança `npm run start:wa`
+- Se não existe: cria `screen -dmS TetOS` com o comando de start
+
+Variáveis opcionais no servidor:
+
+```bash
+export TETOS_SCREEN_NAME=TetOS      # padrão
+export TETOS_START_CMD="npm run start:wa"  # padrão
+```
 
 ---
 
@@ -206,26 +217,32 @@ bash scripts/deploy-wa.sh
 
 ---
 
-## 5. Operação e monitoramento
+## 5. Operação e monitoramento (screen)
 
 ```bash
-# Status
-pm2 status tetos-wa
+# Listar screens
+screen -ls
 
-# Logs em tempo real
-pm2 logs tetos-wa
+# Entrar na screen e ver logs ao vivo
+screen -r TetOS
 
-# Reinício manual
-pm2 restart tetos-wa --update-env
+# Sair sem parar o processo
+# Ctrl+A, depois D
 
-# Parar
-pm2 stop tetos-wa
+# Reinício manual dentro da screen
+screen -r TetOS
+# Ctrl+C para parar
+npm run start:wa
+# Ctrl+A, D para detach
+
+# Ou use o script de deploy
+bash scripts/deploy-wa.sh
 ```
 
 Após deploy, valide:
 
-- `pm2 status` mostra `tetos-wa` como `online`
-- Logs sem erros de conexão WhatsApp
+- `screen -ls` mostra `TetOS` como `(Detached)`
+- Logs sem erros de conexão WhatsApp (`screen -r TetOS`)
 - Bot responde a uma mensagem de teste
 
 ---
@@ -238,9 +255,11 @@ Após deploy, valide:
 | `Permission denied (publickey)` | Chave SSH incorreta | Revise `SSH_PRIVATE_KEY` e `authorized_keys` |
 | `DEPLOY_PATH: No such file` | Caminho errado no secret | Ajuste `DEPLOY_PATH` |
 | `.env ausente` | Primeiro deploy sem config | Crie `.env` no servidor |
-| Bot pede QR de novo | Sessão apagada ou `data/session` limpo | `pm2 logs tetos-wa`, escaneie QR; não apague `data/session` |
+| Bot pede QR de novo | Sessão apagada ou `data/session` limpo | `screen -r TetOS`, escaneie QR; não apague `data/session` |
 | `npm ci` falha | Node desatualizado no servidor | Instale Node 20+ |
-| PM2 não encontrado | PM2 não instalado globalmente | `sudo npm i -g pm2` |
+| `screen: command not found` | GNU screen não instalado | `sudo apt install screen` |
+| `Cannot open your terminal` | Deploy SSH sem TTY | Normal no Actions; o script usa `screen -X` (não precisa de TTY) |
+| Screen existe mas processo não sobe | Node/npm fora do PATH no deploy | Use `bash -lc` ou ajuste `TETOS_START_CMD` com caminho completo do node |
 
 ---
 
@@ -256,15 +275,14 @@ Após deploy, valide:
 
 ## 8. Expandir no futuro
 
-Esta base separa CI e CD e pode evoluir para:
+Esta base pode evoluir para:
 
-- Deploy da API (`tetos-api`) com workflow `cd-api.yml`
+- Deploy da API (`start:api`) na mesma screen ou em outra
 - Ambientes `staging` / `production` com secrets por environment
 - Notificação no Discord/Telegram após deploy
 - Health check HTTP pós-deploy (`GET /status` se a API estiver na mesma VPS)
 
 Arquivos relacionados:
 
-- `scripts/pm2.config.cjs` — definição dos processos PM2
-- `scripts/deploy-wa.sh` — script de deploy no servidor
-- `.github/workflows/ci.yml` — pipeline CI/CD (testes + deploy)
+- `scripts/deploy-wa.sh` — script de deploy no servidor (screen `TetOS`)
+- `.github/workflows/cicd.yml` — pipeline CI/CD (testes + deploy)
