@@ -1,0 +1,2233 @@
+{
+  "day": "2026-07-27",
+  "generatedAt": "2026-07-28T00:00:28.041Z",
+  "timezone": "America/Sao_Paulo",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 1312,
+    "byEvent": {
+      "chat.update": 1254,
+      "group.update": 1,
+      "group.participants_update": 4,
+      "message.update": 34,
+      "message.reaction": 10,
+      "message.deleted": 3,
+      "message.receipt_update": 6
+    }
+  },
+  "timeline": {
+    "hourly": [
+      {
+        "hour": 0,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 1,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 2,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 3,
+        "events": 33,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 4,
+        "events": 39,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 5,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 6,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 7,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 8,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 9,
+        "events": 16,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 10,
+        "events": 72,
+        "messages": 31,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 11,
+        "events": 92,
+        "messages": 1,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 12,
+        "events": 177,
+        "messages": 3,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 13,
+        "events": 187,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 14,
+        "events": 16,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 15,
+        "events": 110,
+        "messages": 2,
+        "media": 0,
+        "reactions": 2
+      },
+      {
+        "hour": 16,
+        "events": 139,
+        "messages": 1,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 17,
+        "events": 187,
+        "messages": 5,
+        "media": 0,
+        "reactions": 3
+      },
+      {
+        "hour": 18,
+        "events": 110,
+        "messages": 6,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 19,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 20,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 21,
+        "events": 87,
+        "messages": 2,
+        "media": 0,
+        "reactions": 2
+      },
+      {
+        "hour": 22,
+        "events": 43,
+        "messages": 2,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 23,
+        "events": 4,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      }
+    ],
+    "events": [
+      {
+        "ts": "2026-07-27T03:06:11.382Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:06:15.536Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:06:26.982Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:06:29.581Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:06:41.225Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:06:54.337Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:07:09.676Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:07:49.498Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:07:56.957Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:08:40.365Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:08:50.973Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:08:58.086Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:00.525Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:08.123Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:28.681Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:32.790Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:39.743Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:44.173Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:46.280Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:51.048Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:53.196Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:55.310Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:09:57.302Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:10:02.094Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:10:06.955Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:10:10.046Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:10:14.915Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:10:20.639Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:10:28.069Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:10:30.515Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:11:06.123Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:16:19.743Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T03:25:07.529Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:03:58.767Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:04:02.822Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:04:08.389Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:04:12.987Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:04:17.544Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:04:24.381Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:04:33.152Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:04:41.047Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:05:00.190Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:05:03.939Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:05:38.697Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:05:38.699Z",
+        "eventType": "group.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:05:49.427Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:05:53.216Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:05:55.180Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:00.655Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:03.245Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:19.060Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:22.496Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:32.236Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:43.947Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:54.666Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:06:57.475Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:07:01.265Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:07:13.583Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:07:22.207Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:08:45.322Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:08:52.754Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:09:00.962Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:09:04.043Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:09:06.628Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:09:14.561Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:15:43.201Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:15:46.647Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:15:58.184Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:19:12.954Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:29:51.184Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:33:09.630Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T04:35:14.337Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:12:18.711Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:12:22.462Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:25:59.915Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:53:36.047Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:53:53.038Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:05.968Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:20.795Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:22.334Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:27.885Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:32.291Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:41.281Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:47.032Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:50.663Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:54:57.499Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:55:01.686Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T09:58:41.749Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:08:43.382Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:09:13.235Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:09:41.761Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:10:03.927Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:10:14.758Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:10:24.902Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:10:36.223Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:10:41.490Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:10:50.736Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:10:53.951Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.719Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.735Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.738Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.741Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.743Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.746Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.748Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.750Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.751Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:49.754Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.030Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.032Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.034Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.038Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.040Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.041Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.043Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.045Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.046Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.048Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.049Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.051Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.052Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.054Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.055Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.057Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.058Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.059Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.061Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.063Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:25:55.203Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:04.067Z",
+        "eventType": "message.update",
+        "actorId": "157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:05.230Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:15.635Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:28.463Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:35.217Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:38.918Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:40.519Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:26:49.235Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:27:06.847Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:27:15.246Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:27:27.198Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:27:42.654Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:27:44.454Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:28:09.004Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:28:41.817Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:28:47.075Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:28:49.548Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:28:53.044Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:35:46.893Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:35:52.024Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:35:57.237Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:36:42.368Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:39:44.055Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:51:30.234Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:51:34.635Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:51:37.643Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:51:41.117Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:54:33.546Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:54:37.688Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:54:43.308Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T10:54:45.742Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:02:22.142Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:02:29.495Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:02:55.749Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:03:13.932Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:03:17.969Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:03:27.858Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:06:20.600Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:07:14.860Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:07:29.624Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:07:39.250Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:07:41.095Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:08:42.803Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:08:52.696Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:08:55.471Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:08:58.369Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:09:13.682Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:09:16.848Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:17:29.619Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_f07f5797e6b3",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:21:36.784Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:21:43.635Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:22:12.396Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:23:11.981Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:23:17.443Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:23:27.788Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:23:36.144Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:23:39.835Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:24:07.999Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:24:09.860Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:24:11.612Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:24:24.978Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:24:27.978Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:24:53.463Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:03.361Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:07.655Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:09.866Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:14.706Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:26.201Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:29.190Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:32.811Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-07-27T11:25:48.374Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      }
+    ],
+    "gaps": [
+      {
+        "from": "2026-07-27T03:25:07.529Z",
+        "to": "2026-07-27T04:03:58.767Z",
+        "minutes": 39
+      },
+      {
+        "from": "2026-07-27T04:35:14.337Z",
+        "to": "2026-07-27T09:12:18.711Z",
+        "minutes": 277
+      },
+      {
+        "from": "2026-07-27T18:45:54.480Z",
+        "to": "2026-07-27T21:05:21.714Z",
+        "minutes": 139
+      },
+      {
+        "from": "2026-07-27T22:49:57.468Z",
+        "to": "2026-07-27T23:44:38.196Z",
+        "minutes": 55
+      }
+    ]
+  },
+  "timing": {
+    "byHour": [
+      {
+        "hour": 0,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 1,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 2,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 3,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 4,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 5,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 6,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 7,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 8,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 9,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 10,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 11,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 12,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 13,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 14,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 15,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 16,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 17,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 18,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 19,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 20,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 21,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 22,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 23,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      }
+    ],
+    "avgLatencyMs": 8790293,
+    "p50Ms": 8790293
+  },
+  "duration": {
+    "activeSpanMinutes": 1239,
+    "longestSilenceMin": 277,
+    "silenceGaps": 4
+  },
+  "mindSnapshots": [
+    {
+      "ts": "2026-07-27T20:15:58.245Z",
+      "turnId": "wa-group:120363425913528764:190546341540031-1785183358245",
+      "input": {
+        "message": "olaaa",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "Oieee @Kzer! kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:16:47.461Z",
+      "turnId": "wa-group:120363425913528764:190546341540031-1785183407461",
+      "input": {
+        "message": "Ta com fome fiaa?",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "Tô sim!! Me traz uma baguete? kkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:20:49.587Z",
+      "turnId": "wa-group:120363425913528764:190546341540031-1785183649587",
+      "input": {
+        "message": "Fala com tois",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 2,
+        "preview": "cheguei kkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:21:16.829Z",
+      "turnId": "wa-group:120363425913528764:190546341540031-1785183676829",
+      "input": {
+        "message": "A Tetooo",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 1,
+        "preview": "Diz aíii kkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:21:52.313Z",
+      "turnId": "wa-group:120363425913528764:190546341540031-1785183712313",
+      "input": {
+        "message": "Falhei",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 1,
+        "preview": "falhou em que?? kkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:22:20.755Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183740753",
+      "input": {
+        "message": "a teto chegou e agora o caos tá completo kkkk",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 0.9910000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 1,
+        "preview": "O CAOS É MEU NOME DO MEIO kkkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:22:42.926Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183762926",
+      "input": {
+        "message": "bora ver quem manda mais nesse rolê 💜",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 0.9970000000000001
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 2,
+        "preview": "SPOILER: EU mando em tudo kkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:22:55.390Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183775390",
+      "input": {
+        "message": "eu já sabia kkkkkk",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 1,
+        "preview": "sabia pq já conhece a diva kkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:23:10.679Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183790679",
+      "input": {
+        "message": "[sticker]\nihhh kkkkk\nquem falhou? o mestre dos gatinhos? 💜\n---\n⚠️ quem falhou? o mestre dos gatinhos? 💜\n[sticker]\n---\nisso aí q eu quero saber! kkkkk\n@Kzer desembucha logo 💜\n---\nvcs dois juntos são um perigo real 💜",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 2,
+        "preview": "PERIGO REAL kkkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:23:32.985Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183812985",
+      "input": {
+        "message": "[sticker]",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 1,
+        "preview": "@Kzer a Sellye tá te pressionando kkkkk fala logo!!"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:24:08.950Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183848950",
+      "input": {
+        "message": "uai kkkkk",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 2,
+        "preview": "uai kkkkkkkkkkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:24:21.197Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183861197",
+      "input": {
+        "message": "isso msm kkkkk",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 2,
+        "preview": "KKKKKKK @Kzer não tem mais escapatória agora"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:24:45.332Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183885332",
+      "input": {
+        "message": "pq o facepalm? eu falei a verdade 💜",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 2,
+        "preview": "kkkkkkkk ué, mas a verdade as vezes dói né 💜"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:25:16.543Z",
+      "turnId": "wa-group:120363425913528764:190546341540031-1785183916543",
+      "input": {
+        "message": "Teto",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "irritated"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 1,
+        "preview": "oi!! falou comigo agora? kkk"
+      }
+    },
+    {
+      "ts": "2026-07-27T20:25:53.182Z",
+      "turnId": "wa-group:120363425913528764:58141777641473-1785183953182",
+      "input": {
+        "message": "está rindo de quê Teto? 💜",
+        "channelId": "120363425913528764@g.us",
+        "isGroup": true
+      },
+      "brain": {
+        "emotion": {
+          "mood": "low"
+        },
+        "trustBond": {
+          "trust": 1,
+          "intimacy": 1
+        },
+        "worldContext": {
+          "currentLocation": "sp",
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": "sp"
+        },
+        "health": [
+          {
+            "type": "resfriado"
+          }
+        ]
+      },
+      "output": {
+        "count": 2,
+        "preview": "do desespero do @Kzer ué kkkkkk"
+      }
+    }
+  ],
+  "hourlySnapshots": [
+    {
+      "hour": 20,
+      "samples": 15,
+      "trust": {
+        "trust": 1,
+        "intimacy": 1
+      },
+      "world": {
+        "currentLocation": "sp",
+        "isTraveling": false
+      },
+      "health": [
+        {
+          "type": "resfriado"
+        }
+      ],
+      "emotion": "low"
+    }
+  ],
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 3,
+    "samples": [
+      {
+        "ts": "2026-07-27T12:03:12.427Z",
+        "messageId": "3EB01B6C9C9E037939BF59",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-07-27T17:09:11.522Z",
+        "messageId": "AC7EB543E5F0C2A4E8C1496FCE359143",
+        "beforeText": null,
+        "reason": "revoke"
+      },
+      {
+        "ts": "2026-07-27T22:23:25.411Z",
+        "messageId": "3EB029FDE3756FCC93443E",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 0,
+    "avgLatencyMs": null,
+    "byCommand": {},
+    "byStatus": {},
+    "byInputType": {},
+    "byOutputType": {},
+    "byTargetSource": {}
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 6438,
+      "messages": 6409,
+      "reactions": 2,
+      "media": 1695,
+      "links": 187
+    },
+    "byHour": {
+      "0": 267,
+      "1": 163,
+      "2": 177,
+      "3": 288,
+      "4": 183,
+      "5": 158,
+      "6": 95,
+      "7": 61,
+      "8": 51,
+      "9": 14,
+      "10": 17,
+      "11": 133,
+      "12": 272,
+      "13": 228,
+      "14": 399,
+      "15": 261,
+      "16": 256,
+      "17": 151,
+      "18": 386,
+      "19": 591,
+      "20": 473,
+      "21": 751,
+      "22": 649,
+      "23": 414
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 67,
+      "5516994435369@s.whatsapp.net": 25,
+      "5516988137617@s.whatsapp.net": 82,
+      "190546341540031@lid": 562,
+      "131778236952767@lid": 1489,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 16,
+      "5516991476228@s.whatsapp.net": 2,
+      "65197804912879@lid": 47,
+      "6283879987068@s.whatsapp.net": 18,
+      "174165839581324@lid": 169,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 311,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 1203,
+      "5516988776338@s.whatsapp.net": 63,
+      "185967939985556@lid": 1027,
+      "5517991664082@s.whatsapp.net": 41,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 638,
+      "272172178223326@lid": 49,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 23,
+      "238009924509886@lid": 23,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 48,
+      "103659153158378@lid": 44,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 23,
+      "187995030323304@lid": 37,
+      "150242334867642@lid": 30,
+      "137053111091288@lid": 5,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 10,
+      "3689544732728@lid": 86,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 31,
+      "9281743114312@lid": 63,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 40,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 13,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3,
+      "207202157650019@lid": 26,
+      "124841948631110@lid": 15,
+      "69123321135269@lid": 1,
+      "164076609101978@lid": 4,
+      "206579353784338@lid": 2,
+      "5516996184325@s.whatsapp.net": 1,
+      "5516997824041@s.whatsapp.net": 1,
+      "58141777641473@lid": 1,
+      "141167085773019@lid": 1,
+      "49809339740364@lid": 5,
+      "238083022835725@lid": 7,
+      "206476459155457@lid": 1,
+      "224098508644548@lid": 1,
+      "140269471174762@lid": 6,
+      "120363425913528764@g.us": 34
+    },
+    "avgLatencyMs": 8790293
+  }
+}
