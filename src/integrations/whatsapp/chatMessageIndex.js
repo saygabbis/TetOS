@@ -23,6 +23,7 @@ export class ChatMessageIndex {
     quotedMessageId = null,
     participantJid = null,
     tetosOneShot = false,
+    tetosCommandSource = false,
     ts = null
   } = {}) {
     if (!channelId || !messageId) return null;
@@ -37,6 +38,7 @@ export class ChatMessageIndex {
       quotedMessageId: quotedMessageId ?? null,
       participantJid: participantJid ?? null,
       tetosOneShot: Boolean(tetosOneShot),
+      tetosCommandSource: Boolean(tetosCommandSource),
       ts: ts ?? new Date().toISOString()
     };
     const list = this.byChannel.get(entry.channelId) ?? [];
@@ -46,7 +48,8 @@ export class ChatMessageIndex {
       const merged = {
         ...prev,
         ...entry,
-        tetosOneShot: Boolean(prev.tetosOneShot || entry.tetosOneShot)
+        tetosOneShot: Boolean(prev.tetosOneShot || entry.tetosOneShot),
+        tetosCommandSource: Boolean(prev.tetosCommandSource || entry.tetosCommandSource)
       };
       list[dupIdx] = merged;
       this.byChannel.set(entry.channelId, list);

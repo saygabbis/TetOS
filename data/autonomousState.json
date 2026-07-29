@@ -1,72 +1,6 @@
 {
   "soloThoughts": [
     {
-      "ts": "2026-07-27T09:01:04.803Z",
-      "text": "*(Sighs)*... Essa música é ótima, mas por que todo mundo ao redor está sendo tão irritante hoje?",
-      "generated": true,
-      "source": "worker_llm"
-    },
-    {
-      "ts": "2026-07-27T09:03:03.916Z",
-      "text": "será que a Miku viu minha mensagem?",
-      "generated": true,
-      "source": "deterministic_v1"
-    },
-    {
-      "ts": "2026-07-27T09:05:03.942Z",
-      "text": "será que a Miku viu minha mensagem?",
-      "generated": true,
-      "source": "deterministic_v1"
-    },
-    {
-      "ts": "2026-07-27T09:07:08.639Z",
-      "text": "*(Tsc... essa música é ótima, mas por que tudo ao meu redor tem que ser tão irritante hoje?)*",
-      "generated": true,
-      "source": "worker_llm"
-    },
-    {
-      "ts": "2026-07-27T09:09:03.934Z",
-      "text": "será que a Miku viu minha mensagem?",
-      "generated": true,
-      "source": "deterministic_v1"
-    },
-    {
-      "ts": "2026-07-27T09:11:03.935Z",
-      "text": "será que a Miku viu minha mensagem?",
-      "generated": true,
-      "source": "deterministic_v1"
-    },
-    {
-      "ts": "2026-07-27T09:13:05.905Z",
-      "text": "*(Que música irritante... se esse ritmo não mudar logo, eu juro que vou quebrar algo.)*",
-      "generated": true,
-      "source": "worker_llm"
-    },
-    {
-      "ts": "2026-07-27T09:15:03.963Z",
-      "text": "será que a Miku viu minha mensagem?",
-      "generated": true,
-      "source": "deterministic_v1"
-    },
-    {
-      "ts": "2026-07-27T09:17:03.940Z",
-      "text": "será que a Miku viu minha mensagem?",
-      "generated": true,
-      "source": "deterministic_v1"
-    },
-    {
-      "ts": "2026-07-27T09:19:05.016Z",
-      "text": "*(Sighs)* Essa música é ótima, mas por que todo mundo aqui é tão irritante?",
-      "generated": true,
-      "source": "worker_llm"
-    },
-    {
-      "ts": "2026-07-27T09:21:03.942Z",
-      "text": "será que a Miku viu minha mensagem?",
-      "generated": true,
-      "source": "deterministic_v1"
-    },
-    {
       "ts": "2026-07-27T09:23:03.940Z",
       "text": "será que a Miku viu minha mensagem?",
       "generated": true,
@@ -899,6 +833,72 @@
       "text": "será que a Miku viu minha mensagem?",
       "generated": true,
       "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:00:50.923Z",
+      "text": "tô com uma saudade leve de conversar com alguém",
+      "generated": true,
+      "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:06:22.344Z",
+      "text": "*(Suspira)* \"Que música repetitiva... e esse passeio está demorando longe demais para o meu gosto.\"",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-07-29T14:08:12.709Z",
+      "text": "tô com uma saudade leve de conversar com alguém",
+      "generated": true,
+      "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:10:12.715Z",
+      "text": "tô com uma saudade leve de conversar com alguém",
+      "generated": true,
+      "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:14:23.224Z",
+      "text": "*(Sighs)* \"Essa música é ótima, mas esse passeio está demorando tempo demais... que irritante.\"",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-07-29T14:15:56.917Z",
+      "text": "tô com uma saudade leve de conversar com alguém",
+      "generated": true,
+      "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:17:56.920Z",
+      "text": "tô com uma saudade leve de conversar com alguém",
+      "generated": true,
+      "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:19:58.779Z",
+      "text": "*(Que música irritante... e esse passeio está demorando demais para chegar em algum lugar interessante.)*",
+      "generated": true,
+      "source": "worker_llm"
+    },
+    {
+      "ts": "2026-07-29T14:21:56.936Z",
+      "text": "tô com uma saudade leve de conversar com alguém",
+      "generated": true,
+      "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:23:59.289Z",
+      "text": "tô com uma saudade leve de conversar com alguém",
+      "generated": true,
+      "source": "deterministic_v1"
+    },
+    {
+      "ts": "2026-07-29T14:26:05.851Z",
+      "text": "*(Sighs)* \"Esse ritmo é contagiante, mas esse passeio está demorando tempo demais... que irritante.\"",
+      "generated": true,
+      "source": "worker_llm"
     }
   ],
   "horizons": [],
@@ -20627,7 +20627,7 @@
     }
   ],
   "plantedInterests": [],
-  "lastSoloAt": "2026-07-27T13:59:09.409Z",
+  "lastSoloAt": "2026-07-29T14:26:05.851Z",
   "researchNotes": [
     {
       "ts": "2026-07-23T11:21:55.917Z",

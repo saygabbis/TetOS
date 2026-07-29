@@ -41,6 +41,8 @@ const idx = {
 };
 idx.byKey.set("g@g.us:abc", { messageId: "abc", isFromBot: true, tetosOneShot: true });
 assert(isQuotedTetosOneShot(idx, "g@g.us", "abc"), "detecta reply em resposta .tetos");
+idx.byKey.set("g@g.us:cmd", { messageId: "cmd", isFromBot: false, tetosCommandSource: true });
+assert(isQuotedTetosOneShot(idx, "g@g.us", "cmd"), "detecta reply no comando .tetos do usuario");
 assert(!isQuotedTetosOneShot(idx, "g@g.us", "xyz"), "msg normal não é tetos one-shot");
 
 assert(isGroupPriorityEntry({ tetosCommand: true }), ".tetos tem prioridade na fila");

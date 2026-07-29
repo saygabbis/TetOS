@@ -55,5 +55,5 @@ export function resolveTetosMessage(tetosCmd, { botPhone, mentionHint = [] } = {
 export function isQuotedTetosOneShot(messageIndex, channelId, messageId) {
   if (!messageIndex || !channelId || !messageId) return false;
   const row = messageIndex.get(channelId, messageId);
-  return Boolean(row?.tetosOneShot);
+  return Boolean(row?.tetosOneShot || row?.tetosCommandSource);
 }

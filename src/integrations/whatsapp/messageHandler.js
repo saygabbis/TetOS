@@ -1372,9 +1372,6 @@ function createConversationOrchestrator(
                   triggerMessageId: item.messageKey?.id ?? null,
                   downloadContentFromMessage
                 });
-                // #region agent log
-                fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',runId:'post-fix',location:'messageHandler.js:mediaAction',message:'agent media action execute',data:{command,actionMessageId:action.messageId,targetId,resolvedSource:resolved?.source??null,hasMediaPath:Boolean(resolved?.media?.path),mediaType:resolved?.media?.type??null,itemQuotedId:item.quotedMessageId??null,triggerMessageId:item.messageKey?.id??null},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
-                // #endregion
                 console.log(
                   `${logPrefix} executing action ${command}: ${targetId} (source=${resolved?.source ?? "none"})`
                 );
@@ -1423,9 +1420,10 @@ function createConversationOrchestrator(
               } else if (action.type === "message") {
                 console.log(`${logPrefix} executing action message: ${action.text} (quoteId: ${action.quoteId})`);
                 const explicitQuote = action.quoteId ?? null;
-                const autoQuoteId =
-                  explicitQuote ??
-                  (autoQuotedThisTurn ? null : resolveOutgoingQuoteId(item));
+                const autoQuoteId = item.tetosCommand
+                  ? null
+                  : explicitQuote ??
+                    (autoQuotedThisTurn ? null : resolveOutgoingQuoteId(item));
                 if (!explicitQuote && autoQuoteId) {
                   autoQuotedThisTurn = true;
                 }
@@ -1437,7 +1435,8 @@ function createConversationOrchestrator(
                   groupRoster: item.groupRoster ?? null,
                   participantId: item.participantId ?? null,
                   participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
-                  quoteMessageKey: quoteKey
+                  quoteMessageKey: quoteKey,
+                  tetosCommand: item.tetosCommand === true
                 });
                 outputKind = RESPONSE_OUTPUTS.TEXT;
               }
@@ -1704,7 +1703,7 @@ function createConversationOrchestrator(
   function enqueueGroupSegment(entry) {
     const channelKey = entry.remoteJid;
     const priority = isGroupPriorityEntry(entry);
-    if (runningByGroupChannel.has(channelKey) && priority) {
+    if (runningByGroupChannel.has(channelKey) && priority && !entry.tetosCommand) {
       bumpInterrupt(entry.sessionId ?? entry.userId);
     }
     let queue = queueByGroupChannel.get(channelKey) ?? [];
@@ -2658,6 +2657,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               tetosCommand: "append_replay",
               output: RESPONSE_OUTPUTS.IGNORED
             });
+            if (messageKeyId) seenMessageIds.delete(messageKeyId);
             continue;
           }
           const tetosContextEarly = extractContextInfo(unwrappedMessage);
@@ -3616,7 +3616,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               isFromBot: false,
               remoteJid,
               quotedMessageId: stanzaId,
-              participantJid: incoming.key?.participant ?? null
+              participantJid: incoming.key?.participant ?? null,
+              tetosCommandSource: isTetosCommand
             });
           }
         }

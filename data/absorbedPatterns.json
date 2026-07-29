@@ -24,22 +24,6 @@
   },
   "creativeInsights": [
     {
-      "id": "insight_1784843721799",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:55:21.799Z"
-    },
-    {
-      "id": "insight_1784843772724",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:56:12.724Z"
-    },
-    {
       "id": "insight_1784843772726",
       "type": "media",
       "text": "stickers aparecem mais quando o humor sobe",
@@ -422,7 +406,23 @@
       "confidence": 0.68,
       "trigger": "chat.update",
       "ts": "2026-07-29T12:11:45.794Z"
+    },
+    {
+      "id": "insight_1785333671186",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.51,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T14:01:11.186Z"
+    },
+    {
+      "id": "insight_1785335041077",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.43000000000000005,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T14:24:01.077Z"
     }
   ],
-  "lastUpdated": "2026-07-29T13:36:11.669Z"
+  "lastUpdated": "2026-07-29T14:25:13.247Z"
 }
