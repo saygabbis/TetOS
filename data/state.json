@@ -2,45 +2,9 @@
   "mood": "tired",
   "energy": 0,
   "social": 0.6600000000000001,
-  "focus": 0.5099999999999996,
-  "lastInteraction": "2026-07-26T23:51:11.567Z",
+  "focus": 0.4899999999999996,
+  "lastInteraction": "2026-07-29T13:27:12.654Z",
   "recentInteractions": [
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 44,
-      "timestamp": "2026-07-26T15:35:39.157Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 9,
-      "timestamp": "2026-07-26T15:37:14.163Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 34,
-      "timestamp": "2026-07-26T15:38:30.856Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 75,
-      "timestamp": "2026-07-26T15:38:33.942Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 9,
-      "timestamp": "2026-07-26T15:39:09.951Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 15,
-      "timestamp": "2026-07-26T18:52:09.361Z"
-    },
     {
       "type": "assistant",
       "sentiment": "neutral",
@@ -124,6 +88,42 @@
       "sentiment": "neutral",
       "length": 15,
       "timestamp": "2026-07-26T23:51:11.567Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 3,
+      "timestamp": "2026-07-29T13:26:23.962Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 38,
+      "timestamp": "2026-07-29T13:26:26.827Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 4,
+      "timestamp": "2026-07-29T13:26:59.909Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 26,
+      "timestamp": "2026-07-29T13:27:01.256Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 6,
+      "timestamp": "2026-07-29T13:27:12.654Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 17,
+      "timestamp": "2026-07-29T13:27:14.616Z"
     }
   ]
 }

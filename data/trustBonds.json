@@ -560,13 +560,8 @@
       "intimacy": 1,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-07-26T15:39:04.840Z",
+      "lastInteractionAt": "2026-07-29T11:44:14.661Z",
       "notes": [
-        {
-          "type": "reinforce",
-          "reason": "interaction",
-          "ts": "2026-07-24T12:53:42.130Z"
-        },
         {
           "type": "reinforce",
           "reason": "interaction",
@@ -661,6 +656,11 @@
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-07-26T15:39:04.840Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-07-29T11:44:14.661Z"
         }
       ]
     },
@@ -1454,23 +1454,8 @@
       "intimacy": 1,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-07-23T21:56:42.869Z",
+      "lastInteractionAt": "2026-07-29T13:27:05.657Z",
       "notes": [
-        {
-          "type": "reinforce",
-          "reason": "interaction",
-          "ts": "2026-07-08T20:05:09.604Z"
-        },
-        {
-          "type": "reinforce",
-          "reason": "interaction",
-          "ts": "2026-07-08T20:05:55.677Z"
-        },
-        {
-          "type": "reinforce",
-          "reason": "interaction",
-          "ts": "2026-07-08T20:06:42.618Z"
-        },
         {
           "type": "reinforce",
           "reason": "interaction",
@@ -1555,6 +1540,21 @@
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-07-23T21:56:42.869Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-07-29T13:26:14.296Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-07-29T13:26:49.434Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-07-29T13:27:05.657Z"
         }
       ]
     },

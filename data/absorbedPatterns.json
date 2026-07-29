@@ -24,70 +24,6 @@
   },
   "creativeInsights": [
     {
-      "id": "insight_1784843510263",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:51:50.263Z"
-    },
-    {
-      "id": "insight_1784843696199",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:54:56.199Z"
-    },
-    {
-      "id": "insight_1784843696200",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:54:56.200Z"
-    },
-    {
-      "id": "insight_1784843696201",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:54:56.201Z"
-    },
-    {
-      "id": "insight_1784843699765",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:54:59.765Z"
-    },
-    {
-      "id": "insight_1784843699771",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:54:59.771Z"
-    },
-    {
-      "id": "insight_1784843699772",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:54:59.772Z"
-    },
-    {
-      "id": "insight_1784843721798",
-      "type": "media",
-      "text": "stickers aparecem mais quando o humor sobe",
-      "confidence": 0.67,
-      "trigger": "message.receipt_update",
-      "ts": "2026-07-23T21:55:21.798Z"
-    },
-    {
       "id": "insight_1784843721799",
       "type": "media",
       "text": "stickers aparecem mais quando o humor sobe",
@@ -422,7 +358,71 @@
       "confidence": 0.53,
       "trigger": "message.deleted",
       "ts": "2026-07-27T17:09:11.523Z"
+    },
+    {
+      "id": "insight_1785325673877",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.43000000000000005,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T11:47:53.877Z"
+    },
+    {
+      "id": "insight_1785325689640",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T11:48:09.640Z"
+    },
+    {
+      "id": "insight_1785325695009",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.51,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T11:48:15.009Z"
+    },
+    {
+      "id": "insight_1785326291044",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 11h",
+      "confidence": 0.5,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T11:58:11.044Z"
+    },
+    {
+      "id": "insight_1785326415849",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.64,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T12:00:15.849Z"
+    },
+    {
+      "id": "insight_1785326470076",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 12h",
+      "confidence": 0.45,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T12:01:10.076Z"
+    },
+    {
+      "id": "insight_1785326522354",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.42000000000000004,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T12:02:02.354Z"
+    },
+    {
+      "id": "insight_1785327105794",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.68,
+      "trigger": "chat.update",
+      "ts": "2026-07-29T12:11:45.794Z"
     }
   ],
-  "lastUpdated": "2026-07-28T19:07:09.009Z"
+  "lastUpdated": "2026-07-29T13:36:11.669Z"
 }
