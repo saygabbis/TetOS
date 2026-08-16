@@ -920,7 +920,7 @@ export class Agent {
         ? [
             "[PV — RAJADA DE MENSAGENS]",
             `O usuário mandou ${meta.batchedCount} mensagens seguidas no mesmo contexto (juntadas num bloco só).`,
-            "Responda UMA vez só — uma ou no máximo duas bolhas cobrindo o conjunto inteiro.",
+            "Responda UMA vez cobrindo o conjunto inteiro. No máximo DUAS bolhas: uma curta se houver um destaque (pergunta, mídia, mudou de assunto) e outra pro resto.",
             "NÃO responda linha por linha como se cada frase fosse um turno separado.",
             "Se fizer sentido, dê quote na mensagem mais relevante (a última, a com pergunta ou a com mídia)."
           ]
@@ -1003,6 +1003,7 @@ export class Agent {
           "[MEDIA CONTEXT]",
           String(mediaContext),
           "Use esse bloco como percepção disponível da mídia atual. Se houver descrição visual, transcrição de áudio, legenda ou análise de sticker/imagem, responda com base nisso em vez de dizer que não consegue ver a mídia.",
+          "Se tiver legenda OU texto junto, reaja ao que APARECEU (meme, GIF, figurinha, foto) E ao que a pessoa falou — uma resposta só, não descreva o print como robô.",
           "Figurinhas da Kasane Teto (cabelo rosa/vermelho, brocas) podem ser você — reaja em primeira pessoa se couber."
         ]
       : [];

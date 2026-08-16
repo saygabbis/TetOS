@@ -28,6 +28,7 @@ import {
 import { detectAgentUrlDownloadIntent } from "../../core/media/agentUrlDownloadIntent.js";
 import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/messageContext.js";
 import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
+import { thinkDelaySleepMs } from "../../integrations/whatsapp/directBatchPlanner.js";
 
 export function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -616,9 +617,18 @@ export class ChatService {
 
   async handleMessage(message, meta = {}, history = null, tone = null) {
     const trimmed = String(message ?? "").trim();
-    const thinkDelay = meta?.timingPlan?.thinkDelayMs ?? 0;
-    if (thinkDelay > 0 && thinkDelay < 8000) {
-      await this.sleep(Math.min(thinkDelay, 3000));
+    const mediaIntent = detectAgentMediaReplyIntent(trimmed, meta);
+    if (mediaIntent?.messageId) {
+      const injected = buildMediaAction(mediaIntent.command, mediaIntent.messageId);
+      if (injected) {
+        this.recordUserTurn(trimmed, meta);
+        return returnWithActions([injected]);
+      }
+    }
+
+    const thinkMs = thinkDelaySleepMs(meta);
+    if (thinkMs > 0) {
+      await this.sleep(thinkMs);
     }
 
     if (this.internalState?.updateBefore) {
@@ -667,7 +677,6 @@ export class ChatService {
     }
 
 
-    const replyIntent = detectAgentMediaReplyIntent(trimmed, meta);
     let actions = enrichParsedActions(
       applyDefaultQuoteToActions(
         sanitizeOutgoingActions(parseActionCommands(raw), meta),
@@ -676,9 +685,6 @@ export class ChatService {
       trimmed,
       meta
     );
-    // #region agent log
-    fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',location:'chatService.js:handleMessage',message:'agent actions parsed',data:{inputPreview:trimmed.slice(0,80),rawPreview:String(raw??'').slice(0,120),quotedMessageId:meta?.quotedMessageId??null,isReply:Boolean(meta?.isReply),quotedPreview:String(meta?.quotedMessage??'').slice(0,60),replyIntent,actionTypes:actions.map(a=>a.type),actionCommands:actions.filter(a=>a.type==='media'||a.type==='toimage').map(a=>({type:a.type,command:a.command,messageId:a.messageId}))},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     if (actions.length > 0) {
       if (this.internalState?.updateAfter) {
         const preview = actions
@@ -835,9 +841,11 @@ export class ChatService {
       if (
         (meta?.batchedCount ?? 1) > 1 &&
         !meta?.isGroup &&
-        resultParts.length > 1
+        resultParts.length > 2
       ) {
-        resultParts = [resultParts.join(" ").replace(/\s{2,}/g, " ").trim()];
+        const head = resultParts[0];
+        const rest = resultParts.slice(1).join(" ").replace(/\s{2,}/g, " ").trim();
+        resultParts = rest ? [head, rest] : [head];
       }
       if (
         (closureDecision === "brief_farewell" ||

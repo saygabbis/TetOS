@@ -1,11 +1,12 @@
-import { normalizeMessageContent } from "baileys";
+import { extractMessageContent, normalizeMessageContent } from "baileys";
 import { probeStickerIsAnimated } from "../../core/media/stickerAnimation.js";
 import { fileExtFromDocumentMessage } from "./mediaStore.js";
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { extname } from "node:path";
-import { looksLikeGifFile } from "../../core/media/gifToMp4Encoder.js";
+import { findMediaOnDisk } from "./agentMediaResolver.js";
+import { extractContextInfo } from "./messageContext.js";
 
 function unwrapMessage(message = {}) {
+  const extracted = extractMessageContent(message);
+  if (extracted) return extracted;
   const normalized = normalizeMessageContent(message);
   return normalized ?? message ?? {};
 }
@@ -28,6 +29,82 @@ function detectMediaType(message = {}) {
   return null;
 }
 
+function persistIdForIncoming(messageId, mediaType, fromDocument) {
+  if (fromDocument) return `${messageId}-document`;
+  if (mediaType === "gif") return `${messageId}-video`;
+  return `${messageId}-${mediaType}`;
+}
+
+async function persistProtoMedia({
+  message,
+  persistId,
+  persistMedia,
+  downloadContentFromMessage,
+  basePath
+}) {
+  const mediaType = detectMediaType(message);
+  if (!mediaType || !persistId || typeof persistMedia !== "function") return null;
+
+  const unwrapped = unwrapMessage(message);
+  const content =
+    mediaType === "image"
+      ? (unwrapped.imageMessage ?? unwrapped.documentMessage)
+      : mediaType === "video" || mediaType === "gif"
+        ? (unwrapped.videoMessage ?? unwrapped.documentMessage)
+        : mediaType === "audio"
+          ? unwrapped.audioMessage
+          : unwrapped.stickerMessage;
+  if (!content) return null;
+
+  const fromDocument = Boolean(unwrapped.documentMessage && content === unwrapped.documentMessage);
+  const decryptMediaAs = fromDocument
+    ? "document"
+    : mediaType === "sticker"
+      ? "sticker"
+      : mediaType === "gif"
+        ? "video"
+        : mediaType;
+
+  const path = await persistMedia({
+    downloadContentFromMessage,
+    content,
+    type: mediaType === "gif" ? "video" : mediaType,
+    id: persistId,
+    basePath,
+    preferredExt: unwrapped.documentMessage
+      ? fileExtFromDocumentMessage(unwrapped.documentMessage)
+      : null,
+    decryptMediaAs
+  });
+  if (!path) return null;
+
+  const isAnimatedHint =
+    mediaType === "gif" ||
+    unwrapped?.stickerMessage?.isAnimated === true ||
+    unwrapped?.stickerMessage?.isAnimated === "true";
+  const isAnimated =
+    mediaType === "sticker" || mediaType === "gif"
+      ? await probeStickerIsAnimated(path, { isAnimatedHint })
+      : Boolean(isAnimatedHint);
+
+  return {
+    type: mediaType,
+    path,
+    isAnimated
+  };
+}
+
+async function finalizeSelfMedia(media) {
+  if (!media?.path || !media?.type) return null;
+  if (media.type === "sticker") {
+    const isAnimated = await probeStickerIsAnimated(media.path, {
+      isAnimatedHint: media.isAnimated
+    });
+    return { ...media, isAnimated };
+  }
+  return media;
+}
+
 export async function resolveCommandTarget({
   incoming,
   remoteJid,
@@ -38,18 +115,43 @@ export async function resolveCommandTarget({
   downloadContentFromMessage,
   basePath
 }) {
-  if (media?.path && media?.type) {
-    if (media.type === "sticker") {
-      const isAnimated = await probeStickerIsAnimated(media.path, {
-        isAnimatedHint: media.isAnimated
-      });
-      return { source: "self", media: { ...media, isAnimated } };
-    }
-    return { source: "self", media };
+  const fromParam = await finalizeSelfMedia(media);
+  if (fromParam) return { source: "self", media: fromParam };
+
+  const incomingId = incoming?.key?.id ?? null;
+  const incomingRoot = unwrapMessage(incoming?.message ?? {});
+
+  if (incomingId && detectMediaType(incomingRoot) && basePath) {
+    const fromDisk = findMediaOnDisk(basePath, incomingId);
+    const diskMedia = await finalizeSelfMedia(fromDisk);
+    if (diskMedia) return { source: "self", media: diskMedia };
   }
 
-  const incomingRoot = unwrapMessage(incoming?.message ?? {});
-  const contextInfo = incomingRoot?.extendedTextMessage?.contextInfo;
+  if (incomingId && detectMediaType(incomingRoot)) {
+    try {
+      const selfType = detectMediaType(incomingRoot);
+      const unwrapped = unwrapMessage(incomingRoot);
+      const fromDocument = Boolean(
+        unwrapped.documentMessage &&
+          !unwrapped.imageMessage &&
+          !unwrapped.videoMessage &&
+          !unwrapped.audioMessage &&
+          !unwrapped.stickerMessage
+      );
+      const selfMedia = await persistProtoMedia({
+        message: incomingRoot,
+        persistId: persistIdForIncoming(incomingId, selfType, fromDocument),
+        persistMedia,
+        downloadContentFromMessage,
+        basePath
+      });
+      if (selfMedia?.path) return { source: "self", media: selfMedia };
+    } catch {
+      // tenta quoted
+    }
+  }
+
+  const contextInfo = extractContextInfo(incomingRoot);
   const quotedMessage = contextInfo?.quotedMessage;
   const quotedType = detectMediaType(quotedMessage);
   if (quotedMessage && quotedType && incoming?.key?.id) {
@@ -82,34 +184,6 @@ export async function resolveCommandTarget({
         preferredExt: quotedContent.documentMessage ? fileExtFromDocumentMessage(quotedContent.documentMessage) : null,
         decryptMediaAs
       });
-      // #region agent log
-      try {
-        const head = existsSync(path) ? readFileSync(path, { start: 0, end: 5 }).toString("ascii") : "";
-        fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
-          body: JSON.stringify({
-            sessionId: "20737f",
-            hypothesisId: "H1-H2",
-            location: "commandTargetResolver.js:persist",
-            message: "convert target resolved from reply",
-            data: {
-              quotedType,
-              fromDocument,
-              decryptMediaAs,
-              path,
-              ext: extname(path),
-              sizeBytes: existsSync(path) ? statSync(path).size : 0,
-              headSig: head,
-              looksLikeGif: looksLikeGifFile(path),
-              docMime: quotedContent.documentMessage?.mimetype ?? null,
-              docName: quotedContent.documentMessage?.fileName ?? null
-            },
-            timestamp: Date.now()
-          })
-        }).catch(() => {});
-      } catch {}
-      // #endregion
       const isStickerAnim = await probeStickerIsAnimated(path, {
         isAnimatedHint:
           quotedType === "gif" ||
@@ -125,19 +199,8 @@ export async function resolveCommandTarget({
         }
       };
     } catch {
-      // fallback to history below
+      // sem reply válido
     }
-  }
-
-  const fallback = historyStore.latest(remoteJid, userId);
-  if (fallback?.media?.path) {
-    const isAnimated = await probeStickerIsAnimated(fallback.media.path, {
-      isAnimatedHint: fallback.media.isAnimated
-    });
-    return {
-      source: "history",
-      media: { ...fallback.media, isAnimated }
-    };
   }
 
   return { source: "none", media: null };

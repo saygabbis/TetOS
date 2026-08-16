@@ -59,6 +59,25 @@ export function botMentionedInJids(
   });
 }
 
+/** @ no WhatsApp aponta pra Teto — JID, LID, ou entrada isSelf no índice. */
+export function mentionedJidsIncludeBot(
+  mentionedJids = [],
+  { botJid = "", botPhone = "", botActorIds = null, identityIndex = null } = {}
+) {
+  if (botMentionedInJids(mentionedJids, botJid, botPhone, { botActorIds })) return true;
+  if (!Array.isArray(mentionedJids) || mentionedJids.length === 0) return false;
+  for (const raw of mentionedJids) {
+    const local = mentionLocalId(raw);
+    if (!local) continue;
+    const entry =
+      identityIndex?.get?.(local) ??
+      identityIndex?.get?.(`dm-${local}`) ??
+      identityIndex?.get?.(String(raw ?? "").split(":")[0]);
+    if (entry?.isSelf) return true;
+  }
+  return false;
+}
+
 /** Menção @ normalizada para a Teto (após identity index). */
 function hasNormalizedTetoMention(text = "") {
   const t = String(text ?? "").trim();
@@ -70,42 +89,76 @@ function hasNormalizedTetoMention(text = "") {
   );
 }
 
-const NAME_RE = /\b(teto|tete|tetozinha)\b/i;
+const PERSON_NAME_RE = /\b(teto|tete|tetozinha)\b/i;
+const BUILDING_PLACE_RE =
+  /\b(casa|sala|quarto|banheiro|cozinha|garagem|predio|prédio|apartamento|telhado|forro|laje|comodo|cômodo)\b/i;
+const SUMMON_RE =
+  /\b(cad[eê]|cade|onde\s+(est[aá]|t[aá]|anda|foi)|aparece|psps|psiu|vem\s+c[aá]|chega\s+aqui)\b/i;
+const ADDRESS_VERB_RE =
+  /\b(olha|olhe|veja|ve|vê|escuta|ouve|reage|comenta|responde|fala|ajuda|guarda|salva|usa|manda|pega|coloca|aprende|memoriza|grava|vem|faz|conta|pode|me)\b/i;
+const INTERJECTION_RE =
+  /\b(ei+|oi+|oie+|eae+|hey+|fala+|caralho|porra|putz|eita|nossa|mano|vei|véi|pô|po|vsf|mlk|krl)\b/i;
 
-/** "Teto" como teto da casa — não é chamar a bot. */
-function isCeilingReference(text = "") {
+/** "o teto" / goteira / teto da casa — não é a Kasane Teto. */
+export function isCeilingReference(text = "") {
   const t = String(text ?? "").trim();
   if (!t) return false;
-  if (/\b(o|um|no|do|da|de|para|com)\s+teto\b/i.test(t)) return true;
-  if (/\bteto\s+(da|do|de|baixo|alto|caiu|gotej|furou|rebentou|infiltr|molhad|pintar|reformar)\b/i.test(t)) {
+  if (/\batingiu\s+o\s+teto\b/i.test(t)) return true;
+  if (/\b(forro|laje|goteira|infiltracao|infiltração|telhado|reboco)\b/i.test(t) && /\bteto\b/i.test(t)) {
     return true;
   }
-  if (/\batingiu\s+o\s+teto\b/i.test(t)) return true;
-  if (/\b(teto|forro)\s+(da|do|de)\s+/i.test(t)) return true;
+  if (/\b(o|um|uns|no|num|do|dum|pelo)\s+teto\b/i.test(t)) return true;
+  if (/\bteto\s+(da|do|de)\s+/i.test(t) && BUILDING_PLACE_RE.test(t)) return true;
+  if (/\bteto\s+(baixo|alto|caiu|gotej|furou|rebentou|infiltr|molhad|pintar|reformar|vazand)\b/i.test(t)) {
+    return true;
+  }
   return false;
 }
 
-/** Chamada contextual ao nome da Teto (não @ e não reply). */
+/** Artigo/pronome feminino: é a personagem, não o teto da casa nem o cantor. */
+export function isFeminineTetoPerson(text = "") {
+  const t = String(text ?? "").trim();
+  if (!t) return false;
+  return (
+    /\b(a|à|essa|esta|aquela|minha|nossa)\s+(teto|tetozinha|tete)\b/i.test(t) ||
+    /\b(teto|tetozinha)\s+(gata|linda|dourada|esperta|teimosa)\b/i.test(t)
+  );
+}
+
+/** Chamada dirigida à Teto (vocativo, pedido, cadê, feminino). */
 function isContextualNameCall(text = "") {
   const t = String(text ?? "").trim();
-  if (!t || !NAME_RE.test(t)) return false;
+  if (!t || !PERSON_NAME_RE.test(t)) return false;
   if (isCeilingReference(t)) return false;
 
-  if (/^(oi+e?|oie+|eae+|hey+|e\s*a[ií])\s+(teto|tetozinha)\b/i.test(t)) return true;
-  if (/^(teto|tetozinha)\b[,!?\s]/i.test(t)) return true;
-  if (/\b(teto|tetozinha)\s*[!?]+$/i.test(t)) return true;
+  if (isFeminineTetoPerson(t)) return true;
+  if (SUMMON_RE.test(t)) return true;
   if (/\b(minha\s+)?tetozinha\b/i.test(t)) return true;
+
+  if (new RegExp(`${INTERJECTION_RE.source}\\s*[,!]?\\s*(teto|tetozinha)\\b`, "i").test(t)) return true;
+  if (/^(oi+e?|oie+|eae+|hey+|e\s*a[ií])\s+(teto|tetozinha)\b/i.test(t)) return true;
+  if (/^(teto|tetozinha)\b[,!?:]/.test(t) || /^(teto|tetozinha)\b\s/i.test(t)) return true;
+  if (/\b(teto|tetozinha)\s*[!?]+$/i.test(t)) return true;
   if (/\be\s+a[ií]\s+teto\b/i.test(t)) return true;
   if (/\b(ei|oi|hey)\s+(teto|tetozinha)\b/i.test(t)) return true;
+
   if (
-    /\b(teto|tetozinha)[,]?\s+(como|vc|você|voce|me|faz|conta|olha|vem|cadê|cade|pode|ajuda|responde|fala|guarda|salva|usa|manda|pega|coloca|aprende|memoriza|grava)\b/i.test(
+    new RegExp(`\\b(teto|tetozinha)\\s*[,:]?\\s*${ADDRESS_VERB_RE.source}`, "i").test(t)
+  ) {
+    return true;
+  }
+  if (
+    /\b(olha|olhe|veja|vê|escuta|ouve|reage|comenta|responde|fala|ajuda|guarda|salva|manda|pega|vem|faz|conta)[^.]{0,32}\b(teto|tetozinha)\b/i.test(
       t
     )
   ) {
     return true;
   }
-  if (/\b(teto|tetozinha)\s*[,]?\s*(qual|quem|onde|quando|por\s*que|pq|sera|será)\b/i.test(t)) return true;
+  if (/\b(teto|tetozinha)\s*[,]?\s*(qual|quem|onde|quando|por\s*que|pq|sera|será|como|vc|você|voce)\b/i.test(t)) {
+    return true;
+  }
   if (/\?\s*(teto|tetozinha)\b/i.test(t) || /\b(teto|tetozinha)\s*\?/i.test(t)) return true;
+  if (/\b(pra|para|pro|com)\s+(a\s+)?(teto|tetozinha)\b/i.test(t)) return true;
 
   return false;
 }
@@ -134,7 +187,7 @@ export function classifyTetoAddress(text = "", { hasMention = false, isReplyToBo
   }
 
   if (isContextualNameCall(t)) return "contextual";
-  if (NAME_RE.test(t) || fuzzy.detected) return "name_ambiguous";
+  if (PERSON_NAME_RE.test(t) || fuzzy.detected) return "name_ambiguous";
   return "none";
 }
 

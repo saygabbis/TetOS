@@ -52,6 +52,18 @@ describe("sleep disturbance", () => {
     expect(cycle.isAsleep()).toBe(true);
   });
 
+  it("stays available after a normal wake even while wakeDelayUntil is in the future", () => {
+    const store = makeSleepStore({ state: "deep_sleep" });
+    const events = [];
+    const cycle = new SleepCycle(store, { bus: { emit: (name) => events.push(name) } });
+    expect(cycle.isAvailable()).toBe(false);
+    cycle.wake({ quality: 0.72, immediate: false });
+    expect(cycle.sleep.wakeDelayUntil).toBeTruthy();
+    expect(Date.parse(cycle.sleep.wakeDelayUntil)).toBeGreaterThan(Date.now());
+    expect(cycle.isAvailable()).toBe(true);
+    expect(events).toContain("sleep.available");
+  });
+
   it("morning wake after disturbance is groggy", () => {
     const store = makeSleepStore({ disturbanceCount: 2, sleepDebt: 0.2 });
     const cycle = new SleepCycle(store);
@@ -86,6 +98,16 @@ describe("sleep message buffer", () => {
     expect(flushed.sleepCatchUpCount).toBe(2);
     expect(flushed.message).toContain("oi");
     expect(flushed.messageKey.id).toBe("m2");
+  });
+
+  it("drains every pending session when she wakes", () => {
+    const buf = new SleepMessageBuffer({ maxPerSession: 5 });
+    buf.append("dm-1", { message: "oie", userId: "u1", remoteJid: "1@lid" });
+    buf.append("dm-2", { message: "alô", userId: "u2", remoteJid: "2@lid" });
+    const drained = buf.drainAll();
+    expect(drained).toHaveLength(2);
+    expect(drained.map((e) => e.message).sort()).toEqual(["alô", "oie"]);
+    expect(buf.flush("dm-1")).toBeNull();
   });
 
   it("quotes on sleep catch-up", () => {

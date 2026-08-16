@@ -195,7 +195,7 @@ export class BrainOrchestrator {
       isReply: turnContext.isReply ?? false,
       repetition: this.repetition.getSnapshot(turnContext.sessionId),
       subconscious,
-      mediaTimingHint: this.mediaHub.timingHint(),
+      mediaTimingHint: turnContext.media ? this.mediaHub.timingHint() : null,
       closeDecision: turnContext.closeDecision ?? null,
       media: turnContext.media ?? null
     };

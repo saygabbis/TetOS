@@ -31,6 +31,7 @@ export class SleepCycle {
     this.store = lifeStateStore;
     this.bus = bus;
     this.timezone = timezone;
+    this._lastAvailable = this.isAvailable();
   }
 
   get sleep() {
@@ -63,16 +64,22 @@ export class SleepCycle {
 
     const s = this.sleep.state;
     if (this.isAsleep()) return false;
-    if (s === "awake" && this.sleep.wakeDelayUntil) {
-      return Date.now() >= Date.parse(this.sleep.wakeDelayUntil);
-    }
     return (
       s === "awake" ||
       s === "wired" ||
       s === "overslept" ||
       s === "underslept" ||
-      s === "groggy"
+      s === "groggy" ||
+      s === "jet_lagged"
     );
+  }
+
+  _syncAvailability() {
+    const available = this.isAvailable();
+    if (available && !this._lastAvailable) {
+      this.bus?.emit("sleep.available", this.getSnapshot());
+    }
+    this._lastAvailable = available;
   }
 
   checkTemporaryWake() {
@@ -121,6 +128,7 @@ export class SleepCycle {
       temporaryWakeUntil,
       disturbanceCount
     });
+    this._syncAvailability();
 
     return {
       event: "disturbed_wake",
@@ -145,6 +153,7 @@ export class SleepCycle {
       }
     });
     this.bus?.emit("sleep.disturbed_return", { state });
+    this._syncAvailability();
     return { event: "disturbed_return", state };
   }
 
@@ -211,6 +220,7 @@ export class SleepCycle {
       }
     });
     this.bus?.emit("sleep.entered", { state, reason });
+    this._syncAvailability();
   }
 
   wake({
@@ -271,6 +281,7 @@ export class SleepCycle {
     });
     this.bus?.emit("sleep.wake", { state, missedAlarm: alarmMissed, wakeDelayMin, disturbed: hadDisturbance });
     if (alarmMissed) this.bus?.emit("sleep.missed_alarm", { state, disturbed: hadDisturbance });
+    this._syncAvailability();
     return { state, wakeDelayMin, availableAt: wakeDelayUntil, event: "wake", disturbed: hadDisturbance };
   }
 
@@ -350,6 +361,8 @@ export class SleepCycle {
     if (jetLag && !String(this.sleep.state).includes("jet")) {
       this.store.patch({ sleep: { ...this.sleep, state: "jet_lagged" } });
     }
+
+    this._syncAvailability();
 
     return {
       state: this.sleep.state,

@@ -269,6 +269,7 @@ export const DEFAULTS = {
   memoryDecayEnabled: String(process.env.TETOS_MEMORY_DECAY_ENABLED ?? "true").toLowerCase() === "true",
   batchWindowMs: Number(process.env.TETOS_BATCH_WINDOW_MS ?? 1200),
   groupBatchWindowMs: Number(process.env.TETOS_GROUP_BATCH_WINDOW_MS ?? 2200),
+  mediaHoldMs: Number(process.env.TETOS_MEDIA_HOLD_MS ?? 5000),
   maxParallelGenerations: Number(process.env.TETOS_MAX_PARALLEL_GENERATIONS ?? 3),
   maxQueueCoalesce: Number(process.env.TETOS_MAX_QUEUE_COALESCE ?? 6),
   /** Após menção/resposta em grupo, segue respondendo o mesmo usuário sem @ (ms). Padrão 2 min. */

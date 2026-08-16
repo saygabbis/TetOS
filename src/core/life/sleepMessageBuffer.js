@@ -61,4 +61,14 @@ export class SleepMessageBuffer {
       ts: last.ts ?? Date.now()
     };
   }
+
+  drainAll() {
+    const keys = [...this.bySession.keys()];
+    const out = [];
+    for (const key of keys) {
+      const entry = this.flush(key);
+      if (entry) out.push(entry);
+    }
+    return out;
+  }
 }

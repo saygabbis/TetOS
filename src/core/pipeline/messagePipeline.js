@@ -283,16 +283,17 @@ export async function runMessagePipeline(runtime, payload = {}) {
   }
 
   const historyCap = Math.max(8, Number(runtime.defaults.maxHistory) || DEFAULT_CHANNEL_HISTORY_LIMIT);
+  const effectiveHistoryCap = Number(batchedCount) > 1 ? Math.max(historyCap, 40) : historyCap;
   const channelTimeline = buildChannelTimelineForPrompt(runtime, {
     channelId: safeChannelId,
-    limit: historyCap
+    limit: effectiveHistoryCap
   });
 
   if (channelTimeline.entries.length) {
     normalizedHistory = timelineToHistoryRows(channelTimeline.entries);
   }
 
-  const recentHistory = normalizedHistory?.length ? normalizedHistory.slice(-historyCap) : null;
+  const recentHistory = normalizedHistory?.length ? normalizedHistory.slice(-effectiveHistoryCap) : null;
 
   const derivedMediaInput = media?.transcript ?? media?.caption ?? `[${media?.type ?? "media"}]`;
   const input = clampString(message ?? normalizedHistory?.[normalizedHistory.length - 1]?.content ?? derivedMediaInput, runtime.defaults.maxContentLength);
@@ -867,9 +868,6 @@ export async function runMessagePipeline(runtime, payload = {}) {
     await payload.onGenerationStart();
   }
 
-  // #region agent log
-  fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',location:'messagePipeline.js:beforeHandleMessage',message:'pipeline meta for agent',data:{inputPreview:String(input??'').slice(0,80),quotedMessageId:quotedMessageId??null,isReply:Boolean(isReply),quotedPreview:String(quotedMessage??'').slice(0,60),mediaType:media?.type??null,messageId:messageKey?.id??null},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
   const replies = await runtime.chatService.handleMessage(
     input,
     {

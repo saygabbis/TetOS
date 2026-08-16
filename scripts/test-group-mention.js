@@ -18,8 +18,16 @@ assert(
   "teto da casa não chama a bot"
 );
 assert(
-  classifyTetoAddress("vi a teto ontem no mercado", { hasMention: false, isReplyToBot: false }) === "name_ambiguous",
-  "nome solto no meio sem contexto fica ambíguo"
+  classifyTetoAddress("vi a teto ontem no mercado", { hasMention: false, isReplyToBot: false }) === "contextual",
+  "artigo feminino 'a teto' é a personagem"
+);
+assert(
+  classifyTetoAddress("Caralho teto olha isso", { hasMention: false, isReplyToBot: false }) === "contextual",
+  "vocativo no meio com olha isso chama ela"
+);
+assert(
+  classifyTetoAddress("caralho cade a teto", { hasMention: false, isReplyToBot: false }) === "contextual",
+  "cadê a teto chama ela"
 );
 assert(
   botMentionedInJids(["5516988137617@lid"], "5516988137617@s.whatsapp.net", "5516988137617"),

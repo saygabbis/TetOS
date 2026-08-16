@@ -34,7 +34,7 @@ import { resolveTimingConfig, estimateTypingDelayMs as estimateTypingFromCfg } f
 import { ChatMessageIndex } from "./chatMessageIndex.js";
 import {
   applyQuotedContextToPayload,
-  botMentionedInJids,
+  mentionedJidsIncludeBot,
   buildOutgoingQuoteKey,
   classifyTetoAddress,
   extractContextInfo,
@@ -59,7 +59,9 @@ import {
 } from "./tetosCommand.js";
 import {
   formatWhatsAppHelpText as formatMediaCommandHelpText,
-  parseWhatsAppCommand as parseMediaCommand
+  parseWhatsAppCommand as parseMediaCommand,
+  parseNaturalWhatsAppMediaCommand,
+  formatMissingMediaCommandHint
 } from "./mediaCommandParser.js";
 import { buildWhatsappIdentitySnapshot } from "./whatsappIdentityContract.js";
 import { MediaCommandService } from "./mediaCommandService.js";
@@ -91,14 +93,28 @@ import {
 } from "../../core/channels/waIdentity.js";
 import { buildGroupRoster } from "../../core/channels/groupRoster.js";
 import { translateAtMentions } from "./mentionResolver.js";
-import { createProcessedCommandDeduper } from "./processedCommandDeduper.js";
+import { createProcessedCommandDeduper, isStaleHistoryReplay } from "./processedCommandDeduper.js";
+import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
 import { shouldRespondToMediaOnly } from "../../core/media/mediaSpamGate.js";
+import { enrichMediaVision } from "../../modules/vision/mediaVisionEnrich.js";
 import { isViewOnceMessage, isViewOnceStub } from "./viewOnceDetect.js";
 import { isGroupPriorityEntry } from "./groupTurnPlanner.js";
 import {
   compactGroupQueueSegments,
   planFloodAwareGroupSegments
 } from "./groupFloodCoordinator.js";
+import {
+  abortPendingHoldStores,
+  computeDirectBatchMs,
+  firstBubbleTypingFloorMs,
+  isMediaHoldEntry,
+  shouldFlushPendingOnIncoming,
+  shouldSkipThinkDelaySleep,
+  shouldSplitBurst,
+  stampMediaHoldStart,
+  thinkDelaySleepMs,
+  visionFlushTimeoutMs
+} from "./directBatchPlanner.js";
 import {
   scoreSleepDisturbance,
   sleepDisturbanceFloodWindowMs
@@ -116,18 +132,28 @@ function unwrapMessage(message = {}) {
   return normalized ?? message ?? {};
 }
 
+function firstNonEmptyText(...candidates) {
+  for (const value of candidates) {
+    const text = String(value ?? "").trim();
+    if (text) return text;
+  }
+  return "";
+}
+
 function extractText(message = {}) {
   const unwrapped = unwrapMessage(message);
-  return (
-    unwrapped?.conversation ??
-    unwrapped?.extendedTextMessage?.text ??
-    unwrapped?.imageMessage?.caption ??
-    unwrapped?.videoMessage?.caption ??
-    unwrapped?.documentMessage?.caption ??
-    unwrapped?.stickerMessage?.fileName ??
-    unwrapped?.buttonsResponseMessage?.selectedButtonId ??
-    unwrapped?.listResponseMessage?.title ??
-    ""
+  const mediaCaption = firstNonEmptyText(
+    unwrapped?.imageMessage?.caption,
+    unwrapped?.videoMessage?.caption,
+    unwrapped?.documentMessage?.caption
+  );
+  if (mediaCaption) return mediaCaption;
+  return firstNonEmptyText(
+    unwrapped?.conversation,
+    unwrapped?.extendedTextMessage?.text,
+    unwrapped?.stickerMessage?.fileName,
+    unwrapped?.buttonsResponseMessage?.selectedButtonId,
+    unwrapped?.listResponseMessage?.title
   );
 }
 
@@ -170,6 +196,29 @@ function detectMediaKind(unwrappedMessage = {}) {
     return "document";
   }
   return "text";
+}
+
+function tryParseInboundMediaRequest(text, {
+  hasMediaPayload = false,
+  contextInfo = null,
+  media = null,
+  messageKey = null,
+  quotedText = ""
+} = {}) {
+  const natural = parseNaturalWhatsAppMediaCommand(text);
+  if (natural) return natural;
+  const quotedId = contextInfo?.stanzaId ?? null;
+  if (!hasMediaPayload && !quotedId && !media?.type) return null;
+  const intent = detectAgentMediaReplyIntent(text, {
+    isReply: Boolean(quotedId),
+    quotedMessageId: quotedId,
+    quotedMessage: quotedText || extractQuotedText(contextInfo?.quotedMessage),
+    media: media?.type ? media : hasMediaPayload ? { type: "image" } : null,
+    messageKey,
+    incomingMessageId: messageKey?.id
+  });
+  if (!intent?.messageId) return null;
+  return { command: intent.command, args: [] };
 }
 
 function buildIncomingAudit(payload = {}) {
@@ -409,7 +458,7 @@ function formatWhatsAppHelpText(prefix = ".") {
     "*Comandos TetOS*",
     "",
     `${c("help")} — Esta lista (também ${p}ajuda).`,
-    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem, resposta (reply) ou a última mídia recente no chat. Enche o quadrado (stretch). Duração opcional até 30s: ${c("sticker")} 10s, ${c("sticker")} 5000ms.`,
+    `${c("sticker")} — Gera figurinha a partir de imagem/vídeo/GIF (também se mandar como documento, formatos aceitos: imagem, GIF, vídeo). Usa a mídia da mensagem ou resposta (reply). Enche o quadrado (stretch). Duração opcional até 30s: ${c("sticker")} 10s, ${c("sticker")} 5000ms.`,
     `${c("fsticker")} — Igual ao anterior, mas mantém tudo visível dentro da figurinha sem cortar (contain). Duração opcional até 30s (ex.: ${c("fsticker")} 8s).`,
     `${c("csticker")} — Recorta o centro para caber na figurinha (crop). Duração opcional até 30s (ex.: ${c("csticker")} 10s).`,
     `${c("optimize")} — Comprime figurinha (reply/anexo); cada uso reduz mais um pouco ate nao dar pra comprimir (também ${p}otimizar).`,
@@ -490,6 +539,40 @@ function applyVisionFields(media, visualDescription, { skipVision = false } = {}
     visionAttempted: attempted,
     visionStatus: !attempted ? undefined : visualDescription ? "ok" : "failed"
   };
+}
+
+function startChatVision(runtime, media, { userId, remoteJid, skipVision = false } = {}) {
+  if (skipVision || !media?.path) return null;
+  if (media.type === "audio") return null;
+  const visualTypes = new Set(["image", "sticker", "gif", "video"]);
+  if (!visualTypes.has(media.type)) return null;
+  const promise = attachVisionTranscript(runtime, {
+    filePath: media.path,
+    mediaType: media.type,
+    isAnimated: Boolean(media.isAnimated),
+    userId,
+    remoteJid,
+    skipVision
+  });
+  media.visionPromise = promise;
+  return promise;
+}
+
+async function settleMediaVision(item, timeoutMs = 8000) {
+  const promise = item.mediaVisionPromise ?? item.media?.visionPromise;
+  if (!promise || !item.media) return item.media;
+  try {
+    const visualDescription = await Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("vision-timeout")), timeoutMs))
+    ]);
+    item.media = applyVisionFields(item.media, visualDescription ?? null, { skipVision: false });
+  } catch {
+    if (!item.media.visionAttempted) {
+      item.media = applyVisionFields(item.media, item.media.transcript ?? null, { skipVision: false });
+    }
+  }
+  return item.media;
 }
 
 /** Propaga descrição visual para índice, memória de grupo e multimodal (mesmo sem resposta do bot). */
@@ -632,7 +715,7 @@ function createConversationOrchestrator(
       previous.quotedMessageId &&
       entry.quotedMessageId &&
       previous.quotedMessageId !== entry.quotedMessageId;
-    if (differentQuote) return null;
+    if (differentQuote || shouldSplitBurst(previous, entry)) return null;
     const canMergeQuotes =
       !entry.isReply ||
       !previous.isReply ||
@@ -640,11 +723,17 @@ function createConversationOrchestrator(
       !previous.quotedMessageId ||
       entry.quotedMessageId === previous.quotedMessageId;
     if (!canMergeQuotes) return null;
+    const captions = [previous.caption, entry.caption]
+      .map((c) => String(c ?? "").trim())
+      .filter(Boolean);
     return {
       ...entry,
       message: `${previous.message}\n${entry.message}`.trim(),
+      caption: captions.length ? captions.join("\n") : entry.caption ?? previous.caption,
       messageKey: entry.messageKey ?? previous.messageKey,
       media: entry.media ?? previous.media,
+      mediaVisionPromise: entry.mediaVisionPromise ?? previous.mediaVisionPromise,
+      mediaHoldStartedAt: stampMediaHoldStart(previous, entry),
       quotedMessage: entry.quotedMessage ?? previous.quotedMessage,
       quotedMessageId: entry.quotedMessageId ?? previous.quotedMessageId,
       replyThreadContext: entry.replyThreadContext ?? previous.replyThreadContext,
@@ -667,8 +756,30 @@ function createConversationOrchestrator(
         previous.tempWakeExtensionCount ?? 0
       ),
       sleepGroggy: entry.sleepGroggy || previous.sleepGroggy,
+      _coalesceAfterGen: entry._coalesceAfterGen || previous._coalesceAfterGen,
+      _postGenTurns: Math.max(entry._postGenTurns ?? 0, previous._postGenTurns ?? 0),
       batchedCount: (previous.batchedCount ?? 1) + (entry.batchedCount ?? 1)
     };
+  }
+
+  function abortPendingMediaHold(sessionId, { remoteJid = "", userId = "" } = {}) {
+    const keys = [...new Set([sessionId, userId].filter(Boolean))];
+    let aborted = false;
+    for (const key of keys) {
+      if (
+        abortPendingHoldStores(
+          { pendingBySession, deferredBySession, pendingByGroupChannel },
+          { sessionId: key, remoteJid }
+        )
+      ) {
+        aborted = true;
+      }
+      if (runningBySession.has(key)) {
+        bumpInterrupt(key);
+        aborted = true;
+      }
+    }
+    return aborted;
   }
 
   function flushDeferredSession(sessionId) {
@@ -678,7 +789,16 @@ function createConversationOrchestrator(
     if (deferred.batchedCount > 1) {
       console.log(`[whatsapp] deferred batch ${deferred.batchedCount} msgs → 1 reply (${sessionId})`);
     }
-    enqueue(deferred);
+    const postGenTurns = deferred._postGenTurns ?? 0;
+    if (postGenTurns >= 1) {
+      enqueue(deferred);
+      return;
+    }
+    scheduleDirectIncoming({
+      ...deferred,
+      _coalesceAfterGen: true,
+      _postGenTurns: 1
+    });
   }
 
   function buildVerifiedQuoteKey(remoteJid, quoteId, {
@@ -803,7 +923,12 @@ function createConversationOrchestrator(
           const extraDelay = options?.softened ? randBetween(120, 320) : 0;
           typingDelayMs = Math.min(
             timingCfg.typingMaxDelayMs,
-            Math.max(timingCfg.firstBubbleTypingFloorMs, base + extraDelay)
+            Math.max(firstBubbleTypingFloorMs(timingCfg, {
+              isGroup: false,
+              batchedCount: options?.batchedCount ?? 1,
+              sleepGroggy: options?.sleepGroggy,
+              sleepTemporarilyAwake: options?.sleepTemporarilyAwake
+            }), base + extraDelay)
           );
         }
         if (index === 0 && needsTyping && typingDelayMs > 0) {
@@ -945,6 +1070,19 @@ function createConversationOrchestrator(
           runtime.defaults.learningModeEnabled ||
           item.mainObserveOnly;
         if (shouldRunPipeline) {
+          if (shouldGenerate && item.media && !item.tetosCommand) {
+            const visPromise = item.mediaVisionPromise ?? item.media.visionPromise;
+            if (visPromise) {
+              await settleMediaVision(item, visionFlushTimeoutMs(item));
+            }
+            if (item.media) {
+              item.message =
+                formatMediaInputText({
+                  text: item.caption || "",
+                  media: item.media
+                }) || item.message;
+            }
+          }
           if (shouldGenerate) {
             console.log(`${logPrefix} generating reply for ${item.userId}…`);
           }
@@ -1009,7 +1147,10 @@ function createConversationOrchestrator(
                 );
               }
               timingPlan = out?.timingPlan ?? null;
-              const targetLatency = (timingPlan?.readDelayMs ?? 0) + (timingPlan?.thinkDelayMs ?? 0);
+              const thinkMs = thinkDelaySleepMs({ ...item, timingPlan });
+              const targetLatency =
+                (timingPlan?.readDelayMs ?? 0) +
+                (shouldSkipThinkDelaySleep({ ...item, timingPlan }) ? 0 : thinkMs);
               let remaining = Math.max(0, targetLatency - (Date.now() - genStart));
               if (item.groupCatchUp && remaining > 0) {
                 remaining = Math.min(remaining, item.isGroup ? 500 : 800);
@@ -1638,7 +1779,10 @@ function createConversationOrchestrator(
             participantJid: item.participantJid ?? item.messageKey?.participant ?? null,
             quoteMessageKey: shouldQuote ? quoteKeyForSend : null,
             quoteMessageKeys: quoteKeys.filter(Boolean).length ? quoteKeys : undefined,
-            tetosCommand: item.tetosCommand === true
+            tetosCommand: item.tetosCommand === true,
+            batchedCount: item.batchedCount ?? 1,
+            sleepGroggy: Boolean(item.sleepGroggy || timingPlan?.typingProfile === "drowsy"),
+            sleepTemporarilyAwake: Boolean(item.sleepTemporarilyAwake)
           });
           if (hasOutgoing) {
             outputKind = RESPONSE_OUTPUTS.TEXT;
@@ -1755,6 +1899,9 @@ function createConversationOrchestrator(
     const channelKey = entry.remoteJid;
     const priority = isGroupPriorityEntry(entry);
     const normalized = { ...entry, ts: entry.ts ?? Date.now(), groupPriorityAddress: priority };
+    if (isMediaHoldEntry(normalized) && !normalized.mediaHoldStartedAt) {
+      normalized.mediaHoldStartedAt = Date.now();
+    }
 
     let pending = pendingByGroupChannel.get(channelKey) ?? { entries: [], timer: null };
 
@@ -1775,12 +1922,21 @@ function createConversationOrchestrator(
       (e) => (typingByUser.get(e.userId) ?? 0) > Date.now()
     );
     const hasPriority = pending.entries.some(isGroupPriorityEntry);
+    const holdSeed = pending.entries.find(isMediaHoldEntry) ?? null;
+    const last = pending.entries[pending.entries.length - 1];
     const baseBatch = hasPriority
       ? Math.min(450, timingCfg.groupBatchWindowMs)
       : timingCfg.groupBatchWindowMs;
-    const batchMs = stillTyping
+    let batchMs = stillTyping
       ? Math.min(hasPriority ? 2800 : 6500, Math.round(baseBatch * (hasPriority ? 1.6 : 2.4)))
       : baseBatch;
+    if (holdSeed && hasPriority) {
+      batchMs = computeDirectBatchMs(last, holdSeed, {
+        stillTyping,
+        batchWindowMs: timingCfg.groupBatchWindowMs,
+        mediaHoldMs: timingCfg.mediaHoldMs
+      });
+    }
 
     pending.timer = setTimeout(() => {
       const collected = pending.entries;
@@ -1798,8 +1954,11 @@ function createConversationOrchestrator(
       (acc, cur) => ({
         ...acc,
         message: `${acc.message}\n${cur.message}`.trim(),
+        caption: [acc.caption, cur.caption].map((c) => String(c ?? "").trim()).filter(Boolean).join("\n") || acc.caption,
         messageKey: cur.messageKey ?? acc.messageKey,
         media: cur.media ?? acc.media,
+        mediaVisionPromise: cur.mediaVisionPromise ?? acc.mediaVisionPromise,
+        mediaHoldStartedAt: stampMediaHoldStart(acc, cur),
         quotedMessage: cur.quotedMessage ?? acc.quotedMessage,
         quotedMessageId: cur.quotedMessageId ?? acc.quotedMessageId,
         replyThreadContext: cur.replyThreadContext ?? acc.replyThreadContext,
@@ -1843,38 +2002,56 @@ function createConversationOrchestrator(
     });
   }
 
+  function stampIncomingHold(entry) {
+    if (isMediaHoldEntry(entry) && !entry.mediaHoldStartedAt) {
+      return { ...entry, mediaHoldStartedAt: Date.now(), batchedCount: entry.batchedCount ?? 1 };
+    }
+    return { ...entry, batchedCount: entry.batchedCount ?? 1 };
+  }
+
+  function armDirectPending(key, merged) {
+    const stillTyping = (typingByUser.get(merged.userId) ?? 0) > Date.now();
+    const batchMs = computeDirectBatchMs(merged, merged, {
+      stillTyping,
+      batchWindowMs: merged.isGroup ? timingCfg.groupBatchWindowMs : timingCfg.batchWindowMs,
+      mediaHoldMs: timingCfg.mediaHoldMs
+    });
+    const timer = setTimeout(() => {
+      pendingBySession.delete(key);
+      if (merged.batchedCount > 1) {
+        console.log(`[whatsapp] batch ${merged.batchedCount} msgs → 1 reply (${key})`);
+      }
+      const flushed = { ...merged };
+      delete flushed.timer;
+      enqueue(flushed);
+    }, batchMs);
+    pendingBySession.set(key, { ...merged, timer });
+  }
+
   function scheduleDirectIncoming(entry) {
     const key = entry.sessionId ?? entry.userId;
+    const incoming = stampIncomingHold(entry);
 
     if (runningBySession.has(key)) {
       const prev = deferredBySession.get(key);
-      const merged = prev ? mergeDirectEntries(prev, entry) : { ...entry, batchedCount: entry.batchedCount ?? 1 };
+      if (prev && shouldSplitBurst(prev, incoming)) {
+        enqueue({ ...prev });
+        deferredBySession.set(key, incoming);
+        return;
+      }
+      const merged = prev ? mergeDirectEntries(prev, incoming) : incoming;
       if (merged) {
         deferredBySession.set(key, merged);
       } else {
-        deferredBySession.set(key, { ...entry, batchedCount: entry.batchedCount ?? 1 });
+        if (prev) enqueue({ ...prev });
+        deferredBySession.set(key, incoming);
       }
       return;
     }
 
     let previous = pendingBySession.get(key);
 
-    const differentQuote =
-      entry.isReply &&
-      previous &&
-      previous.quotedMessageId &&
-      entry.quotedMessageId &&
-      previous.quotedMessageId !== entry.quotedMessageId;
-
-    // Reply explícito (quote) → não mistura quotes diferentes; flush o pendente
-    if (entry.isReply && previous?.timer) {
-      clearTimeout(previous.timer);
-      const flushed = { ...previous };
-      delete flushed.timer;
-      pendingBySession.delete(key);
-      enqueue(flushed);
-      previous = null;
-    } else if (differentQuote && previous?.timer) {
+    if (previous?.timer && (shouldFlushPendingOnIncoming(previous, incoming) || shouldSplitBurst(previous, incoming))) {
       clearTimeout(previous.timer);
       const flushed = { ...previous };
       delete flushed.timer;
@@ -1884,32 +2061,48 @@ function createConversationOrchestrator(
     }
 
     if (previous?.timer) clearTimeout(previous.timer);
-    const canMergeQuotes =
-      !entry.isReply ||
-      !previous?.isReply ||
-      !entry.quotedMessageId ||
-      !previous.quotedMessageId ||
-      entry.quotedMessageId === previous.quotedMessageId;
+    const merged = previous
+      ? mergeDirectEntries(previous, incoming) ?? incoming
+      : incoming;
 
-    const merged = previous && canMergeQuotes
-      ? mergeDirectEntries(previous, entry) ?? { ...entry, batchedCount: entry.batchedCount ?? 1 }
-      : { ...entry, batchedCount: entry.batchedCount ?? 1 };
+    armDirectPending(key, merged);
+  }
 
-    const typingUntil = typingByUser.get(entry.userId) ?? 0;
-    const stillTyping = typingUntil > Date.now();
-    const baseBatch = entry.isGroup ? timingCfg.groupBatchWindowMs : timingCfg.batchWindowMs;
-    const batchMs = stillTyping
-      ? Math.min(5500, Math.round(baseBatch * 2.2))
-      : Math.min(4500, Math.round(baseBatch * 1.35));
-
-    const timer = setTimeout(() => {
-      pendingBySession.delete(key);
-      if (merged.batchedCount > 1) {
-        console.log(`[whatsapp] batch ${merged.batchedCount} msgs → 1 reply (${key})`);
+  function refreshPendingTimersForUser(userId) {
+    for (const [key, pending] of pendingBySession.entries()) {
+      if (pending.userId !== userId || !pending.timer) continue;
+      clearTimeout(pending.timer);
+      const next = { ...pending };
+      delete next.timer;
+      armDirectPending(key, next);
+    }
+    for (const [channelKey, pending] of pendingByGroupChannel.entries()) {
+      if (!pending.entries?.some((e) => e.userId === userId)) continue;
+      if (pending.timer) clearTimeout(pending.timer);
+      const stillTyping = true;
+      const hasPriority = pending.entries.some(isGroupPriorityEntry);
+      const holdSeed = pending.entries.find(isMediaHoldEntry) ?? null;
+      const last = pending.entries[pending.entries.length - 1];
+      const baseBatch = hasPriority
+        ? Math.min(450, timingCfg.groupBatchWindowMs)
+        : timingCfg.groupBatchWindowMs;
+      let batchMs = stillTyping
+        ? Math.min(hasPriority ? 2800 : 6500, Math.round(baseBatch * (hasPriority ? 1.6 : 2.4)))
+        : baseBatch;
+      if (holdSeed && hasPriority) {
+        batchMs = computeDirectBatchMs(last, holdSeed, {
+          stillTyping: true,
+          batchWindowMs: timingCfg.groupBatchWindowMs,
+          mediaHoldMs: timingCfg.mediaHoldMs
+        });
       }
-      enqueue(merged);
-    }, batchMs);
-    pendingBySession.set(key, { ...merged, timer });
+      pending.timer = setTimeout(() => {
+        const collected = pending.entries;
+        pendingByGroupChannel.delete(channelKey);
+        processCollectedGroupEntries(channelKey, collected);
+      }, batchMs);
+      pendingByGroupChannel.set(channelKey, pending);
+    }
   }
 
   function scheduleIncoming(entry) {
@@ -1934,6 +2127,7 @@ function createConversationOrchestrator(
     const isTyping = userPresence?.lastKnownPresence === "composing";
     if (isTyping) {
       typingByUser.set(userId, Date.now() + timingCfg.typingGraceMs);
+      refreshPendingTimersForUser(userId);
     }
   }
 
@@ -2031,7 +2225,8 @@ function createConversationOrchestrator(
     onPresenceUpdate,
     bumpInterrupt,
     clearTypingGrace,
-    abortGroupChannel
+    abortGroupChannel,
+    abortPendingMediaHold
   };
 }
 
@@ -2134,6 +2329,41 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
     orchestrator.scheduleIncoming(entry);
   }
 
+  function deliverPendingSleepCatchUp() {
+    if (!orchestrator) return 0;
+    const pending = runtime.sleepMessageBuffer?.drainAll?.() ?? [];
+    if (!pending.length) return 0;
+    console.log(
+      `${waLogPrefix} sleep catch-up — ${pending.length} conversa(s) guardada(s) enquanto dormia`
+    );
+    for (const entry of pending) {
+      orchestrator.scheduleIncoming({
+        ...entry,
+        channelId: entry.channelId ?? entry.remoteJid,
+        sleepCatchUp: true,
+        sleepCatchUpCount: entry.sleepCatchUpCount ?? entry.batchedCount ?? 1,
+        closeDecision: entry.closeDecision ?? "open",
+        preferQuoteReply: false
+      });
+    }
+    return pending.length;
+  }
+
+  if (orchestrator) {
+    runtime.deliverSleepCatchUp = deliverPendingSleepCatchUp;
+    if (!runtime._sleepCatchUpListenerBound && runtime.brainOrchestrator?.bus?.on) {
+      runtime._sleepCatchUpListenerBound = true;
+      runtime.brainOrchestrator.bus.on("sleep.available", () => {
+        try {
+          runtime.deliverSleepCatchUp?.();
+        } catch (error) {
+          console.warn(`${waLogPrefix} sleep catch-up falhou:`, error?.message ?? error);
+        }
+      });
+    }
+    deliverPendingSleepCatchUp();
+  }
+
   console.log(
     `${waLogPrefix} handler ativo${
       botChatRole
@@ -2191,7 +2421,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
       });
       if (!resolved?.media?.path) {
         await safeSendMessage(remoteJid, {
-          text: "Nao achei midia valida. Manda a imagem/GIF no anexo, responde (reply) a uma midia, ou manda a midia e depois o comando."
+          text: formatMissingMediaCommandHint(parsedCommand.command, runtime.defaults.commandPrefix)
         });
         runtime.eventLedger?.append?.({
           eventType: "command.media",
@@ -2583,8 +2813,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const unwrappedMessage = unwrapMessage(rawIncomingMessage);
         let text = extractText(unwrappedMessage).trim();
         const links = extractLinks(text);
-        const parsedCommand = parseMediaCommand(text, runtime.defaults.commandPrefix);
         const commandPrefix = runtime.defaults.commandPrefix;
+        let parsedCommand = parseMediaCommand(text, commandPrefix);
         const tetoSlash = parseTetoSlashCommand(text, commandPrefix);
         const tetosCmd = parseTetosCommand(text, commandPrefix);
         const mediaKind = detectMediaKind(unwrappedMessage);
@@ -2600,6 +2830,15 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           unwrappedMessage?.stickerMessage ||
           unwrappedMessage?.documentMessage
         );
+        const earlyContextInfo = extractContextInfo(unwrappedMessage);
+        if (!parsedCommand) {
+          parsedCommand = tryParseInboundMediaRequest(text, {
+            hasMediaPayload,
+            contextInfo: earlyContextInfo,
+            media: hasMediaPayload && mediaKind && mediaKind !== "text" ? { type: mediaKind } : null,
+            messageKey: incoming.key
+          });
+        }
         let media = null;
         const isViewOnceInbound =
           isViewOnceMessage(rawIncomingMessage, incoming.key) || isViewOnceStub(incoming);
@@ -2855,7 +3094,97 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const identityIndex = buildIdentityIndex(runtime);
         if (text && (isGroup || mentionHint.length)) {
           text = normalizeIncomingMentions(text, identityIndex, mentionHint);
+          if (!parsedCommand) {
+            parsedCommand = parseMediaCommand(text, commandPrefix);
+            if (!parsedCommand) {
+              parsedCommand = tryParseInboundMediaRequest(text, {
+                hasMediaPayload,
+                contextInfo,
+                media,
+                messageKey: incoming.key,
+                quotedText: quotedFromProto
+              });
+            }
+          }
         }
+
+        if (parsedCommand && !isFromMe) {
+          orchestrator?.abortPendingMediaHold(sessionId, { remoteJid, userId });
+          const commandMessageId = incoming.key?.id ?? null;
+          if (
+            parsedCommand.command === "repertorio" &&
+            isRepertorioRemoveSubcommand(parsedCommand)
+          ) {
+            await handleRepertorioRemoveCommand({
+              runtime,
+              remoteJid,
+              userId,
+              stanzaId,
+              send: (text) => safeSendMessage(remoteJid, { text })
+            });
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.COMMAND
+            });
+            continue;
+          }
+          if (isStaleHistoryReplay(type, incoming)) {
+            if (runtime.defaults.thinkingLogsEnabled) {
+              console.log(
+                `[audit.command] ${JSON.stringify({
+                  ts: new Date().toISOString(),
+                  status: "skip_append_replay",
+                  commandName: parsedCommand.command,
+                  messageId: commandMessageId,
+                  remoteJid
+                })}`
+              );
+            }
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
+            continue;
+          }
+          if (!processedCommandDeduper.claim(commandMessageId)) {
+            if (runtime.defaults.thinkingLogsEnabled) {
+              console.log(
+                `[audit.command] ${JSON.stringify({
+                  ts: new Date().toISOString(),
+                  status: "skip_duplicate",
+                  commandName: parsedCommand.command,
+                  messageId: commandMessageId,
+                  remoteJid
+                })}`
+              );
+            }
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              output: RESPONSE_OUTPUTS.IGNORED
+            });
+            continue;
+          }
+          void mediaCommandService
+            .handle({
+              incoming,
+              parsedCommand,
+              remoteJid,
+              userId,
+              media
+            })
+            .catch((error) => {
+              if (isWaConnectionError(error)) {
+                console.warn(`${waLogPrefix} comando ${parsedCommand.command} — conexao fechada`);
+                return;
+              }
+              console.warn(
+                `${waLogPrefix} comando ${parsedCommand.command} falhou:`,
+                error?.message ?? error
+              );
+            });
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.COMMAND
+          });
+          continue;
+        }
+
         let isDirect = false;
         let isReply = Boolean(stanzaId);
         let groupEngagementActive = false;
@@ -2887,7 +3216,12 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             continue;
           }
 
-          const hasMention = botMentionedInJids(mentionHint, botJid, botPhone, { botActorIds });
+          const hasMention = mentionedJidsIncludeBot(mentionHint, {
+            botJid,
+            botPhone,
+            botActorIds,
+            identityIndex
+          });
           groupAddressKind = classifyTetoAddress(text, { hasMention, isReplyToBot });
           if (isReplyToBot) isReply = true;
 
@@ -2968,8 +3302,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           decisionTrace.groupGate = isGroup ? decisionTrace.groupGate : "dm";
         }
 
-        if (role !== "media" || botChatRole) {
-          const channelScope = isGroup ? `group:${remoteJid}` : "direct";
+        if (!isFromMe && (role !== "media" || botChatRole) && !parsedCommand && !tetosCmd) {
+          const channelScope = identitySnapshot.channelScope ?? (isGroup ? `group:${remoteJid}` : "direct");
           const heuristic = ChatService.decideClosure(text, historySnapshot);
           const trustBond = runtime.brainOrchestrator?.trust?.getBond?.(userId, channelScope) ?? null;
           const repetition = runtime.brainOrchestrator?.repetition?.getSnapshot?.(sessionId) ?? null;
@@ -3045,6 +3379,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             ? chatMessageIndex.buildReplyContext(remoteJid, stanzaId, 14)
             : null;
 
+        const deferVisionForCommand = Boolean(parsedCommand);
         try {
           if (unwrappedMessage?.imageMessage && incoming.key?.id) {
             const path = await persistMedia({
@@ -3054,23 +3389,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               id: `${incoming.key.id}-image`,
               basePath: runtime.defaults.whatsappMediaPath
             });
-            const visualDescription = await attachVisionTranscript(runtime, {
-              filePath: path,
-              mediaType: "image",
-              userId,
-              remoteJid,
-              skipVision: skipVisionEnrichment
-            });
-            media = applyVisionFields(
-              {
-                type: "image",
-                caption: unwrappedMessage.imageMessage?.caption ?? text,
-                transcript: visualDescription,
-                path
-              },
-              visualDescription,
-              { skipVision: skipVisionEnrichment }
-            );
+            media = {
+              type: "image",
+              caption: unwrappedMessage.imageMessage?.caption ?? text,
+              path
+            };
           } else if (unwrappedMessage?.videoMessage && incoming.key?.id) {
             const isGif = Boolean(unwrappedMessage.videoMessage?.gifPlayback);
             const path = await persistMedia({
@@ -3080,25 +3403,12 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               id: `${incoming.key.id}-video`,
               basePath: runtime.defaults.whatsappMediaPath
             });
-            const visualDescription = await attachVisionTranscript(runtime, {
-              filePath: path,
-              mediaType: isGif ? "gif" : "video",
+            media = {
+              type: isGif ? "gif" : "video",
+              caption: unwrappedMessage.videoMessage?.caption ?? text,
               isAnimated: isGif,
-              userId,
-              remoteJid,
-              skipVision: skipVisionEnrichment
-            });
-            media = applyVisionFields(
-              {
-                type: isGif ? "gif" : "video",
-                caption: unwrappedMessage.videoMessage?.caption ?? text,
-                transcript: visualDescription,
-                isAnimated: isGif,
-                path
-              },
-              visualDescription,
-              { skipVision: skipVisionEnrichment }
-            );
+              path
+            };
           } else if (unwrappedMessage?.audioMessage && incoming.key?.id) {
             const path = await persistMedia({
               downloadContentFromMessage,
@@ -3109,7 +3419,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
             let transcript = null;
             let transcriptSource = null;
-            if (!skipVisionEnrichment) {
+            if (!skipVisionEnrichment && !deferVisionForCommand) {
               const transcribed = await runtime.audioTranscriber?.transcribe?.({
                 filePath: path,
                 mimetype: unwrappedMessage.audioMessage?.mimetype,
@@ -3153,39 +3463,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               isAnimated,
               path
             };
-            if (!skipVisionEnrichment) {
-              void attachVisionTranscript(runtime, {
-                filePath: path,
-                mediaType: "sticker",
-                isAnimated,
-                userId,
-                remoteJid,
-                skipVision: skipVisionEnrichment
-              })
-                .then((visualDescription) => {
-                  if (!visualDescription) return;
-                  const enriched = applyVisionFields(
-                    { ...media, transcript: visualDescription },
-                    visualDescription,
-                    { skipVision: false }
-                  );
-                  syncIncomingMediaContext(runtime, {
-                    remoteJid,
-                    messageId: incoming.key.id,
-                    userId,
-                    pushName,
-                    text,
-                    media: enriched,
-                    stanzaId,
-                    participantJid: isGroup ? participantJid : null,
-                    chatMessageIndex,
-                    isGroup
-                  });
-                })
-                .catch((err) => {
-                  console.warn(`${waLogPrefix} sticker vision background:`, err?.message ?? err);
-                });
-            }
           } else if (unwrappedMessage?.documentMessage && incoming.key?.id) {
             const docHint = inferDocumentAsMedia(unwrappedMessage);
             if (docHint) {
@@ -3199,46 +3476,13 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 preferredExt: fileExtFromDocumentMessage(docHint.doc),
                 decryptMediaAs: "document"
               });
-              if (docHint.type === "image") {
-                const visualDescription = await attachVisionTranscript(runtime, {
-                  filePath: path,
-                  mediaType: "image",
-                  userId,
-                  remoteJid,
-                  skipVision: skipVisionEnrichment
-                });
-                media = applyVisionFields(
-                  {
-                    type: "image",
-                    caption: unwrappedMessage.documentMessage?.caption ?? text,
-                    transcript: visualDescription,
-                    path
-                  },
-                  visualDescription,
-                  { skipVision: skipVisionEnrichment }
-                );
-              } else {
-                const isGif = docHint.type === "gif";
-                const visualDescription = await attachVisionTranscript(runtime, {
-                  filePath: path,
-                  mediaType: isGif ? "gif" : "video",
-                  isAnimated: isGif,
-                  userId,
-                  remoteJid,
-                  skipVision: skipVisionEnrichment
-                });
-                media = applyVisionFields(
-                  {
-                    type: isGif ? "gif" : "video",
-                    caption: unwrappedMessage.documentMessage?.caption ?? text,
-                    transcript: visualDescription,
-                    isAnimated: isGif,
-                    path
-                  },
-                  visualDescription,
-                  { skipVision: skipVisionEnrichment }
-                );
-              }
+              const isGif = docHint.type === "gif";
+              media = {
+                type: docHint.type === "gif" ? "gif" : docHint.type,
+                caption: unwrappedMessage.documentMessage?.caption ?? text,
+                ...(docHint.type !== "image" ? { isAnimated: isGif } : {}),
+                path
+              };
             }
           }
         } catch (error) {
@@ -3248,12 +3492,63 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
         }
 
-        if (media?.path && media?.type) {
+        if (!isFromMe && media?.path && media?.type) {
           mediaHistoryStore.add(remoteJid, {
             messageId: incoming.key?.id ?? null,
             userId,
             media
           });
+        }
+
+        if (!parsedCommand && !tetosCmd && !isFromMe) {
+          parsedCommand = tryParseInboundMediaRequest(text, {
+            hasMediaPayload,
+            contextInfo,
+            media,
+            messageKey: incoming.key,
+            quotedText: quotedMessage
+          });
+        }
+
+        let mediaVisionPromise = null;
+        if (
+          media?.path &&
+          !parsedCommand &&
+          !isFromMe &&
+          !skipVisionEnrichment &&
+          media.type !== "audio"
+        ) {
+          mediaVisionPromise = startChatVision(runtime, media, {
+            userId,
+            remoteJid,
+            skipVision: false
+          });
+          if (mediaVisionPromise) {
+            mediaVisionPromise
+              .then((visualDescription) => {
+                if (!visualDescription || !incoming.key?.id) return;
+                const enriched = applyVisionFields(
+                  { ...media, transcript: visualDescription },
+                  visualDescription,
+                  { skipVision: false }
+                );
+                syncIncomingMediaContext(runtime, {
+                  remoteJid,
+                  messageId: incoming.key.id,
+                  userId,
+                  pushName,
+                  text,
+                  media: enriched,
+                  stanzaId,
+                  participantJid: incoming.key?.participant ?? null,
+                  chatMessageIndex,
+                  isGroup
+                });
+              })
+              .catch((err) => {
+                console.warn(`${waLogPrefix} vision background:`, err?.message ?? err);
+              });
+          }
         }
 
         if (incoming.key?.id && media?.type) {
@@ -3271,7 +3566,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           });
         }
 
-        if (!isFromMe && media?.type === "sticker" && media?.path && incoming.key?.id) {
+        if (!isFromMe && !parsedCommand && media?.type === "sticker" && media?.path && incoming.key?.id) {
           const autoSaved = await tryAutoSaveIncomingSticker({
             runtime,
             repertoireModeStore: runtime.stickerRepertoireMode,
@@ -3307,6 +3602,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         }
 
         if (parsedCommand) {
+          orchestrator?.abortPendingMediaHold(sessionId, { remoteJid, userId });
           const commandMessageId = incoming.key?.id ?? null;
           if (
             parsedCommand.command === "repertorio" &&
@@ -3324,7 +3620,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
             continue;
           }
-          if (type === "append") {
+          if (isStaleHistoryReplay(type, incoming)) {
             if (runtime.defaults.thinkingLogsEnabled) {
               console.log(
                 `[audit.command] ${JSON.stringify({
@@ -3358,27 +3654,28 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
             continue;
           }
-          try {
-            const handled = await mediaCommandService.handle({
+          void mediaCommandService
+            .handle({
               incoming,
               parsedCommand,
               remoteJid,
               userId,
               media
+            })
+            .catch((error) => {
+              if (isWaConnectionError(error)) {
+                console.warn(`${waLogPrefix} comando ${parsedCommand.command} — conexao fechada`);
+                return;
+              }
+              console.warn(
+                `${waLogPrefix} comando ${parsedCommand.command} falhou:`,
+                error?.message ?? error
+              );
             });
-            if (handled) {
-              finalizeDecisionTrace(runtime, decisionTrace, {
-                output: RESPONSE_OUTPUTS.COMMAND
-              });
-              continue;
-            }
-          } catch (error) {
-            if (isWaConnectionError(error)) {
-              console.warn(`${waLogPrefix} comando ${parsedCommand.command} — conexao fechada`);
-              continue;
-            }
-            throw error;
-          }
+          finalizeDecisionTrace(runtime, decisionTrace, {
+            output: RESPONSE_OUTPUTS.COMMAND
+          });
+          continue;
         }
 
         if (role === "media" && !botChatRole) {
@@ -3683,12 +3980,28 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               userId,
               sessionId,
               remoteJid,
-              messageKey: incoming.key ? { ...incoming.key } : undefined,
-              quotedMessageId: stanzaId ?? null,
+              channelId: remoteJid,
+              isGroup,
+              isOwner,
+              mainObserveOnly,
+              participants: (() => {
+                const ch = runtime.channelRegistry.get(remoteJid);
+                if (ch.participants?.length) return ch.participants;
+                return isGroup && participantId ? [participantId] : [userId];
+              })(),
+              isDirectMention: isGroup ? isDirect : false,
+              groupEngagementActive: isGroup ? groupEngagementActive : false,
+              groupAddressKind: isGroup ? groupAddressKind : null,
               isReply: isReply || isReplyToBot,
+              isReplyToBot,
+              quotedMessage,
+              quotedMessageId: stanzaId ?? null,
+              replyThreadContext,
+              media,
+              closeDecision: "open",
+              messageKey: incoming.key ? { ...incoming.key } : undefined,
               pushName: pushName || null,
-              participantId: isGroup ? participantId : null,
-              media
+              participantId: isGroup ? participantId : null
             });
             finalizeDecisionTrace(runtime, decisionTrace, {
               pipelineMode: RESPONSE_MODES.SLEEP_HOLD,
@@ -3804,6 +4117,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           quotedMessageId: stanzaId,
           replyThreadContext,
           media,
+          caption: String(text ?? "").trim(),
+          mediaVisionPromise,
           closeDecision,
           messageKey: incoming.key ? { ...incoming.key } : undefined,
           pushName: pushName || null,

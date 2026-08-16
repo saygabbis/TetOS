@@ -19,8 +19,9 @@ import {
   removeAnimatedBackground,
   removeImageBackground
 } from "./backgroundRemovalService.js";
-import { probeStickerIsAnimated } from "./stickerAnimation.js";
+import { probeStickerIsAnimated, isLikelyStaticRaster } from "./stickerAnimation.js";
 import { STICKER_DURATION_MAX_MS } from "./stickerDurationParse.js";
+import { readFileHead } from "./fileHead.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -56,12 +57,18 @@ async function isValidAnimatedSticker(filePath, expectedEdge = 512, durationMs =
     const pages = Number(meta?.pages ?? 0);
     const width = Number(meta?.width ?? 0);
     const pageHeight = Number(meta?.pageHeight ?? 0);
+    const height = Number(meta?.height ?? 0);
     const maxFrames = durationMs != null ? maxAnimatedFramesForDuration(durationMs) : maxAnimatedFramesForDuration(STICKER_DURATION_MAX_MS);
-    if (pages < 1 || pages > maxFrames || width < 1) return false;
+    if (width < 32) return false;
     if (pages === 1) {
-      return width === expectedEdge && Number(meta?.height ?? 0) === expectedEdge;
+      return width === expectedEdge && height === expectedEdge;
     }
-    return width === expectedEdge && pageHeight === expectedEdge;
+    if (pages > maxFrames) return false;
+    const frameH = pageHeight > 0 ? pageHeight : height;
+    if (frameH > 0 && Math.abs(frameH - expectedEdge) > 24 && Math.abs(height - expectedEdge) > 24) {
+      return width <= expectedEdge + 24;
+    }
+    return width <= expectedEdge + 24;
   } catch {
     return false;
   }
@@ -148,9 +155,6 @@ function runFfmpeg(command) {
   });
 }
 
-/** Formato WhatsApp para figurinha estática no app móvel: WebP (PNG costuma renderizar no Web e falhar no celular). */
-const STATIC_STICKER_WEBP = { lossless: true };
-
 async function shrinkStaticStickerWebpIfNeeded(filePath, maxBytes) {
   let size = 0;
   try {
@@ -161,8 +165,8 @@ async function shrinkStaticStickerWebpIfNeeded(filePath, maxBytes) {
   if (size <= maxBytes) return;
   const meta = await sharp(filePath, { animated: true }).metadata().catch(() => ({}));
   if (Number(meta?.pages ?? 1) > 1) return;
-  for (let q = 88; q >= 34; q -= 7) {
-    const buf = await sharp(filePath).webp({ quality: q, effort: 4 }).toBuffer();
+  for (let q = 82; q >= 40; q -= 14) {
+    const buf = await sharp(filePath).webp({ quality: q, effort: 2 }).toBuffer();
     writeFileSync(filePath, buf);
     if (buf.length <= maxBytes) return;
   }
@@ -202,26 +206,17 @@ async function buildSharpAnimatedInputOpts(inputPath, maxDurationMs) {
 function isGifLikeFile(inputPath) {
   const ext = extname(inputPath).toLowerCase();
   if (ext === ".gif") return true;
-  try {
-    const head = readFileSync(inputPath, { start: 0, end: 5 });
-    const s = head.toString("ascii");
-    return s.startsWith("GIF87a") || s.startsWith("GIF89a");
-  } catch {
-    return false;
-  }
+  const s = readFileHead(inputPath, 6).toString("ascii");
+  return s.startsWith("GIF87") || s.startsWith("GIF89");
 }
 
 /**
- * GIF animado → WebP animado **só com libvips/Sharp** (sem ffmpeg no meio: evita YUV sem alpha e bordas pretas no .fsticker).
- * Presets enxutos — evita dezenas de re-encodes (minutos) em GIF/vídeo curto.
+ * GIF animado → WebP (fallback). Poucos presets, sem nearLossless (minutos em GIF curto).
  */
 const ANIMATED_SHARP_PRESETS = Object.freeze([
-  { edge: 512, quality: 75, effort: 3 },
-  { edge: 512, quality: 62, effort: 3 },
+  { edge: 512, quality: 62, effort: 2 },
   { edge: 512, quality: 48, effort: 2 },
-  { edge: 464, quality: 42, effort: 2 },
-  { edge: 416, quality: 34, effort: 2 },
-  { edge: 368, quality: 28, effort: 2 }
+  { edge: 416, quality: 36, effort: 1 }
 ]);
 
 async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs) {
@@ -255,21 +250,6 @@ async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerB
     return p;
   };
 
-  if (mode === "contain") {
-    try {
-      await basePipeline()
-        .resize(resizeFor(512))
-        .webp({ lossless: true, effort: 4 })
-        .toFile(output);
-      const sz = statSync(output).size;
-      if (sz > 0 && sz <= budgetBytes) {
-        return { kind: "image", path: output };
-      }
-    } catch {
-      /* lossy */
-    }
-  }
-
   for (const { edge, quality, effort } of ANIMATED_SHARP_PRESETS) {
     try {
       await basePipeline()
@@ -277,8 +257,7 @@ async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerB
         .webp({
           lossless: false,
           quality,
-          alphaQuality: 100,
-          nearLossless: true,
+          alphaQuality: 90,
           effort
         })
         .toFile(output);
@@ -298,42 +277,52 @@ async function gifAnimatedToStickerSharp(inputPath, mode, outputDir, maxStickerB
 }
 
 async function animatedGifToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs) {
-  const sharpResult = await gifAnimatedToStickerSharp(
+  try {
+    const ffmpegResult = await videoToSticker(
+      inputPath,
+      mode,
+      outputDir,
+      maxStickerBytes,
+      maxDurationMs
+    );
+    if (ffmpegResult?.path && stickerOutputSize(ffmpegResult.path) > 0) {
+      return ffmpegResult;
+    }
+  } catch {
+    /* Sharp abaixo */
+  }
+  return gifAnimatedToStickerSharp(
     inputPath,
     mode,
     outputDir,
     maxStickerBytes,
     maxDurationMs
   );
-  if (sharpResult?.path && stickerOutputSize(sharpResult.path) > 0) {
-    return sharpResult;
-  }
-  return videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs);
 }
 
 async function imageToSticker(inputPath, mode, outputDir, maxStickerBytes) {
   const output = outPath(outputDir, inputPath, `sticker-${mode}`, "webp");
-  let img = sharp(inputPath, { animated: true }).ensureAlpha();
+  let img = sharp(inputPath).ensureAlpha();
   if (mode === "contain") {
     img = img.trim({ threshold: 18, lineArt: false });
   }
+  const webpOpts = { quality: 82, effort: 2, lossless: false };
   if (mode === "stretch") {
-    await img.resize(512, 512, { fit: "fill" }).webp(STATIC_STICKER_WEBP).toFile(output);
+    await img.resize(512, 512, { fit: "fill" }).webp(webpOpts).toFile(output);
   } else if (mode === "contain") {
     await img
       .resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .webp(STATIC_STICKER_WEBP)
+      .webp(webpOpts)
       .toFile(output);
   } else {
-    await img.resize(512, 512, { fit: "cover", position: "centre" }).webp(STATIC_STICKER_WEBP).toFile(output);
+    await img.resize(512, 512, { fit: "cover", position: "centre" }).webp(webpOpts).toFile(output);
   }
   await shrinkStaticStickerWebpIfNeeded(output, maxStickerBytes);
-  const meta = await sharp(output).metadata();
   let sizeBytes = 0;
   try {
     sizeBytes = statSync(output).size;
   } catch {}
-return { kind: "image", path: output };
+  return { kind: "image", path: output, sizeBytes };
 }
 
 function buildVideoStickerVf(mode, fps, edge, durationSec) {
@@ -347,35 +336,6 @@ function buildVideoStickerVf(mode, fps, edge, durationSec) {
     return `${f},format=rgba,scale=${edge}:${edge}:force_original_aspect_ratio=decrease,pad=${edge}:${edge}:(ow-iw)/2:(oh-ih)/2:color=0x00000000`;
   }
   return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=increase,crop=${edge}:${edge},format=yuv420p`;
-}
-
-/** Vídeo/MP4 → GIF com corte explícito (fontes longas, ex. 10 s no WhatsApp). */
-function buildVideoToGifVf(mode, fps, edge, durationSec) {
-  const trim = buildVideoTrimPrefix(durationSec);
-  const f = `${trim}fps=${fps}`;
-  const palette =
-    "split[s0][s1];[s0]palettegen=stats_mode=diff:max_colors=256[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3";
-  if (mode === "stretch") {
-    return `${f},scale=${edge}:${edge}:flags=lanczos,${palette}`;
-  }
-  if (mode === "contain") {
-    return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=decrease,pad=${edge}:${edge}:(ow-iw)/2:(oh-ih)/2:color=0x00000000,${palette}`;
-  }
-  return `${f},scale=${edge}:${edge}:force_original_aspect_ratio=increase,crop=${edge}:${edge},${palette}`;
-}
-
-async function videoToGifIntermediate(inputPath, mode, outputDir, maxDurationMs, { fps = 24, edge = 512 } = {}) {
-  const durationMs = resolveAnimatedDurationMs(maxDurationMs);
-  const durationSec = durationMs / 1000;
-  const output = outPath(outputDir, inputPath, `sticker-src-${mode}`, "gif");
-  const vf = buildVideoToGifVf(mode, fps, edge, durationSec);
-  await runFfmpeg(
-    ffmpeg(inputPath)
-      .inputOptions(["-t", String(durationSec)])
-      .outputOptions(["-an", "-vf", vf, "-loop", "0"])
-      .save(output)
-  );
-  return output;
 }
 
 async function runVideoStickerEncode(inputPath, output, { mode, edge, fps, quality, durationSec }) {
@@ -393,8 +353,10 @@ async function runVideoStickerEncode(inputPath, output, { mode, edge, fps, quali
         "0",
         "-quality",
         String(quality),
+        "-compression_level",
+        "3",
         "-preset",
-        "default",
+        "picture",
         "-loop",
         "0"
       ])
@@ -403,8 +365,7 @@ async function runVideoStickerEncode(inputPath, output, { mode, edge, fps, quali
 }
 
 /**
- * Vídeo/GIF → figurinha animada: WebP animado (não MP4 no campo sticker).
- * Caminho rápido: ffmpeg libwebp direto. Fallback: GIF intermediário + Sharp (alpha/contain).
+ * Vídeo/GIF → figurinha animada: ffmpeg libwebp direto, para no primeiro encode no budget.
  */
 async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDurationMs) {
   const output = outPath(outputDir, inputPath, `sticker-${mode}`, "webp");
@@ -413,25 +374,27 @@ async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDu
   const durationSec = durationMs / 1000;
 
   const ffmpegPresets = [
-    { edge: 512, fps: 24, quality: 72 },
-    { edge: 512, fps: 20, quality: 62 },
-    { edge: 512, fps: 15, quality: 52 },
-    { edge: 464, fps: 15, quality: 44 },
-    { edge: 416, fps: 12, quality: 36 }
+    { edge: 512, fps: 16, quality: 70 },
+    { edge: 512, fps: 12, quality: 52 },
+    { edge: 432, fps: 10, quality: 38 }
   ];
 
   let bestPath = null;
   let bestSize = Number.POSITIVE_INFINITY;
 
   for (const preset of ffmpegPresets) {
-    await runVideoStickerEncode(inputPath, output, {
-      mode,
-      durationSec,
-      ...preset
-    });
+    try {
+      await runVideoStickerEncode(inputPath, output, {
+        mode,
+        durationSec,
+        ...preset
+      });
+    } catch {
+      continue;
+    }
     const size = stickerOutputSize(output);
     if (size === 0) continue;
-    if (size <= budgetBytes && (await isValidAnimatedSticker(output, preset.edge, durationMs))) {
+    if (size <= budgetBytes) {
       return { kind: "image", path: output };
     }
     if (size < bestSize) {
@@ -440,33 +403,11 @@ async function videoToSticker(inputPath, mode, outputDir, maxStickerBytes, maxDu
     }
   }
 
-  if (bestPath && bestSize <= budgetBytes * 1.15) {
+  if (bestPath && bestSize <= budgetBytes * 1.25) {
     return { kind: "image", path: bestPath };
   }
 
-  try {
-    const gifPath = await videoToGifIntermediate(inputPath, mode, outputDir, durationMs);
-    if (stickerOutputSize(gifPath) > 0) {
-      const sharpResult = await gifAnimatedToStickerSharp(
-        gifPath,
-        mode,
-        outputDir,
-        maxStickerBytes,
-        durationMs
-      );
-      if (
-        sharpResult?.path &&
-        stickerOutputSize(sharpResult.path) > 0 &&
-        (await isValidAnimatedSticker(sharpResult.path, 512, durationMs))
-      ) {
-        return sharpResult;
-      }
-    }
-  } catch {
-    /* usa melhor ffmpeg acima */
-  }
-
-  if (bestPath && bestSize < Number.POSITIVE_INFINITY) {
+  if (bestPath) {
     return { kind: "image", path: bestPath };
   }
 
@@ -1087,9 +1028,12 @@ export class MediaProcessor {
     );
     if (cached?.path) return cached;
 
-    const animatedSource = await probeStickerIsAnimated(input.path, {
-      isAnimatedHint: input.isAnimated
-    });
+    const looksStatic = isLikelyStaticRaster(input.path);
+    const animatedSource = looksStatic
+      ? false
+      : await probeStickerIsAnimated(input.path, {
+          isAnimatedHint: input.isAnimated
+        });
 
     let result;
     if (input.type === "image" || input.type === "sticker" || input.type === "document") {

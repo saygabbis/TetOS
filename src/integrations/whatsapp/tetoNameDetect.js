@@ -95,5 +95,5 @@ export function isLikelyVocativeNameCall(text = "") {
     return true;
   }
   const wordCount = raw.split(/\s+/).filter(Boolean).length;
-  return fuzzy.variant === "standard" && wordCount <= 4;
+  return fuzzy.variant === "standard" && wordCount <= 8 && raw.length <= 80;
 }

@@ -66,7 +66,7 @@ export class TimingEngine {
       reasons.push("disturbed_wake");
       return;
     }
-    if (sleep.isAvailable === false || ["deep_sleep", "light_sleep", "nap", "drowsy", "insomnia", "restless"].includes(sleep.state)) {
+    if (sleep.isAvailable === false) {
       plan.silenceAppropriate = true;
       plan.shouldInitiateConversation = false;
       plan.readDelayMs = 0;
@@ -79,8 +79,8 @@ export class TimingEngine {
       reasons.push("user_boundary");
     }
     if (sleep.wakeDelayUntil && Date.now() < Date.parse(sleep.wakeDelayUntil)) {
-      plan.readDelayMs += 60000;
-      plan.thinkDelayMs += 30000;
+      plan.readDelayMs += 1800;
+      plan.thinkDelayMs += 900;
       reasons.push("just_woke_up");
     }
     if (ctx.life?.currentActivity?.includes("ensaio")) {
@@ -202,16 +202,18 @@ export class TimingEngine {
       reasons.push("group_context");
     }
     if (ctx.hasMedia) {
-      plan.readDelayMs += 1500;
+      plan.readDelayMs += 400;
       reasons.push("quoted_media");
     }
-    if (ctx.isDirectQuestion) {
-      plan.thinkDelayMs += 300;
-      reasons.push("direct_question");
-    }
-    if (ctx.isMention || ctx.isReply) {
-      plan.readDelayMs += 200;
-      reasons.push("addressed_directly");
+    if (ctx.isGroup) {
+      if (ctx.isDirectQuestion) {
+        plan.thinkDelayMs += 300;
+        reasons.push("direct_question");
+      }
+      if (ctx.isMention || ctx.isReply) {
+        plan.readDelayMs += 200;
+        reasons.push("addressed_directly");
+      }
     }
   }
 

@@ -91,8 +91,8 @@ export function applyExtendedChecks(plan, ctx, reasons) {
   if (ctx.repetition?.overusedTopics?.length) { plan.thinkDelayMs += 200; reasons.push("topic_fatigue"); }
   if (ctx.repetition?.recentEcho) { plan.thinkDelayMs += 300; reasons.push("recent_echo_risk"); }
 
-  // Calibração media hub
-  if (ctx.mediaTimingHint?.readDelayBoost) {
+  // Calibração media hub — só no turno que realmente tem mídia
+  if (ctx.media && ctx.mediaTimingHint?.readDelayBoost) {
     plan.readDelayMs += ctx.mediaTimingHint.readDelayBoost;
     reasons.push(ctx.mediaTimingHint.note ?? "media_timing_hint");
   }

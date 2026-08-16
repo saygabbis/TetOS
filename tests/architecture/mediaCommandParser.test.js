@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   formatWhatsAppHelpText,
+  formatMissingMediaCommandHint,
   isUrlMediaCommand,
+  parseNaturalWhatsAppMediaCommand,
   parseWhatsAppCommand
 } from "../../src/integrations/whatsapp/mediaCommandParser.js";
 
@@ -63,6 +65,17 @@ describe("media command parser", () => {
     expect(parseWhatsAppCommand("/teto-ativar")).toBeNull();
   });
 
+  it("parses commands after a leading mention or bidi mark", () => {
+    expect(parseWhatsAppCommand("@teto .sticker")).toEqual({
+      command: "sticker",
+      args: []
+    });
+    expect(parseWhatsAppCommand("\u200e.sticker 8s")).toEqual({
+      command: "sticker",
+      args: ["8s"]
+    });
+  });
+
   it("formats help text with the configured prefix", () => {
     const help = formatWhatsAppHelpText(".");
     expect(help).toMatch(/\.sticker/);
@@ -72,8 +85,40 @@ describe("media command parser", () => {
     expect(help).toMatch(/\*Comandos TetOS\*/);
     expect(help).toMatch(/Download de links/);
     expect(help).toMatch(/Ativar \/ desativar a Teto/);
+    expect(help).not.toMatch(/última mídia/);
     expect(help).not.toMatch(/Comandos da IA/);
     expect(help).not.toMatch(/youtube\("url"/);
     expect(formatWhatsAppHelpText("!")).toMatch(/!toimg/);
+  });
+
+  it("parses short natural media requests without going through chat", () => {
+    expect(parseNaturalWhatsAppMediaCommand("faz uma figurinha")).toEqual({
+      command: "sticker",
+      args: []
+    });
+    expect(parseNaturalWhatsAppMediaCommand("figurinha")).toEqual({
+      command: "sticker",
+      args: []
+    });
+    expect(parseNaturalWhatsAppMediaCommand("faz uma figurinha disso")).toEqual({
+      command: "sticker",
+      args: []
+    });
+    expect(parseNaturalWhatsAppMediaCommand("pode fazer uma figurinha")).toEqual({
+      command: "sticker",
+      args: []
+    });
+    expect(parseNaturalWhatsAppMediaCommand("tira o fundo")).toEqual({
+      command: "removebg",
+      args: []
+    });
+    expect(parseNaturalWhatsAppMediaCommand("adorei essa figurinha kkk")).toBeNull();
+    expect(parseNaturalWhatsAppMediaCommand("oi .sticker")).toBeNull();
+  });
+
+  it("asks to reply or use a caption when the command has no media", () => {
+    expect(formatMissingMediaCommandHint("sticker", ".")).toMatch(/reply/);
+    expect(formatMissingMediaCommandHint("sticker", ".")).toMatch(/\.sticker/);
+    expect(formatMissingMediaCommandHint("convert", ".")).toMatch(/\.convert mp4/);
   });
 });

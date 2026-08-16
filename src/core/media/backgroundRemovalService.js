@@ -15,6 +15,7 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { normalizeRemoveBgModel, parseHexColor } from "./removeBgOptionsParse.js";
 import { removeBgKeyPool } from "./removeBgKeyPool.js";
+import { readFileHead } from "./fileHead.js";
 
 const REMOVE_BG_WORKER = join(dirname(fileURLToPath(import.meta.url)), "removeBgWorker.mjs");
 
@@ -429,8 +430,9 @@ export function isAnimatedMedia(inputPath) {
 export async function isAnimatedImage(inputPath) {
   const ext = extname(inputPath).toLowerCase();
   if (ext === ".gif") return true;
+  if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") return false;
   try {
-    const head = readFileSync(inputPath);
+    const head = readFileHead(inputPath, 262144);
     if (head.length >= 6) {
       const sig = head.toString("ascii", 0, 6);
       if (sig.startsWith("GIF87") || sig.startsWith("GIF89")) return true;

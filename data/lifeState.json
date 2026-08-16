@@ -1,6 +1,6 @@
 {
-  "currentActivity": null,
-  "activityStartedAt": null,
+  "currentActivity": "planejar dia",
+  "activityStartedAt": "2026-08-16T10:01:09.830Z",
   "phase": "manha",
   "obligations": [
     {
@@ -411,7 +411,7 @@
   "goals": [],
   "privateThoughts": [],
   "sleep": {
-    "state": "light_sleep",
+    "state": "groggy",
     "sleepDebt": 1,
     "lastSleepAt": "2026-08-16T02:01:21.527Z",
     "tonightPlan": {
@@ -419,13 +419,6 @@
       "wakeHour": 7
     },
     "alarmHistory": [
-      {
-        "ts": "2026-07-24T10:00:23.758Z",
-        "missedAlarm": false,
-        "quality": 0.34,
-        "state": "groggy",
-        "disturbed": true
-      },
       {
         "ts": "2026-07-25T10:00:48.032Z",
         "missedAlarm": false,
@@ -565,10 +558,17 @@
         "quality": 0.34,
         "state": "groggy",
         "disturbed": true
+      },
+      {
+        "ts": "2026-08-16T10:01:09.830Z",
+        "missedAlarm": false,
+        "quality": 0.34,
+        "state": "groggy",
+        "disturbed": true
       }
     ],
     "wakeDelayUntil": null,
-    "lastWakeAt": "2026-08-15T10:01:11.185Z",
+    "lastWakeAt": "2026-08-16T10:01:09.830Z",
     "temporaryWakeUntil": null,
     "disturbanceCount": 0,
     "lastDisturbedAt": "2026-07-15T04:44:02.148Z",
@@ -577,6 +577,6 @@
     "tempWakeExtensionCount": 0,
     "tempWakeGrogginess": 0
   },
-  "lastTickAt": "2026-08-16T08:05:22.087Z",
+  "lastTickAt": "2026-08-16T10:47:02.583Z",
   "dayKey": "2026-08-16"
 }

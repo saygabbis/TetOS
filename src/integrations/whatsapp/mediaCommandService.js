@@ -11,7 +11,7 @@ import {
 import { UrlDownloadService } from "../../core/media/urlDownloadService.js";
 import { convertMedia, normalizeConvertFormat } from "../../core/media/mediaConverter.js";
 import { parseUrlDownloadArgs } from "./urlDownloadArgsParse.js";
-import { isUrlMediaCommand } from "./mediaCommandParser.js";
+import { isUrlMediaCommand, formatMissingMediaCommandHint } from "./mediaCommandParser.js";
 import {
   applyQuotedContextToPayload,
   buildOutgoingQuoteKey
@@ -146,10 +146,10 @@ export class MediaCommandService {
       });
 
       if (!resolved?.media?.path) {
-        const hint =
-          parsedCommand.command === "convert"
-            ? "Nao achei midia valida. Responde (reply) ou anexa a imagem/video/audio e manda o comando, ex.: .convert mp4"
-            : "Nao achei midia valida. Manda a imagem/GIF no anexo, responde (reply) a uma midia, ou manda a midia e depois o comando.";
+        const hint = formatMissingMediaCommandHint(
+          parsedCommand.command,
+          this.runtime.defaults.commandPrefix
+        );
         await this.safeSendMessage(remoteJid, { text: hint });
         this.appendCommandEvent({
           commandName: parsedCommand.command,

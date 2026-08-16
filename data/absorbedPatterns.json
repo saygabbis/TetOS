@@ -18,19 +18,11 @@
   },
   "topics": [],
   "mediaHabits": {
-    "stickerRate": 0.9996779093442256,
-    "imageRate": 0.5069253793819217,
+    "stickerRate": 0.9996843511573411,
+    "imageRate": 0.5167868717942833,
     "reactionEmoji": {}
   },
   "creativeInsights": [
-    {
-      "id": "insight_1786834931745",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:02:11.745Z"
-    },
     {
       "id": "insight_1786834936625",
       "type": "topic",
@@ -422,7 +414,15 @@
       "confidence": 0.63,
       "trigger": "chat.update",
       "ts": "2026-08-16T04:50:12.934Z"
+    },
+    {
+      "id": "insight_1786872830562",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.66,
+      "trigger": "message.update",
+      "ts": "2026-08-16T09:33:50.562Z"
     }
   ],
-  "lastUpdated": "2026-08-16T08:04:36.645Z"
+  "lastUpdated": "2026-08-16T09:55:49.506Z"
 }

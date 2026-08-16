@@ -11,6 +11,7 @@ import { DisconnectReason } from "baileys";
 import { isUserRecentlyActive, resolveNudgeRemoteJid, touchUserActivity } from "../../core/channels/userActivity.js";
 import { msSinceLastInbound, resetInboundActivity } from "./inboundLiveness.js";
 import { jidNormalizedUser } from "baileys";
+import { getLocalHour } from "../../core/life/sleepSchedule.js";
 
 /** Pausa nudges/presence após 403 de assinatura (evita spam a cada 60s). */
 let presenceLlmPausedUntil = 0;
@@ -129,7 +130,8 @@ async function runPresence(runtime, socket, initiationEngine) {
     const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
     if (sleepSnap.isAvailable === false) continue;
 
-    const hour = new Date().getHours();
+    const tz = runtime.brainOrchestrator?.life?.profile?.get?.()?.timezone ?? "America/Sao_Paulo";
+    const hour = getLocalHour(new Date(), tz);
     if (hour >= 0 && hour < 7) continue;
 
     const evaluation = initiationEngine?.evaluateForUser?.(userId);
