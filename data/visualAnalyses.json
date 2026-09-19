@@ -22901,26 +22901,6 @@
       "createdAt": "2026-06-09T17:21:43.807Z"
     },
     {
-      "id": "6bf50dc1-7414-41d0-8c45-e85ba58db071",
-      "userId": "58141777641473",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB0332F56CE2595C98884-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/3EB0332F56CE2595C98884-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-12T22:36:00.680Z"
-    },
-    {
-      "id": "1c255b1a-8390-4a91-8571-ee8beb914908",
-      "userId": "58141777641473",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/3EB0332F56CE2595C98884-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/3EB0332F56CE2595C98884-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-12T22:36:00.731Z"
-    },
-    {
       "id": "b68bf8a1-c42f-48f4-983e-abb183d8f531",
       "userId": "190546341540031",
       "channelId": "120363425913528764@g.us",
@@ -22959,36 +22939,6 @@
       "description": "GIF/vídeo animado (3 quadros): [quadro 1] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-jAvkt9/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-jAvkt9/f_002.png. A análise semântica não ficou disponível, então use apenas pista",
       "source": "local_vision",
       "createdAt": "2026-06-12T22:52:42.761Z"
-    },
-    {
-      "id": "b4bb1263-11b2-422c-b85b-5ef6d9ee842e",
-      "userId": "157947506229421",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/ACAF04255E30FF38867EE07F6429A14B-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/ACAF04255E30FF38867EE07F6429A14B-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-12T22:53:13.926Z"
-    },
-    {
-      "id": "6e5ea9cb-f7e1-4d9d-b85b-8959fcd67f76",
-      "userId": "157947506229421",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/ACAF04255E30FF38867EE07F6429A14B-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente. Arquivo persistido em data/media/ACAF04255E30FF38867EE07F6429A14B-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-12T22:53:13.960Z"
-    },
-    {
-      "id": "32290504-18a0-4399-aa95-048e0f2def41",
-      "userId": "157947506229421",
-      "channelId": "120363425913528764@g.us",
-      "mediaPath": "data/media/AC190F9C724D6788CB08CFCA60B964E0-sticker.webp",
-      "mediaType": "sticker",
-      "description": "Sticker analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-1781305035737-frame.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-12T22:57:15.811Z"
     },
     {
       "id": "e038ec6d-478c-4692-afab-5d52ee3ddda1",
@@ -23821,16 +23771,6 @@
       "createdAt": "2026-06-18T17:54:39.765Z"
     },
     {
-      "id": "c013860c-67a9-4bf0-a02d-1d679608bf57",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/ACB5FBED1AB78555AAF3AB6090B7E12E-video.mp4",
-      "mediaType": "video",
-      "description": "Vídeo (3 quadros): [quadro 1] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-1ZoJlj/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente. Arquivo persistido em /tmp/tetos-vision-1ZoJlj/f_002.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro",
-      "source": "local_vision",
-      "createdAt": "2026-06-18T18:27:39.098Z"
-    },
-    {
       "id": "55abfbd8-c412-40d7-9a5c-665b5abdcc61",
       "userId": "238009924509886",
       "channelId": "120363342938049353@g.us",
@@ -23849,16 +23789,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/AC30E74B7D6D925034B5515DB8473276-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-18T20:36:42.665Z"
-    },
-    {
-      "id": "f6ce0315-4ae7-45ed-b718-208745aa8445",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/ACA53AAC1D54B760BF9067A00C6B5678-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/ACA53AAC1D54B760BF9067A00C6B5678-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-18T20:47:03.435Z"
     },
     {
       "id": "2b2ccaaa-f9ba-4f7a-b2ab-c19379b6710f",
@@ -23911,16 +23841,6 @@
       "createdAt": "2026-06-19T14:21:39.459Z"
     },
     {
-      "id": "4c6e268e-0866-4401-b16b-187c14829d9e",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/ACEF298034CE4CFFA44EE8BB616FA56C-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/ACEF298034CE4CFFA44EE8BB616FA56C-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-19T14:55:36.194Z"
-    },
-    {
       "id": "a5a5bda5-632e-4f8d-9191-d90098a0053c",
       "userId": "dm-5516994435369",
       "channelId": "5516994435369@s.whatsapp.net",
@@ -23961,16 +23881,6 @@
       "createdAt": "2026-06-19T16:30:33.434Z"
     },
     {
-      "id": "d514fb8c-6281-4d0d-b43b-b8549e28d6ca",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/ACC867DCCCD62DD14F054F0C9F3F427E-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/ACC867DCCCD62DD14F054F0C9F3F427E-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-19T17:23:05.095Z"
-    },
-    {
       "id": "bd6aba64-81c9-4258-bdc5-bddeff608212",
       "userId": "dm-81544400130175",
       "channelId": "81544400130175@lid",
@@ -23979,16 +23889,6 @@
       "description": "Sticker analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-1781889979723-frame.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-19T17:26:19.863Z"
-    },
-    {
-      "id": "37c07367-7c7f-42a5-852a-1c7394531181",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/AC7B167CDED852ECB9D126261761728B-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/AC7B167CDED852ECB9D126261761728B-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-19T17:26:55.621Z"
     },
     {
       "id": "81c013e9-6d37-48e5-8e01-d1792ed581da",
@@ -24129,16 +24029,6 @@
       "description": "Sticker analisada localmente. Arquivo persistido em data/media/AC896D19E6E5B0E1F90874A04BC67A78-sticker.webp. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-20T17:04:15.771Z"
-    },
-    {
-      "id": "4668d825-8e20-48b2-a8a3-0edb22a9ef25",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/AC76F274ABBC8AA78D5A73244F0C16FC-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/AC76F274ABBC8AA78D5A73244F0C16FC-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-20T19:17:27.928Z"
     },
     {
       "id": "24419bed-1a0c-4188-9efe-e74a03a14c4f",
@@ -24701,16 +24591,6 @@
       "createdAt": "2026-06-24T14:33:34.861Z"
     },
     {
-      "id": "97508443-0e41-46df-ad68-e9224e1adfda",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/AC81F4E8E4CFE059DF81FBDBB190829A-video.mp4",
-      "mediaType": "gif",
-      "description": "GIF/vídeo animado (2 quadros): [quadro 1] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-0NZieF/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-0NZieF/f_002.png. A análise semântica não ficou disponível, então use apenas pista",
-      "source": "local_vision",
-      "createdAt": "2026-06-24T14:35:16.733Z"
-    },
-    {
       "id": "1fc98080-7a3f-4541-b2bb-3e5ea1e49f3c",
       "userId": "dm-132813357596880",
       "channelId": "132813357596880@lid",
@@ -24969,16 +24849,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/ACAA6458115A7B864A0E9F24AA563195-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-24T21:20:14.382Z"
-    },
-    {
-      "id": "0bb9c94e-569d-42d2-8a9a-7ab0370b21ee",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "./data/media/_archive/knowledge/26672675e2d47f341c08.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/AC3BCF39E9151095AE767C72E6611FE2-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-24T21:36:34.411Z"
     },
     {
       "id": "b67ddc98-d770-47d3-b21f-5b49abb9ea85",
@@ -25321,46 +25191,6 @@
       "createdAt": "2026-06-25T03:21:27.398Z"
     },
     {
-      "id": "5ada46b4-7013-4feb-ac68-91504c42c188",
-      "userId": "157947506229421",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "./data/media/_archive/knowledge/5b58e588bbfd8d98a3a5.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0E1BCEB2353450E4B3A-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-26T04:28:24.748Z"
-    },
-    {
-      "id": "b4440926-c8c8-44e6-9cec-0cd484e42100",
-      "userId": "157947506229421",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "./data/media/_archive/knowledge/b9a12a2e535f0a086158.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB0730A1488AA4C822F16-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-26T04:28:29.663Z"
-    },
-    {
-      "id": "aa6e4607-23e8-496d-ac1c-87da4cb0e8d6",
-      "userId": "157947506229421",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "./data/media/_archive/knowledge/b51175364e5e18309f50.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB07F2BA159016B9858E5-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-26T04:28:34.154Z"
-    },
-    {
-      "id": "43ca805d-6f6b-41a2-9023-869469f7bb31",
-      "userId": "157947506229421",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/3EB03C201AF610CFBFA394-image.jpg",
-      "mediaType": "image",
-      "description": "Imagem analisada localmente. Arquivo persistido em data/media/3EB03C201AF610CFBFA394-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
-      "source": "local_vision",
-      "createdAt": "2026-06-26T04:28:35.800Z"
-    },
-    {
       "id": "8dee39af-fa45-43c2-813a-02a0fed2e641",
       "userId": "157947506229421",
       "channelId": "120363342938049353@g.us",
@@ -25419,16 +25249,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data/media/AC83BFBB6A933F4E01BD72E32C618924-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-06-26T10:19:12.293Z"
-    },
-    {
-      "id": "a2b11cef-77b2-4a48-b39f-1f80158fc961",
-      "userId": "132813357596880",
-      "channelId": "120363342938049353@g.us",
-      "mediaPath": "data/media/3EB083671CF1ECD219A9C5-video.mp4",
-      "mediaType": "gif",
-      "description": "GIF/vídeo animado (3 quadros): [quadro 1] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-3SCYHU/f_001.png. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia. | [quadro 2] Imagem analisada localmente e animada. Arquivo persistido em /tmp/tetos-vision-3SCYHU/f_002.png. A análise semântica não ficou disponível, então use apenas pista",
-      "source": "local_vision",
-      "createdAt": "2026-06-26T11:50:05.050Z"
     },
     {
       "id": "1a4e8762-da10-4c23-81c3-f3391bc29631",
@@ -25509,16 +25329,6 @@
       "description": "Imagem analisada localmente. Arquivo persistido em data\\media\\3EB04CA9107B70BC8D01D5-image.jpg. A análise semântica não ficou disponível, então use apenas pistas básicas desta mídia.",
       "source": "local_vision",
       "createdAt": "2026-07-01T16:21:17.697Z"
-    },
-    {
-      "id": "e081f757-0a67-4710-9fe4-aec4339a9e50",
-      "userId": "dm-190546341540031",
-      "channelId": "190546341540031@lid",
-      "mediaPath": "./data/media/_archive/knowledge/331c2dd540b00824f192.jpg",
-      "mediaType": "sticker",
-      "description": "Sticker animada: Cosplayer ruiva fazendo careta engraçada. Momentos brincalhões ou zoeira online.",
-      "source": "local_vision",
-      "createdAt": "2026-07-01T20:29:18.680Z"
     },
     {
       "id": "677f5088-100c-4701-8a76-86d7fddeefc3",
@@ -25741,16 +25551,6 @@
       "createdAt": "2026-07-08T12:18:31.570Z"
     },
     {
-      "id": "2e86f049-d07a-4efb-a5aa-9709df3ca2e7",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/4cc726f7c8a5b5ade360.jpg",
-      "mediaType": "sticker",
-      "description": "Sticker: Garota de cabelo rosa com as bochechas coradas e as mãos no rosto, com um tom fofo e tímido.",
-      "source": "repertoire",
-      "createdAt": "2026-07-23T00:37:29.632Z"
-    },
-    {
       "id": "59c4d471-1ea1-4420-9860-ddcddb77eb04",
       "userId": "190546341540031",
       "channelId": "120363342938049353@g.us",
@@ -25759,26 +25559,6 @@
       "description": "Sticker: Garota de anime bebendo em uma xícara com olhar julgador e tom irônico.",
       "source": "repertoire",
       "createdAt": "2026-07-23T12:23:11.309Z"
-    },
-    {
-      "id": "052843fc-f121-4aa0-8f8e-9b6a8354d9d8",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/0d18bf7d43b4c19d99a8.jpg",
-      "mediaType": "sticker",
-      "description": "Sticker: Dois gatinhos laranja se beijando dentro de um coração rosa, em um tom extremamente fofo.",
-      "source": "repertoire",
-      "createdAt": "2026-07-23T22:24:54.142Z"
-    },
-    {
-      "id": "874eddbd-8260-46ef-baf3-e03d884cfde9",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/6151d326b015b0d5f456.jpg",
-      "mediaType": "sticker",
-      "description": "Sticker animada: Uma jovem de olhos claros fazendo biquinho e encostando a mão no rosto com um tom fofo.",
-      "source": "repertoire",
-      "createdAt": "2026-07-24T12:53:35.787Z"
     },
     {
       "id": "a4a7f726-7484-4029-8e9a-6aeaf35065a5",
@@ -25791,74 +25571,454 @@
       "createdAt": "2026-07-24T18:51:26.480Z"
     },
     {
-      "id": "4dbf86e1-d31a-46be-968c-003f9c26eff5",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/7a237985006938a5ee4a.jpg",
-      "mediaType": "sticker",
-      "description": "Sticker animada: Personagem de anime chibi com expressão irritada recebendo um tapa na cabeça, em tom engraçado e irônico.",
-      "source": "repertoire",
-      "createdAt": "2026-07-26T15:31:43.264Z"
+      "id": "cf626054-399b-45c5-9177-4f937b539099",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/ACA5B9FF7BE9EE50772EA782D9090B01-image.jpg",
+      "mediaType": "image",
+      "description": "Imagem: Uma pessoa segura uma caixa de papelão com etiquetas de envio do Mercado Livre.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:24:19.582Z"
     },
     {
-      "id": "b0f7f497-d016-4fab-8463-9072d835c502",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/cfd317bc930230dc6564.jpg",
+      "id": "4d467b5d-fa5c-4b1e-8f6a-4c4aae8d0c6c",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/ACD9BC78A8A2BFCCCB774B449D6C0410-sticker.webp",
       "mediaType": "sticker",
-      "description": "Sticker animada: Mulher de cabelos escuros olha para cima com expressão de admiração e encantamento, em tom fofo.",
-      "source": "repertoire",
-      "createdAt": "2026-07-26T15:33:41.923Z"
+      "description": "Sticker: Um dragãozinho azul e redondo com olhos fechados e um sorriso satisfeito, em tom fofo.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:24:36.199Z"
     },
     {
-      "id": "5544e717-52a3-4cc0-b1ae-a68511206327",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/ca151e0b2258324942be.jpg",
+      "id": "d68cdb16-6037-4562-b4d3-03fdabd80b16",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/AC625F10873D3FE5DF4622E086A85327-sticker.webp",
       "mediaType": "sticker",
-      "description": "Sticker animada: Criatura rosa de aparência gelatinosa com expressão melancólica e tom dramático.",
-      "source": "repertoire",
-      "createdAt": "2026-07-26T15:33:55.282Z"
+      "description": "Sticker: Emoji amarelo com olhos arregalados e um sorriso exagerado, transmitindo um tom engraçado e eufórico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:24:37.106Z"
     },
     {
-      "id": "31e6c977-3186-4484-aa73-62dc4f6f06d2",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/b3587fc5b658a6054fed.jpg",
+      "id": "0b35b73b-28cc-4d12-9d49-cdb0a4b77772",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/AC7674591FF2B692B49BF33D1333CC5F-sticker.webp",
       "mediaType": "sticker",
-      "description": "Sticker animada: Uma menina anime de cabelos rosa com um sorriso sutil e olhar sereno, em um tom fofo.",
-      "source": "repertoire",
-      "createdAt": "2026-07-26T15:35:19.582Z"
+      "description": "Sticker animada: Homem de headset com expressão de confusão e desânimo, em tom irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:24:40.106Z"
     },
     {
-      "id": "f113b697-26bb-4507-bc76-67c620938133",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/8a99f80d720d8c5b9558.jpg",
+      "id": "a6d67ef4-8c24-4990-b863-1e13fcb8b2a5",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/ACDC46D5F3597483AE6106036116FA1F-sticker.webp",
       "mediaType": "sticker",
-      "description": "Sticker animada: Um emoji com expressão cética ao lado de uma bandeira LGBTQIA+ sobre uma ilustração abstrata e colorida, com tom irônico.",
-      "source": "repertoire",
-      "createdAt": "2026-07-26T15:35:28.449Z"
+      "description": "Sticker animada: Um buldogue francês branco com a língua para fora, sentado em um balanço com expressão alegre e tom fofo.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:24:40.330Z"
     },
     {
-      "id": "5703eaf3-69ca-4579-9d59-19d5dd7fde56",
-      "userId": "dm-157947506229421",
-      "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/1d12fe862a0a4ce9b488.jpg",
+      "id": "261816a7-f1ed-4741-ab45-f6d485184a1e",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/ACC04A595C799C6BE8C8CA83B6D1FBA8-sticker.webp",
       "mediaType": "sticker",
-      "description": "Sticker animada: Kasane Teto em versão pelúcia fazendo um sinal de positivo com tom fofo e aprovador.",
-      "source": "repertoire",
-      "createdAt": "2026-07-26T15:35:38.365Z"
+      "description": "Sticker animada: Peter Griffin gritando com expressão de birra e impaciência, em um tom engraçado e dramático.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:25:23.265Z"
     },
     {
-      "id": "1ee21246-374c-44dc-85e9-5bcde15988c6",
+      "id": "6774adc7-90d2-4053-9e37-a0ddf767d3c6",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/ACB7D6ED6A92D1DC91B74334F9E5FA69-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Um borrão vermelho e azul com aspecto pixelado e tom abstrato.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:26:10.394Z"
+    },
+    {
+      "id": "7ea4f44e-db1a-4bff-a20d-604a320f38bb",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/AC976397A1A786EA07551E088A1636BD-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Pássaro vermelho com expressão de desaprovação e olhar julgador, em tom irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:27:35.860Z"
+    },
+    {
+      "id": "b198c726-6abf-4e2a-addc-d43f33a2e9d0",
+      "userId": "132813357596880",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/AC17D377D0D6BDA7C442316DE259F9E7-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Filhote de cachorro chorando com a legenda \"so queria fala\", em tom dramático e engraçado.",
+      "source": "local_vision",
+      "createdAt": "2026-08-19T16:27:46.801Z"
+    },
+    {
+      "id": "579d5238-7b1d-4332-b69a-9d8b54205f93",
+      "userId": "157947506229421",
+      "channelId": "120363258200906509@g.us",
+      "mediaPath": "data/media/AC482CC71EBF2050269CA6BDE6A0EADF-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Um dachshund de pelo longo com olhar julgador e expressão desconfiada, em um tom engraçado e irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-23T22:33:57.307Z"
+    },
+    {
+      "id": "9beb2e0d-54f5-4d02-988a-f7290723cc17",
+      "userId": "190546341540031",
+      "channelId": "120363258200906509@g.us",
+      "mediaPath": "data/media/AC20CD79DAAE1269EDC6E7A4D2E28732-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Uma personagem de anime com cabelos rosa vibrantes, fazendo um gesto de prece com as mãos e expressão travessa, em um tom fofo e irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-23T22:35:25.046Z"
+    },
+    {
+      "id": "9cf9f054-d9f5-4d0d-9826-03ce31f679aa",
+      "userId": "190546341540031",
+      "channelId": "120363258200906509@g.us",
+      "mediaPath": "data/media/AC20CD79DAAE1269EDC6E7A4D2E28732-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Uma personagem de anime de cabelos rosa vibrante fazendo um gesto de súplica com as mãos juntas e olhar pidão, em um tom fofo e manipulador.",
+      "source": "repertoire",
+      "createdAt": "2026-08-23T22:35:25.436Z"
+    },
+    {
+      "id": "2827ad5d-4b99-47e0-a8ae-cef9178612e9",
+      "userId": "157947506229421",
+      "channelId": "120363258200906509@g.us",
+      "mediaPath": "data/media/ACC0D5C5C49A95F8C2FBE1EA0C7ACA52-image.jpg",
+      "mediaType": "image",
+      "description": "Imagem: Uma ilustração em estilo anime de uma personagem com cabelos rosa vibrantes, vestindo uma roupa verde e rosa, apoiada em seus cotovelos com uma expressão sonolenta.",
+      "source": "local_vision",
+      "createdAt": "2026-08-23T22:35:25.691Z"
+    },
+    {
+      "id": "a89d70a2-743e-4bf7-bf7f-40171733dcfe",
+      "userId": "190546341540031",
+      "channelId": "120363258200906509@g.us",
+      "mediaPath": "data/media/AC67CF9B87D1EE6C3748A70AAF9BD71E-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Uma garota de anime com cabelos castanhos bebendo chá com um olhar atento e irônico.",
+      "source": "repertoire",
+      "createdAt": "2026-08-23T22:35:55.455Z"
+    },
+    {
+      "id": "d9c60726-233b-4f6f-aef8-b3dc11e13f71",
+      "userId": "190546341540031",
+      "channelId": "120363258200906509@g.us",
+      "mediaPath": "data/media/AC67CF9B87D1EE6C3748A70AAF9BD71E-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Uma garota de anime bebendo café com um olhar cético e julgador, em um tom irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-23T22:35:55.469Z"
+    },
+    {
+      "id": "95282d51-7052-4cb7-94ca-74419534f032",
+      "userId": "157947506229421",
+      "channelId": "120363258200906509@g.us",
+      "mediaPath": "data/media/AC6D33B2DD7D915599E54F192DBB7FC6-image.jpg",
+      "mediaType": "image",
+      "description": "Imagem: A imagem mostra uma personagem de estilo anime com aparência de diabinha, vestindo um traje gótico lolita preto e vermelho, com asas de morcego e pequenos morcegos ao redor.",
+      "source": "local_vision",
+      "createdAt": "2026-08-23T22:36:13.531Z"
+    },
+    {
+      "id": "3eb6b4c4-bab6-4950-b1ea-c1779d0884ac",
+      "userId": "157947506229421",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/ACEDB6677B2DD9F8F33DEF30B5867336-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Uma jovem de cabelos ruivos com expressão tímida e fofa, cobrindo a boca com a mão.",
+      "source": "local_vision",
+      "createdAt": "2026-08-25T17:29:59.504Z"
+    },
+    {
+      "id": "2f5d8d0c-58ab-48cb-b074-fedeb879469f",
+      "userId": "157947506229421",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/AC6E5DA59949BBE9DF594C75711839A4-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Um coelho com expressão blasé segurando cenouras ao lado de um sapo estático, em um tom irônico e engraçado.",
+      "source": "local_vision",
+      "createdAt": "2026-08-25T17:31:10.804Z"
+    },
+    {
+      "id": "48ca7eb7-8c34-43cb-a3ef-4e4037a80bbe",
+      "userId": "157947506229421",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/ACF24CB4A8D9316088025438654B3648-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Uma garota anime de cabelos rosa com um sorriso malicioso e olhar penetrante, transmitindo um tom irônico e sarcástico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-25T17:33:16.666Z"
+    },
+    {
+      "id": "5a973100-d93e-431e-91d0-9e0e81b69934",
+      "userId": "157947506229421",
+      "channelId": "120363342938049353@g.us",
+      "mediaPath": "data/media/AC63F70AFF3717B5194D0369798B1702-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: A personagem de anime, com longos cabelos loiros, parece estar irritada ou impaciente enquanto olha para alguém fora de quadro.",
+      "source": "local_vision",
+      "createdAt": "2026-08-25T17:36:50.310Z"
+    },
+    {
+      "id": "3a0c6b49-03c8-4181-bcec-1cfa4d4909e4",
+      "userId": "157947506229421",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB05DF53E307F24FC515C-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: Um gato com uma expressão brava ou julgadora olha fixamente para a câmera.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:11:56.734Z"
+    },
+    {
+      "id": "ec03c65b-ef11-4464-9832-fb711bbd5760",
+      "userId": "157947506229421",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB050248692F43799D2F6-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Um gato malhado com olhos enormes e expressivos olhando fixamente, transmitindo um tom fofo e engraçado.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:21:55.190Z"
+    },
+    {
+      "id": "fcac26cc-9326-4873-861b-35b348619880",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB0951E81958E3BAA1498-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Uma menina anime de cabelos rosa com um sorriso malicioso e olhar penetrante, em um tom irônico e travesso.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:21:59.206Z"
+    },
+    {
+      "id": "07da2e7f-87c0-4a1b-97cc-5d0af10e1e92",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB09291F0CEB76280CCE5-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Uma menina anime de cabelos rosa com um sorriso malicioso e olhar sugestivo, transmitindo um tom irônico e travesso.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:22:00.124Z"
+    },
+    {
+      "id": "ba589d92-4c12-4849-bac6-94a61056e744",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB0079DA17DCFAB758692-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Um homem com camisa do Atlético Mineiro mantém uma expressão neutra e séria sob a sigla \"LMAO\", criando um tom irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:22:41.537Z"
+    },
+    {
+      "id": "3a944ad2-4f15-4c2e-a069-6e2f17a6a153",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB051E40022E3D4184163-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Homem com expressão séria e neutra vestindo a camisa do Atlético Mineiro sob a legenda \"LMAO\", em tom irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:22:41.550Z"
+    },
+    {
+      "id": "a2e6e12f-0c2f-495b-b60b-cb431b28bfc7",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB0FA94C40A9ED4B02696-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Um homem com expressão neutra e cansada, vestindo a camisa do Atlético Mineiro, com a legenda \"LMAO\" em tom irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:23:34.222Z"
+    },
+    {
+      "id": "a0f16813-ba44-49ab-901e-bd0739088fcf",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB0062094B79C05E54BD4-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Uma garota de anime com cabelos castanhos bebendo chá com um olhar cético e irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:23:34.233Z"
+    },
+    {
+      "id": "eb8d053d-f962-4000-baac-07a51d0f3ec2",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB0D42F037E087EE20101-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Um homem sorridente de óculos e chapéu preto com expressão alegre e tom engraçado.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:24:00.191Z"
+    },
+    {
+      "id": "aa5660f0-8a34-4b08-8816-a6f8cb40b707",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB0063EF20EC10C60949E-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Um homem jovem de óculos, chapéu e cabelos cacheados loiros sorri com um tom engraçado e irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:24:25.388Z"
+    },
+    {
+      "id": "59ee4438-e4a4-4ea5-b9cf-f7751dad2a05",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB062B6C14F11D68DE522-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Um homem jovem de óculos, chapéu e cabelos cacheados sorrindo de forma irônica.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:24:54.293Z"
+    },
+    {
+      "id": "4a48ca0e-3c5b-4c13-b661-661888440686",
+      "userId": "58141777641473",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/3EB03A422188381EDEBB5E-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Homem sorridente de óculos e chapéu preto com expressão irônica e engraçada.",
+      "source": "local_vision",
+      "createdAt": "2026-08-27T01:25:21.730Z"
+    },
+    {
+      "id": "5fb8e8c1-316a-4358-8069-8d96eab08f7a",
+      "userId": "157947506229421",
+      "channelId": "120363425913528764@g.us",
+      "mediaPath": "data/media/AC83FD127F4B9C173251369D0CD7460F-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Uma personagem de anime com cabelos vermelhos e olhos rubros, fazendo uma pose pensativa com a mão no queixo e expressão neutra, em um tom fofo e curioso.",
+      "source": "local_vision",
+      "createdAt": "2026-09-01T17:39:16.356Z"
+    },
+    {
+      "id": "7112a9dc-f5e0-43f0-842a-4beaf647f203",
+      "userId": "74053859672191",
+      "channelId": "120363402362643675@g.us",
+      "mediaPath": "data/media/ACF6EE30C8235165AA47D493F652E6EC-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker: Um bichinho redondo e branco com olhos em espiral e expressão de confusão, em um tom fofo e engraçado.",
+      "source": "local_vision",
+      "createdAt": "2026-09-04T13:39:16.002Z"
+    },
+    {
+      "id": "e719a6e9-6577-4149-8f59-3536d36b141d",
+      "userId": "dm-190546341540031",
+      "channelId": "190546341540031@lid",
+      "mediaPath": "data/media/AC90A9F3D528D719A19F4C74F085DAAB-image.jpg",
+      "mediaType": "image",
+      "description": "Imagem: Uma personagem de anime com longos cabelos brancos e olhos azuis cobre a boca com as mãos em um gesto de surpresa ou timidez.",
+      "source": "local_vision",
+      "createdAt": "2026-09-08T01:24:30.955Z"
+    },
+    {
+      "id": "46d124bc-4b3c-48fd-9a73-058c9aec4ae7",
       "userId": "dm-157947506229421",
       "channelId": "157947506229421@lid",
-      "mediaPath": "./data/media/_archive/knowledge/23e305293068b253738e.jpg",
+      "mediaPath": "data/media/AC59C71BCA3DC003CF81A85B085A12A4-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: Um homem vestido com uma camiseta amarela está relaxado em uma poltrona, segurando uma lata enquanto descansa os pés.",
+      "source": "local_vision",
+      "createdAt": "2026-09-10T17:32:33.608Z"
+    },
+    {
+      "id": "6d89f50a-6da9-4707-a1e6-7bb96d752524",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/3EB0CECC56E87988B49C68-video.mp4",
+      "mediaType": "video",
+      "description": "Vídeo: Um personagem pequeno de cabelo vermelho e roupas escuras flutua contra um fundo verde.",
+      "source": "local_vision",
+      "createdAt": "2026-09-10T18:09:20.730Z"
+    },
+    {
+      "id": "8dec1ccc-0625-46aa-9237-51857421abd5",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/AC7F7E721370DBBD3517AB10EC915039-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: Dois homens usando camisetas azuis estão olhando atentamente para a tela de um notebook.",
+      "source": "local_vision",
+      "createdAt": "2026-09-11T12:30:40.783Z"
+    },
+    {
+      "id": "9b1fdd62-6f8c-41ba-9bb0-60be5a6f3e11",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/AC55E023F77D56ABDFE0FC3AE030391F-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: Um jovem vestindo um moletom preto está concentrado escrevendo em um caderno com uma caneta.",
+      "source": "local_vision",
+      "createdAt": "2026-09-11T12:31:30.127Z"
+    },
+    {
+      "id": "393e84cc-a054-47e8-8927-82274c3f4e61",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/AC134368959EC061C85FC844F2A312EF-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: Esta imagem é um único frame estático de um personagem estilo chibi com um chapéu colorido e um pirulito, não sendo possível descrever a ação de um vídeo.",
+      "source": "local_vision",
+      "createdAt": "2026-09-12T01:49:03.872Z"
+    },
+    {
+      "id": "3d6b2926-7cf0-4e93-b127-d1c04230ae4b",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/AC28FC6059EEAA9D6FD117FE4671EE27-sticker.webp",
       "mediaType": "sticker",
-      "description": "Sticker animada: Garota anime de cabelos vermelhos em maria-chiquinha, com expressão alegre e pose fofa.",
-      "source": "repertoire",
-      "createdAt": "2026-07-26T15:37:04.170Z"
+      "description": "Sticker animada: Uma personagem de anime com cabelos rosa e expressão emburrada, transmitindo um tom fofo e levemente irritado.",
+      "source": "local_vision",
+      "createdAt": "2026-09-13T00:54:16.543Z"
+    },
+    {
+      "id": "031ef44b-5dd6-496d-80d6-5259c4191ffc",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/ACDB1544B6E0C0C8A4A86E8A164849A2-sticker.webp",
+      "mediaType": "sticker",
+      "description": "Sticker animada: Uma personagem de anime rosa com chifres e expressão de desdém irônico.",
+      "source": "local_vision",
+      "createdAt": "2026-09-13T00:59:04.393Z"
+    },
+    {
+      "id": "97da8df7-a981-4d01-a829-4c21702398e9",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/AC5950B23557AD93E37179B376EAFCCD-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: Um homem com aparência forte e sorriso confiante olha para cima contra um fundo de céu azul com nuvens.",
+      "source": "local_vision",
+      "createdAt": "2026-09-14T13:42:47.557Z"
+    },
+    {
+      "id": "ae28242b-33e5-4294-8703-abc9d4506cfb",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/AC5D656C0AD81C89CAB4A347EB07BA77-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: O homem na imagem esboça um sorriso presunçoso e confiante enquanto inclina levemente a cabeça para trás.",
+      "source": "local_vision",
+      "createdAt": "2026-09-14T13:43:31.443Z"
+    },
+    {
+      "id": "0865848a-7251-445e-beab-7f9463d47389",
+      "userId": "dm-157947506229421",
+      "channelId": "157947506229421@lid",
+      "mediaPath": "data/media/AC9D5F9F147756E6C228C631DA531369-video.mp4",
+      "mediaType": "gif",
+      "description": "GIF/vídeo animado: A imagem mostra uma personagem de anime com cabelos loiros e pontas rosadas, sorrindo com os olhos fechados enquanto coloca a mão na cabeça.",
+      "source": "local_vision",
+      "createdAt": "2026-09-14T14:18:36.712Z"
     }
   ]
 }

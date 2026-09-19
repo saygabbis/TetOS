@@ -18,411 +18,411 @@
   },
   "topics": [],
   "mediaHabits": {
-    "stickerRate": 0.9996843511573411,
-    "imageRate": 0.5167868717942833,
+    "stickerRate": 0.9998728320684096,
+    "imageRate": 0.5452036694378051,
     "reactionEmoji": {}
   },
   "creativeInsights": [
     {
-      "id": "insight_1786834936625",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:02:16.625Z"
+      "id": "insight_1789604321655",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.44,
+      "trigger": "message.reaction",
+      "ts": "2026-09-17T00:18:41.655Z"
     },
     {
-      "id": "insight_1786834938798",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:02:18.798Z"
-    },
-    {
-      "id": "insight_1786834942334",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:02:22.334Z"
-    },
-    {
-      "id": "insight_1786834952108",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:02:32.108Z"
-    },
-    {
-      "id": "insight_1786834958441",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:02:38.441Z"
-    },
-    {
-      "id": "insight_1786834981086",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:03:01.086Z"
-    },
-    {
-      "id": "insight_1786834983695",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:03:03.695Z"
-    },
-    {
-      "id": "insight_1786834993895",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:03:13.895Z"
-    },
-    {
-      "id": "insight_1786835007373",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:03:27.373Z"
-    },
-    {
-      "id": "insight_1786835021641",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:03:41.641Z"
-    },
-    {
-      "id": "insight_1786835023250",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:03:43.250Z"
-    },
-    {
-      "id": "insight_1786835036897",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:03:56.897Z"
-    },
-    {
-      "id": "insight_1786835049893",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:04:09.893Z"
-    },
-    {
-      "id": "insight_1786835159647",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:05:59.647Z"
-    },
-    {
-      "id": "insight_1786835201850",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:06:41.850Z"
-    },
-    {
-      "id": "insight_1786835316018",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:08:36.018Z"
-    },
-    {
-      "id": "insight_1786835406045",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:10:06.045Z"
-    },
-    {
-      "id": "insight_1786835411638",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:10:11.638Z"
-    },
-    {
-      "id": "insight_1786835431912",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:10:31.912Z"
-    },
-    {
-      "id": "insight_1786836104247",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:21:44.247Z"
-    },
-    {
-      "id": "insight_1786836273802",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:24:33.802Z"
-    },
-    {
-      "id": "insight_1786836287737",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:24:47.737Z"
-    },
-    {
-      "id": "insight_1786836290230",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:24:50.231Z"
-    },
-    {
-      "id": "insight_1786836310066",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:25:10.066Z"
-    },
-    {
-      "id": "insight_1786836317703",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:25:17.703Z"
-    },
-    {
-      "id": "insight_1786836332439",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:25:32.439Z"
-    },
-    {
-      "id": "insight_1786837134484",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:38:54.484Z"
-    },
-    {
-      "id": "insight_1786837154451",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:39:14.451Z"
-    },
-    {
-      "id": "insight_1786837166395",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:39:26.395Z"
-    },
-    {
-      "id": "insight_1786837252234",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:40:52.234Z"
-    },
-    {
-      "id": "insight_1786838083717",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:54:43.717Z"
-    },
-    {
-      "id": "insight_1786838115425",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:55:15.425Z"
-    },
-    {
-      "id": "insight_1786838131261",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:55:31.261Z"
-    },
-    {
-      "id": "insight_1786838293621",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:58:13.621Z"
-    },
-    {
-      "id": "insight_1786838295357",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:58:15.357Z"
-    },
-    {
-      "id": "insight_1786838358837",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:59:18.837Z"
-    },
-    {
-      "id": "insight_1786838387896",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:59:47.896Z"
-    },
-    {
-      "id": "insight_1786838397640",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.43000000000000005,
-      "trigger": "chat.update",
-      "ts": "2026-08-15T23:59:57.640Z"
-    },
-    {
-      "id": "insight_1786852838731",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:00:38.731Z"
-    },
-    {
-      "id": "insight_1786852938763",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:02:18.763Z"
-    },
-    {
-      "id": "insight_1786852941884",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:02:21.884Z"
-    },
-    {
-      "id": "insight_1786852944732",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:02:24.732Z"
-    },
-    {
-      "id": "insight_1786853051335",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:04:11.335Z"
-    },
-    {
-      "id": "insight_1786854238270",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:23:58.270Z"
-    },
-    {
-      "id": "insight_1786854245114",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:24:05.114Z"
-    },
-    {
-      "id": "insight_1786854248167",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:24:08.167Z"
-    },
-    {
-      "id": "insight_1786854252382",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:24:12.382Z"
-    },
-    {
-      "id": "insight_1786854365213",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:26:05.213Z"
-    },
-    {
-      "id": "insight_1786855812934",
-      "type": "topic",
-      "text": "assunto \"conversa geral\" voltou várias vezes",
-      "confidence": 0.63,
-      "trigger": "chat.update",
-      "ts": "2026-08-16T04:50:12.934Z"
-    },
-    {
-      "id": "insight_1786872830562",
+      "id": "insight_1789693753833",
       "type": "style",
       "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.66,
-      "trigger": "message.update",
-      "ts": "2026-08-16T09:33:50.562Z"
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:09:13.833Z"
+    },
+    {
+      "id": "insight_1789693879198",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:11:19.198Z"
+    },
+    {
+      "id": "insight_1789694138282",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:15:38.282Z"
+    },
+    {
+      "id": "insight_1789694145538",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:15:45.538Z"
+    },
+    {
+      "id": "insight_1789694160793",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:16:00.793Z"
+    },
+    {
+      "id": "insight_1789694279222",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:17:59.222Z"
+    },
+    {
+      "id": "insight_1789694283134",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:18:03.134Z"
+    },
+    {
+      "id": "insight_1789694286547",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:18:06.547Z"
+    },
+    {
+      "id": "insight_1789694289934",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:18:09.934Z"
+    },
+    {
+      "id": "insight_1789694318611",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:18:38.611Z"
+    },
+    {
+      "id": "insight_1789694321668",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:18:41.668Z"
+    },
+    {
+      "id": "insight_1789694331238",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:18:51.238Z"
+    },
+    {
+      "id": "insight_1789694361683",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:19:21.683Z"
+    },
+    {
+      "id": "insight_1789694428755",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:20:28.755Z"
+    },
+    {
+      "id": "insight_1789694431879",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:20:31.879Z"
+    },
+    {
+      "id": "insight_1789694564220",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:22:44.220Z"
+    },
+    {
+      "id": "insight_1789694587123",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:07.123Z"
+    },
+    {
+      "id": "insight_1789694589984",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:09.984Z"
+    },
+    {
+      "id": "insight_1789694597508",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:17.508Z"
+    },
+    {
+      "id": "insight_1789694600427",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:20.427Z"
+    },
+    {
+      "id": "insight_1789694600477",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:20.477Z"
+    },
+    {
+      "id": "insight_1789694603415",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:23.415Z"
+    },
+    {
+      "id": "insight_1789694606325",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:26.325Z"
+    },
+    {
+      "id": "insight_1789694612825",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:32.825Z"
+    },
+    {
+      "id": "insight_1789694617939",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:23:37.939Z"
+    },
+    {
+      "id": "insight_1789694734889",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:25:34.889Z"
+    },
+    {
+      "id": "insight_1789694738063",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:25:38.063Z"
+    },
+    {
+      "id": "insight_1789694792283",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:26:32.283Z"
+    },
+    {
+      "id": "insight_1789694867503",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:27:47.503Z"
+    },
+    {
+      "id": "insight_1789694877073",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:27:57.073Z"
+    },
+    {
+      "id": "insight_1789694882090",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:28:02.090Z"
+    },
+    {
+      "id": "insight_1789694901827",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:28:21.827Z"
+    },
+    {
+      "id": "insight_1789694907665",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:28:27.665Z"
+    },
+    {
+      "id": "insight_1789695019908",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:30:19.908Z"
+    },
+    {
+      "id": "insight_1789695164240",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:32:44.240Z"
+    },
+    {
+      "id": "insight_1789695167412",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:32:47.412Z"
+    },
+    {
+      "id": "insight_1789695186452",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:33:06.452Z"
+    },
+    {
+      "id": "insight_1789695195887",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:33:15.887Z"
+    },
+    {
+      "id": "insight_1789695206383",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:33:26.383Z"
+    },
+    {
+      "id": "insight_1789695226278",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:33:46.278Z"
+    },
+    {
+      "id": "insight_1789695230266",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:33:50.266Z"
+    },
+    {
+      "id": "insight_1789695244672",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:34:04.672Z"
+    },
+    {
+      "id": "insight_1789695267820",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:34:27.820Z"
+    },
+    {
+      "id": "insight_1789695336554",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:35:36.554Z"
+    },
+    {
+      "id": "insight_1789695504443",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:38:24.443Z"
+    },
+    {
+      "id": "insight_1789695559266",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:39:19.266Z"
+    },
+    {
+      "id": "insight_1789695591510",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:39:51.510Z"
+    },
+    {
+      "id": "insight_1789695595452",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:39:55.452Z"
+    },
+    {
+      "id": "insight_1789696519441",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-09-18T01:55:19.441Z"
     }
   ],
-  "lastUpdated": "2026-08-16T09:55:49.506Z"
+  "lastUpdated": "2026-09-19T20:37:43.032Z"
 }

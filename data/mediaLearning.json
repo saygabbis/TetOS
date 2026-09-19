@@ -35,10 +35,11 @@
       "stickers": {},
       "reactions": {},
       "mediaTypes": {
-        "image": 1,
-        "video": 1,
+        "image": 2,
+        "video": 2,
         "audio": 1,
-        "sticker": 38
+        "sticker": 44,
+        "gif": 18
       },
       "clusters": []
     },
@@ -61,7 +62,7 @@
         "image": 0,
         "video": 0,
         "audio": 0,
-        "sticker": 14
+        "sticker": 23
       },
       "clusters": []
     },
@@ -83,7 +84,8 @@
         "image": 2,
         "video": 0,
         "audio": 0,
-        "sticker": 11
+        "sticker": 12,
+        "gif": 1
       },
       "clusters": []
     },
@@ -158,6 +160,28 @@
       "reactions": {},
       "mediaTypes": {
         "image": 0,
+        "video": 0,
+        "audio": 0,
+        "sticker": 0
+      },
+      "clusters": []
+    },
+    "group:120363258200906509@g.us:user:157947506229421": {
+      "stickers": {},
+      "reactions": {},
+      "mediaTypes": {
+        "image": 0,
+        "video": 0,
+        "audio": 0,
+        "sticker": 0
+      },
+      "clusters": []
+    },
+    "user:dm-190546341540031": {
+      "stickers": {},
+      "reactions": {},
+      "mediaTypes": {
+        "image": 1,
         "video": 0,
         "audio": 0,
         "sticker": 0

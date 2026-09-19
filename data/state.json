@@ -1,129 +1,129 @@
 {
   "mood": "tired",
   "energy": 0,
-  "social": 0.76,
-  "focus": 0.019999999999999837,
-  "lastInteraction": "2026-08-11T23:11:22.536Z",
+  "social": 0,
+  "focus": 0,
+  "lastInteraction": "2026-09-15T01:57:48.475Z",
   "recentInteractions": [
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-07T23:17:29.720Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 15,
-      "timestamp": "2026-08-07T23:41:29.771Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 15,
-      "timestamp": "2026-08-07T23:56:29.812Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 58,
-      "timestamp": "2026-08-11T19:05:21.694Z"
+      "timestamp": "2026-09-13T18:50:22.488Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 79,
-      "timestamp": "2026-08-11T19:05:23.716Z"
+      "length": 45,
+      "timestamp": "2026-09-13T18:50:23.378Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 42,
-      "timestamp": "2026-08-11T19:08:19.115Z"
+      "length": 23,
+      "timestamp": "2026-09-13T18:59:27.558Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 20,
-      "timestamp": "2026-08-11T19:08:20.195Z"
+      "length": 89,
+      "timestamp": "2026-09-13T18:59:28.682Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 75,
-      "timestamp": "2026-08-11T19:09:34.974Z"
+      "length": 15,
+      "timestamp": "2026-09-14T00:04:42.732Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 98,
-      "timestamp": "2026-08-11T19:09:43.323Z"
+      "length": 32,
+      "timestamp": "2026-09-14T00:04:43.568Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 121,
-      "timestamp": "2026-08-11T19:11:12.017Z"
+      "length": 124,
+      "timestamp": "2026-09-14T13:43:52.206Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 87,
-      "timestamp": "2026-08-11T19:11:13.517Z"
+      "length": 34,
+      "timestamp": "2026-09-14T13:43:53.301Z"
     },
     {
       "type": "user",
-      "sentiment": "positive",
-      "length": 28,
-      "timestamp": "2026-08-11T19:14:23.253Z"
+      "sentiment": "neutral",
+      "length": 15,
+      "timestamp": "2026-09-14T16:48:16.396Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 86,
-      "timestamp": "2026-08-11T19:14:25.827Z"
+      "length": 17,
+      "timestamp": "2026-09-14T16:48:17.255Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-11T20:27:21.974Z"
+      "timestamp": "2026-09-14T18:58:20.836Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 45,
+      "timestamp": "2026-09-14T18:58:22.684Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 27,
+      "timestamp": "2026-09-14T19:51:18.786Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 82,
+      "timestamp": "2026-09-14T19:51:20.169Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-11T20:43:22.011Z"
+      "timestamp": "2026-09-15T00:00:45.701Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-11T22:19:22.071Z"
+      "timestamp": "2026-09-15T00:47:45.801Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-11T22:44:22.151Z"
+      "timestamp": "2026-09-15T00:58:45.808Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-11T22:52:22.170Z"
+      "timestamp": "2026-09-15T01:32:48.426Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-11T23:05:22.485Z"
+      "timestamp": "2026-09-15T01:44:48.527Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 15,
-      "timestamp": "2026-08-11T23:11:22.536Z"
+      "timestamp": "2026-09-15T01:57:48.475Z"
     }
   ]
 }
