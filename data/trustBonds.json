@@ -1213,17 +1213,12 @@
     "dm-190546341540031::direct": {
       "userId": "dm-190546341540031",
       "channelScope": "direct",
-      "trust": 0.9680000000000004,
-      "intimacy": 0.7400000000000003,
+      "trust": 0.9760000000000004,
+      "intimacy": 0.7460000000000003,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-09-19T22:38:53.592Z",
+      "lastInteractionAt": "2026-09-19T22:40:08.585Z",
       "notes": [
-        {
-          "type": "reinforce",
-          "reason": "interaction",
-          "ts": "2026-09-19T21:27:23.256Z"
-        },
         {
           "type": "reinforce",
           "reason": "interaction",
@@ -1318,6 +1313,11 @@
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-09-19T22:38:53.592Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-09-19T22:40:08.585Z"
         }
       ]
     },
