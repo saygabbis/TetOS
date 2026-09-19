@@ -4,6 +4,7 @@ import {
   sanitizeIdentityAliases
 } from "./botIdentity.js";
 import { isOwnerContact, dmUserId, normalizeJidKey } from "./userActivity.js";
+import { OWNER_GIVEN_NAME_TOKENS, sanitizeProfileNicknames } from "./profileFacts.js";
 
 /** "Gabbis( ˘ ³˘ )♥" → "Gabbis" */
 export function cleanDisplayName(raw = "") {
@@ -142,10 +143,13 @@ export function mergeProfileNicknames(existingFacts = {}, { userNick = null, tet
   }
   if (tetoNick) addTeto(tetoNick);
 
+  const display =
+    existingFacts.preferredName || existingFacts.displayName || existingFacts.name || pushName;
+
   return {
     ...existingFacts,
-    nicknames: [...nicknames],
-    tetoNicknames: [...tetoNicknames]
+    nicknames: sanitizeProfileNicknames([...nicknames], { displayName: display }),
+    tetoNicknames: sanitizeProfileNicknames([...tetoNicknames], { displayName: display })
   };
 }
 
@@ -193,7 +197,12 @@ export function captureTetoNicknamesFromReplies(replies = [], { displayName = nu
     const vocative = text.match(/^([\p{L}][\p{L}'-]{1,24})[,!?.\s—-]/u);
     if (vocative?.[1]) {
       const nick = cleanDisplayName(vocative[1]);
-      if (nick && nick.length >= 2 && nick.toLowerCase() !== base) {
+      if (
+        nick &&
+        nick.length >= 2 &&
+        nick.toLowerCase() !== base &&
+        !OWNER_GIVEN_NAME_TOKENS.has(nick.toLowerCase())
+      ) {
         found.add(nick);
       }
     }
@@ -203,7 +212,12 @@ export function captureTetoNicknamesFromReplies(replies = [], { displayName = nu
     );
     if (affectionCompound?.[1]) {
       const nick = cleanDisplayName(affectionCompound[1]);
-      if (nick && nick.length >= 2 && nick.toLowerCase() !== base) {
+      if (
+        nick &&
+        nick.length >= 2 &&
+        nick.toLowerCase() !== base &&
+        !OWNER_GIVEN_NAME_TOKENS.has(nick.toLowerCase())
+      ) {
         found.add(nick);
       }
     }
@@ -212,7 +226,13 @@ export function captureTetoNicknamesFromReplies(replies = [], { displayName = nu
     if (affectionSimple?.[1]) {
       const skip = new Set(["princesa", "príncipe", "principe", "amor", "bebê", "bebe", "bb"]);
       const nick = cleanDisplayName(affectionSimple[1]);
-      if (nick && nick.length >= 2 && !skip.has(nick.toLowerCase()) && nick.toLowerCase() !== base) {
+      if (
+        nick &&
+        nick.length >= 2 &&
+        !skip.has(nick.toLowerCase()) &&
+        nick.toLowerCase() !== base &&
+        !OWNER_GIVEN_NAME_TOKENS.has(nick.toLowerCase())
+      ) {
         found.add(nick);
       }
     }

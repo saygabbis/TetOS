@@ -291,7 +291,8 @@ export class BrainOrchestrator {
       userId: turnContext.userId,
       channelId: turnContext.channelId,
       sessionId: turnContext.sessionId,
-      isGroup: turnContext.isGroup
+      isGroup: turnContext.isGroup,
+      isOwner: Boolean(turnContext.isOwner)
     });
 
     if (turnContext.media) {

@@ -23,6 +23,7 @@ import {
 } from "../media/visualKnowledgeIntent.js";
 import { mergeBrainCloseDecision } from "../brain/ConversationPhaseEngine.js";
 import { isOwnerContact, touchUserActivity } from "../channels/userActivity.js";
+import { fixMisaddressedOwnerNameInReplies } from "../channels/profileFacts.js";
 import {
   buildChannelTimelineForPrompt,
   DEFAULT_CHANNEL_HISTORY_LIMIT,
@@ -374,6 +375,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       channelId: safeChannelId,
       channelScope: isGroup ? `group:${safeChannelId}` : "direct",
       isGroup,
+      isOwner,
       isDirectMention: effectiveMention,
       isReply,
       isDirectQuestion,
@@ -868,7 +870,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     await payload.onGenerationStart();
   }
 
-  const replies = await runtime.chatService.handleMessage(
+  let replies = await runtime.chatService.handleMessage(
     input,
     {
       userId: safeUserId,
@@ -938,6 +940,19 @@ export async function runMessagePipeline(runtime, payload = {}) {
     normalizedHistory,
     tone
   );
+
+  if (!isGroup && Array.isArray(replies) && replies.length) {
+    const interlocutorName =
+      partnerDisplayName ||
+      pushName ||
+      existingProfile?.facts?.displayName ||
+      existingProfile?.facts?.name ||
+      null;
+    replies = fixMisaddressedOwnerNameInReplies(replies, {
+      isOwner,
+      interlocutorName
+    });
+  }
 
   if (runtime.brainOrchestrator?.logTurn) {
     const shouldLogMind =

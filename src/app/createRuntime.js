@@ -55,7 +55,7 @@ import { BehaviorProfiler } from "../core/learning/behaviorProfiler.js";
 import { FocusConfigStore } from "../core/learning/focusConfigStore.js";
 import { DailyReportGenerator } from "../core/learning/dailyReportGenerator.js";
 import { RelationshipCommitmentStore } from "../core/social/RelationshipCommitmentStore.js";
-import { repairBotProfileContamination } from "../core/channels/botIdentity.js";
+import { repairProfileContamination } from "../core/channels/botIdentity.js";
 
 function createLlmClient({ model, temperature, numPredict, worker = false } = {}) {
   if (DEFAULTS.llmProvider === "minimax") {
@@ -96,7 +96,7 @@ export function createRuntime() {
     persistPath: DEFAULTS.shortTermPath
   });
   const longTerm = new LongTermMemory(DEFAULTS.memoryPath);
-  repairBotProfileContamination({ longTerm, defaults: DEFAULTS });
+  repairProfileContamination({ longTerm, defaults: DEFAULTS });
   const groupMemory = new GroupMemoryStore(DEFAULTS.groupMemoryPath, {
     maxEntries: DEFAULTS.groupMemoryMaxEntries
   });

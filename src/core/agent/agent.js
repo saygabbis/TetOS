@@ -6,6 +6,7 @@ import {
 } from "../../modules/chat/coherenceGuards.js";
 import { slimMetaForStorage } from "../memory/slimMeta.js";
 import { formatGroupRosterBlock } from "../channels/groupRoster.js";
+import { formatDmProfilePromptLines } from "../channels/profileFacts.js";
 import { buildMultiBubbleRhythmBlock } from "../../modules/chat/bubbleComposer.js";
 import { formatConversationPhaseBlock } from "../brain/ConversationPhaseEngine.js";
 import { formatRepertoireForPrompt } from "../../integrations/whatsapp/stickerRepertoire.js";
@@ -405,10 +406,13 @@ export class Agent {
       "[PRIVACIDADE — ISOLAMENTO DE CONTATO]",
       "Este chat é SÓ com esta pessoa. Memória, nome, apelido e assuntos de OUTROS PVs/grupos NÃO existem aqui.",
       "Use apenas o nome/apelido desta pessoa (pushName ou perfil DESTE userId). Nunca chame alguém pelo nome de outro contato.",
+      meta?.isOwner
+        ? null
+        : "Não use @Gabbis nem trate o interlocutor como Gabbis — ela é outra pessoa (dona), não quem está falando agora.",
       "Não mencione conversas, piadas ou fatos de outros chats — nem apelidos, nem contexto de outro PV.",
       "Não existe 'usuário padrão': cada contato (inclusive a dona) tem memória separada.",
       "Pensamento interno pode refletir, mas a RESPOSTA só usa o que foi dito NESTE chat."
-    ];
+    ].filter(Boolean);
 
     const ownerBlock = meta?.isOwner
       ? [
@@ -805,14 +809,31 @@ export class Agent {
         profileBlock.push("[USER PROFILE]", profileLines.join("\n"));
       }
     } else {
-      if (profile?.facts && Object.keys(profile.facts).length > 0) {
-        const lines = Object.entries(profile.facts).map(([k, v]) => {
-          const cleanVal = typeof v === "string" && v.includes("Gabbis( ˘ ³˘)♥") ? "Gabbis" : v;
-          return `${k}: ${cleanVal}`;
-        });
-        profileBlock.push("[USER PROFILE]", lines.join("\n"));
+      const dmLines = formatDmProfilePromptLines(profile?.facts ?? {}, meta);
+      if (dmLines.length) {
+        profileBlock.push("[USER PROFILE — ESTE PV]", ...dmLines);
       }
     }
+
+    const interlocutorBlock =
+      !meta?.isGroup
+        ? (() => {
+            const who =
+              meta?.speakerName ||
+              profile?.facts?.preferredName ||
+              profile?.facts?.displayName ||
+              profile?.facts?.name ||
+              userName;
+            if (!who) return [];
+            return [
+              "[INTERLOCUTOR ATUAL]",
+              `Quem está falando com você AGORA: ${who}.`,
+              meta?.isOwner
+                ? "Esta pessoa é a dona (Gabbis) — pode usar o nome dela quando fizer sentido."
+                : `Trate SEMPRE esta pessoa como «${who}» — não como Gabbis nem outro contato.`
+            ];
+          })()
+        : [];
     const mediumBlock = mediumText ? ["[MEDIUM MEMORY]", mediumText] : [];
     const memoryBlock = memoryText
       ? ["[MEMORY]", memoryText]
@@ -1074,6 +1095,7 @@ export class Agent {
       ...vocativeBlock,
       ...historyAwareBlock,
       ...privacyBlock,
+      ...interlocutorBlock,
       ...ownerBlock,
       ...selfIdentityBlock,
       ...reactionToSelfBlock,

@@ -18,75 +18,11 @@
   },
   "topics": [],
   "mediaHabits": {
-    "stickerRate": 0.9998728320684096,
+    "stickerRate": 0.9998778679185005,
     "imageRate": 0.5452036694378051,
     "reactionEmoji": {}
   },
   "creativeInsights": [
-    {
-      "id": "insight_1789604321655",
-      "type": "social",
-      "text": "grupo fica mais ativo à noite",
-      "confidence": 0.44,
-      "trigger": "message.reaction",
-      "ts": "2026-09-17T00:18:41.655Z"
-    },
-    {
-      "id": "insight_1789693753833",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:09:13.833Z"
-    },
-    {
-      "id": "insight_1789693879198",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:11:19.198Z"
-    },
-    {
-      "id": "insight_1789694138282",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:15:38.282Z"
-    },
-    {
-      "id": "insight_1789694145538",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:15:45.538Z"
-    },
-    {
-      "id": "insight_1789694160793",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:16:00.793Z"
-    },
-    {
-      "id": "insight_1789694279222",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:17:59.222Z"
-    },
-    {
-      "id": "insight_1789694283134",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:18:03.134Z"
-    },
     {
       "id": "insight_1789694286547",
       "type": "style",
@@ -422,7 +358,71 @@
       "confidence": 0.61,
       "trigger": "chat.update",
       "ts": "2026-09-18T01:55:19.441Z"
+    },
+    {
+      "id": "insight_1789850837398",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.5800000000000001,
+      "trigger": "chat.update",
+      "ts": "2026-09-19T20:47:17.398Z"
+    },
+    {
+      "id": "insight_1789850837413",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 17h",
+      "confidence": 0.4,
+      "trigger": "chat.update",
+      "ts": "2026-09-19T20:47:17.413Z"
+    },
+    {
+      "id": "insight_1789851315781",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.66,
+      "trigger": "message.receipt_update",
+      "ts": "2026-09-19T20:55:15.781Z"
+    },
+    {
+      "id": "insight_1789851315829",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 17h",
+      "confidence": 0.6000000000000001,
+      "trigger": "message.receipt_update",
+      "ts": "2026-09-19T20:55:15.829Z"
+    },
+    {
+      "id": "insight_1789851315945",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.5700000000000001,
+      "trigger": "message.receipt_update",
+      "ts": "2026-09-19T20:55:15.945Z"
+    },
+    {
+      "id": "insight_1789851316471",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.46,
+      "trigger": "message.receipt_update",
+      "ts": "2026-09-19T20:55:16.471Z"
+    },
+    {
+      "id": "insight_1789851316643",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 17h",
+      "confidence": 0.5,
+      "trigger": "message.receipt_update",
+      "ts": "2026-09-19T20:55:16.643Z"
+    },
+    {
+      "id": "insight_1789851317582",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.44,
+      "trigger": "message.receipt_update",
+      "ts": "2026-09-19T20:55:17.582Z"
     }
   ],
-  "lastUpdated": "2026-09-19T20:37:43.032Z"
+  "lastUpdated": "2026-09-19T22:42:25.057Z"
 }

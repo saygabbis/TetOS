@@ -1,5 +1,9 @@
 import { dmUserId, normalizeJidKey, ownerIdentityIds } from "./userActivity.js";
 import { extractLocalPart } from "./waIdentity.js";
+import {
+  filterIdentityAliasTokens,
+  sanitizeProfileNicknames
+} from "./profileFacts.js";
 
 /** IDs da própria Teto (conta WhatsApp do bot) — NÃO são contatos humanos. */
 export function botIdentityIds(runtime) {
@@ -56,7 +60,7 @@ export function sanitizeIdentityAliases(aliases = [], runtime, profileKey = "") 
   const isBot = isBotIdentity(runtime, profileKey);
   const isOwner = ownerIds.has(profileKey) || ownerIds.has(String(profileKey).replace(/^dm-/, ""));
 
-  return [...new Set(aliases.map((a) => String(a ?? "").trim()).filter(Boolean))].filter((alias) => {
+  const base = [...new Set(aliases.map((a) => String(a ?? "").trim()).filter(Boolean))].filter((alias) => {
     const lower = alias.toLowerCase();
     if (isBot) {
       if (ownerIds.has(alias) || ownerIds.has(`dm-${alias}`)) return false;
@@ -64,8 +68,11 @@ export function sanitizeIdentityAliases(aliases = [], runtime, profileKey = "") 
     }
     if (!isBot && botIds.has(alias)) return false;
     if (isOwner && botIds.has(alias)) return false;
+    if (!isBot && !isOwner && (lower === "gabbis" || lower === "gabbi")) return false;
     return true;
   });
+
+  return filterIdentityAliasTokens(base, runtime, profileKey);
 }
 
 /** Chave canônica para persistir parceiro/owner — evita duplicar dm-tel vs dm-lid. */
@@ -106,8 +113,8 @@ export function buildBotActorIds(runtime, botPhone = "", botJid = "") {
   return ids;
 }
 
-/** Limpa aliases cruzados bot↔dona em perfis já salvos. */
-export function repairBotProfileContamination(runtime) {
+/** Limpa aliases cruzados e apelidos espúrios em perfis já salvos. */
+export function repairProfileContamination(runtime) {
   const longTerm = runtime?.longTerm;
   if (!longTerm?.data?.profiles) return { repaired: 0 };
 
@@ -115,15 +122,47 @@ export function repairBotProfileContamination(runtime) {
   for (const [profileKey, profile] of Object.entries(longTerm.data.profiles)) {
     const facts = profile?.facts ?? {};
     const aliases = facts.identityAliases ?? [];
-    if (!aliases.length) continue;
+    const cleanedAliases = sanitizeIdentityAliases(aliases, runtime, profileKey);
+    const aliasesChanged = JSON.stringify(cleanedAliases) !== JSON.stringify(aliases);
 
-    const cleaned = sanitizeIdentityAliases(aliases, runtime, profileKey);
-    if (cleaned.length === aliases.length) continue;
+    if (isBotIdentity(runtime, profileKey)) {
+      if (!aliasesChanged) continue;
+      longTerm.updateProfile(profileKey, {
+        facts: { ...facts, identityAliases: cleanedAliases }
+      });
+      repaired += 1;
+      continue;
+    }
+
+    const display =
+      facts.preferredName || facts.displayName || facts.name || null;
+    const cleanedNicknames = sanitizeProfileNicknames(facts.nicknames ?? [], {
+      displayName: display
+    });
+    const cleanedTetoNicknames = sanitizeProfileNicknames(facts.tetoNicknames ?? [], {
+      displayName: display
+    });
+
+    const nicksChanged =
+      JSON.stringify(cleanedNicknames) !== JSON.stringify(facts.nicknames ?? []) ||
+      JSON.stringify(cleanedTetoNicknames) !== JSON.stringify(facts.tetoNicknames ?? []);
+
+    if (!aliasesChanged && !nicksChanged) continue;
 
     longTerm.updateProfile(profileKey, {
-      facts: { ...facts, identityAliases: cleaned }
+      facts: {
+        ...facts,
+        identityAliases: cleanedAliases,
+        nicknames: cleanedNicknames,
+        tetoNicknames: cleanedTetoNicknames
+      }
     });
     repaired += 1;
   }
   return { repaired };
+}
+
+/** @deprecated use repairProfileContamination */
+export function repairBotProfileContamination(runtime) {
+  return repairProfileContamination(runtime);
 }

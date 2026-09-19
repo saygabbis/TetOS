@@ -280,6 +280,7 @@ export const DEFAULTS = {
   typingGraceMs: Number(process.env.TETOS_TYPING_GRACE_MS ?? 2400),
   typingMinDelayMs: Number(process.env.TETOS_TYPING_MIN_DELAY_MS ?? 140),
   typingMaxDelayMs: Number(process.env.TETOS_TYPING_MAX_DELAY_MS ?? 2400),
+  followupTypingMinDelayMs: Number(process.env.TETOS_FOLLOWUP_TYPING_MIN_DELAY_MS ?? 500),
   modelTimeoutMs: Number(process.env.TETOS_MODEL_TIMEOUT_MS ?? 25000),
   /** ollama = LLM multimodal (Sellye); blip = Python BLIP local (legado). */
   visionAdapter: String(process.env.TETOS_VISION_ADAPTER ?? "ollama").trim().toLowerCase() === "blip"

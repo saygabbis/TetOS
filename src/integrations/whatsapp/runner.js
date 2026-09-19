@@ -95,6 +95,35 @@ function scheduleWhatsAppReconnect({ label, onClose, connect, state }) {
   tryConnect();
 }
 
+function bindWhatsAppSocketBridge(runtime, getSocket, getConnected) {
+  runtime.whatsappGetSocket = getSocket;
+  runtime.whatsappIsConnected = getConnected;
+  runtime.whatsappWaitConnected = (timeoutMs = 20000) =>
+    new Promise((resolve, reject) => {
+      const ready = () => {
+        const live = getSocket();
+        return Boolean(getConnected() && live?.user);
+      };
+      if (ready()) {
+        resolve(getSocket());
+        return;
+      }
+      const started = Date.now();
+      const timer = setInterval(() => {
+        if (ready()) {
+          clearInterval(timer);
+          resolve(getSocket());
+          return;
+        }
+        if (Date.now() - started >= timeoutMs) {
+          clearInterval(timer);
+          reject(new Error("whatsapp reconnect timeout"));
+        }
+      }, 200);
+    });
+  console.log("[whatsapp] outbound retry após reconexão ativo");
+}
+
 function listKnownUsers(runtime) {
   const ids = new Set();
   const profiles = runtime.longTerm?.data?.profiles ?? {};
@@ -443,6 +472,7 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
   let reconnecting = false;
   const reconnectState = { active: false };
   let connectGeneration = 0;
+  bindWhatsAppSocketBridge(runtime, () => socket, () => isConnected);
 
   const connect = async () => {
     const generation = ++connectGeneration;
@@ -535,6 +565,11 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   const mediaReconnectState = { active: false };
   let mainGeneration = 0;
   let mediaGeneration = 0;
+  bindWhatsAppSocketBridge(
+    runtime,
+    DEFAULTS.whatsappMainObserveOnly ? () => mediaSocket : () => mainSocket,
+    DEFAULTS.whatsappMainObserveOnly ? () => mediaConnected : () => mainConnected
+  );
 
   /** Só o arranque: a segunda sessão só arranca depois do principal estar `open`. */
   let resolveMainBootstrap = null;

@@ -3,7 +3,6 @@ import {
   formatWhatsAppHelpText,
   formatMissingMediaCommandHint,
   isUrlMediaCommand,
-  parseNaturalWhatsAppMediaCommand,
   parseWhatsAppCommand
 } from "../../src/integrations/whatsapp/mediaCommandParser.js";
 
@@ -91,29 +90,11 @@ describe("media command parser", () => {
     expect(formatWhatsAppHelpText("!")).toMatch(/!toimg/);
   });
 
-  it("parses short natural media requests without going through chat", () => {
-    expect(parseNaturalWhatsAppMediaCommand("faz uma figurinha")).toEqual({
-      command: "sticker",
-      args: []
-    });
-    expect(parseNaturalWhatsAppMediaCommand("figurinha")).toEqual({
-      command: "sticker",
-      args: []
-    });
-    expect(parseNaturalWhatsAppMediaCommand("faz uma figurinha disso")).toEqual({
-      command: "sticker",
-      args: []
-    });
-    expect(parseNaturalWhatsAppMediaCommand("pode fazer uma figurinha")).toEqual({
-      command: "sticker",
-      args: []
-    });
-    expect(parseNaturalWhatsAppMediaCommand("tira o fundo")).toEqual({
-      command: "removebg",
-      args: []
-    });
-    expect(parseNaturalWhatsAppMediaCommand("adorei essa figurinha kkk")).toBeNull();
-    expect(parseNaturalWhatsAppMediaCommand("oi .sticker")).toBeNull();
+  it("does not treat natural language as media commands (prefix required)", () => {
+    expect(parseWhatsAppCommand("foto")).toBeNull();
+    expect(parseWhatsAppCommand("figurinha")).toBeNull();
+    expect(parseWhatsAppCommand("faz uma figurinha")).toBeNull();
+    expect(parseWhatsAppCommand(".toimg")).toEqual({ command: "toimg", args: [] });
   });
 
   it("asks to reply or use a caption when the command has no media", () => {

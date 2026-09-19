@@ -273,6 +273,7 @@ npm run data:sanitize
 
 ## Documentação Técnica
 
+- `docs/MAPEAMENTO_FUNCIONALIDADES_TETO.md` - mapa detalhado de funcionalidades, condições de execução e referência de comandos (documento principal para inventário).
 - `docs/CAPACIDADES_TETO.md` - inventário prático de tudo que a Teto faz hoje.
 - `docs/ARQUITETURA_E_FLUXOS.md` - mapa dos serviços em background, fluxos da API, WhatsApp, comandos, grupos, pipeline e decisões de resposta.
 - `docs/RUNBOOK.md` - instalação, execução e validação rápida.

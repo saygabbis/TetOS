@@ -1,3 +1,5 @@
+import { shouldOmitOwnerCentricMemoryHint } from "../channels/profileFacts.js";
+
 export class MemoryOrchestrator {
   constructor({
     shortTerm = null,
@@ -21,7 +23,15 @@ export class MemoryOrchestrator {
     this.bus = bus;
   }
 
-  buildRetrievalContext({ message, userId, channelId, sessionId, isGroup = false, query = null } = {}) {
+  buildRetrievalContext({
+    message,
+    userId,
+    channelId,
+    sessionId,
+    isGroup = false,
+    isOwner = false,
+    query = null
+  } = {}) {
     const channelScope = isGroup ? `group:${channelId}` : "direct";
     const retrieved = {
       working: [],
@@ -94,11 +104,11 @@ export class MemoryOrchestrator {
     return {
       retrieved,
       buckets: this.episodicMemory?.byBuckets({ userId, channelScope }) ?? {},
-      promptHints: this.formatPromptHints(retrieved)
+      promptHints: this.formatPromptHints(retrieved, { isGroup, isOwner })
     };
   }
 
-  formatPromptHints(retrieved) {
+  formatPromptHints(retrieved, { isGroup = false, isOwner = false } = {}) {
     const blocks = [];
     const today = retrieved.episodic?.filter((e) => e.bucket === "hoje") ?? [];
     const week = retrieved.episodic?.filter((e) => e.bucket === "semana") ?? [];
@@ -155,6 +165,11 @@ export class MemoryOrchestrator {
     }
     if (retrieved.reactivated?.length) {
       blocks.push(`[REATIVADO]\n${retrieved.reactivated.map((e) => `- ${e.text ?? e.summary}`).join("\n")}`);
+    }
+    if (!isGroup && !isOwner) {
+      return blocks.filter(
+        (b) => !shouldOmitOwnerCentricMemoryHint(b, { isGroup, isOwner })
+      );
     }
     return blocks;
   }

@@ -44,6 +44,17 @@ describe("bot identity separation", () => {
     expect(cleaned).not.toContain("5516988137617");
   });
 
+  it("sanitizes gabbis alias from non-owner human profile", () => {
+    const cleaned = sanitizeIdentityAliases(
+      ["190546341540031", "gabbis", "120363342938049353"],
+      runtime,
+      "190546341540031"
+    );
+    expect(cleaned).toContain("190546341540031");
+    expect(cleaned).not.toContain("gabbis");
+    expect(cleaned).not.toContain("120363342938049353");
+  });
+
   it("resolves owner canonical id", () => {
     expect(resolveCanonicalHumanUserId(runtime, "dm-157947506229421", { preferOwner: true })).toBe(
       "dm-5516988137617"
