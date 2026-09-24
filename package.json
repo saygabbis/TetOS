@@ -19,7 +19,7 @@
     "test:memory:delete": "node scripts/test-memory-delete.js",
     "test:session:clear": "node scripts/test-session-clear.js",
     "test:architecture": "vitest run tests/architecture",
-    "test:ci": "vitest run tests/architecture",
+    "test:ci": "vitest run tests/architecture tests/integration",
     "test:all": "node scripts/test-status.js && node scripts/test-chat.js && node scripts/test-memory-save.js && node scripts/test-memory-search.js && node scripts/test-memory-search-post.js && node scripts/test-session-clear.js && npm run test:architecture",
     "learn:focus": "node src/tools/learningConsole.js",
     "life:distill": "node src/tools/distillAbsorbedKnowledge.js",
@@ -35,12 +35,15 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@imgly/background-removal-node": "^1.4.5",
+    "@modelcontextprotocol/sdk": "^1.12.1",
     "baileys": "^6.7.18",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "fluent-ffmpeg": "^2.1.3",
+    "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "sharp": "^0.34.5",
+    "ws": "^8.21.3",
     "youtube-dl-exec": "^3.1.9"
   },
   "overrides": {

@@ -1,5 +1,20 @@
 import "dotenv/config";
+import http from "node:http";
 import express from "express";
+import { UiEventBus } from "../../core/events/uiEventBus.js";
+import { DeviceRegistry } from "./auth/deviceRegistry.js";
+import { DeviceGateway } from "../../integrations/automate/deviceGateway.js";
+import { AutomateClient } from "../../integrations/automate/automateClient.js";
+import { attachUiStream } from "./stream/uiGateway.js";
+import { registerUiThreadRoutes } from "./routes/uiThreads.js";
+import { registerUiMemoryRoutes } from "./routes/uiMemory.js";
+import { registerUiChannelRoutes } from "./routes/uiChannels.js";
+import { registerUiSettingsRoutes } from "./routes/uiSettings.js";
+import {
+  attachWhatsAppStateFileWatcher,
+  whatsAppStateStore,
+} from "./whatsapp/WhatsAppStateStore.js";
+import { publishChannelStatus } from "./ui/uiEventPublishers.js";
 import { DEFAULTS } from "../config/defaults.js";
 import { autoTag } from "../../core/memory/tagger.js";
 import { buildChannelView } from "../../core/channels/channelApiView.js";
@@ -8,9 +23,20 @@ import { buildRuntimeSummary } from "../observability/runtimeSummary.js";
 import { buildMemorySummary } from "../observability/memorySummary.js";
 import { buildReminderSummary } from "../../modules/reminders/reminderSummary.js";
 import { createRuntime, handleIncomingMessage } from "../../app/createRuntime.js";
+import { attachUiCors } from "./middleware/uiCors.js";
 
 const app = express();
+attachUiCors(app);
 app.use(express.json());
+
+const uiBus = new UiEventBus();
+const deviceRegistry = new DeviceRegistry();
+if (deviceRegistry.list().length === 0) {
+  deviceRegistry.issue("default-device");
+  console.log("[device] device default-device criado — emita o token em POST /ui/devices/default-device/issue (sessão UI)");
+}
+const deviceGateway = new DeviceGateway({ deviceRegistry, uiBus });
+const automateClient = new AutomateClient(deviceGateway);
 
 const runtime = createRuntime();
 const {
@@ -28,6 +54,42 @@ const {
   multimodalMemory,
   reminderScheduler
 } = runtime;
+
+registerUiThreadRoutes(app, runtime, uiBus, automateClient, deviceRegistry, deviceGateway);
+registerUiMemoryRoutes(app, runtime);
+registerUiChannelRoutes(app, runtime, uiBus);
+registerUiSettingsRoutes(app, deviceRegistry, deviceGateway);
+
+whatsAppStateStore.subscribe((state) => {
+  const status =
+    state.status === "connected"
+      ? "online"
+      : state.status === "needs_qr"
+        ? "needs_auth"
+        : state.status === "connecting"
+          ? "connecting"
+          : "offline";
+  publishChannelStatus(uiBus, {
+    channelId: "whatsapp",
+    status,
+    qrDataUrl: state.qrDataUrl ?? undefined,
+  });
+});
+attachWhatsAppStateFileWatcher((state) => {
+  const status =
+    state.status === "connected"
+      ? "online"
+      : state.status === "needs_qr"
+        ? "needs_auth"
+        : state.status === "connecting"
+          ? "connecting"
+          : "offline";
+  publishChannelStatus(uiBus, {
+    channelId: "whatsapp",
+    status,
+    qrDataUrl: state.qrDataUrl ?? undefined,
+  });
+});
 
 app.post("/chat", async (req, res) => {
   try {
@@ -255,7 +317,10 @@ const maxPortRetries = 5;
 const envPortIsExplicit = typeof process.env.TETOS_PORT === "string" && process.env.TETOS_PORT.trim() !== "";
 
 function startServer(port, attempt = 0) {
-  const server = app.listen(port, () => {
+  const server = http.createServer(app);
+  deviceGateway.attach(server);
+  attachUiStream(server, uiBus);
+  server.listen(port, () => {
     console.log(`TetOS API running on http://localhost:${port}`);
   });
 

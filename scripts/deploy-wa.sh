@@ -8,6 +8,7 @@ cd "$ROOT"
 
 SCREEN_NAME="${TETOS_SCREEN_NAME:-TetOS}"
 START_CMD="${TETOS_START_CMD:-npm run start:wa}"
+# API UI (desktop + relay): use PM2 na VPS — `npm run pm2:start` sobe tetos-api e tetos-wa.
 
 if [ ! -f ".env" ]; then
   echo "[deploy-wa] ERRO: arquivo .env ausente em $ROOT" >&2

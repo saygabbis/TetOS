@@ -165,7 +165,17 @@ export function fixMisaddressedOwnerName(text = "", { isOwner = false, interlocu
 
 export function fixMisaddressedOwnerNameInReplies(replies = [], options = {}) {
   if (!Array.isArray(replies) || options.isOwner) return replies;
-  return replies.map((r) => fixMisaddressedOwnerName(r, options));
+  const actions = replies.actions;
+  const fixed = replies.map((r) => fixMisaddressedOwnerName(r, options));
+  if (Array.isArray(actions) && actions.length > 0) {
+    fixed.actions = actions.map((action) => {
+      if (action?.type === "message" && action.text) {
+        return { ...action, text: fixMisaddressedOwnerName(action.text, options) };
+      }
+      return action;
+    });
+  }
+  return fixed;
 }
 
 /** Em PV com terceiros, não injetar memórias cujo foco é a dona. */

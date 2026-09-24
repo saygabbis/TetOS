@@ -24,14 +24,6 @@
   },
   "creativeInsights": [
     {
-      "id": "insight_1789694286547",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:18:06.547Z"
-    },
-    {
       "id": "insight_1789694289934",
       "type": "style",
       "text": "mensagens curtas dominam quando o clima está leve",
@@ -422,7 +414,15 @@
       "confidence": 0.44,
       "trigger": "message.receipt_update",
       "ts": "2026-09-19T20:55:17.582Z"
+    },
+    {
+      "id": "insight_1790203726076",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "chat.update",
+      "ts": "2026-09-23T22:48:46.076Z"
     }
   ],
-  "lastUpdated": "2026-09-19T22:42:25.057Z"
+  "lastUpdated": "2026-09-23T22:48:52.301Z"
 }

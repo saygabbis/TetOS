@@ -195,6 +195,7 @@ export class Agent {
       '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
       '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
       '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
+      '22. computador("intenção em português") — Enfileira tarefa no AutoMate na máquina do usuário (abrir app, editar vídeo, automatizar desktop). Use quando pedirem algo no PC; descreva o objetivo claro na string. Pode combinar com mensagem("...") na mesma resposta.',
       "",
       ...downloadRulesLines,
       "COMANDOS DE MÍDIA — REGRAS:",

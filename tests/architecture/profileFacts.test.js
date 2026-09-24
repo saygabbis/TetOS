@@ -47,6 +47,21 @@ describe("profileFacts", () => {
     expect(fixed[1]).not.toMatch(/Gabbis/i);
   });
 
+  it("preserva replies.actions ao corrigir textos", () => {
+    const replies = ["ok"];
+    replies.actions = [
+      { type: "message", text: "Oi Gabbis" },
+      { type: "automate", intent: "abrir o youtube" },
+    ];
+    const fixed = fixMisaddressedOwnerNameInReplies(replies, {
+      isOwner: false,
+      interlocutorName: "Kzer",
+    });
+    expect(fixed.actions).toHaveLength(2);
+    expect(fixed.actions[0].text).toMatch(/Kzer/i);
+    expect(fixed.actions[1]).toEqual({ type: "automate", intent: "abrir o youtube" });
+  });
+
   it("omits owner-centric memory hints in third-party dm", () => {
     expect(
       shouldOmitOwnerCentricMemoryHint("Chama a gabbis rapidão", {

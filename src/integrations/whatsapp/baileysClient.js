@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { DEFAULTS } from "../../infra/config/defaults.js";
+import { whatsAppStateStore } from "../../infra/api/whatsapp/WhatsAppStateStore.js";
 import qrcode from "qrcode-terminal";
 import makeWASocket, {
   fetchLatestBaileysVersion,
@@ -69,14 +70,24 @@ export async function createBaileysClient({
   socket.ev.on("connection.update", async (update) => {
     if (update?.qr) {
       qrcode.generate(update.qr, { small: true });
+      void whatsAppStateStore.setQr(update.qr);
+    }
+
+    if (update?.connection === "connecting") {
+      whatsAppStateStore.setStatus("connecting");
     }
 
     if (update?.connection === "open") {
+      whatsAppStateStore.setStatus("connected");
       try {
         await socket.sendPresenceUpdate("available");
       } catch {
         // presença opcional — não bloqueia conexão
       }
+    }
+
+    if (update?.connection === "close") {
+      whatsAppStateStore.setStatus("disconnected");
     }
 
     if (typeof onConnectionUpdate === "function") {

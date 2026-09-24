@@ -1,0 +1,62 @@
+{
+  "threads": [
+    {
+      "id": "thread-auto",
+      "title": "Chat",
+      "updatedAt": "2026-09-24T00:59:45.552Z",
+      "messages": [
+        {
+          "id": "u-1",
+          "role": "user",
+          "text": "abre o chrome",
+          "createdAt": "2025-06-02T12:00:00.000Z"
+        },
+        {
+          "id": "auto-run-test-1-start",
+          "role": "assistant",
+          "text": "AutoMate · Plano",
+          "createdAt": "2026-09-24T00:59:45.549Z",
+          "meta": {
+            "automate": {
+              "kind": "run",
+              "runId": "run-test-1",
+              "status": "running"
+            }
+          }
+        },
+        {
+          "id": "auto-run-test-1-browser_navigate-1",
+          "role": "assistant",
+          "text": "✓ browser_navigate",
+          "createdAt": "2026-09-24T00:59:45.551Z",
+          "meta": {
+            "automate": {
+              "kind": "step",
+              "runId": "run-test-1",
+              "step": {
+                "id": "browser_navigate-1",
+                "index": 0,
+                "tool": "browser_navigate",
+                "title": "browser_navigate",
+                "state": "done"
+              }
+            }
+          }
+        },
+        {
+          "id": "auto-run-test-1-end",
+          "role": "assistant",
+          "text": "AutoMate · concluído",
+          "createdAt": "2026-09-24T00:59:45.551Z",
+          "meta": {
+            "automate": {
+              "kind": "run_end",
+              "runId": "run-test-1",
+              "status": "completed"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "threads": [
+    {
+      "id": "thread-empty",
+      "title": "Planejamento de viagem",
+      "updatedAt": "2026-09-24T00:59:45.853Z",
+      "messages": []
+    },
+    {
+      "id": "thread-full",
+      "title": "Com mensagens",
+      "updatedAt": "2025-06-01T12:00:00.000Z",
+      "messages": [
+        {
+          "id": "m-1",
+          "role": "user",
+          "text": "oi",
+          "createdAt": "2025-06-01T12:00:00.000Z"
+        }
+      ]
+    }
+  ]
+}

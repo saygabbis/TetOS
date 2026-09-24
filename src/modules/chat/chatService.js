@@ -83,6 +83,10 @@ export function parseActionCommands(rawText) {
       actions.push({ type: "repertoire_mode", enabled: true });
     } else if (cmd === "desativarrepertorio" || cmd === "desligarrepertorio") {
       actions.push({ type: "repertoire_mode", enabled: false });
+    } else if (cmd === "computador" || cmd === "automate" || cmd === "automatizar") {
+      if (args[0]) {
+        actions.push({ type: "automate", intent: args[0] });
+      }
     } else if (cmd === "calar" || cmd === "silenciar" || cmd === "silencio" || cmd === "quiet") {
       actions.push({ type: "silence", scope: args[0] ?? null });
     } else if (isRepertoireModeCommand(cmd)) {
@@ -120,7 +124,7 @@ function returnWithActions(actions) {
 
 /** Expande ações cujo text ainda contém comando cru (fallback do processor). */
 const EMBEDDED_COMMAND_RE = new RegExp(
-  `^(mensagem|message|reagir|react|sticker|figurinha|calar|silenciar|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
+  `^(mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|calar|silenciar|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
   "i"
 );
 

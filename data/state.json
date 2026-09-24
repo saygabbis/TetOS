@@ -1,129 +1,129 @@
 {
   "mood": "tired",
   "energy": 0,
-  "social": 0.9000000000000004,
-  "focus": 0.17,
-  "lastInteraction": "2026-09-19T22:38:55.449Z",
+  "social": 1,
+  "focus": 0.4600000000000003,
+  "lastInteraction": "2026-09-24T01:00:48.887Z",
   "recentInteractions": [
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 3,
+      "timestamp": "2026-09-24T00:54:18.227Z"
+    },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 21,
-      "timestamp": "2026-09-19T22:04:20.208Z"
+      "length": 5,
+      "timestamp": "2026-09-24T00:54:18.864Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 22,
-      "timestamp": "2026-09-19T22:04:50.251Z"
+      "timestamp": "2026-09-24T00:54:25.967Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "positive",
+      "length": 49,
+      "timestamp": "2026-09-24T00:54:26.727Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 21,
+      "timestamp": "2026-09-24T00:54:52.191Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 51,
-      "timestamp": "2026-09-19T22:04:57.439Z"
+      "length": 21,
+      "timestamp": "2026-09-24T00:54:52.920Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 32,
-      "timestamp": "2026-09-19T22:05:49.103Z"
+      "length": 35,
+      "timestamp": "2026-09-24T00:55:32.527Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 39,
-      "timestamp": "2026-09-19T22:05:50.077Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 5,
-      "timestamp": "2026-09-19T22:06:58.757Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 153,
-      "timestamp": "2026-09-19T22:07:19.741Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 27,
-      "timestamp": "2026-09-19T22:07:20.740Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 5,
-      "timestamp": "2026-09-19T22:08:05.552Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 48,
-      "timestamp": "2026-09-19T22:08:56.757Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 81,
-      "timestamp": "2026-09-19T22:08:57.836Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 10,
-      "timestamp": "2026-09-19T22:10:20.137Z"
-    },
-    {
-      "type": "assistant",
-      "sentiment": "neutral",
-      "length": 47,
-      "timestamp": "2026-09-19T22:10:21.007Z"
+      "length": 19,
+      "timestamp": "2026-09-24T00:55:33.190Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 12,
-      "timestamp": "2026-09-19T22:11:15.958Z"
+      "timestamp": "2026-09-24T00:55:46.839Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 110,
-      "timestamp": "2026-09-19T22:11:22.574Z"
+      "length": 31,
+      "timestamp": "2026-09-24T00:55:47.505Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 25,
+      "timestamp": "2026-09-24T00:55:57.395Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 76,
+      "timestamp": "2026-09-24T00:55:58.216Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 9,
+      "timestamp": "2026-09-24T00:56:06.359Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 18,
+      "timestamp": "2026-09-24T00:56:07.193Z"
+    },
+    {
+      "type": "user",
+      "sentiment": "neutral",
+      "length": 32,
+      "timestamp": "2026-09-24T00:56:37.015Z"
+    },
+    {
+      "type": "assistant",
+      "sentiment": "neutral",
+      "length": 70,
+      "timestamp": "2026-09-24T00:56:38.257Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
       "length": 3,
-      "timestamp": "2026-09-19T22:12:03.144Z"
-    },
-    {
-      "type": "user",
-      "sentiment": "neutral",
-      "length": 19,
-      "timestamp": "2026-09-19T22:12:38.271Z"
+      "timestamp": "2026-09-24T00:57:55.702Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 38,
-      "timestamp": "2026-09-19T22:12:43.302Z"
+      "length": 6,
+      "timestamp": "2026-09-24T00:57:56.340Z"
     },
     {
       "type": "user",
       "sentiment": "neutral",
-      "length": 16,
-      "timestamp": "2026-09-19T22:38:55.449Z"
+      "length": 22,
+      "timestamp": "2026-09-24T01:00:48.887Z"
     },
     {
       "type": "assistant",
       "sentiment": "neutral",
-      "length": 75,
-      "timestamp": "2026-09-19T22:38:56.577Z"
+      "length": 43,
+      "timestamp": "2026-09-24T01:00:49.861Z"
     }
   ]
 }
