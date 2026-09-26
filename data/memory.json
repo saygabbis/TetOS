@@ -385,6 +385,19 @@
       "content": "abre o bloco de notas dnv",
       "value": "abre o bloco de notas dnv",
       "timestamp": "2026-09-24T01:00:52.049Z"
+    },
+    {
+      "id": "25d09b82-ba87-4162-b129-81c202081e5f",
+      "userId": "ui-user",
+      "channelId": "ui-desktop",
+      "channelScope": "direct",
+      "tags": [
+        "selective_memory"
+      ],
+      "type": "selective_memory",
+      "content": "[O usuário referenciou explicitamente estas skills do AutoMate (obrigatório honrar o procedimento delas): /abre-historico-do-youtube-e-live-da-gabbis] ce viuuu, qq se acha sobre isso?",
+      "value": "[O usuário referenciou explicitamente estas skills do AutoMate (obrigatório honrar o procedimento delas): /abre-historico-do-youtube-e-live-da-gabbis] ce viuuu, qq se acha sobre isso?",
+      "timestamp": "2026-09-26T03:30:41.814Z"
     }
   ],
   "profiles": {
@@ -640,9 +653,9 @@
         "abbrev": 26,
         "laughter": 37,
         "emoji": 6,
-        "total": 265
+        "total": 267
       },
-      "lastUpdated": "2026-09-24T00:51:30.871Z",
+      "lastUpdated": "2026-09-26T04:12:24.666Z",
       "channelScope": "direct",
       "conversationClosedAt": null
     },
@@ -1179,7 +1192,7 @@
         "emoji": 0,
         "total": 3
       },
-      "lastUpdated": "2026-09-24T00:51:30.995Z",
+      "lastUpdated": "2026-09-26T04:12:24.729Z",
       "channelScope": "direct"
     },
     "131778236952767": {
@@ -5984,7 +5997,7 @@
         "total": 255
       },
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:31.092Z",
+      "lastUpdated": "2026-09-26T04:12:24.799Z",
       "conversationClosedAt": null
     },
     "dm-5516988137617": {
@@ -5994,25 +6007,28 @@
         "waPhone": "5516988137617",
         "nicknames": [
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "identityAliases": [
           "dm-5516988137617",
           "5516988137617"
         ],
-        "isTetoPartner": true,
-        "relationshipToTeto": "dating",
-        "relationshipSince": "2026-07-08T05:52:09.445Z",
-        "tetoPartnerDisplayName": "Gabbis"
+        "isTetoPartner": false
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.715Z"
+      "lastUpdated": "2026-09-26T04:12:26.347Z"
     },
     "dm-131778236952767": {
       "facts": {
@@ -7554,7 +7570,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:31.191Z"
+      "lastUpdated": "2026-09-26T04:12:24.879Z"
     },
     "oiii": {
       "facts": {
@@ -7751,7 +7767,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:31.266Z"
+      "lastUpdated": "2026-09-26T04:12:24.938Z"
     },
     "oi": {
       "facts": {
@@ -7949,7 +7965,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.490Z"
+      "lastUpdated": "2026-09-26T04:23:47.437Z"
     },
     "tô": {
       "facts": {
@@ -8174,7 +8190,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:31.675Z"
+      "lastUpdated": "2026-09-26T04:12:25.074Z"
     },
     "kkk": {
       "facts": {
@@ -8371,7 +8387,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:31.763Z"
+      "lastUpdated": "2026-09-26T04:12:25.148Z"
     },
     "vai": {
       "facts": {
@@ -8569,7 +8585,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:31.902Z"
+      "lastUpdated": "2026-09-26T04:12:25.233Z"
     },
     "não": {
       "facts": {
@@ -8794,7 +8810,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:32.014Z"
+      "lastUpdated": "2026-09-26T04:12:25.360Z"
     },
     "opa": {
       "facts": {
@@ -8992,7 +9008,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:32.138Z"
+      "lastUpdated": "2026-09-26T04:12:25.454Z"
     },
     "tá": {
       "facts": {
@@ -9217,7 +9233,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:32.334Z"
+      "lastUpdated": "2026-09-26T04:12:25.513Z"
     },
     "fala": {
       "facts": {
@@ -9415,7 +9431,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:32.660Z"
+      "lastUpdated": "2026-09-26T04:12:25.603Z"
     },
     "ah": {
       "facts": {
@@ -9640,7 +9656,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:32.761Z"
+      "lastUpdated": "2026-09-26T04:12:25.666Z"
     },
     "dm-74053859672191": {
       "facts": {
@@ -10064,7 +10080,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:32.904Z"
+      "lastUpdated": "2026-09-26T04:12:25.720Z"
     },
     "120363425913528764": {
       "facts": {
@@ -10711,7 +10727,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.101Z"
+      "lastUpdated": "2026-09-26T04:12:25.776Z"
     },
     "um": {
       "facts": {
@@ -10909,7 +10925,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.179Z"
+      "lastUpdated": "2026-09-26T04:12:25.854Z"
     },
     "dm-174165839581324": {
       "facts": {
@@ -11132,7 +11148,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.278Z"
+      "lastUpdated": "2026-09-26T04:12:25.935Z"
     },
     "kasane teto": {
       "facts": {
@@ -11329,7 +11345,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.857Z"
+      "lastUpdated": "2026-09-26T04:12:36.354Z"
     },
     "dm-190546341540031": {
       "facts": {
@@ -22287,7 +22303,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.366Z"
+      "lastUpdated": "2026-09-26T04:12:25.998Z"
     },
     "227263933087990": {
       "facts": {
@@ -28737,7 +28753,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.934Z"
+      "lastUpdated": "2026-09-26T04:23:48.071Z"
     },
     "nasci": {
       "facts": {
@@ -28934,7 +28950,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.563Z"
+      "lastUpdated": "2026-09-26T04:12:26.188Z"
     },
     "quer": {
       "facts": {
@@ -29159,7 +29175,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.637Z"
+      "lastUpdated": "2026-09-26T04:12:26.273Z"
     },
     "dm-5517991664082": {
       "facts": {
@@ -39563,7 +39579,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:43.313Z"
+      "lastUpdated": "2026-09-26T04:12:34.052Z"
     },
     "120363426863669479::group:120363425913528764@g.us": {
       "facts": {
@@ -47365,7 +47381,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.225Z"
+      "lastUpdated": "2026-09-26T04:12:32.370Z"
     },
     "pode": {
       "facts": {
@@ -47670,7 +47686,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.550Z"
+      "lastUpdated": "2026-09-26T04:12:34.913Z"
     },
     "ta::group:120363425913528764@g.us": {
       "facts": {
@@ -48484,7 +48500,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.981Z"
+      "lastUpdated": "2026-09-26T04:12:33.657Z"
     },
     "tava": {
       "facts": {
@@ -48949,7 +48965,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:38.131Z"
+      "lastUpdated": "2026-09-26T04:12:31.203Z"
     },
     "calmaaa": {
       "facts": {
@@ -49254,7 +49270,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.294Z"
+      "lastUpdated": "2026-09-26T04:12:27.327Z"
     },
     "ahhh": {
       "facts": {
@@ -49479,7 +49495,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:37.181Z"
+      "lastUpdated": "2026-09-26T04:12:30.444Z"
     },
     "uai": {
       "facts": {
@@ -49704,7 +49720,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.190Z"
+      "lastUpdated": "2026-09-26T04:12:29.364Z"
     },
     "ou": {
       "facts": {
@@ -49929,7 +49945,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.985Z"
+      "lastUpdated": "2026-09-26T04:12:30.306Z"
     },
     "explica": {
       "facts": {
@@ -50314,7 +50330,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.475Z"
+      "lastUpdated": "2026-09-26T04:12:26.813Z"
     },
     "saber": {
       "facts": {
@@ -50619,7 +50635,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.842Z"
+      "lastUpdated": "2026-09-26T04:12:28.577Z"
     },
     "só": {
       "facts": {
@@ -50844,7 +50860,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.083Z"
+      "lastUpdated": "2026-09-26T04:12:27.200Z"
     },
     "sacou": {
       "facts": {
@@ -51469,7 +51485,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.963Z"
+      "lastUpdated": "2026-09-26T04:12:27.142Z"
     },
     "visão": {
       "facts": {
@@ -51747,7 +51763,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.821Z"
+      "lastUpdated": "2026-09-26T04:12:26.422Z"
     },
     "pronto": {
       "facts": {
@@ -51944,7 +51960,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:33.938Z"
+      "lastUpdated": "2026-09-26T04:12:26.493Z"
     },
     "ugh": {
       "facts": {
@@ -52141,7 +52157,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.052Z"
+      "lastUpdated": "2026-09-26T04:12:26.583Z"
     },
     "já": {
       "facts": {
@@ -52339,7 +52355,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.195Z"
+      "lastUpdated": "2026-09-26T04:12:26.681Z"
     },
     "dormindo": {
       "facts": {
@@ -52536,7 +52552,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.296Z"
+      "lastUpdated": "2026-09-26T04:12:26.752Z"
     },
     "rindo": {
       "facts": {
@@ -52733,7 +52749,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.602Z"
+      "lastUpdated": "2026-09-26T04:12:26.890Z"
     },
     "sofrimento": {
       "facts": {
@@ -52930,7 +52946,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.678Z"
+      "lastUpdated": "2026-09-26T04:12:26.958Z"
     },
     "depende": {
       "facts": {
@@ -53127,7 +53143,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.770Z"
+      "lastUpdated": "2026-09-26T04:12:27.014Z"
     },
     "três": {
       "facts": {
@@ -53324,7 +53340,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:34.853Z"
+      "lastUpdated": "2026-09-26T04:12:27.072Z"
     },
     "mds": {
       "facts": {
@@ -53549,7 +53565,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.196Z"
+      "lastUpdated": "2026-09-26T04:12:27.259Z"
     },
     "salvooo": {
       "facts": {
@@ -53746,7 +53762,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.401Z"
+      "lastUpdated": "2026-09-26T04:12:27.499Z"
     },
     "perfeito": {
       "facts": {
@@ -53943,7 +53959,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.472Z"
+      "lastUpdated": "2026-09-26T04:12:27.711Z"
     },
     "ódio": {
       "facts": {
@@ -54140,7 +54156,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.571Z"
+      "lastUpdated": "2026-09-26T04:12:27.821Z"
     },
     "pra": {
       "facts": {
@@ -54337,7 +54353,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.663Z"
+      "lastUpdated": "2026-09-26T04:12:28.128Z"
     },
     "aceito": {
       "facts": {
@@ -54534,7 +54550,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.752Z"
+      "lastUpdated": "2026-09-26T04:12:28.453Z"
     },
     "boa": {
       "facts": {
@@ -54731,7 +54747,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:35.930Z"
+      "lastUpdated": "2026-09-26T04:12:28.915Z"
     },
     "estou": {
       "facts": {
@@ -54929,7 +54945,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.026Z"
+      "lastUpdated": "2026-09-26T04:12:29.108Z"
     },
     "hm": {
       "facts": {
@@ -55126,7 +55142,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.101Z"
+      "lastUpdated": "2026-09-26T04:12:29.238Z"
     },
     "mas": {
       "facts": {
@@ -55323,7 +55339,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.269Z"
+      "lastUpdated": "2026-09-26T04:12:29.518Z"
     },
     "kkkkkkkkkkkk": {
       "facts": {
@@ -55520,7 +55536,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.341Z"
+      "lastUpdated": "2026-09-26T04:12:29.728Z"
     },
     "diva": {
       "facts": {
@@ -55717,7 +55733,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.564Z"
+      "lastUpdated": "2026-09-26T04:12:29.856Z"
     },
     "dorme": {
       "facts": {
@@ -55914,7 +55930,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.712Z"
+      "lastUpdated": "2026-09-26T04:12:30.020Z"
     },
     "bom": {
       "facts": {
@@ -56111,7 +56127,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:36.816Z"
+      "lastUpdated": "2026-09-26T04:12:30.134Z"
     },
     "conseguuuu": {
       "facts": {
@@ -56308,7 +56324,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:37.293Z"
+      "lastUpdated": "2026-09-26T04:12:30.611Z"
     },
     "fiz": {
       "facts": {
@@ -56505,7 +56521,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:37.499Z"
+      "lastUpdated": "2026-09-26T04:12:30.748Z"
     },
     "bugado": {
       "facts": {
@@ -56702,7 +56718,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:37.743Z"
+      "lastUpdated": "2026-09-26T04:12:30.972Z"
     },
     "cérebro": {
       "facts": {
@@ -56899,7 +56915,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:37.964Z"
+      "lastUpdated": "2026-09-26T04:12:31.124Z"
     },
     "prometeu": {
       "facts": {
@@ -57096,7 +57112,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:38.300Z"
+      "lastUpdated": "2026-09-26T04:12:31.291Z"
     },
     "quero": {
       "facts": {
@@ -57293,7 +57309,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:38.461Z"
+      "lastUpdated": "2026-09-26T04:12:31.394Z"
     },
     "pois": {
       "facts": {
@@ -57491,7 +57507,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:38.625Z"
+      "lastUpdated": "2026-09-26T04:12:31.478Z"
     },
     "trabalho": {
       "facts": {
@@ -57688,7 +57704,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:38.767Z"
+      "lastUpdated": "2026-09-26T04:12:31.540Z"
     },
     "kkkkk": {
       "facts": {
@@ -57885,7 +57901,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:38.960Z"
+      "lastUpdated": "2026-09-26T04:12:31.591Z"
     },
     "estão": {
       "facts": {
@@ -58082,7 +58098,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:39.159Z"
+      "lastUpdated": "2026-09-26T04:12:31.649Z"
     },
     "pq": {
       "facts": {
@@ -58279,7 +58295,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:39.294Z"
+      "lastUpdated": "2026-09-26T04:12:31.701Z"
     },
     "kkkkkkk": {
       "facts": {
@@ -58477,7 +58493,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:39.466Z"
+      "lastUpdated": "2026-09-26T04:12:31.757Z"
     },
     "culpa": {
       "facts": {
@@ -58674,7 +58690,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:39.629Z"
+      "lastUpdated": "2026-09-26T04:12:31.813Z"
     },
     "mentira": {
       "facts": {
@@ -58871,7 +58887,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:39.771Z"
+      "lastUpdated": "2026-09-26T04:12:31.866Z"
     },
     "meu": {
       "facts": {
@@ -59068,7 +59084,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:39.872Z"
+      "lastUpdated": "2026-09-26T04:12:31.915Z"
     },
     "deus": {
       "facts": {
@@ -59265,7 +59281,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:39.972Z"
+      "lastUpdated": "2026-09-26T04:12:31.967Z"
     },
     "futuro": {
       "facts": {
@@ -59462,7 +59478,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:40.094Z"
+      "lastUpdated": "2026-09-26T04:12:32.020Z"
     },
     "aceita": {
       "facts": {
@@ -59659,7 +59675,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:40.431Z"
+      "lastUpdated": "2026-09-26T04:12:32.074Z"
     },
     "ugh::group:120363425913528764@g.us": {
       "facts": {
@@ -67220,7 +67236,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:40.563Z"
+      "lastUpdated": "2026-09-26T04:12:32.130Z"
     },
     "canta::group:120363425913528764@g.us": {
       "facts": {
@@ -67557,7 +67573,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:40.727Z"
+      "lastUpdated": "2026-09-26T04:12:32.200Z"
     },
     "ouvido": {
       "facts": {
@@ -67754,7 +67770,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:40.886Z"
+      "lastUpdated": "2026-09-26T04:12:32.263Z"
     },
     "para": {
       "facts": {
@@ -67951,7 +67967,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.088Z"
+      "lastUpdated": "2026-09-26T04:12:32.316Z"
     },
     "começando": {
       "facts": {
@@ -68148,7 +68164,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.361Z"
+      "lastUpdated": "2026-09-26T04:12:32.419Z"
     },
     "olha": {
       "facts": {
@@ -68345,7 +68361,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.439Z"
+      "lastUpdated": "2026-09-26T04:12:32.491Z"
     },
     "ai": {
       "facts": {
@@ -68542,7 +68558,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.520Z"
+      "lastUpdated": "2026-09-26T04:12:32.587Z"
     },
     "agora": {
       "facts": {
@@ -68767,7 +68783,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.604Z"
+      "lastUpdated": "2026-09-26T04:12:32.652Z"
     },
     "língua": {
       "facts": {
@@ -68964,7 +68980,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.682Z"
+      "lastUpdated": "2026-09-26T04:12:32.706Z"
     },
     "calmaaaa": {
       "facts": {
@@ -69161,7 +69177,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.755Z"
+      "lastUpdated": "2026-09-26T04:12:32.761Z"
     },
     "também": {
       "facts": {
@@ -69358,7 +69374,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.824Z"
+      "lastUpdated": "2026-09-26T04:12:32.810Z"
     },
     "kkkkkkkkk": {
       "facts": {
@@ -69555,7 +69571,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:41.925Z"
+      "lastUpdated": "2026-09-26T04:12:32.863Z"
     },
     "ta": {
       "facts": {
@@ -69752,7 +69768,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.032Z"
+      "lastUpdated": "2026-09-26T04:12:32.921Z"
     },
     "convencida": {
       "facts": {
@@ -69949,7 +69965,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.125Z"
+      "lastUpdated": "2026-09-26T04:12:32.978Z"
     },
     "acha": {
       "facts": {
@@ -70146,7 +70162,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.223Z"
+      "lastUpdated": "2026-09-26T04:12:33.031Z"
     },
     "tenta": {
       "facts": {
@@ -70343,7 +70359,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.314Z"
+      "lastUpdated": "2026-09-26T04:12:33.095Z"
     },
     "talvez": {
       "facts": {
@@ -70540,7 +70556,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.413Z"
+      "lastUpdated": "2026-09-26T04:12:33.158Z"
     },
     "te": {
       "facts": {
@@ -70737,7 +70753,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.513Z"
+      "lastUpdated": "2026-09-26T04:12:33.244Z"
     },
     "kkkkkk": {
       "facts": {
@@ -70934,7 +70950,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.724Z"
+      "lastUpdated": "2026-09-26T04:12:33.313Z"
     },
     "pera": {
       "facts": {
@@ -71131,7 +71147,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:42.862Z"
+      "lastUpdated": "2026-09-26T04:12:33.523Z"
     },
     "beijos": {
       "facts": {
@@ -71328,7 +71344,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:43.128Z"
+      "lastUpdated": "2026-09-26T04:12:33.797Z"
     },
     "finalmente": {
       "facts": {
@@ -71525,7 +71541,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.663Z"
+      "lastUpdated": "2026-09-26T04:23:47.615Z"
     },
     "salvei": {
       "facts": {
@@ -71722,7 +71738,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:43.388Z"
+      "lastUpdated": "2026-09-26T04:12:34.211Z"
     },
     "salvo": {
       "facts": {
@@ -71919,7 +71935,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:43.563Z"
+      "lastUpdated": "2026-09-26T04:12:34.356Z"
     },
     "toma": {
       "facts": {
@@ -72116,7 +72132,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:43.649Z"
+      "lastUpdated": "2026-09-26T04:12:34.454Z"
     },
     "manda": {
       "facts": {
@@ -72313,7 +72329,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.713Z"
+      "lastUpdated": "2026-09-26T04:23:47.673Z"
     },
     "ouvido::group:120363425913528764@g.us": {
       "facts": {
@@ -75930,7 +75946,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:43.793Z"
+      "lastUpdated": "2026-09-26T04:12:34.603Z"
     },
     "arruma": {
       "facts": {
@@ -76127,7 +76143,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:43.907Z"
+      "lastUpdated": "2026-09-26T04:12:34.660Z"
     },
     "viu": {
       "facts": {
@@ -76324,7 +76340,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.002Z"
+      "lastUpdated": "2026-09-26T04:12:34.711Z"
     },
     "120363426863669479::group:120363342938049353@g.us": {
       "facts": {
@@ -94652,7 +94668,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.178Z"
+      "lastUpdated": "2026-09-26T04:12:34.757Z"
     },
     "kkkkkkkkkkkkkkkkk": {
       "facts": {
@@ -94849,7 +94865,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.306Z"
+      "lastUpdated": "2026-09-26T04:12:34.817Z"
     },
     "bebe": {
       "facts": {
@@ -95046,7 +95062,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.447Z"
+      "lastUpdated": "2026-09-26T04:12:34.868Z"
     },
     "sabe": {
       "facts": {
@@ -95243,7 +95259,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.671Z"
+      "lastUpdated": "2026-09-26T04:12:34.966Z"
     },
     "kkkkkkkkkkkkk::group:120363342938049353@g.us": {
       "facts": {
@@ -96030,7 +96046,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.763Z"
+      "lastUpdated": "2026-09-26T04:12:35.033Z"
     },
     "cabeça::group:120363425913528764@g.us": {
       "facts": {
@@ -97395,7 +97411,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.837Z"
+      "lastUpdated": "2026-09-26T04:12:35.101Z"
     },
     "mdssss": {
       "facts": {
@@ -97592,7 +97608,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.909Z"
+      "lastUpdated": "2026-09-26T04:12:35.249Z"
     },
     "vi": {
       "facts": {
@@ -97789,7 +97805,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:44.976Z"
+      "lastUpdated": "2026-09-26T04:12:35.342Z"
     },
     "sumiu": {
       "facts": {
@@ -97986,7 +98002,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:45.049Z"
+      "lastUpdated": "2026-09-26T04:12:35.412Z"
     },
     "tudo": {
       "facts": {
@@ -98183,7 +98199,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:45.157Z"
+      "lastUpdated": "2026-09-26T04:12:35.470Z"
     },
     "fortnite": {
       "facts": {
@@ -98380,7 +98396,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:45.259Z"
+      "lastUpdated": "2026-09-26T04:12:35.537Z"
     },
     "cedo": {
       "facts": {
@@ -98577,7 +98593,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:45.358Z"
+      "lastUpdated": "2026-09-26T04:12:35.593Z"
     },
     "bora": {
       "facts": {
@@ -98802,7 +98818,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.606Z"
+      "lastUpdated": "2026-09-26T04:23:47.559Z"
     },
     "calma": {
       "facts": {
@@ -98999,7 +99015,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:45.760Z"
+      "lastUpdated": "2026-09-26T04:12:35.696Z"
     },
     "hummm": {
       "facts": {
@@ -99196,7 +99212,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:45.852Z"
+      "lastUpdated": "2026-09-26T04:12:35.755Z"
     },
     "carinho": {
       "facts": {
@@ -99393,7 +99409,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:45.970Z"
+      "lastUpdated": "2026-09-26T04:12:35.813Z"
     },
     "vc": {
       "facts": {
@@ -99590,7 +99606,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.106Z"
+      "lastUpdated": "2026-09-26T04:12:35.871Z"
     },
     "kkkkkkkk": {
       "facts": {
@@ -99787,7 +99803,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.193Z"
+      "lastUpdated": "2026-09-26T04:12:35.923Z"
     },
     "fiquei": {
       "facts": {
@@ -99984,7 +100000,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.285Z"
+      "lastUpdated": "2026-09-26T04:12:35.971Z"
     },
     "gabbrielly": {
       "facts": {
@@ -100181,7 +100197,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.366Z"
+      "lastUpdated": "2026-09-26T04:12:36.016Z"
     },
     "na": {
       "facts": {
@@ -100378,7 +100394,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.446Z"
+      "lastUpdated": "2026-09-26T04:12:36.082Z"
     },
     "alguém": {
       "facts": {
@@ -100575,7 +100591,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.529Z"
+      "lastUpdated": "2026-09-26T04:12:36.133Z"
     },
     "faço": {
       "facts": {
@@ -100772,7 +100788,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.600Z"
+      "lastUpdated": "2026-09-26T04:12:36.184Z"
     },
     "deixa": {
       "facts": {
@@ -100969,7 +100985,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.684Z"
+      "lastUpdated": "2026-09-26T04:12:36.245Z"
     },
     "sistema": {
       "facts": {
@@ -101166,7 +101182,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.780Z"
+      "lastUpdated": "2026-09-26T04:12:36.301Z"
     },
     "sabia": {
       "facts": {
@@ -101363,7 +101379,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.928Z"
+      "lastUpdated": "2026-09-26T04:12:36.402Z"
     },
     "dorminhoca": {
       "facts": {
@@ -101560,7 +101576,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:46.998Z"
+      "lastUpdated": "2026-09-26T04:12:36.447Z"
     },
     "vida": {
       "facts": {
@@ -101757,7 +101773,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.060Z"
+      "lastUpdated": "2026-09-26T04:12:36.498Z"
     },
     "lança::group:120363342938049353@g.us": {
       "facts": {
@@ -136739,7 +136755,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.130Z"
+      "lastUpdated": "2026-09-26T04:12:36.554Z"
     },
     "vem": {
       "facts": {
@@ -136758,7 +136774,8 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira"
         ],
         "tetoNicknames": [
           "vem",
@@ -136775,7 +136792,8 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -136934,7 +136952,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.199Z"
+      "lastUpdated": "2026-09-26T04:12:36.611Z"
     },
     "vibe": {
       "facts": {
@@ -136952,7 +136970,9 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA"
         ],
         "tetoNicknames": [
           "vibe",
@@ -136968,7 +136988,9 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -137127,7 +137149,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.277Z"
+      "lastUpdated": "2026-09-26T04:12:36.661Z"
     },
     "trabalhando": {
       "facts": {
@@ -137144,7 +137166,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "trabalhando",
@@ -137159,7 +137184,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -137318,7 +137346,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.362Z"
+      "lastUpdated": "2026-09-26T04:12:36.711Z"
     },
     "manh": {
       "facts": {
@@ -137334,7 +137362,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "manh",
@@ -137348,7 +137379,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -137507,7 +137541,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.432Z"
+      "lastUpdated": "2026-09-26T04:12:36.760Z"
     },
     "foca": {
       "facts": {
@@ -137522,7 +137556,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "foca",
@@ -137535,7 +137572,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -137694,7 +137734,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.514Z"
+      "lastUpdated": "2026-09-26T04:12:36.809Z"
     },
     "poxa": {
       "facts": {
@@ -137708,7 +137748,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "poxa",
@@ -137720,7 +137763,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -137879,7 +137925,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.604Z"
+      "lastUpdated": "2026-09-26T04:12:36.859Z"
     },
     "acesitaaa": {
       "facts": {
@@ -137892,7 +137938,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "acesitaaa",
@@ -137903,7 +137952,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -138062,7 +138114,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.686Z"
+      "lastUpdated": "2026-09-26T04:12:36.915Z"
     },
     "amorrr::group:120363425913528764@g.us": {
       "facts": {
@@ -139254,7 +139306,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "ISSOOO",
@@ -139264,7 +139319,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -139423,7 +139481,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.768Z"
+      "lastUpdated": "2026-09-26T04:12:36.978Z"
     },
     "amo": {
       "facts": {
@@ -139434,7 +139492,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "amo",
@@ -139443,7 +139504,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -139602,7 +139666,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.865Z"
+      "lastUpdated": "2026-09-26T04:12:37.030Z"
     },
     "uê": {
       "facts": {
@@ -139612,7 +139676,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "uê",
@@ -139620,7 +139687,10 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -139779,7 +139849,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:47.936Z"
+      "lastUpdated": "2026-09-26T04:12:37.082Z"
     },
     "nanei": {
       "facts": {
@@ -139788,14 +139858,20 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "NANEI",
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -139954,7 +140030,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:48.009Z"
+      "lastUpdated": "2026-09-26T04:12:37.133Z"
     },
     "acordou": {
       "facts": {
@@ -139962,13 +140038,19 @@
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "tetoNicknames": [
           "acordou",
           "trabalha",
           "sumiu",
-          "atenção"
+          "atenção",
+          "terceira",
+          "QUARTA",
+          "agora"
         ],
         "waPhone": "5516988137617",
         "waLid": "157947506229421",
@@ -140127,7 +140209,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T00:51:48.079Z"
+      "lastUpdated": "2026-09-26T04:12:37.181Z"
     },
     "trabalha": {
       "facts": {
@@ -140517,7 +140599,7 @@
     },
     "ui-user": {
       "facts": {
-        "lastDmSessionId": "thread-1790210372824",
+        "lastDmSessionId": "thread-1790396623662",
         "lastChannel": "direct",
         "nicknames": [
           "com",
@@ -140559,35 +140641,35 @@
       "style": {
         "learned": {
           "expressions": {
+            "ta": 4,
             "to": 1,
-            "meu": 1,
-            "ta": 1
+            "meu": 1
           },
           "laughterModes": {
             "kk": 0,
             "rs": 0,
-            "ha": 0,
+            "ha": 1,
             "emoji": 0
           },
-          "preferredLaughter": "kk",
+          "preferredLaughter": "ha",
           "habits": {
-            "usesAbbrev": 5
+            "usesAbbrev": 9
           },
-          "avgKkRun": 0.3
+          "avgKkRun": 0.1
         },
         "prefersAbbrev": false,
         "prefersLaughter": false,
         "prefersEmoji": false,
-        "brevity": "short"
+        "brevity": "medium"
       },
       "counts": {
-        "abbrev": 5,
+        "abbrev": 8,
         "laughter": 1,
         "emoji": 0,
-        "total": 32
+        "total": 61
       },
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:50.908Z"
+      "lastUpdated": "2026-09-26T04:23:46.811Z"
     },
     "com": {
       "facts": {
@@ -140631,7 +140713,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:50.994Z"
+      "lastUpdated": "2026-09-26T04:23:46.888Z"
     },
     "kasane": {
       "facts": {
@@ -140675,7 +140757,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.090Z"
+      "lastUpdated": "2026-09-26T04:23:46.983Z"
     },
     "tenho": {
       "facts": {
@@ -140719,7 +140801,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.149Z"
+      "lastUpdated": "2026-09-26T04:23:47.049Z"
     },
     "baixo": {
       "facts": {
@@ -140763,7 +140845,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.217Z"
+      "lastUpdated": "2026-09-26T04:23:47.122Z"
     },
     "consigo": {
       "facts": {
@@ -140807,7 +140889,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.280Z"
+      "lastUpdated": "2026-09-26T04:23:47.221Z"
     },
     "foi": {
       "facts": {
@@ -140851,7 +140933,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.354Z"
+      "lastUpdated": "2026-09-26T04:23:47.307Z"
     },
     "pelo": {
       "facts": {
@@ -140895,7 +140977,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.429Z"
+      "lastUpdated": "2026-09-26T04:23:47.375Z"
     },
     "ainda": {
       "facts": {
@@ -140939,7 +141021,7 @@
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.549Z"
+      "lastUpdated": "2026-09-26T04:23:47.500Z"
     },
     "primeiramente": {
       "facts": {
@@ -140955,7 +141037,11 @@
           "mas",
           "escrevi",
           "aff",
-          "abro"
+          "abro",
+          "agora",
+          "chegou",
+          "fala",
+          "um"
         ],
         "tetoNicknames": [
           "primeiramente",
@@ -140969,13 +141055,17 @@
           "mas",
           "escrevi",
           "aff",
-          "abro"
+          "abro",
+          "agora",
+          "chegou",
+          "fala",
+          "um"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.767Z"
+      "lastUpdated": "2026-09-26T04:23:47.732Z"
     },
     "pagamento": {
       "facts": {
@@ -140990,7 +141080,12 @@
           "mas",
           "escrevi",
           "aff",
-          "abro"
+          "abro",
+          "agora",
+          "chegou",
+          "fala",
+          "um",
+          "biografia"
         ],
         "tetoNicknames": [
           "pagamento",
@@ -141003,13 +141098,18 @@
           "mas",
           "escrevi",
           "aff",
-          "abro"
+          "abro",
+          "agora",
+          "chegou",
+          "fala",
+          "um",
+          "biografia"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.824Z"
+      "lastUpdated": "2026-09-26T04:23:47.800Z"
     },
     "claro": {
       "facts": {
@@ -141023,7 +141123,13 @@
           "mas",
           "escrevi",
           "aff",
-          "abro"
+          "abro",
+          "agora",
+          "chegou",
+          "fala",
+          "um",
+          "biografia",
+          "espera"
         ],
         "tetoNicknames": [
           "claro",
@@ -141035,13 +141141,19 @@
           "mas",
           "escrevi",
           "aff",
-          "abro"
+          "abro",
+          "agora",
+          "chegou",
+          "fala",
+          "um",
+          "biografia",
+          "espera"
         ]
       },
       "style": {},
       "counts": {},
       "channelScope": "direct",
-      "lastUpdated": "2026-09-24T01:00:51.880Z"
+      "lastUpdated": "2026-09-26T04:23:47.914Z"
     }
   },
   "mediumTerm": {
@@ -142565,103 +142677,103 @@
     ],
     "ui-user": [
       {
-        "summary": "consegue mexer na minha maquina com o automate?",
-        "timestamp": "2026-09-23T23:06:29.591Z",
+        "summary": "abre o bloco de nbotas",
+        "timestamp": "2026-09-24T01:00:51.989Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "abre fazendo favor abrir meu youtube",
-        "timestamp": "2026-09-23T23:07:12.418Z",
+        "summary": "poderia por favor fazer um documento pra mimm",
+        "timestamp": "2026-09-25T00:08:04.950Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "abre o youtube",
-        "timestamp": "2026-09-23T23:11:14.328Z",
+        "summary": "em txt mesmo fazer um documento sobre você",
+        "timestamp": "2026-09-25T00:10:30.199Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "piot que não ta, pede pro automate abrir o youtube dnv por favor",
-        "timestamp": "2026-09-23T23:11:53.326Z",
+        "summary": "ehehehehe, manda bala",
+        "timestamp": "2026-09-25T00:11:08.364Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "tenta abrir a wikipedia agora",
-        "timestamp": "2026-09-23T23:22:08.254Z",
+        "summary": "hmmm, faz na minha maquina mesmo",
+        "timestamp": "2026-09-25T00:11:28.677Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "simm, abriuu",
-        "timestamp": "2026-09-24T00:01:56.084Z",
+        "summary": "abre as fontes no crhome",
+        "timestamp": "2026-09-25T00:14:03.296Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "Da um liga nisso aqui",
-        "timestamp": "2026-09-24T00:02:27.318Z",
+        "summary": "oi, ta ai?",
+        "timestamp": "2026-09-26T02:26:09.447Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "ah n esquece",
-        "timestamp": "2026-09-24T00:02:35.389Z",
+        "summary": "faz a boa pra mim abre o youtube entra no hitorico e abre a live da gabbis que em tese ta ao vivo",
+        "timestamp": "2026-09-26T02:26:19.319Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "primeiramente, faz um fvor pra mim, abre o bloco de todas",
-        "timestamp": "2026-09-24T00:03:14.395Z",
+        "summary": "faz uma skill disso",
+        "timestamp": "2026-09-26T02:44:34.414Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "sabe muito fia",
-        "timestamp": "2026-09-24T00:11:28.249Z",
+        "summary": "disso que vc acabou de fazer",
+        "timestamp": "2026-09-26T02:44:50.805Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "abre o bloco de notas dnv",
-        "timestamp": "2026-09-24T00:11:41.160Z",
+        "summary": "só mandar pro automate falando que quer criar a skill",
+        "timestamp": "2026-09-26T02:45:19.981Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "manda umas 3 mensagens ai",
-        "timestamp": "2026-09-24T00:37:58.679Z",
+        "summary": "qq vc acha disso?",
+        "timestamp": "2026-09-26T03:11:18.286Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "Muda o nome dessa conversa para kasane teto",
-        "timestamp": "2026-09-24T00:53:17.706Z",
+        "summary": "oq vc acha disso?",
+        "timestamp": "2026-09-26T03:11:53.082Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "muda o nome desse chat",
-        "timestamp": "2026-09-24T00:54:28.150Z",
+        "summary": "[O usuário referenciou explicitamente estas skills do AutoMate (obrigatório honrar o procedimento delas): /abre-historico-do-youtube-e-live-da-gabbis]\n\nce viuuu, qq se acha sobre isso?",
+        "timestamp": "2026-09-26T03:22:01.526Z",
+        "channelId": "ui-desktop"
+      },
+      {
+        "summary": "manda ele executa essa skill ent",
+        "timestamp": "2026-09-26T03:23:32.753Z",
+        "channelId": "ui-desktop"
+      },
+      {
+        "summary": "[O usuário referenciou explicitamente estas skills do AutoMate (obrigatório honrar o procedimento delas): /abre-historico-do-youtube-e-live-da-gabbis]\n\nexecuta essa skill",
+        "timestamp": "2026-09-26T03:26:21.950Z",
+        "channelId": "ui-desktop"
+      },
+      {
+        "summary": "[O usuário referenciou explicitamente estas skills do AutoMate (obrigatório honrar o procedimento delas): /abre-historico-do-youtube-e-live-da-gabbis]\n\nexecuta ai",
+        "timestamp": "2026-09-26T03:30:41.782Z",
+        "channelId": "ui-desktop"
+      },
+      {
+        "summary": "fala algo grande ai",
+        "timestamp": "2026-09-26T03:45:53.736Z",
         "channelId": "ui-desktop"
       },
       {
         "summary": "abre o bloco de notas",
-        "timestamp": "2026-09-24T00:54:53.618Z",
+        "timestamp": "2026-09-26T04:10:43.794Z",
         "channelId": "ui-desktop"
       },
       {
-        "summary": "coloca um \"oieee\" no bloco de notas",
-        "timestamp": "2026-09-24T00:55:33.886Z",
-        "channelId": "ui-desktop"
-      },
-      {
-        "summary": "escreveu não",
-        "timestamp": "2026-09-24T00:55:48.200Z",
-        "channelId": "ui-desktop"
-      },
-      {
-        "summary": "acabei de ver, vaziozinho",
-        "timestamp": "2026-09-24T00:55:59.368Z",
-        "channelId": "ui-desktop"
-      },
-      {
-        "summary": "isso definitivametne não é um oi",
-        "timestamp": "2026-09-24T00:56:39.446Z",
-        "channelId": "ui-desktop"
-      },
-      {
-        "summary": "abre o bloco de nbotas",
-        "timestamp": "2026-09-24T01:00:51.989Z",
+        "summary": "abre o bloco de nota e escre oieee",
+        "timestamp": "2026-09-26T04:23:48.235Z",
         "channelId": "ui-desktop"
       }
     ]

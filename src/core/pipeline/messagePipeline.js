@@ -43,6 +43,7 @@ import {
   userBoundarySnapshot
 } from "../channels/userBoundaryDetect.js";
 import { assessActivityFocus } from "../life/activityFocus.js";
+import { scoreSleepDisturbance } from "../life/sleepDisturbanceDetect.js";
 import { contextualSeed, chance } from "../brain/rng.js";
 import { RESPONSE_MODES, shouldStartTypingIndicator } from "./responseModes.js";
 
@@ -234,7 +235,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     batchedCount = 1,
     isOwner: isOwnerFlag = null,
     mainObserveOnly = false,
-    tetosCommand = false
+    tetosCommand = false,
+    onLlmToken = null
   } = payload;
   const isTetosBypass = Boolean(tetosCommand);
   const effectiveCloseDecision = isTetosBypass ? "open" : (closeDecision ?? null);
@@ -356,7 +358,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
 
   const profileAfterBoundary = runtime.longTerm.getProfile(safeUserId ?? "default", channelScope);
   const userBoundary = userBoundarySnapshot(profileAfterBoundary);
-  const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
+  let sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
   const lifeSnap = runtime.brainOrchestrator?.life?.getSnapshot?.() ?? {};
   const activityFocus = assessActivityFocus(lifeSnap);
 
@@ -454,6 +456,15 @@ export async function runMessagePipeline(runtime, payload = {}) {
     (trimmedInput.length > 12 ||
       /[?]/.test(trimmedInput) ||
       /\b(fala|conta|me diz|o que|como|por que|pq)\b/i.test(trimmedInput));
+
+  if (sleepSnap.isAvailable === false && safeChannelId === "ui-desktop") {
+    const sleep = runtime.brainOrchestrator?.life?.sleep;
+    sleep?.checkTemporaryWake?.();
+    const wakeText = String(message ?? input ?? "").trim();
+    const disturbScore = Math.max(scoreSleepDisturbance(wakeText, { floodCount: 3 }), 0.72);
+    sleep?.attemptDisturbanceWake?.({ score: disturbScore, floodCount: 3 });
+    sleepSnap = sleep?.getSnapshot?.() ?? sleepSnap;
+  }
 
   const asleepUnavailable = sleepSnap.isAvailable === false;
   const boundaryBlocksReply =
@@ -933,6 +944,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
         isReply
       }),
       historicalMultimodalContext,
+      ...(typeof onLlmToken === "function" && safeChannelId === "ui-desktop"
+        ? { onLlmToken }
+        : {}),
       ...(relationshipMeta ?? {}),
       ...searchMeta,
       ...operationMeta

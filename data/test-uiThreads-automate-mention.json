@@ -1,0 +1,33 @@
+{
+  "threads": [
+    {
+      "id": "thread-at",
+      "title": "Chat",
+      "updatedAt": "2026-09-26T03:44:59.333Z",
+      "messages": [
+        {
+          "id": "u-1790394299332",
+          "role": "user",
+          "text": "por favor @automate abre o bloco de notas",
+          "createdAt": "2026-09-26T03:44:59.332Z",
+          "meta": {
+            "route": "automate"
+          }
+        },
+        {
+          "id": "auto-run-1790394299333-y6sw-start",
+          "role": "assistant",
+          "text": "AutoMate · Plano",
+          "createdAt": "2026-09-26T03:44:59.333Z",
+          "meta": {
+            "automate": {
+              "kind": "run",
+              "runId": "run-1790394299333-y6sw",
+              "status": "running"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

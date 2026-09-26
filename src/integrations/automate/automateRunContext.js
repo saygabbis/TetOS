@@ -4,9 +4,19 @@ const byInstructionId = new Map();
 /** @type {Map<string, string>} */
 const threadIdByRunId = new Map();
 
+/** @type {Map<string, string>} */
+const clientRunIdByThread = new Map();
+
+/** Último run cliente (run-*) enfileirado pela UI — mapeia instructionId antes do register. */
+let lastClientAutomateRun = null;
+
 export function bindRunToThread(runId, threadId) {
   if (!runId || !threadId) return;
   threadIdByRunId.set(runId, threadId);
+  if (String(runId).startsWith("run-")) {
+    clientRunIdByThread.set(threadId, runId);
+    lastClientAutomateRun = { runId, threadId, at: Date.now() };
+  }
 }
 
 export function resolveThreadIdForRun(runId) {
@@ -25,10 +35,40 @@ export function resolveAutomateRun(params = {}) {
   if (instructionId && byInstructionId.has(instructionId)) {
     return { ...byInstructionId.get(instructionId), instructionId };
   }
-  const runId = instructionId ?? params.turnId ?? "run-active";
+
+  const threadFromParam = params.threadId ?? null;
+  const clientFromThread =
+    threadFromParam && clientRunIdByThread.has(threadFromParam)
+      ? clientRunIdByThread.get(threadFromParam)
+      : null;
+
+  if (instructionId) {
+    const recent = lastClientAutomateRun;
+    if (recent && Date.now() - recent.at < 120_000) {
+      return {
+        runId: clientFromThread ?? recent.runId,
+        threadId: threadFromParam ?? recent.threadId,
+        instructionId,
+      };
+    }
+  }
+
+  const recent = lastClientAutomateRun;
+  const fallbackRunId = params.turnId ?? "run-active";
+  const threadId =
+    threadFromParam ??
+    resolveThreadIdForRun(clientFromThread) ??
+    recent?.threadId ??
+    null;
+  const runId =
+    clientFromThread ??
+    (instructionId && recent && Date.now() - recent.at < 120_000 ? recent.runId : null) ??
+    (recent && Date.now() - recent.at < 120_000 ? recent.runId : null) ??
+    fallbackRunId;
+
   return {
     runId,
-    threadId: params.threadId ?? "thread-1",
+    threadId: threadId ?? recent?.threadId ?? "thread-1",
     instructionId,
   };
 }

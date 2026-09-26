@@ -1,0 +1,36 @@
+{
+  "threads": [
+    {
+      "id": "thread-skills",
+      "title": "Chat",
+      "updatedAt": "2026-09-26T03:44:59.268Z",
+      "messages": [
+        {
+          "id": "u-1790394299266",
+          "role": "user",
+          "text": "abre o youtube",
+          "createdAt": "2026-09-26T03:44:59.266Z",
+          "meta": {
+            "skillRefs": [
+              "abre-o-youtube"
+            ],
+            "route": "automate"
+          }
+        },
+        {
+          "id": "auto-run-1790394299268-nt79-start",
+          "role": "assistant",
+          "text": "AutoMate · Plano",
+          "createdAt": "2026-09-26T03:44:59.268Z",
+          "meta": {
+            "automate": {
+              "kind": "run",
+              "runId": "run-1790394299268-nt79",
+              "status": "running"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

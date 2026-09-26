@@ -4,6 +4,8 @@ import { handleIncomingMessage } from "../../../app/createRuntime.js";
 
 import { applyUiOutgoingActions } from "../../../integrations/automate/uiReplies.js";
 import { attachAutomateChatHistory } from "../../../integrations/automate/uiAutomateChatHistory.js";
+import { normalizeSkillRefs, skillRefsPipelinePrefix } from "../../../integrations/automate/skillRefs.js";
+import { parseAutomateMention, resolveUiMessageMode } from "../../../integrations/automate/parseAutomateMention.js";
 
 import { publishAssistantTyping } from "../ui/uiEventPublishers.js";
 
@@ -298,10 +300,11 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     const text = req.body?.text ?? "";
 
     const attachments = normalizeAttachments(req.body?.attachments);
+    const skillRefs = normalizeSkillRefs(req.body?.skillRefs);
 
-    if (!text.trim() && attachments.length === 0) {
+    if (!text.trim() && attachments.length === 0 && skillRefs.length === 0) {
 
-      return res.status(400).json({ error: "text ou attachments é obrigatório" });
+      return res.status(400).json({ error: "text, attachments ou skillRefs é obrigatório" });
 
     }
 
@@ -323,22 +326,22 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
     const imageCount = countImageAttachments(attachments);
 
-    if (imageCount > 0) {
-
+    const automateMention = parseAutomateMention(text);
+    const uiMode = resolveUiMessageMode(req.body?.mode, text);
+    if (imageCount > 0 || skillRefs.length > 0 || uiMode === "automate") {
       userMsg.meta = {
-
-        insights: {
-
-          count: imageCount,
-
-          analyzed: true,
-
-          stub: true,
-
-        },
-
+        ...(imageCount > 0
+          ? {
+              insights: {
+                count: imageCount,
+                analyzed: true,
+                stub: true,
+              },
+            }
+          : {}),
+        ...(skillRefs.length > 0 ? { skillRefs } : {}),
+        ...(uiMode === "automate" ? { route: "automate" } : {}),
       };
-
     }
 
     const isFirstMessage = (thread.messages ?? []).length === 0;
@@ -388,25 +391,57 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
 
     try {
-      const mode = req.body?.mode === "automate" ? "automate" : "chat";
+      const mode = uiMode;
 
-      const pipelineText =
-        text.trim() ||
-        (imageCount > 0 ? `[${imageCount} imagem(ns) anexada(s) na conversa UI]` : "");
+      const rawPipelineText =
+        (automateMention.hasAutomate ? automateMention.intentText : text.trim()) ||
+        (skillRefs.length > 0
+          ? "Executar conforme as skills referenciadas pelo usuário."
+          : imageCount > 0
+            ? `[${imageCount} imagem(ns) anexada(s) na conversa UI]`
+            : "");
+      const pipelineWithSkills =
+        skillRefs.length > 0
+          ? `${skillRefsPipelinePrefix(skillRefs)}${rawPipelineText}`
+          : rawPipelineText;
+
+      const assistantDraftId = `a-${Date.now()}-stream`;
+      const onLlmToken =
+        mode === "chat"
+          ? (chunk) => {
+              if (!chunk) return;
+              uiBus.publish({
+                type: "message.delta",
+                threadId: thread.id,
+                messageId: assistantDraftId,
+                text: chunk,
+              });
+            }
+          : undefined;
 
       if (mode === "automate") {
         await applyUiOutgoingActions({
-          replies: { actions: [{ type: "automate", intent: pipelineText }] },
+          replies: {
+            actions: [
+              {
+                type: "automate",
+                intent: pipelineWithSkills,
+                ...(skillRefs.length ? { skillRefs } : {}),
+              },
+            ],
+          },
           thread,
           uiBus,
           automateClient,
         });
       } else {
         const { replies } = await handleIncomingMessage(runtime, {
-          message: pipelineText,
+          message: pipelineWithSkills,
           userId,
           sessionId,
           channelId: "ui-desktop",
+          onLlmToken,
+          uiAssistantMessageId: assistantDraftId,
         });
 
         await applyUiOutgoingActions({
@@ -414,6 +449,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
           thread,
           uiBus,
           automateClient,
+          assistantMessageId: assistantDraftId,
         });
 
         if (imageCount > 0) {

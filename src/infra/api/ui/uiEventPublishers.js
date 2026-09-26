@@ -30,6 +30,6 @@ export function publishAssistantTyping(uiBus, threadId, active) {
   uiBus.publish({
     type: "assistant.typing",
     threadId,
-    active: Boolean(active),
+    isTyping: Boolean(active),
   });
 }

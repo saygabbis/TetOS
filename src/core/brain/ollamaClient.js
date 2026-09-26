@@ -91,6 +91,73 @@ export class OllamaClient {
   }
 
   /**
+   * Geração com streaming (tokens via onChunk).
+   * @param {string} prompt
+   * @param {(chunk: string) => void} onChunk
+   */
+  async generateStream(prompt, onChunk) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+    let full = "";
+    try {
+      const response = await fetch(`${this.baseUrl}/api/generate`, {
+        method: "POST",
+        headers: this._headers(),
+        body: JSON.stringify({
+          model: this.model,
+          prompt,
+          stream: true,
+          options: {
+            temperature: this.temperature,
+            ...(this.numPredict != null ? { num_predict: this.numPredict } : {}),
+          },
+        }),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Ollama error: ${response.status} ${errText}`);
+      }
+      if (!response.body) {
+        return await this.generate(prompt);
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          let data;
+          try {
+            data = JSON.parse(trimmed);
+          } catch {
+            continue;
+          }
+          const piece = String(data?.response ?? "");
+          if (piece) {
+            full += piece;
+            onChunk?.(piece);
+          }
+          if (data?.done) break;
+        }
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+    const text = full.trim();
+    if (!text) {
+      return await this.generate(prompt);
+    }
+    return text;
+  }
+
+  /**
    * Chat multimodal (mesmo protocolo da Sellye: POST /api/chat com images em base64).
    * @param {{ role: string, content: string }[]} messages
    * @param {string[]} [imagePaths] caminhos locais codificados na última mensagem user

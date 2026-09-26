@@ -1210,7 +1210,12 @@ export class Agent {
     //  `\n[agent] === END FULL PROMPT ===\n`
     //);
 
-    const reply = await this.brain.generate(fullPrompt);
+    let reply;
+    if (typeof meta.onLlmToken === "function" && typeof this.brain.generateStream === "function") {
+      reply = await this.brain.generateStream(fullPrompt, meta.onLlmToken);
+    } else {
+      reply = await this.brain.generate(fullPrompt);
+    }
 
     console.log(
       `\n[agent] === LLM RAW RESPONSE (userId=${meta?.userId ?? "?"}, session=${sessionKey}) ===\n` +

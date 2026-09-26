@@ -1,4 +1,14 @@
+import { appendFile } from "node:fs/promises";
 import { WebSocketServer } from "ws";
+
+const DEBUG_LOG_PATH =
+  process.env.TETOS_DEBUG_LOG?.trim() ||
+  "C:\\Users\\Administrator\\Desktop\\Kevin\\AutoMate\\.cursor\\debug-9049d4.log";
+
+function agentDebugLog(payload) {
+  const line = JSON.stringify({ sessionId: "9049d4", timestamp: Date.now(), ...payload });
+  void appendFile(DEBUG_LOG_PATH, `${line}\n`).catch(() => undefined);
+}
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { translateAutomateNotification, getProtocolVersion } from "./eventTranslator.js";
 import { auditAutomateEnqueue } from "./auditLog.js";
@@ -63,7 +73,26 @@ export class DeviceGateway {
           transport = new McpRelayTransport(ws, {
             onNotification: (method, params) => {
               const events = translateAutomateNotification(method, params, { uiBus: this.uiBus });
+              // #region agent log
+              agentDebugLog({
+                location: "deviceGateway.js:onNotification",
+                message: "automate notification",
+                hypothesisId: "B",
+                data: {
+                  method,
+                  instructionId: params?.instructionId ?? null,
+                  eventTypes: events.map((e) => e?.type),
+                },
+              });
+              // #endregion
               for (const event of events) {
+                if (
+                  event?.type === "plan.started" &&
+                  event.runId &&
+                  !String(event.runId).startsWith("run-")
+                ) {
+                  continue;
+                }
                 this.uiBus.publish(event);
               }
             },

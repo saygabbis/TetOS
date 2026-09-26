@@ -58,6 +58,15 @@ export function translateAutomateNotification(method, params, options = {}) {
       const line = params?.message ?? params?.text;
       if (!line || typeof line !== "string") return [];
       const uiBus = options.uiBus;
+      if (params?.streaming && uiBus && threadId) {
+        uiBus.publish({
+          type: "message.delta",
+          threadId,
+          messageId: `auto-${runId}-thinking`,
+          text: line,
+        });
+        return [];
+      }
       if (uiBus) {
         let buf = thinkingBuffer.get(runId);
         if (!buf) {
@@ -108,14 +117,7 @@ export function translateAutomateNotification(method, params, options = {}) {
     }
     case "task_progress":
       if (params?.status === "queued") {
-        return [
-          {
-            type: "plan.started",
-            runId,
-            threadId,
-            title: "Plano",
-          },
-        ];
+        return [];
       }
       return [{ type: "run.status", runId, status: "running" }];
     case "task_completed":
@@ -130,15 +132,7 @@ export function translateAutomateNotification(method, params, options = {}) {
         },
       ];
     case "turn_started":
-      return [
-        {
-          type: "plan.started",
-          runId,
-          threadId,
-          title: "Plano",
-        },
-        { type: "presence", state: "on_computer", label: "Teto está no computador" },
-      ];
+      return [{ type: "presence", state: "on_computer", label: "Teto está no computador" }];
     default:
       return [];
   }

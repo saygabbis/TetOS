@@ -1,4 +1,14 @@
+import { appendFile } from "node:fs/promises";
 import { bindRunToThread, registerAutomateRun } from "./automateRunContext.js";
+
+const DEBUG_LOG_PATH =
+  process.env.TETOS_DEBUG_LOG?.trim() ||
+  "C:\\Users\\Administrator\\Desktop\\Kevin\\AutoMate\\.cursor\\debug-9049d4.log";
+
+function agentDebugLog(payload) {
+  const line = JSON.stringify({ sessionId: "9049d4", timestamp: Date.now(), ...payload });
+  void appendFile(DEBUG_LOG_PATH, `${line}\n`).catch(() => undefined);
+}
 
 function parseInstructionFromEnqueueResult(result) {
   const content = result?.content;
@@ -13,6 +23,14 @@ function parseInstructionFromEnqueueResult(result) {
 }
 
 function publishAutomateRunStarted(uiBus, { runId, threadId }) {
+  // #region agent log
+  agentDebugLog({
+    location: "uiReplies.js:publishAutomateRunStarted",
+    message: "plan.started",
+    hypothesisId: "F",
+    data: { runId, threadId },
+  });
+  // #endregion
   uiBus.publish({
     type: "plan.started",
     runId,
@@ -52,6 +70,7 @@ export async function applyUiOutgoingActions({
   thread,
   uiBus,
   automateClient,
+  assistantMessageId = null,
 }) {
   const actions = Array.isArray(replies?.actions) ? replies.actions : [];
   const fallbackTexts = Array.isArray(replies)
@@ -60,7 +79,7 @@ export async function applyUiOutgoingActions({
 
   if (actions.length === 0 && fallbackTexts.length > 0) {
     const assistantMsg = {
-      id: `a-${Date.now()}`,
+      id: assistantMessageId ?? `a-${Date.now()}`,
       role: "assistant",
       text: fallbackTexts.join("\n"),
       createdAt: new Date().toISOString(),
@@ -71,15 +90,27 @@ export async function applyUiOutgoingActions({
     return;
   }
 
+  let usedStreamMessageId = false;
   for (const action of actions) {
     if (action.type === "message" && action.text) {
+      const msgId =
+        assistantMessageId && !usedStreamMessageId
+          ? assistantMessageId
+          : `a-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      if (assistantMessageId && !usedStreamMessageId) usedStreamMessageId = true;
+      const existingIdx = thread.messages.findIndex((m) => m.id === msgId);
       const assistantMsg = {
-        id: `a-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        id: msgId,
         role: "assistant",
         text: action.text,
-        createdAt: new Date().toISOString(),
+        createdAt:
+          existingIdx >= 0 ? thread.messages[existingIdx].createdAt : new Date().toISOString(),
       };
-      thread.messages.push(assistantMsg);
+      if (existingIdx >= 0) {
+        thread.messages[existingIdx] = { ...thread.messages[existingIdx], ...assistantMsg };
+      } else {
+        thread.messages.push(assistantMsg);
+      }
       thread.updatedAt = new Date().toISOString();
       uiBus.publish({ type: "message.final", threadId: thread.id, message: assistantMsg });
       continue;
@@ -93,11 +124,26 @@ export async function applyUiOutgoingActions({
         const result = await automateClient.enqueue(action.intent, undefined, {
           threadId: thread.id,
           runId,
+          skillNames: Array.isArray(action.skillRefs) ? action.skillRefs : undefined,
         });
         const instructionId = parseInstructionFromEnqueueResult(result);
         if (instructionId) {
           registerAutomateRun({ instructionId, runId, threadId: thread.id });
         }
+        // #region agent log
+        fetch("http://127.0.0.1:7540/ingest/5ce99a82-6a15-499f-8891-e34fe67c6977", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9049d4" },
+          body: JSON.stringify({
+            sessionId: "9049d4",
+            location: "uiReplies.js:automate enqueue ok",
+            message: "enqueue completed",
+            data: { runId, threadId: thread.id, instructionId },
+            timestamp: Date.now(),
+            hypothesisId: "A",
+          }),
+        }).catch(() => undefined);
+        // #endregion
       } catch (err) {
         const message = err?.message ?? "falha ao enfileirar";
         publishAutomateFailure(uiBus, thread, { runId, message });
