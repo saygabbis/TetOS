@@ -21,6 +21,20 @@ export function requireSession(req, res, next) {
   return next();
 }
 
+/**
+ * Como requireSession, mas aceita `?token=` — necessário para <img>/<video>, que não enviam header Authorization.
+ */
+export function requireSessionOrQueryToken(req, res, next) {
+  const expected = getSessionTokenFromEnv();
+  const header = req.headers.authorization ?? "";
+  const bearer = header.startsWith("Bearer ") ? header.slice(7) : "";
+  const queryToken = typeof req.query?.token === "string" ? req.query.token : "";
+  if ((bearer && bearer === expected) || (queryToken && queryToken === expected)) {
+    return next();
+  }
+  return res.status(401).json({ error: "Não autorizado" });
+}
+
 export function validateStreamSessionToken(token) {
   if (!token) return false;
   try {

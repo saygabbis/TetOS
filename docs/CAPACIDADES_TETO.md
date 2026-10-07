@@ -90,6 +90,13 @@ A mídia alvo pode vir:
 - em reply;
 - do histórico recente de mídia do chat.
 
+## Interface Desktop
+
+Tudo o que a Teto faz com mídia no WhatsApp também funciona pela interface desktop: enviar imagens, vídeos, áudios e
+figurinhas; comandos digitados (`.sticker`, `.toimg`, `.removebg`, `.yt <link>`, `.gerar`...); menu de ações em cada mídia;
+seletor do repertório de figurinhas; e as ações do agente (`sticker()`, `reagir()`, downloads, geração de imagem).
+Detalhes em [INTERFACE_DESKTOP.md](./INTERFACE_DESKTOP.md).
+
 ## Repertório de Figurinhas
 
 A Teto mantém um repertório local em `data/stickers/`:
