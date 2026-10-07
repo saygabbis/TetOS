@@ -1,5 +1,6 @@
 import { appendFile } from "node:fs/promises";
 import { bindRunToThread, registerAutomateRun } from "./automateRunContext.js";
+import { applyUiMediaAction, isUiMediaAction } from "../ui/uiMediaActions.js";
 
 const DEBUG_LOG_PATH =
   process.env.TETOS_DEBUG_LOG?.trim() ||
@@ -71,6 +72,7 @@ export async function applyUiOutgoingActions({
   uiBus,
   automateClient,
   assistantMessageId = null,
+  mediaContext = null,
 }) {
   const actions = Array.isArray(replies?.actions) ? replies.actions : [];
   const fallbackTexts = Array.isArray(replies)
@@ -113,6 +115,12 @@ export async function applyUiOutgoingActions({
       }
       thread.updatedAt = new Date().toISOString();
       uiBus.publish({ type: "message.final", threadId: thread.id, message: assistantMsg });
+      continue;
+    }
+
+    // Figurinhas, mídia, downloads, geração de imagem, repertório e reações: mesmas ações do WhatsApp.
+    if (mediaContext && isUiMediaAction(action)) {
+      await applyUiMediaAction({ ...mediaContext, thread, uiBus }, action);
       continue;
     }
 

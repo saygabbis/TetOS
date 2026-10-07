@@ -11,42 +11,85 @@ import { publishAssistantTyping } from "../ui/uiEventPublishers.js";
 
 import { readJson, writeJson } from "../../utils/fileStore.js";
 
+import { registerUiMediaRoutes } from "./uiMedia.js";
+import { UiMediaService } from "../../../integrations/ui/uiMediaService.js";
+import { autoSaveIncomingStickers, tryHandleUiCommand } from "../../../integrations/ui/uiMediaActions.js";
+import { ingestAttachment, mediaInputFromRef } from "../../../integrations/ui/uiMediaStore.js";
+import { enrichMediaVision } from "../../../modules/vision/mediaVisionEnrich.js";
+
 
 
 function getStorePath() {
   return process.env.TETOS_UI_THREADS_PATH ?? "./data/uiThreads.json";
 }
 
-function normalizeAttachments(raw) {
+/**
+ * Persiste os anexos da mensagem (dataUrl/base64 ou mediaId de um upload prévio) no armazenamento de
+ * mídia da UI e devolve referências leves (`/ui/media/<id>`). URLs http(s) externas passam direto;
+ * `blob:` não é legível pelo servidor e é descartado.
+ */
+function normalizeAttachments(raw, { mediaDir }) {
   if (!Array.isArray(raw)) return [];
   return raw
-    .map((item, index) => {
-      if (!item || typeof item !== "object") return null;
-      const dataUrl =
-        typeof item.dataUrl === "string"
-          ? item.dataUrl
-          : typeof item.base64 === "string"
-            ? item.base64.startsWith("data:")
-              ? item.base64
-              : `data:${item.mimeType ?? "image/png"};base64,${item.base64}`
-            : null;
-      const mimeType =
-        item.mimeType ??
-        (dataUrl?.match(/^data:([^;]+);/)?.[1] ?? "image/png");
-      const kind = item.kind ?? (String(mimeType).startsWith("image/") ? "image" : "file");
-      if (!dataUrl && !item.url) return null;
-      return {
-        kind,
-        mimeType,
-        name: item.name ?? `anexo-${index + 1}`,
-        url: item.url ?? dataUrl ?? undefined,
-      };
+    .map((item) => {
+      try {
+        const stored = ingestAttachment(item, { dir: mediaDir });
+        if (stored) return stored;
+      } catch {
+        /* cai para URL externa abaixo */
+      }
+      if (item && typeof item.url === "string" && /^https?:\/\//i.test(item.url)) {
+        const mimeType = item.mimeType ?? "image/png";
+        return {
+          kind: item.kind ?? (String(mimeType).startsWith("image/") ? "image" : "file"),
+          mimeType,
+          name: item.name ?? "anexo",
+          url: item.url,
+        };
+      }
+      return null;
     })
     .filter(Boolean);
 }
 
+/** Descrição curta dos anexos para o texto do pipeline (a Teto cita `message_id` nos comandos de mídia). */
+function describeAttachmentsForPipeline(attachments, messageId) {
+  const labels = { image: "imagem", sticker: "figurinha", video: "vídeo", audio: "áudio", file: "arquivo" };
+  return attachments
+    .map((a, i) => `${labels[a.kind] ?? "arquivo"} (message_id: ${messageId}${i > 0 ? `#${i}` : ""})`)
+    .join(", ");
+}
+
 function countImageAttachments(attachments) {
   return attachments.filter((a) => a.kind === "image" || String(a.mimeType ?? "").startsWith("image/")).length;
+}
+
+async function describeFirstMedia(runtime, mediaDir, attachments, text) {
+  const first = attachments.find((a) => a.mediaId);
+  const input = first ? mediaInputFromRef(first, { dir: mediaDir }) : null;
+  if (!input) return null;
+  const media = {
+    type: input.type,
+    path: input.path,
+    ...(text ? { caption: text } : {}),
+    ...(input.isAnimated ? { isAnimated: true } : {}),
+  };
+  if (["image", "sticker", "gif", "video"].includes(input.type) && runtime?.defaults) {
+    try {
+      const transcript = await Promise.race([
+        enrichMediaVision(runtime, {
+          filePath: input.path,
+          mediaType: input.type,
+          isAnimated: Boolean(input.isAnimated),
+        }),
+        new Promise((resolve) => setTimeout(() => resolve(null), 25_000)),
+      ]);
+      if (transcript) media.transcript = transcript;
+    } catch {
+      /* visão é opcional */
+    }
+  }
+  return media;
 }
 
 const DEFAULT_THREAD_PAGE = 50;
@@ -169,6 +212,16 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
   const threadStore = loadThreadStore();
 
   attachAutomateChatHistory(uiBus, { threadStore, persistThreadStore });
+
+  const mediaService = runtime?.uiMediaService ?? new UiMediaService({ runtime });
+  registerUiMediaRoutes(app, {
+    service: mediaService,
+    threadStore,
+    persistThreadStore,
+    uiBus,
+    runtime,
+    ensureThread,
+  });
 
   app.get("/ui/threads", requireSession, (req, res) => {
     purgeEmptyThreads(threadStore);
@@ -299,7 +352,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
     const text = req.body?.text ?? "";
 
-    const attachments = normalizeAttachments(req.body?.attachments);
+    const attachments = normalizeAttachments(req.body?.attachments, { mediaDir: mediaService.dir });
     const skillRefs = normalizeSkillRefs(req.body?.skillRefs);
 
     if (!text.trim() && attachments.length === 0 && skillRefs.length === 0) {
@@ -364,22 +417,6 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
     persistThreadStore(threadStore);
 
-    for (const media of attachments) {
-
-      uiBus.publish({
-
-        type: "attachment",
-
-        threadId: thread.id,
-
-        messageId: userMsg.id,
-
-        media,
-
-      });
-
-    }
-
     uiBus.publish({ type: "message.final", threadId: thread.id, message: userMsg });
 
 
@@ -388,18 +425,39 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
     const sessionId = thread.id;
 
+    const mediaContext = { runtime, service: mediaService, userId };
+
 
 
     try {
       const mode = uiMode;
 
+      if (attachments.length > 0) {
+        await autoSaveIncomingStickers({ ...mediaContext, uiBus, thread }, attachments);
+      }
+
+      // Comandos com prefixo (".sticker", ".yt <link>", ".gerar ...") rodam direto, como no WhatsApp.
+      if (mode === "chat" && skillRefs.length === 0 && text.trim()) {
+        const handled = await tryHandleUiCommand({ ...mediaContext, uiBus, thread }, text.trim());
+        if (handled) {
+          persistThreadStore(threadStore);
+          return res.json({ ok: true });
+        }
+      }
+
+      const attachmentNote = describeAttachmentsForPipeline(
+        attachments.filter((a) => a.mediaId),
+        userMsg.id,
+      );
       const rawPipelineText =
         (automateMention.hasAutomate ? automateMention.intentText : text.trim()) ||
         (skillRefs.length > 0
           ? "Executar conforme as skills referenciadas pelo usuário."
-          : imageCount > 0
-            ? `[${imageCount} imagem(ns) anexada(s) na conversa UI]`
-            : "");
+          : attachmentNote
+            ? `[anexo: ${attachmentNote}]`
+            : imageCount > 0
+              ? `[${imageCount} imagem(ns) anexada(s) na conversa UI]`
+              : "");
       const pipelineWithSkills =
         skillRefs.length > 0
           ? `${skillRefsPipelinePrefix(skillRefs)}${rawPipelineText}`
@@ -435,13 +493,20 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
           automateClient,
         });
       } else {
+        const media = await describeFirstMedia(runtime, mediaService.dir, attachments, text.trim());
+        const messageForPipeline =
+          attachmentNote && text.trim() && skillRefs.length === 0 && !automateMention.hasAutomate
+            ? `${pipelineWithSkills}\n[anexos: ${attachmentNote}]`
+            : pipelineWithSkills;
         const { replies } = await handleIncomingMessage(runtime, {
-          message: pipelineWithSkills,
+          message: messageForPipeline,
           userId,
           sessionId,
           channelId: "ui-desktop",
           onLlmToken,
           uiAssistantMessageId: assistantDraftId,
+          messageKey: { id: userMsg.id },
+          ...(media ? { media } : {}),
         });
 
         await applyUiOutgoingActions({
@@ -450,6 +515,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
           uiBus,
           automateClient,
           assistantMessageId: assistantDraftId,
+          mediaContext,
         });
 
         if (imageCount > 0) {
@@ -463,9 +529,6 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
                 stub: true,
               },
             };
-            if (attachments.length) {
-              lastAssistant.attachments = attachments;
-            }
             uiBus.publish({
               type: "message.final",
               threadId: thread.id,

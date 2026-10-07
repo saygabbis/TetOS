@@ -27,7 +27,8 @@ import { attachUiCors } from "./middleware/uiCors.js";
 
 const app = express();
 attachUiCors(app);
-app.use(express.json());
+// Anexos pequenos ainda podem vir como dataUrl no JSON; arquivos grandes usam POST /ui/media.
+app.use(express.json({ limit: process.env.TETOS_UI_JSON_LIMIT ?? "25mb" }));
 
 const uiBus = new UiEventBus();
 const deviceRegistry = new DeviceRegistry();
