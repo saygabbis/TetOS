@@ -419,151 +419,158 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
     uiBus.publish({ type: "message.final", threadId: thread.id, message: userMsg });
 
-
-
     const userId = req.body?.userId ?? "ui-user";
-
     const sessionId = thread.id;
-
     const mediaContext = { runtime, service: mediaService, userId };
 
+    // Responde logo: o desktop recebe eventos pelo WebSocket; manter o POST aberto bloqueia a UI por minutos.
+    res.status(202).json({ ok: true, accepted: true });
 
+    void (async () => {
+      const pipelineStartedAt = Date.now();
+      const debugLog = (message, data = {}) => {
+        const line = JSON.stringify({
+          sessionId: "fa6e47",
+          location: "uiThreads.js:pipeline",
+          message,
+          hypothesisId: "H-SERVER",
+          data: { threadId: thread.id, elapsedMs: Date.now() - pipelineStartedAt, ...data },
+          timestamp: Date.now(),
+        });
+        void fetch("http://127.0.0.1:7579/ingest/ac22d456-be81-4c32-b29a-515346f400b1", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "fa6e47" },
+          body: line,
+        }).catch(() => undefined);
+      };
+      try {
+        const mode = uiMode;
+        debugLog("pipeline.start", { mode });
 
-    try {
-      const mode = uiMode;
-
-      if (attachments.length > 0) {
-        await autoSaveIncomingStickers({ ...mediaContext, uiBus, thread }, attachments);
-      }
-
-      // Comandos com prefixo (".sticker", ".yt <link>", ".gerar ...") rodam direto, como no WhatsApp.
-      if (mode === "chat" && skillRefs.length === 0 && text.trim()) {
-        const handled = await tryHandleUiCommand({ ...mediaContext, uiBus, thread }, text.trim());
-        if (handled) {
-          persistThreadStore(threadStore);
-          return res.json({ ok: true });
+        if (attachments.length > 0) {
+          await autoSaveIncomingStickers({ ...mediaContext, uiBus, thread }, attachments);
         }
-      }
 
-      const attachmentNote = describeAttachmentsForPipeline(
-        attachments.filter((a) => a.mediaId),
-        userMsg.id,
-      );
-      const rawPipelineText =
-        (automateMention.hasAutomate ? automateMention.intentText : text.trim()) ||
-        (skillRefs.length > 0
-          ? "Executar conforme as skills referenciadas pelo usuário."
-          : attachmentNote
-            ? `[anexo: ${attachmentNote}]`
-            : imageCount > 0
-              ? `[${imageCount} imagem(ns) anexada(s) na conversa UI]`
-              : "");
-      const pipelineWithSkills =
-        skillRefs.length > 0
-          ? `${skillRefsPipelinePrefix(skillRefs)}${rawPipelineText}`
-          : rawPipelineText;
-
-      const assistantDraftId = `a-${Date.now()}-stream`;
-      const onLlmToken =
-        mode === "chat"
-          ? (chunk) => {
-              if (!chunk) return;
-              uiBus.publish({
-                type: "message.delta",
-                threadId: thread.id,
-                messageId: assistantDraftId,
-                text: chunk,
-              });
-            }
-          : undefined;
-
-      if (mode === "automate") {
-        await applyUiOutgoingActions({
-          replies: {
-            actions: [
-              {
-                type: "automate",
-                intent: pipelineWithSkills,
-                ...(skillRefs.length ? { skillRefs } : {}),
-              },
-            ],
-          },
-          thread,
-          uiBus,
-          automateClient,
-        });
-      } else {
-        const media = await describeFirstMedia(runtime, mediaService.dir, attachments, text.trim());
-        const messageForPipeline =
-          attachmentNote && text.trim() && skillRefs.length === 0 && !automateMention.hasAutomate
-            ? `${pipelineWithSkills}\n[anexos: ${attachmentNote}]`
-            : pipelineWithSkills;
-        const { replies } = await handleIncomingMessage(runtime, {
-          message: messageForPipeline,
-          userId,
-          sessionId,
-          channelId: "ui-desktop",
-          onLlmToken,
-          uiAssistantMessageId: assistantDraftId,
-          messageKey: { id: userMsg.id },
-          ...(media ? { media } : {}),
-        });
-
-        await applyUiOutgoingActions({
-          replies,
-          thread,
-          uiBus,
-          automateClient,
-          assistantMessageId: assistantDraftId,
-          mediaContext,
-        });
-
-        if (imageCount > 0) {
-          const lastAssistant = [...thread.messages].reverse().find((m) => m.role === "assistant");
-          if (lastAssistant) {
-            lastAssistant.meta = {
-              ...(lastAssistant.meta ?? {}),
-              insights: {
-                count: imageCount,
-                analyzed: true,
-                stub: true,
-              },
-            };
-            uiBus.publish({
-              type: "message.final",
-              threadId: thread.id,
-              message: lastAssistant,
-            });
+        // Comandos com prefixo (".sticker", ".yt <link>", ".gerar ...") rodam direto, como no WhatsApp.
+        if (mode === "chat" && skillRefs.length === 0 && text.trim()) {
+          const handled = await tryHandleUiCommand({ ...mediaContext, uiBus, thread }, text.trim());
+          if (handled) {
+            persistThreadStore(threadStore);
+            return;
           }
         }
+
+        const attachmentNote = describeAttachmentsForPipeline(
+          attachments.filter((a) => a.mediaId),
+          userMsg.id,
+        );
+        const rawPipelineText =
+          (automateMention.hasAutomate ? automateMention.intentText : text.trim()) ||
+          (skillRefs.length > 0
+            ? "Executar conforme as skills referenciadas pelo usuário."
+            : attachmentNote
+              ? `[anexo: ${attachmentNote}]`
+              : imageCount > 0
+                ? `[${imageCount} imagem(ns) anexada(s) na conversa UI]`
+                : "");
+        const pipelineWithSkills =
+          skillRefs.length > 0
+            ? `${skillRefsPipelinePrefix(skillRefs)}${rawPipelineText}`
+            : rawPipelineText;
+
+        const assistantDraftId = `a-${Date.now()}-stream`;
+        const onLlmToken =
+          mode === "chat"
+            ? (chunk) => {
+                if (!chunk) return;
+                uiBus.publish({
+                  type: "message.delta",
+                  threadId: thread.id,
+                  messageId: assistantDraftId,
+                  text: chunk,
+                });
+              }
+            : undefined;
+
+        if (mode === "automate") {
+          debugLog("automate.begin");
+          await applyUiOutgoingActions({
+            replies: {
+              actions: [
+                {
+                  type: "automate",
+                  intent: pipelineWithSkills,
+                  ...(skillRefs.length ? { skillRefs } : {}),
+                },
+              ],
+            },
+            thread,
+            uiBus,
+            automateClient,
+          });
+        } else {
+          debugLog("chat.beforeMedia");
+          const media = await describeFirstMedia(runtime, mediaService.dir, attachments, text.trim());
+          debugLog("chat.beforeHandleIncoming");
+          const messageForPipeline =
+            attachmentNote && text.trim() && skillRefs.length === 0 && !automateMention.hasAutomate
+              ? `${pipelineWithSkills}\n[anexos: ${attachmentNote}]`
+              : pipelineWithSkills;
+        const { replies } = await handleIncomingMessage(runtime, {
+            message: messageForPipeline,
+            userId,
+            sessionId,
+            channelId: "ui-desktop",
+            onLlmToken,
+            uiAssistantMessageId: assistantDraftId,
+            messageKey: { id: userMsg.id },
+            ...(media ? { media } : {}),
+          });
+          debugLog("chat.afterHandleIncoming");
+
+        await applyUiOutgoingActions({
+            replies,
+            thread,
+            uiBus,
+            automateClient,
+            assistantMessageId: assistantDraftId,
+            mediaContext,
+          });
+
+          if (imageCount > 0) {
+            const lastAssistant = [...thread.messages].reverse().find((m) => m.role === "assistant");
+            if (lastAssistant) {
+              lastAssistant.meta = {
+                ...(lastAssistant.meta ?? {}),
+                insights: {
+                  count: imageCount,
+                  analyzed: true,
+                  stub: true,
+                },
+              };
+              uiBus.publish({
+                type: "message.final",
+                threadId: thread.id,
+                message: lastAssistant,
+              });
+            }
+          }
+        }
+
+        persistThreadStore(threadStore);
+        debugLog("pipeline.done");
+      } catch (err) {
+        debugLog("pipeline.error", { error: err?.message ?? "unknown" });
+        uiBus.publish({
+          type: "run.status",
+          runId: `run-${Date.now()}`,
+          status: "failed",
+          error: err?.message ?? "erro no pipeline",
+        });
+      } finally {
+        publishAssistantTyping(uiBus, thread.id, false);
       }
-
-      persistThreadStore(threadStore);
-
-    } catch (err) {
-
-      uiBus.publish({
-
-        type: "run.status",
-
-        runId: `run-${Date.now()}`,
-
-        status: "failed",
-
-        error: err?.message ?? "erro no pipeline",
-
-      });
-
-    } finally {
-
-      publishAssistantTyping(uiBus, thread.id, false);
-
-    }
-
-
-
-    return res.json({ ok: true });
-
+    })();
   });
 
 

@@ -52,6 +52,7 @@ function publishAutomateFailure(uiBus, thread, { runId, message }) {
     status: "failed",
     error: message,
   });
+  uiBus.publish({ type: "presence", state: "awake", label: "acordada" });
   const assistantMsg = {
     id: `a-err-${Date.now()}`,
     role: "assistant",
@@ -61,6 +62,41 @@ function publishAutomateFailure(uiBus, thread, { runId, message }) {
   thread.messages.push(assistantMsg);
   thread.updatedAt = new Date().toISOString();
   uiBus.publish({ type: "message.final", threadId: thread.id, message: assistantMsg });
+}
+
+const REACTION_WORDS = {
+  joia: "👍",
+  joinha: "👍",
+  like: "👍",
+  ok: "👍",
+  amor: "❤️",
+  coracao: "❤️",
+  "coração": "❤️",
+  heart: "❤️",
+  risada: "😂",
+  kkk: "😂",
+};
+
+/** Comando de reação (inclusive com typo, ex.: "regir(joia)") que vazou como texto da mensagem. */
+const LOOSE_REACTION_RE = /\b(?:reagir|regir|reajir|react)\s*\(\s*["']?([^"')]*?)["']?\s*\)/gi;
+
+function toReactionEmoji(raw) {
+  const value = String(raw ?? "").trim();
+  if (!value) return null;
+  return REACTION_WORDS[value.toLowerCase()] ?? (/[\p{Extended_Pictographic}]/u.test(value) ? value : null);
+}
+
+/** Tira comandos de reação do texto: a reação vira meta na mensagem, nunca texto no chat. */
+function splitLooseReactions(text) {
+  const emojis = [];
+  const clean = String(text ?? "")
+    .replace(LOOSE_REACTION_RE, (_all, arg) => {
+      const emoji = toReactionEmoji(arg);
+      if (emoji) emojis.push(emoji);
+      return "";
+    })
+    .trim();
+  return { text: clean, emojis };
 }
 
 /**
@@ -74,12 +110,33 @@ export async function applyUiOutgoingActions({
   assistantMessageId = null,
   mediaContext = null,
 }) {
-  const actions = Array.isArray(replies?.actions) ? replies.actions : [];
-  const fallbackTexts = Array.isArray(replies)
-    ? replies.filter((r) => typeof r === "string" && r.trim())
-    : [];
+  const rawActions = Array.isArray(replies?.actions) ? replies.actions : [];
+  const actions = [];
+  for (const action of rawActions) {
+    if (action?.type !== "message" || !action.text) {
+      actions.push(action);
+      continue;
+    }
+    const { text, emojis } = splitLooseReactions(action.text);
+    for (const emoji of emojis) actions.push({ type: "react", emoji });
+    if (text) actions.push({ ...action, text });
+  }
+  const fallbackTexts = [];
+  if (!Array.isArray(replies?.actions) && Array.isArray(replies)) {
+    for (const r of replies) {
+      if (typeof r !== "string" || !r.trim()) continue;
+      const { text, emojis } = splitLooseReactions(r);
+      for (const emoji of emojis) actions.push({ type: "react", emoji });
+      if (text) fallbackTexts.push(text);
+    }
+  }
 
-  if (actions.length === 0 && fallbackTexts.length > 0) {
+  if (fallbackTexts.length > 0 && !actions.some((a) => a?.type === "message")) {
+    if (mediaContext) {
+      for (const action of actions) {
+        if (action.type === "react") await applyUiMediaAction({ ...mediaContext, thread, uiBus }, action);
+      }
+    }
     const assistantMsg = {
       id: assistantMessageId ?? `a-${Date.now()}`,
       role: "assistant",

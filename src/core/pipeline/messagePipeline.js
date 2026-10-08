@@ -245,6 +245,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const safeChannelId = typeof channelId === "string" && channelId.trim()
     ? channelId.slice(0, runtime.defaults.maxIdLength * 3)
     : (isGroup ? `group:${safeSessionId ?? safeUserId ?? "default"}` : `direct:${safeUserId ?? "default"}`);
+  const isUiDesktopChannel = safeChannelId === "ui-desktop";
   const channelScope = isGroup ? `group:${safeChannelId.replace(/^group:/, "")}` : "direct";
   const isOwner =
     isOwnerFlag === true ||
@@ -369,7 +370,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const effectiveMention = isDirectMention || Boolean(groupMention);
 
   let brainTurn = null;
-  if (runtime.brainOrchestrator?.tickTurn) {
+  if (!isUiDesktopChannel && runtime.brainOrchestrator?.tickTurn) {
     brainTurn = await runtime.brainOrchestrator.tickTurn({
       message: input,
       userId: safeUserId,
@@ -466,7 +467,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     sleepSnap = sleep?.getSnapshot?.() ?? sleepSnap;
   }
 
-  const asleepUnavailable = sleepSnap.isAvailable === false;
+  const asleepUnavailable = !isUiDesktopChannel && sleepSnap.isAvailable === false;
   const boundaryBlocksReply =
     !isGroup &&
     userBoundary.active &&

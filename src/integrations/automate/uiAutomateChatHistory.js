@@ -3,6 +3,11 @@ import {
   resolveThreadIdForRun,
   resolveAutomateRun,
 } from "./automateRunContext.js";
+import {
+  USER_FACING_AUTOMATE_TOOLS,
+  isUtteranceStepId,
+  utteranceChannelFromStepId,
+} from "./automateUtterance.js";
 
 function threadIdForAutomateRun(runId) {
   if (!runId) return null;
@@ -142,6 +147,7 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
       const threadId = threadIdForAutomateRun(event.runId);
       if (!threadId) return;
       const step = event.step;
+      if (USER_FACING_AUTOMATE_TOOLS.has(step.tool)) return;
       const clientRunId = resolveAutomateRun({ instructionId: event.runId }).runId;
       const runId = String(clientRunId).startsWith("run-") ? clientRunId : event.runId;
       upsertThreadMessage({
@@ -167,9 +173,38 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
     }
 
     if (event.type === "tool.log" && event.runId && event.line) {
-      const threadId = resolveThreadIdForRun(event.runId);
+      const mapped = resolveAutomateRun({ instructionId: event.runId });
+      const runId = String(mapped.runId).startsWith("run-") ? mapped.runId : event.runId;
+      const threadId = resolveThreadIdForRun(runId) ?? mapped.threadId;
       if (!threadId) return;
-      const msgId = `auto-${event.runId}-${event.stepId ?? "active"}`;
+      const msgId = `auto-${runId}-${event.stepId ?? "active"}`;
+
+      if (isUtteranceStepId(event.stepId)) {
+        const channel = utteranceChannelFromStepId(event.stepId);
+        upsertThreadMessage({
+          threadStore,
+          persistThreadStore,
+          uiBus,
+          threadId,
+          message: {
+            id: msgId,
+            role: "assistant",
+            text: event.line,
+            createdAt: new Date().toISOString(),
+            meta: {
+              automate: {
+                kind: "utterance",
+                runId,
+                channel,
+                stepId: event.stepId,
+                level: event.level === "error" || event.level === "warn" ? event.level : "info",
+              },
+            },
+          },
+        });
+        return;
+      }
+
       const thread = threadStore.get(threadId);
       const existing = thread?.messages?.find((m) => m.id === msgId);
       const logs = [...(existing?.meta?.automate?.logs ?? []), event.line];
@@ -186,7 +221,7 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
           meta: {
             automate: {
               kind: "log",
-              runId: event.runId,
+              runId,
               stepId: event.stepId,
               logs,
             },
