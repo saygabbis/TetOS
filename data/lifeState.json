@@ -413,19 +413,12 @@
   "sleep": {
     "state": "deep_sleep",
     "sleepDebt": 1,
-    "lastSleepAt": "2026-09-26T03:01:57.309Z",
+    "lastSleepAt": "2026-10-08T03:53:40.508Z",
     "tonightPlan": {
       "bedHour": 23,
       "wakeHour": 7
     },
     "alarmHistory": [
-      {
-        "ts": "2026-08-31T10:00:06.601Z",
-        "missedAlarm": true,
-        "quality": 0.34,
-        "state": "groggy",
-        "disturbed": true
-      },
       {
         "ts": "2026-09-01T10:01:38.877Z",
         "missedAlarm": false,
@@ -565,18 +558,25 @@
         "quality": 0.34,
         "state": "groggy",
         "disturbed": true
+      },
+      {
+        "ts": "2026-10-07T21:30:23.140Z",
+        "missedAlarm": false,
+        "quality": 0.34,
+        "state": "groggy",
+        "disturbed": true
       }
     ],
     "wakeDelayUntil": null,
-    "lastWakeAt": "2026-09-24T23:46:26.541Z",
+    "lastWakeAt": "2026-10-07T21:30:23.140Z",
     "temporaryWakeUntil": null,
-    "disturbanceCount": 0,
-    "lastDisturbedAt": "2026-07-15T04:44:02.148Z",
-    "disturbedNightKey": "2026-07-15",
+    "disturbanceCount": 7,
+    "lastDisturbedAt": "2026-10-08T03:49:21.973Z",
+    "disturbedNightKey": "2026-10-08",
     "tempWakeStartedAt": null,
     "tempWakeExtensionCount": 0,
     "tempWakeGrogginess": 0
   },
-  "lastTickAt": "2026-09-26T04:25:58.066Z",
-  "dayKey": "2026-09-26"
+  "lastTickAt": "2026-10-08T03:55:40.454Z",
+  "dayKey": "2026-10-08"
 }
