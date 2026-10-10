@@ -24,6 +24,7 @@ import { buildMemorySummary } from "../observability/memorySummary.js";
 import { buildReminderSummary } from "../../modules/reminders/reminderSummary.js";
 import { createRuntime, handleIncomingMessage } from "../../app/createRuntime.js";
 import { attachUiCors } from "./middleware/uiCors.js";
+import { startHubAgentLinkIfConfigured } from "../../integrations/automate-hub/startHubAgentLink.js";
 
 const app = express();
 attachUiCors(app);
@@ -323,6 +324,7 @@ function startServer(port, attempt = 0) {
   attachUiStream(server, uiBus);
   server.listen(port, () => {
     console.log(`TetOS API running on http://localhost:${port}`);
+    startHubAgentLinkIfConfigured({ uiBus, dispatchBaseUrl: `http://127.0.0.1:${port}` });
   });
 
   server.on("error", (error) => {
