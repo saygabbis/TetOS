@@ -49,25 +49,27 @@ Sem URL/token, o comportamento permanece o modo direto (REST `/ui/*` + `WS /stre
 
 ### Handshake e resiliência
 
-1. TetOS abre WebSocket outbound e envia `hello` com `protocol: 1`, `agentId`, `token` e `capabilities`.
-2. Após `hello_ok` / `welcome` / `ready`, encaminha eventos do `UiEventBus` como frames `{ t: "event", id, event }` (mesmo envelope de `/stream`).
-3. Responde `ping` com `pong` e envia `ping` periódico (`TETOS_HUB_AGENT_HEARTBEAT_MS`, padrão 25s).
+1. TetOS abre WebSocket outbound e envia `hello` com `protocol: 1`, `agentId`, `token`, `capabilities` e `context: { methods: ["notifications/automate/"] }` (prefixos de notificação do AutoMate).
+2. O hub responde `{ t: "ready", agent, devices }` ou `{ t: "denied", reason }`.
+3. Responde `{ t: "ping" }` com `{ t: "pong" }` e envia `ping` JSON periódico (`TETOS_HUB_AGENT_HEARTBEAT_MS`, padrão 25s). O hub também usa `ws.ping()` nativo (30s).
 4. Reconexão com backoff exponencial entre `TETOS_HUB_AGENT_RECONNECT_MIN_MS` e `TETOS_HUB_AGENT_RECONNECT_MAX_MS`.
 
-### RPC (`rpc` / `agent_rpc`)
+### RPC (hub → IA)
 
-O hub envia requisições HTTP contra as rotas `/ui/*`; o TetOS reexecuta essas chamadas na API local (`127.0.0.1:TETOS_PORT`), nos mesmos handlers Express, autorizado com `TETOS_UI_SESSION_TOKEN` (dono).
+- Hub → TetOS: `{ t: "rpc", rpcId, method, path, headers?, body?, bodyEncoding?, user }`
+- TetOS → hub: `{ t: "rpc_result", rpcId, status, headers, body, bodyEncoding }` (`utf8` ou `base64`)
 
-Formato aceito (campos equivalentes):
+O TetOS reexecuta a chamada na API local (`127.0.0.1:TETOS_PORT`) com `TETOS_UI_SESSION_TOKEN`, só em `/ui/*` (nunca `/ui/devices*`).
 
-```json
-{ "t": "rpc", "id": "1", "method": "GET", "path": "/ui/threads" }
-```
+### Chat / turnos (hub → IA)
 
-ou `http` / `request` aninhado com `method`, `path`, `headers`, `body`.
+- Hub → TetOS: `{ t: "message", agentId, threadId, message, history, user }` → dispara `POST /ui/threads/:id/messages`.
+- Hub → TetOS: `{ t: "cancel", agentId, threadId }` → cancela o turno na UI.
+- TetOS → hub: `{ t: "message", threadId?, message: { role, text, meta?, final? } }` quando a assistente finaliza (`message.final` no `UiEventBus`).
+- TetOS → hub: `{ t: "event", threadId?, event, durable? }` para digitando, deltas e passos (`durable: true` em aprovações e fim de execução).
 
-### Chat
+### Contexto AutoMate
 
-Frames `{ t: "chat", id, threadId?, text }` viram `POST /ui/threads/:id/messages`; a resposta da assistente continua chegando pelo stream (`event`).
+Frames `{ t: "ctx", deviceId, method, params, ... }` são traduzidos com `eventTranslator` e republicados no `UiEventBus`.
 
 Implementação: `src/integrations/automate-hub/`.

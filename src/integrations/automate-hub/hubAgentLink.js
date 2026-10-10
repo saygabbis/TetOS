@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import { readHubAgentConfig } from "./hubAgentConfig.js";
+import { translateAutomateNotification } from "../automate/eventTranslator.js";
 
 function parseJson(raw) {
   try {
@@ -9,20 +10,14 @@ function parseJson(raw) {
   }
 }
 
-function normalizeRpcHttpRequest(frame) {
-  const nested = frame.http ?? frame.request ?? frame.agent_rpc ?? null;
-  const source = nested && typeof nested === "object" ? nested : frame;
-  const method = source.method ?? frame.method;
-  const path = source.path ?? source.url ?? frame.path ?? frame.url;
-  if (!method || !path) {
-    return null;
+/** Eventos que o hub persiste (`durable: true`) para retomada. */
+export function isDurableHubEvent(event) {
+  if (!event || typeof event !== "object") return false;
+  if (event.type === "permission.request" || event.type === "control.request") return true;
+  if (event.type === "run.status" && (event.status === "completed" || event.status === "failed")) {
+    return true;
   }
-  return {
-    method: String(method),
-    path: String(path),
-    headers: source.headers && typeof source.headers === "object" ? source.headers : {},
-    body: source.body ?? frame.body,
-  };
+  return false;
 }
 
 export class HubAgentLink {
@@ -98,7 +93,7 @@ export class HubAgentLink {
   attachStream() {
     if (!this.uiBus || this.streamUnsubscribe) return;
     const handler = (envelope) => {
-      this.send({ t: "event", id: envelope.id, event: envelope.event });
+      this.forwardUiEnvelope(envelope);
     };
     this.uiBus.on("event", handler);
     this.streamUnsubscribe = () => this.uiBus.off("event", handler);
@@ -109,6 +104,38 @@ export class HubAgentLink {
       this.streamUnsubscribe();
       this.streamUnsubscribe = null;
     }
+  }
+
+  forwardUiEnvelope(envelope) {
+    const event = envelope?.event;
+    if (!event || typeof event !== "object") return;
+
+    const threadId = typeof event.threadId === "string" ? event.threadId : undefined;
+
+    if (event.type === "message.final" && event.message?.role === "assistant") {
+      this.send({
+        t: "message",
+        threadId,
+        message: {
+          id: event.message.id,
+          role: "assistant",
+          text: event.message.text ?? "",
+          ...(event.message.meta ? { meta: event.message.meta } : {}),
+          final: true,
+        },
+      });
+      return;
+    }
+
+    const frame = {
+      t: "event",
+      ...(threadId ? { threadId } : {}),
+      event,
+    };
+    if (isDurableHubEvent(event)) {
+      frame.durable = true;
+    }
+    this.send(frame);
   }
 
   send(frame) {
@@ -122,6 +149,17 @@ export class HubAgentLink {
       this.onError("[hub-agent] falha ao enviar frame", error?.message ?? error);
       return false;
     }
+  }
+
+  sendRpcResult(rpcId, { status, headers, body, bodyEncoding = "utf8" }) {
+    return this.send({
+      t: "rpc_result",
+      rpcId,
+      status,
+      headers,
+      body: body ?? null,
+      bodyEncoding: bodyEncoding === "base64" ? "base64" : "utf8",
+    });
   }
 
   async connect() {
@@ -142,6 +180,7 @@ export class HubAgentLink {
           agentId: this.config.agentId,
           token: this.config.token,
           capabilities: this.config.capabilities,
+          context: { methods: this.config.contextMethods },
         }),
       );
     });
@@ -169,10 +208,8 @@ export class HubAgentLink {
 
   onHelloAccepted(frame) {
     this.authenticated = true;
-    this.onLog(
-      `[hub-agent] conectado como ${this.config.agentId}` +
-        (frame?.sessionId ? ` (sessão ${frame.sessionId})` : ""),
-    );
+    const name = frame?.agent?.name ?? this.config.agentId;
+    this.onLog(`[hub-agent] conectado como ${name} (${this.config.agentId})`);
     this.attachStream();
     this.heartbeatTimer = setInterval(() => {
       this.send({ t: "ping" });
@@ -186,8 +223,6 @@ export class HubAgentLink {
     }
 
     switch (frame.t) {
-      case "hello_ok":
-      case "welcome":
       case "ready":
         this.onHelloAccepted(frame);
         return;
@@ -201,11 +236,19 @@ export class HubAgentLink {
       case "pong":
         return;
       case "rpc":
-      case "agent_rpc":
         await this.handleRpc(frame);
         return;
-      case "chat":
-        await this.handleChat(frame);
+      case "message":
+        await this.handleHubMessage(frame);
+        return;
+      case "cancel":
+        this.handleCancel(frame);
+        return;
+      case "ctx":
+        this.handleCtx(frame);
+        return;
+      case "presence":
+        this.handlePresence(frame);
         return;
       default: {
         const unknownType = frame.t;
@@ -216,89 +259,98 @@ export class HubAgentLink {
   }
 
   async handleRpc(frame) {
-    const replyType = frame.t === "agent_rpc" ? "agent_rpc" : "rpc";
-    const id = frame.id ?? frame.requestId;
-    const httpReq = normalizeRpcHttpRequest(frame);
-    if (!id || !httpReq) {
-      this.send({
-        t: replyType,
-        id,
-        ok: false,
-        error: "requisição RPC inválida",
-      });
-      return;
-    }
+    const rpcId = frame.rpcId;
+    if (!rpcId) return;
 
-    try {
-      const response = await this.dispatchUiRequest(httpReq);
-      let body = response.body;
-      const contentType = response.headers["content-type"] ?? "";
-      if (contentType.includes("application/json") && typeof body === "string") {
-        try {
-          body = JSON.parse(body);
-        } catch {
-          // mantém string
-        }
-      }
-      this.send({
-        t: replyType,
-        id,
-        ok: response.status >= 200 && response.status < 300,
-        status: response.status,
-        headers: response.headers,
-        body,
+    const method = frame.method;
+    const path = frame.path;
+    if (!method || !path) {
+      this.sendRpcResult(rpcId, {
+        status: 400,
+        headers: {},
+        body: JSON.stringify({ error: "requisição RPC inválida" }),
+        bodyEncoding: "utf8",
       });
-    } catch (error) {
-      this.send({
-        t: replyType,
-        id,
-        ok: false,
-        status: 500,
-        error: error?.message ?? "erro interno",
-      });
-    }
-  }
-
-  async handleChat(frame) {
-    const id = frame.id ?? frame.requestId;
-    const text = frame.text ?? frame.message ?? frame.content;
-    const threadId = frame.threadId ?? frame.thread_id ?? "hub-default";
-
-    if (!id || !text || typeof text !== "string") {
-      this.send({ t: "chat", id, ok: false, error: "chat inválido" });
       return;
     }
 
     try {
       const response = await this.dispatchUiRequest({
-        method: "POST",
-        path: `/ui/threads/${encodeURIComponent(threadId)}/messages`,
-        body: { text },
+        method: String(method),
+        path: String(path),
+        headers: frame.headers && typeof frame.headers === "object" ? frame.headers : {},
+        body: frame.body,
+        bodyEncoding: frame.bodyEncoding,
       });
-      let payload = response.body;
-      if (typeof payload === "string") {
-        try {
-          payload = JSON.parse(payload);
-        } catch {
-          payload = { raw: payload };
-        }
-      }
-      this.send({
-        t: "chat",
-        id,
-        ok: response.status >= 200 && response.status < 300,
+      this.sendRpcResult(rpcId, {
         status: response.status,
-        threadId,
-        result: payload,
+        headers: response.headers,
+        body: response.body,
+        bodyEncoding: response.bodyEncoding ?? "utf8",
       });
     } catch (error) {
-      this.send({
-        t: "chat",
-        id,
-        ok: false,
-        error: error?.message ?? "erro ao processar chat",
+      const status = error?.message?.includes("/ui/devices") ? 403 : 502;
+      this.sendRpcResult(rpcId, {
+        status,
+        headers: { "content-type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ error: error?.message ?? "erro interno" }),
+        bodyEncoding: "utf8",
       });
     }
+  }
+
+  async handleHubMessage(frame) {
+    const threadId = typeof frame.threadId === "string" ? frame.threadId : "";
+    const raw = frame.message;
+    const text = typeof raw?.text === "string" ? raw.text : "";
+    const attachments = raw?.meta?.attachments;
+
+    if (!threadId || (!text.trim() && !attachments?.length)) {
+      return;
+    }
+
+    try {
+      await this.dispatchUiRequest({
+        method: "POST",
+        path: `/ui/threads/${encodeURIComponent(threadId)}/messages`,
+        body: {
+          text,
+          ...(Array.isArray(attachments) && attachments.length ? { attachments } : {}),
+        },
+      });
+    } catch (error) {
+      this.onError("[hub-agent] falha ao processar message do hub", error?.message ?? error);
+    }
+  }
+
+  handleCancel(frame) {
+    const threadId = typeof frame.threadId === "string" ? frame.threadId : "";
+    if (!threadId) return;
+    this.uiBus?.publish({
+      type: "run.status",
+      threadId,
+      status: "cancelled",
+      runId: `hub-cancel-${Date.now()}`,
+    });
+  }
+
+  handleCtx(frame) {
+    const method = typeof frame.method === "string" ? frame.method : "";
+    if (!method) return;
+    const events = translateAutomateNotification(method, frame.params ?? {}, { uiBus: this.uiBus });
+    for (const event of events) {
+      this.uiBus?.publish(event);
+    }
+  }
+
+  handlePresence(frame) {
+    const deviceId = typeof frame.deviceId === "string" ? frame.deviceId : "";
+    if (!deviceId) return;
+    this.uiBus?.publish({
+      type: "device.presence",
+      deviceId,
+      online: Boolean(frame.online),
+    });
   }
 }
 

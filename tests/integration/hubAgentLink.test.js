@@ -4,7 +4,7 @@ import http from "node:http";
 import { WebSocketServer } from "ws";
 import { readHubAgentConfig } from "../../src/integrations/automate-hub/hubAgentConfig.js";
 import { createUiHubDispatcher } from "../../src/integrations/automate-hub/uiHubDispatch.js";
-import { HubAgentLink } from "../../src/integrations/automate-hub/hubAgentLink.js";
+import { HubAgentLink, isDurableHubEvent } from "../../src/integrations/automate-hub/hubAgentLink.js";
 import { startHubAgentLinkIfConfigured } from "../../src/integrations/automate-hub/startHubAgentLink.js";
 import { UiEventBus } from "../../src/core/events/uiEventBus.js";
 import { requireSession } from "../../src/infra/api/auth/sessionAuth.js";
@@ -44,6 +44,18 @@ function listenApp(app) {
   });
 }
 
+const baseConfig = {
+  url: "ws://example/agent-link",
+  agentId: "tetos",
+  token: "secret",
+  capabilities: ["chat", "rpc"],
+  contextMethods: ["notifications/automate/"],
+  protocol: 1,
+  heartbeatMs: 60_000,
+  reconnectMinMs: 50,
+  reconnectMaxMs: 100,
+};
+
 describe("readHubAgentConfig", () => {
   it("retorna null sem URL ou token", () => {
     expect(readHubAgentConfig({})).toBeNull();
@@ -51,13 +63,22 @@ describe("readHubAgentConfig", () => {
     expect(readHubAgentConfig({ TETOS_HUB_AGENT_TOKEN: "t" })).toBeNull();
   });
 
-  it("aplica defaults de id e capabilities", () => {
+  it("aplica defaults de id, capabilities e context.methods", () => {
     const cfg = readHubAgentConfig({
       TETOS_HUB_AGENT_URL: "ws://hub/agent-link",
       TETOS_HUB_AGENT_TOKEN: "secret",
     });
     expect(cfg.agentId).toBe("tetos");
     expect(cfg.capabilities).toEqual(["chat", "rpc"]);
+    expect(cfg.contextMethods).toEqual(["notifications/automate/"]);
+  });
+});
+
+describe("isDurableHubEvent", () => {
+  it("marca aprovações e fim de execução como durable", () => {
+    expect(isDurableHubEvent({ type: "permission.request" })).toBe(true);
+    expect(isDurableHubEvent({ type: "run.status", status: "completed" })).toBe(true);
+    expect(isDurableHubEvent({ type: "assistant.typing" })).toBe(false);
   });
 });
 
@@ -72,7 +93,7 @@ describe("HubAgentLink", () => {
     apiServer = null;
   });
 
-  it("envia hello, responde RPC /ui/* e encaminha eventos do stream", async () => {
+  it("envia hello com context e responde rpc com rpc_result", async () => {
     const app = express();
     app.get("/ui/ping", requireSession, (_req, res) => res.json({ ok: true }));
     const api = await listenApp(app);
@@ -88,32 +109,33 @@ describe("HubAgentLink", () => {
         const frame = JSON.parse(String(raw));
         framesFromAgent.push(frame);
         if (frame.t === "hello") {
-          ws.send(JSON.stringify({ t: "hello_ok", sessionId: "sess-test" }));
+          expect(frame.context).toEqual({ methods: ["notifications/automate/"] });
+          ws.send(
+            JSON.stringify({
+              t: "ready",
+              agent: { id: "tetos", name: "TetOS" },
+              devices: [],
+            }),
+          );
           ws.send(JSON.stringify({ t: "ping" }));
           ws.send(
             JSON.stringify({
-              t: "agent_rpc",
-              id: "req-1",
+              t: "rpc",
+              rpcId: "rpc-1",
               method: "GET",
               path: "/ui/ping",
+              headers: {},
+              body: null,
+              bodyEncoding: "utf8",
+              user: { id: "user-1" },
             }),
           );
-          return;
         }
       });
     });
 
     hub = new HubAgentLink({
-      config: {
-        url: mockHub.url,
-        agentId: "tetos",
-        token: "secret",
-        capabilities: ["chat", "rpc"],
-        protocol: 1,
-        heartbeatMs: 60_000,
-        reconnectMinMs: 50,
-        reconnectMaxMs: 100,
-      },
+      config: { ...baseConfig, url: mockHub.url },
       dispatchUiRequest,
       uiBus,
       onLog: () => {},
@@ -122,22 +144,33 @@ describe("HubAgentLink", () => {
     hub.start();
 
     await vi.waitFor(() => {
-      expect(framesFromAgent.some((f) => f.t === "hello" && f.agentId === "tetos")).toBe(true);
-      expect(framesFromAgent.some((f) => f.t === "agent_rpc" && f.id === "req-1" && f.body)).toBe(
+      expect(framesFromAgent.some((f) => f.t === "hello" && f.capabilities?.includes("rpc"))).toBe(
         true,
       );
+      expect(framesFromAgent.some((f) => f.t === "rpc_result" && f.rpcId === "rpc-1")).toBe(true);
     });
 
-    const rpcReply = framesFromAgent.find((f) => f.t === "agent_rpc" && f.id === "req-1" && f.body);
-    expect(rpcReply.ok).toBe(true);
-    expect(rpcReply.body).toEqual({ ok: true });
+    const rpcReply = framesFromAgent.find((f) => f.t === "rpc_result" && f.rpcId === "rpc-1");
+    expect(rpcReply.status).toBe(200);
+    expect(rpcReply.bodyEncoding).toBe("utf8");
+    expect(JSON.parse(rpcReply.body)).toEqual({ ok: true });
 
     uiBus.publish({ type: "assistant.typing", threadId: "t1", isTyping: true });
+    uiBus.publish({
+      type: "message.final",
+      threadId: "t1",
+      message: { id: "a-1", role: "assistant", text: "oi" },
+    });
     await vi.waitFor(() => {
       expect(framesFromAgent.some((f) => f.t === "event" && f.event?.type === "assistant.typing")).toBe(
         true,
       );
+      expect(framesFromAgent.some((f) => f.t === "message" && f.message?.text === "oi")).toBe(true);
     });
+
+    const typingEvent = framesFromAgent.find((f) => f.t === "event" && f.event?.type === "assistant.typing");
+    expect(typingEvent?.threadId).toBe("t1");
+    expect(typingEvent?.durable).toBeUndefined();
 
     const pong = framesFromAgent.find((f) => f.t === "pong");
     expect(pong).toBeTruthy();
@@ -145,50 +178,41 @@ describe("HubAgentLink", () => {
     await mockHub.close();
   });
 
-  it("processa chat via POST /ui/threads/:id/messages", async () => {
+  it("processa frame message do hub via POST /ui/threads/:id/messages", async () => {
     const app = express();
     app.use(express.json());
+    const posts = [];
     app.post("/ui/threads/:id/messages", requireSession, (req, res) => {
-      return res.status(202).json({ accepted: true, threadId: req.params.id, text: req.body?.text });
+      posts.push({ threadId: req.params.id, body: req.body });
+      return res.status(202).json({ ok: true, accepted: true });
     });
     const api = await listenApp(app);
     apiServer = api.server;
 
     const dispatchUiRequest = createUiHubDispatcher(api.baseUrl, { sessionToken: TOKEN });
     const mockHub = await listenWss();
-    const replies = [];
 
     mockHub.wss.on("connection", (ws) => {
       ws.on("message", (raw) => {
         const frame = JSON.parse(String(raw));
         if (frame.t === "hello") {
-          ws.send(JSON.stringify({ t: "hello_ok" }));
+          ws.send(JSON.stringify({ t: "ready", agent: { id: "tetos", name: "TetOS" }, devices: [] }));
           ws.send(
             JSON.stringify({
-              t: "chat",
-              id: "chat-1",
+              t: "message",
+              agentId: "tetos",
               threadId: "thread-hub",
-              text: "olá hub",
+              message: { id: "msg-u1", role: "user", text: "olá hub" },
+              history: [],
+              user: { id: "user-1" },
             }),
           );
-        }
-        if (frame.t === "chat") {
-          replies.push(frame);
         }
       });
     });
 
     hub = new HubAgentLink({
-      config: {
-        url: mockHub.url,
-        agentId: "tetos",
-        token: "secret",
-        capabilities: ["chat", "rpc"],
-        protocol: 1,
-        heartbeatMs: 60_000,
-        reconnectMinMs: 50,
-        reconnectMaxMs: 100,
-      },
+      config: { ...baseConfig, url: mockHub.url },
       dispatchUiRequest,
       uiBus: new UiEventBus(),
       onLog: () => {},
@@ -197,11 +221,8 @@ describe("HubAgentLink", () => {
     hub.start();
 
     await vi.waitFor(() => {
-      expect(replies.some((f) => f.id === "chat-1" && f.ok === true)).toBe(true);
+      expect(posts.some((p) => p.threadId === "thread-hub" && p.body?.text === "olá hub")).toBe(true);
     });
-
-    const chatReply = replies.find((f) => f.id === "chat-1");
-    expect(chatReply.result?.text).toBe("olá hub");
 
     await mockHub.close();
   });

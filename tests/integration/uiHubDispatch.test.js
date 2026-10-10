@@ -22,6 +22,11 @@ describe("createUiHubDispatcher", () => {
     await expect(dispatch({ method: "GET", path: "/status" })).rejects.toThrow("/ui/*");
   });
 
+  it("bloqueia /ui/devices*", async () => {
+    const dispatch = createUiHubDispatcher("http://127.0.0.1:9", { sessionToken: TOKEN });
+    await expect(dispatch({ method: "GET", path: "/ui/devices" })).rejects.toThrow("/ui/devices");
+  });
+
   it("injeta Authorization do dono e executa handler", async () => {
     const app = express();
     app.use(express.json({ limit: "1mb" }));
@@ -37,6 +42,7 @@ describe("createUiHubDispatcher", () => {
       const dispatch = createUiHubDispatcher(baseUrl, { sessionToken: TOKEN });
       const getRes = await dispatch({ method: "GET", path: "/ui/echo-auth" });
       expect(getRes.status).toBe(200);
+      expect(getRes.bodyEncoding).toBe("utf8");
       expect(JSON.parse(getRes.body).auth).toBe(`Bearer ${TOKEN}`);
 
       const postRes = await dispatch({

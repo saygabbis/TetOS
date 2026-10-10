@@ -8,7 +8,19 @@ function normalizePath(path) {
   if (!trimmed.startsWith("/ui/")) {
     throw new Error("apenas rotas /ui/* são permitidas no túnel do hub");
   }
+  const pathname = trimmed.split("?")[0] ?? trimmed;
+  if (pathname.startsWith("/ui/devices")) {
+    throw new Error("rota /ui/devices* não exposta pelo túnel do hub");
+  }
   return trimmed;
+}
+
+function decodeRequestBody(body, bodyEncoding) {
+  if (body === undefined || body === null) return undefined;
+  if (bodyEncoding === "base64" && typeof body === "string") {
+    return Buffer.from(body, "base64");
+  }
+  return body;
 }
 
 /**
@@ -22,30 +34,68 @@ export function createUiHubDispatcher(baseUrl, { sessionToken } = {}) {
   const ownerToken = sessionToken ?? getSessionTokenFromEnv();
   const origin = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 
-  return async function dispatchUiRequest({ method = "GET", path, headers = {}, body }) {
+  return async function dispatchUiRequest({
+    method = "GET",
+    path,
+    headers = {},
+    body,
+    bodyEncoding,
+  }) {
     const safePath = normalizePath(path);
     const url = `${origin}${safePath}`;
-    const hasBody = body !== undefined && body !== null;
+    const decodedBody = decodeRequestBody(body, bodyEncoding);
+    const hasBody = decodedBody !== undefined && decodedBody !== null;
+    const isBuffer = Buffer.isBuffer(decodedBody);
+    const outgoingHeaders = {
+      ...headers,
+      authorization: `Bearer ${ownerToken}`,
+    };
+    delete outgoingHeaders.Authorization;
+
+    if (hasBody && !outgoingHeaders["content-type"] && !outgoingHeaders["Content-Type"]) {
+      outgoingHeaders["content-type"] = isBuffer ? "application/octet-stream" : "application/json";
+    }
+
     const response = await fetch(url, {
       method: String(method).toUpperCase(),
-      headers: {
-        authorization: `Bearer ${ownerToken}`,
-        ...(hasBody ? { "content-type": "application/json" } : {}),
-        ...headers,
-      },
-      body: hasBody ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
+      headers: outgoingHeaders,
+      body: hasBody
+        ? isBuffer
+          ? decodedBody
+          : typeof decodedBody === "string"
+            ? decodedBody
+            : JSON.stringify(decodedBody)
+        : undefined,
     });
 
-    const text = await response.text();
+    const buffer = Buffer.from(await response.arrayBuffer());
     const responseHeaders = {};
     response.headers.forEach((value, key) => {
       responseHeaders[key.toLowerCase()] = value;
     });
 
+    const contentType = responseHeaders["content-type"] ?? "";
+    const isText =
+      !contentType ||
+      contentType.includes("json") ||
+      contentType.includes("text") ||
+      contentType.includes("javascript") ||
+      contentType.includes("xml");
+
+    if (isText) {
+      return {
+        status: response.status,
+        headers: responseHeaders,
+        body: buffer.length ? buffer.toString("utf8") : null,
+        bodyEncoding: "utf8",
+      };
+    }
+
     return {
       status: response.status,
       headers: responseHeaders,
-      body: text,
+      body: buffer.length ? buffer.toString("base64") : null,
+      bodyEncoding: "base64",
     };
   };
 }
