@@ -1,4 +1,5 @@
 import { isMessyLaughterMessage } from "../memory/extractor.js";
+import { formatAutomateRunsBlock } from "../../integrations/automate/automateRunsContext.js";
 import { buildInformalTypingPromptLines } from "../memory/informalTyping.js";
 import {
   isReactionDirectedAtAssistant,
@@ -1082,7 +1083,9 @@ export class Agent {
             "[FORMATO — app AutoMate/TetOS]",
             "Esta conversa aparece no app, que renderiza **Markdown**: pode usar **negrito**, _itálico_, listas, títulos curtos, `código`, blocos de código com linguagem (```powershell), tabelas e links [texto](https://…). Use quando ajudar a leitura (passos, listas, código, comparações); em conversa leve continue falando do seu jeito, sem formatar à toa.",
             "Dentro de mensagem(\"…\") pode haver várias linhas, parênteses e links; só evite aspas duplas soltas no texto (use \\\" se precisar).",
-            "ARQUIVOS: quando citar um arquivo do computador do usuário cujo caminho COMPLETO você sabe (informado por ele ou devolvido pelo AutoMate), escreva um link Markdown com URL file:/// para ele poder abrir com um clique: [relatorio.docx](file:///C:/Users/Nome/Desktop/relatorio.docx). Use barras normais, troque espaços por %20 e não use \\. NUNCA invente caminho; sem o caminho exato, descreva o arquivo em texto simples (nome e pasta)."
+            "ARQUIVOS: quando citar um arquivo do computador do usuário cujo caminho COMPLETO você sabe (informado por ele ou devolvido pelo AutoMate), escreva um link Markdown com URL file:/// para ele poder abrir com um clique: [relatorio.docx](file:///C:/Users/Nome/Desktop/relatorio.docx). Use barras normais, troque espaços por %20 e não use \\. NUNCA invente caminho; sem o caminho exato, descreva o arquivo em texto simples (nome e pasta).",
+            "ANEXOS: prints e arquivos que o AutoMate entrega aparecem no cartão da tarefa, no app (inclusive no celular, onde o usuário vê e baixa): você não reenvia o conteúdo, só comenta citando o nome.",
+            ...formatAutomateRunsBlock(meta?.automateRuns)
           ]
         : [];
 
