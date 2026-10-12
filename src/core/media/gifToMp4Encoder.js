@@ -209,24 +209,6 @@ export async function encodeGifToMp4(gifPath, outputMp4, { maxDurationSec = 30 }
         sealMp4ForMobile(outputMp4);
         const finalProbe = mp4OkForPlayback(outputMp4);
         const result = finalProbe.ok ? finalProbe : probe;
-        // #region agent log
-        fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
-          body: JSON.stringify({
-            sessionId: "20737f",
-            hypothesisId: "H3",
-            location: "gifToMp4Encoder.js:encode-success",
-            message: "gif encode attempt ok",
-            data: {
-              outSize: existsSync(outputMp4) ? statSync(outputMp4).size : 0,
-              seconds: result.seconds,
-              attempt: extra.join(" ").slice(0, 120)
-            },
-            timestamp: Date.now()
-          })
-        }).catch(() => {});
-        // #endregion
         return result;
       }
     } catch {

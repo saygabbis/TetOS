@@ -262,9 +262,6 @@ export async function resolveMediaByMessageId({
   if (waDeps && typeof getWaMessageById === "function") {
     const direct = await resolveFromWaStoredMessage(getWaMessageById(mid), mid, waDeps);
     if (direct?.media?.path) {
-      // #region agent log
-      fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',runId:'post-fix',location:'agentMediaResolver.js:resolve',message:'media resolved wa_cache',data:{messageId:mid,source:'wa_cache',mediaType:direct.media.type},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
       return direct;
     }
 
@@ -276,16 +273,10 @@ export async function resolveMediaByMessageId({
         waDeps
       );
       if (fromQuote?.media?.path) {
-        // #region agent log
-        fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',runId:'post-fix',location:'agentMediaResolver.js:resolve',message:'media resolved wa_quote',data:{messageId:mid,triggerId,source:'wa_quote',mediaType:fromQuote.media.type},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
         return fromQuote;
       }
     }
   }
 
-  // #region agent log
-  fetch('http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'928ed5'},body:JSON.stringify({sessionId:'928ed5',runId:'post-fix',location:'agentMediaResolver.js:resolve',message:'media not found',data:{messageId:mid,chatId,hadWaFallback:Boolean(waDeps&&getWaMessageById),triggerMessageId:triggerMessageId??null},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
-  // #endregion
   return null;
 }

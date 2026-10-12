@@ -14,3 +14,15 @@ data/short-term/
 .idea/
 # Mídia da interface desktop (uploads e saídas da Teto)
 data/media/ui/
+
+# Segredo do device (token do AutoMate) — nunca versionar
+data/deviceTokens.json
+
+# Artefatos gerados pelos testes
+data/test-*.json
+data/test-*.ndjson
+
+# Logs de debug e lock de runtime
+debug-*.log
+.cursor/debug-*.log
+.wa-runner.lock
