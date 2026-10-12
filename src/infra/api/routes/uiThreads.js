@@ -427,25 +427,8 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     res.status(202).json({ ok: true, accepted: true });
 
     void (async () => {
-      const pipelineStartedAt = Date.now();
-      const debugLog = (message, data = {}) => {
-        const line = JSON.stringify({
-          sessionId: "fa6e47",
-          location: "uiThreads.js:pipeline",
-          message,
-          hypothesisId: "H-SERVER",
-          data: { threadId: thread.id, elapsedMs: Date.now() - pipelineStartedAt, ...data },
-          timestamp: Date.now(),
-        });
-        void fetch("http://127.0.0.1:7579/ingest/ac22d456-be81-4c32-b29a-515346f400b1", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "fa6e47" },
-          body: line,
-        }).catch(() => undefined);
-      };
       try {
         const mode = uiMode;
-        debugLog("pipeline.start", { mode });
 
         if (attachments.length > 0) {
           await autoSaveIncomingStickers({ ...mediaContext, uiBus, thread }, attachments);
@@ -493,7 +476,6 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
             : undefined;
 
         if (mode === "automate") {
-          debugLog("automate.begin");
           await applyUiOutgoingActions({
             replies: {
               actions: [
@@ -509,9 +491,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
             automateClient,
           });
         } else {
-          debugLog("chat.beforeMedia");
           const media = await describeFirstMedia(runtime, mediaService.dir, attachments, text.trim());
-          debugLog("chat.beforeHandleIncoming");
           const messageForPipeline =
             attachmentNote && text.trim() && skillRefs.length === 0 && !automateMention.hasAutomate
               ? `${pipelineWithSkills}\n[anexos: ${attachmentNote}]`
@@ -526,8 +506,6 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
             messageKey: { id: userMsg.id },
             ...(media ? { media } : {}),
           });
-          debugLog("chat.afterHandleIncoming");
-
         await applyUiOutgoingActions({
             replies,
             thread,
@@ -558,9 +536,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
         }
 
         persistThreadStore(threadStore);
-        debugLog("pipeline.done");
       } catch (err) {
-        debugLog("pipeline.error", { error: err?.message ?? "unknown" });
         uiBus.publish({
           type: "run.status",
           runId: `run-${Date.now()}`,

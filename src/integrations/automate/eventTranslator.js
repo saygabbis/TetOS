@@ -36,7 +36,11 @@ export function translateAutomateNotification(method, params, options = {}) {
     return [];
   }
   const suffix = method.slice("notifications/automate/".length);
-  const { runId, threadId } = resolveAutomateRun(params);
+  const resolved = resolveAutomateRun(params);
+  if (!resolved) {
+    return [];
+  }
+  const { runId, threadId } = resolved;
 
   switch (suffix) {
     case "tool_call": {

@@ -44,11 +44,18 @@ export class HubAgentLink {
     this.reconnectTimer = null;
     this.streamUnsubscribe = null;
     this.messageChain = Promise.resolve();
+    /** Threads criadas/roteadas pelo hub (`t:"message"`); demais usam `t:"event"` para o app. */
+    this.hubChatThreadIds = new Set();
     /** @type {Map<string, { resolve: Function, reject: Function, timer: NodeJS.Timeout }>} */
     this.pending = new Map();
     this.requestSeq = 0;
     /** @type {Map<string, { id: string, online: boolean, profile?: string }>} */
     this.devices = new Map();
+    this.requestTimeoutMs = config.requestTimeoutMs ?? 130_000;
+  }
+
+  isHubChatThread(threadId) {
+    return typeof threadId === "string" && threadId.length > 0 && this.hubChatThreadIds.has(threadId);
   }
 
   isReady() {
@@ -61,7 +68,7 @@ export class HubAgentLink {
   }
 
   /** Envia um frame com `id` e aguarda `result`/`error`/`devices`/`tools` do hub. */
-  request(frame, timeoutMs = 120_000) {
+  request(frame, timeoutMs = this.requestTimeoutMs) {
     if (!this.isReady()) {
       return Promise.reject(new Error("Hub offline"));
     }
@@ -179,16 +186,25 @@ export class HubAgentLink {
     const threadId = typeof event.threadId === "string" ? event.threadId : undefined;
 
     if (event.type === "message.final" && event.message?.role === "assistant") {
+      if (this.isHubChatThread(threadId)) {
+        this.send({
+          t: "message",
+          threadId,
+          message: {
+            id: event.message.id,
+            role: "assistant",
+            text: event.message.text ?? "",
+            ...(event.message.meta ? { meta: event.message.meta } : {}),
+            final: true,
+          },
+        });
+        return;
+      }
       this.send({
-        t: "message",
-        threadId,
-        message: {
-          id: event.message.id,
-          role: "assistant",
-          text: event.message.text ?? "",
-          ...(event.message.meta ? { meta: event.message.meta } : {}),
-          final: true,
-        },
+        t: "event",
+        ...(threadId ? { threadId } : {}),
+        event,
+        durable: true,
       });
       return;
     }
@@ -384,6 +400,8 @@ export class HubAgentLink {
     if (!threadId || (!text.trim() && !attachments?.length)) {
       return;
     }
+
+    this.hubChatThreadIds.add(threadId);
 
     try {
       await this.dispatchUiRequest({
