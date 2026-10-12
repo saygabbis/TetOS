@@ -103,28 +103,6 @@ export async function convertMedia(inputPath, targetFormat, outputDir, options =
     let fromAnimatedGif = false;
     let playbackSeconds;
     const isGif = looksLikeGifFile(inputPath);
-    // #region agent log
-    fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
-      body: JSON.stringify({
-        sessionId: "20737f",
-        hypothesisId: "H1-H3",
-        location: "mediaConverter.js:image-to-video",
-        message: "branch decision",
-        data: {
-          inputPath,
-          srcKind,
-          dstKind,
-          inputExt: extname(inputPath),
-          inputSize: statSync(inputPath).size,
-          isGif,
-          branch: isGif ? "encodeGifToMp4" : "sharpSingleFrame"
-        },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
     if (isGif) {
       const playback = await encodeGifToMp4(inputPath, outputPath);
       fromAnimatedGif = true;
@@ -171,20 +149,6 @@ export async function convertMedia(inputPath, targetFormat, outputDir, options =
         ? { gifPlayback: true, seconds: playbackSeconds }
         : {})
     };
-    // #region agent log
-    fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
-      body: JSON.stringify({
-        sessionId: "20737f",
-        hypothesisId: "H3-H4",
-        location: "mediaConverter.js:image-to-video-result",
-        message: "image to video conversion done",
-        data: { outSize, fromAnimatedGif, playbackSeconds, gifPlayback: result.gifPlayback ?? false },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
     return result;
   } else if ((srcKind === "video" || srcKind === "image") && (dstKind === "video" || dstKind === "image")) {
     if (format === "gif" && srcKind === "video") {
@@ -199,28 +163,6 @@ export async function convertMedia(inputPath, targetFormat, outputDir, options =
         if (inputProbe.ok) {
           const playback = prepareMp4ForWaPlayback(inputPath, outputPath);
           const useGifPlayback = sourceMediaType === "gif";
-          // #region agent log
-          fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
-            body: JSON.stringify({
-              sessionId: "20737f",
-              runId: "post-fix",
-              hypothesisId: "H2-fix",
-              location: "mediaConverter.js:mp4-passthrough",
-              message: "valid mp4 passthrough",
-              data: {
-                inputSize: statSync(inputPath).size,
-                outSize: statSync(outputPath).size,
-                sourceMediaType,
-                gifPlayback: useGifPlayback,
-                seconds: playback.seconds,
-                inputProbeOk: inputProbe.ok
-              },
-              timestamp: Date.now()
-            })
-          }).catch(() => {});
-          // #endregion
           return {
             path: outputPath,
             kind: dstKind,
@@ -241,27 +183,6 @@ export async function convertMedia(inputPath, targetFormat, outputDir, options =
           };
         }
       }
-      // #region agent log
-      fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
-        body: JSON.stringify({
-          sessionId: "20737f",
-          hypothesisId: "H2",
-          location: "mediaConverter.js:video-reencode",
-          message: "video/image generic reencode branch",
-          data: {
-            inputPath,
-            srcKind,
-            format,
-            inputExt: extname(inputPath),
-            inputSize: existsSync(inputPath) ? statSync(inputPath).size : 0,
-            looksLikeGif: looksLikeGifFile(inputPath)
-          },
-          timestamp: Date.now()
-        })
-      }).catch(() => {});
-      // #endregion
       await runFfmpeg(
         ffmpeg(inputPath)
           .outputOptions([

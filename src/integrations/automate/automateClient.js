@@ -32,20 +32,6 @@ export class AutomateClient {
     if (instructionId) {
       registerAutomateRun({ instructionId, runId, threadId });
     }
-    // #region agent log
-    const { appendFile } = await import("node:fs/promises");
-    void appendFile(
-      "C:\\Users\\Administrator\\Desktop\\Kevin\\AutoMate\\.cursor\\debug-9049d4.log",
-      `${JSON.stringify({
-        sessionId: "9049d4",
-        timestamp: Date.now(),
-        location: "automateClient.js:enqueue",
-        message: "enqueue result",
-        hypothesisId: "A",
-        data: { runId, instructionId, goalLen: args.text.length },
-      })}\n`,
-    ).catch(() => undefined);
-    // #endregion
     return result;
   }
 

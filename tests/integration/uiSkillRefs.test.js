@@ -7,6 +7,14 @@ import { DeviceRegistry } from "../../src/infra/api/auth/deviceRegistry.js";
 import { DeviceGateway } from "../../src/integrations/automate/deviceGateway.js";
 import { UiEventBus } from "../../src/core/events/uiEventBus.js";
 
+async function waitFor(fn, timeoutMs = 3000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try { if (fn()) return; } catch { /* ainda não */ }
+    await new Promise((r) => setTimeout(r, 20));
+  }
+}
+
 const DEV_TOKEN = "tetos-dev-session";
 
 function authHeaders() {
@@ -59,7 +67,8 @@ describe("UI skillRefs", () => {
           skillRefs: ["abre-o-youtube"],
         }),
       });
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(202);
+      await waitFor(() => enqueue.mock.calls.length > 0);
       expect(enqueue).toHaveBeenCalledTimes(1);
       const [, , meta] = enqueue.mock.calls[0];
       expect(meta.skillNames).toEqual(["abre-o-youtube"]);
@@ -116,7 +125,8 @@ describe("UI skillRefs", () => {
           text: "por favor @automate abre o bloco de notas",
         }),
       });
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(202);
+      await waitFor(() => enqueue.mock.calls.length > 0);
       expect(enqueue).toHaveBeenCalledTimes(1);
       expect(String(enqueue.mock.calls[0][0])).toContain("abre o bloco de notas");
       expect(String(enqueue.mock.calls[0][0])).not.toContain("@automate");

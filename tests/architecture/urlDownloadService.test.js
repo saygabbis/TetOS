@@ -17,6 +17,18 @@ vi.mock("../../src/core/media/ytDlpRunner.js", async (importOriginal) => {
   };
 });
 
+vi.mock("../../src/core/media/twitterMediaFallback.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    // Sem rede: devolve a mídia do tweet já resolvida.
+    resolveTwitterMediaItems: vi.fn(async () => ({
+      statusId: "2074118628430258680",
+      items: [{ url: "https://pbs.twimg.com/media/abc123.jpg", type: "image", ext: "jpg" }]
+    }))
+  };
+});
+
 import { UrlDownloadService, inferDownloadMode } from "../../src/core/media/urlDownloadService.js";
 import { runYtDlp } from "../../src/core/media/ytDlpRunner.js";
 

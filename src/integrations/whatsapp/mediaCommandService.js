@@ -451,30 +451,6 @@ export class MediaCommandService {
     if (!output?.path || !existsSync(output.path)) return;
     const outBuffer = readFileSync(output.path);
     const payload = buildWaMediaPayload(outBuffer, output);
-    // #region agent log
-    fetch("http://127.0.0.1:7284/ingest/e819ca91-0aba-4afa-8c2a-d066631af9d0", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "20737f" },
-      body: JSON.stringify({
-        sessionId: "20737f",
-        hypothesisId: "H4",
-        location: "mediaCommandService.js:sendMediaOutput",
-        message: "wa send payload",
-        data: {
-          outSize: outBuffer.length,
-          kind: output.kind,
-          mimetype: output.mimetype,
-          gifPlayback: output.gifPlayback ?? null,
-          seconds: output.seconds ?? null,
-          payloadKeys: Object.keys(payload),
-          waGifPlayback: payload.gifPlayback ?? null,
-          waMimetype: payload.mimetype ?? null,
-          waSeconds: payload.seconds ?? null
-        },
-        timestamp: Date.now()
-      })
-    }).catch(() => {});
-    // #endregion
     await this.safeSendMessage(remoteJid, payload);
     await this.safeSendMessage(remoteJid, buildWaDocumentPayload(outBuffer, output));
   }

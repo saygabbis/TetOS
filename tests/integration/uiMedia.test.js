@@ -350,7 +350,10 @@ describe("rotas de mídia da UI", () => {
         headers: { ...auth, "Content-Type": "application/json" },
         body: JSON.stringify({ text: ".sticker", attachments: [{ kind: "image", dataUrl: PNG_DATA_URL, name: "a.png" }] }),
       });
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(202);
+      for (let i = 0; i < 150 && service.runMediaCommand.mock.calls.length === 0; i++) {
+        await new Promise((r) => setTimeout(r, 20));
+      }
       expect(service.runMediaCommand).toHaveBeenCalledTimes(1);
       const call = service.runMediaCommand.mock.calls[0][0];
       expect(call.command).toBe("sticker");

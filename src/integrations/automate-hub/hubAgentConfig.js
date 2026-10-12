@@ -27,6 +27,7 @@ export function readHubAgentConfig(env = process.env) {
   const heartbeatMs = Number(env.TETOS_HUB_AGENT_HEARTBEAT_MS ?? 25_000);
   const reconnectMinMs = Number(env.TETOS_HUB_AGENT_RECONNECT_MIN_MS ?? 1_000);
   const reconnectMaxMs = Number(env.TETOS_HUB_AGENT_RECONNECT_MAX_MS ?? 60_000);
+  const requestTimeoutMs = Number(env.TETOS_HUB_AGENT_REQUEST_TIMEOUT_MS ?? 130_000);
 
   return {
     url,
@@ -38,5 +39,7 @@ export function readHubAgentConfig(env = process.env) {
     heartbeatMs: Number.isFinite(heartbeatMs) && heartbeatMs > 0 ? heartbeatMs : 25_000,
     reconnectMinMs: Number.isFinite(reconnectMinMs) && reconnectMinMs > 0 ? reconnectMinMs : 1_000,
     reconnectMaxMs: Number.isFinite(reconnectMaxMs) && reconnectMaxMs > 0 ? reconnectMaxMs : 60_000,
+    requestTimeoutMs:
+      Number.isFinite(requestTimeoutMs) && requestTimeoutMs > 0 ? requestTimeoutMs : 130_000,
   };
 }
