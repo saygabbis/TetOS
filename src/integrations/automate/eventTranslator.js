@@ -26,6 +26,24 @@ function flushThinking(runId, uiBus) {
 }
 
 /**
+ * Como a UI deve coletar a resposta, conforme o tipo da pergunta do AutoMate: texto livre vira campo de texto,
+ * escolha vira chips com os ids reais das opções (ex.: approve/deny do gate de aprovação).
+ * Sem tipo conhecido devolve {} e a UI cai no Confirmar/Negar.
+ */
+function permissionInputFromQuestion(question) {
+  const options = Array.isArray(question?.options)
+    ? question.options
+        .filter((o) => o && typeof o.id === "string" && typeof o.label === "string")
+        .map((o) => ({ id: o.id, label: o.label }))
+    : [];
+  if (question?.type === "free_text") return { input: "text" };
+  if ((question?.type === "single_choice" || question?.type === "multiple_choice") && options.length) {
+    return { input: "choice", options, ...(question.type === "multiple_choice" ? { multiple: true } : {}) };
+  }
+  return {};
+}
+
+/**
  * Converte notificações MCP do AutoMate em eventos do protocolo da UI.
  * @param {string} method
  * @param {object} params
@@ -152,7 +170,7 @@ export function translateAutomateNotification(method, params, options = {}) {
         {
           type: "permission.request",
           runId,
-          request: { id: requestId, question },
+          request: { id: requestId, question, ...permissionInputFromQuestion(params?.questions?.[0]) },
         },
       ];
     }
