@@ -1,4 +1,4 @@
-import { resolveAutomateRun } from "./automateRunContext.js";
+import { reportAutomateOutcome, resolveAutomateRun } from "./automateRunContext.js";
 import {
   USER_FACING_AUTOMATE_TOOLS,
   emitUtteranceLog,
@@ -171,17 +171,20 @@ export function translateAutomateNotification(method, params, options = {}) {
       }
       return [{ type: "run.status", runId, status: "running" }];
     case "task_completed":
+      reportAutomateOutcome({ runId, threadId, status: "completed", output: params?.output });
       return [
-        { type: "run.status", runId, status: "completed" },
+        { type: "run.status", runId, status: "completed", ...(params?.output ? { output: String(params.output) } : {}) },
         { type: "presence", state: "awake", label: "acordada" },
       ];
     case "error":
+      reportAutomateOutcome({ runId, threadId, status: "failed", output: params?.output, error: params?.error ?? "erro" });
       return [
         {
           type: "run.status",
           runId,
           status: "failed",
           error: params?.error ?? "erro",
+          ...(params?.output ? { output: String(params.output) } : {}),
         },
         { type: "presence", state: "awake", label: "acordada" },
       ];

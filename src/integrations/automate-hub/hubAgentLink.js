@@ -396,6 +396,8 @@ export class HubAgentLink {
     const raw = frame.message;
     const text = typeof raw?.text === "string" ? raw.text : "";
     const attachments = raw?.meta?.attachments;
+    // Mensagem a que o usuário respondeu no app (a IA precisa saber o que ele está referenciando).
+    const replyTo = raw?.meta?.replyTo && typeof raw.meta.replyTo === "object" ? raw.meta.replyTo : null;
 
     if (!threadId || (!text.trim() && !attachments?.length)) {
       return;
@@ -410,6 +412,7 @@ export class HubAgentLink {
         body: {
           text,
           ...(Array.isArray(attachments) && attachments.length ? { attachments } : {}),
+          ...(replyTo ? { replyTo } : {}),
         },
       });
     } catch (error) {

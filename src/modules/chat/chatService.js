@@ -29,6 +29,10 @@ import { detectAgentUrlDownloadIntent } from "../../core/media/agentUrlDownloadI
 import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/messageContext.js";
 import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
 import { thinkDelaySleepMs } from "../../integrations/whatsapp/directBatchPlanner.js";
+import { scanCommandArgs } from "./commandArgScanner.js";
+
+/** Comandos cujo texto é livre (pode ter Markdown, parênteses e apóstrofos): lidos com o leitor robusto. */
+const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar"]);
 
 export function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -48,7 +52,15 @@ export function parseActionCommands(rawText) {
   while ((match = commandRegex.exec(text)) !== null) {
     const cmd = match[1].toLowerCase();
     const argsRaw = match[2];
-    const args = parseAgentCommandArgs(argsRaw);
+    let args = parseAgentCommandArgs(argsRaw);
+    if (FREE_TEXT_COMMANDS.has(cmd)) {
+      const open = text.indexOf("(", match.index);
+      const scanned = open >= 0 ? scanCommandArgs(text, open + 1) : null;
+      if (scanned && scanned.args.length > 0) {
+        args = scanned.args;
+        commandRegex.lastIndex = scanned.end; // o que veio dentro do texto não é outro comando
+      }
+    }
     
     if (cmd === "reagir" || cmd === "react") {
       if (args[0]) {

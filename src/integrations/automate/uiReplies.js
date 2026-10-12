@@ -1,4 +1,4 @@
-import { bindRunToThread, registerAutomateRun } from "./automateRunContext.js";
+import { bindRunToThread, markRunForExplanation, registerAutomateRun } from "./automateRunContext.js";
 import { applyUiMediaAction, isUiMediaAction } from "../ui/uiMediaActions.js";
 
 function parseInstructionFromEnqueueResult(result) {
@@ -166,6 +166,8 @@ export async function applyUiOutgoingActions({
     if (action.type === "automate" && action.intent) {
       const runId = `run-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       bindRunToThread(runId, thread.id);
+      // Pedido da Teto (não do usuário via @automate): quando terminar, ela explica o resultado na conversa.
+      if (!action.fromUser) markRunForExplanation(runId, action.intent);
       publishAutomateRunStarted(uiBus, { runId, threadId: thread.id });
       try {
         const result = await automateClient.enqueue(action.intent, undefined, {
