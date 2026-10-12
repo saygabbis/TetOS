@@ -26,6 +26,7 @@ export function normalizeAutomateRuns(raw) {
       startedAt: text(r?.startedAt, 40),
       ...(text(r?.endedAt, 40) ? { endedAt: text(r.endedAt, 40) } : {}),
       ...(text(r?.error, 160) ? { error: text(r.error, 160) } : {}),
+      ...(text(r?.output, 200) ? { output: text(r.output, 200) } : {}),
     });
   }
   return runs;
@@ -46,9 +47,25 @@ export function formatAutomateRunsBlock(runs) {
       const pc = r.deviceName ? ` no PC "${r.deviceName}"` : "";
       const when = r.endedAt ? ` (${clock(r.endedAt)})` : r.startedAt ? ` (desde ${clock(r.startedAt)})` : "";
       const err = r.status === "failed" && r.error ? `: ${r.error}` : "";
-      return `- «${r.title}» — ${STATUS_LABEL[r.status] ?? r.status}${pc}${when}${err}`;
+      const out = r.output ? ` — respondeu: ${r.output}` : "";
+      return `- «${r.title}» — ${STATUS_LABEL[r.status] ?? r.status}${pc}${when}${err}${out}`;
     }),
     "Se o usuário perguntar do andamento, responda com isso; não abra uma tarefa nova só para olhar.",
+  ];
+}
+
+/** O que está na fila ou rodando agora em outras conversas/PCs da conta (o hub manda como `activeRuns`). */
+export function formatActiveRunsBlock(runs) {
+  const list = normalizeAutomateRuns(Array.isArray(runs) ? runs.slice(0, 10) : []);
+  if (!list.length) return [];
+  return [
+    "[RODANDO AGORA EM OUTRAS CONVERSAS]",
+    ...list.map((r) => {
+      const pc = r.deviceName ? ` no PC "${r.deviceName}"` : "";
+      const since = r.startedAt ? ` (desde ${clock(r.startedAt)})` : "";
+      return `- «${r.title}» — ${STATUS_LABEL[r.status] ?? r.status}${pc}${since}`;
+    }),
+    "Se o usuário perguntar o que o computador está fazendo, considere também estas; tarefa nova no mesmo PC entra na fila depois delas.",
   ];
 }
 

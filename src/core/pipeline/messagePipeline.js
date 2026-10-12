@@ -237,7 +237,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     mainObserveOnly = false,
     tetosCommand = false,
     onLlmToken = null,
-    automateRuns = null
+    automateRuns = null,
+    automateActiveRuns = null
   } = payload;
   const isTetosBypass = Boolean(tetosCommand);
   const effectiveCloseDecision = isTetosBypass ? "open" : (closeDecision ?? null);
@@ -950,6 +951,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
         ? { onLlmToken }
         : {}),
       ...(safeChannelId === "ui-desktop" && Array.isArray(automateRuns) && automateRuns.length ? { automateRuns } : {}),
+      ...(safeChannelId === "ui-desktop" && Array.isArray(automateActiveRuns) && automateActiveRuns.length ? { automateActiveRuns } : {}),
       ...(relationshipMeta ?? {}),
       ...searchMeta,
       ...operationMeta

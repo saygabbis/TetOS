@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import { readHubAgentConfig } from "./hubAgentConfig.js";
 import { translateAutomateNotification } from "../automate/eventTranslator.js";
+import { setAutomateDevicePresence, setAutomateDevices } from "../automate/automateCapabilities.js";
 
 function parseJson(raw) {
   try {
@@ -111,6 +112,8 @@ export class HubAgentLink {
 
   setDevices(list) {
     this.devices.clear();
+    // A Teto sabe quais PCs estão ligados e o que cada um faz (sistema, perfil, se tem tela).
+    setAutomateDevices(list);
     if (!Array.isArray(list)) return;
     for (const d of list) {
       if (d && typeof d.id === "string") {
@@ -414,6 +417,7 @@ export class HubAgentLink {
           ...(Array.isArray(attachments) && attachments.length ? { attachments } : {}),
           ...(replyTo ? { replyTo } : {}),
           ...(Array.isArray(frame.runs) && frame.runs.length ? { runs: frame.runs } : {}),
+          ...(Array.isArray(frame.activeRuns) && frame.activeRuns.length ? { activeRuns: frame.activeRuns } : {}),
         },
       });
     } catch (error) {
@@ -446,6 +450,7 @@ export class HubAgentLink {
     if (!deviceId) return;
     const known = this.devices.get(deviceId);
     this.devices.set(deviceId, { ...(known ?? { id: deviceId }), id: deviceId, online: Boolean(frame.online) });
+    setAutomateDevicePresence(deviceId, frame.online);
     this.uiBus?.publish({
       type: "device.presence",
       deviceId,

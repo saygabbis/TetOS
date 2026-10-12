@@ -78,4 +78,50 @@ describe("eventTranslator", () => {
     expect(request.multiple).toBeUndefined();
     expect(permissionFor({ prompt: "Quais?", type: "multiple_choice", options: [{ id: "a", label: "A" }] }).multiple).toBe(true);
   });
+
+  it("intervenção manual (kind takeover) vira control.request com Pronto/Desistir (ids do AutoMate)", () => {
+    const events = translateAutomateNotification("notifications/automate/clarification_needed", {
+      instructionId: "inst-1",
+      id: "t1",
+      kind: "takeover",
+      questions: [{ prompt: "Faça login no banco", type: "single_choice" }],
+    });
+    const control = events.find((e) => e.type === "control.request");
+    expect(control.request).toMatchObject({ id: "t1", question: "Faça login no banco", input: "takeover" });
+    expect(control.request.options.map((o) => o.id)).toEqual(["done", "refuse"]);
+    expect(events.some((e) => e.type === "permission.request")).toBe(false);
+  });
+
+  it("formulário (kind form) vira input form com um campo por pergunta", () => {
+    const request = translateAutomateNotification("notifications/automate/clarification_needed", {
+      instructionId: "inst-1",
+      id: "f1",
+      kind: "form",
+      context: "Dados do cadastro",
+      questions: [
+        { id: "email", prompt: "Email", type: "free_text", required: true, input: "email" },
+        { id: "uf", prompt: "Estado", type: "single_choice", required: false, input: "select", options: [{ id: "o1", label: "SP" }] },
+      ],
+    }).find((e) => e.type === "permission.request").request;
+    expect(request).toEqual({
+      id: "f1",
+      question: "Dados do cadastro",
+      input: "form",
+      fields: [
+        { key: "email", label: "Email", type: "email", required: true },
+        { key: "uf", label: "Estado", type: "select", required: false, options: [{ id: "o1", label: "SP" }] },
+      ],
+    });
+  });
+
+  it("aprovação de ação sensível pede Aprovar/Negar; texto livre leva as sugestões", () => {
+    const approval = translateAutomateNotification("notifications/automate/clarification_needed", {
+      instructionId: "inst-1",
+      id: "a1",
+      kind: "approval",
+      questions: [{ prompt: "Apagar a pasta?", type: "single_choice", options: [{ id: "approve", label: "Aprovar" }] }],
+    }).find((e) => e.type === "permission.request").request;
+    expect(approval.input).toBe("approval");
+    expect(permissionFor({ prompt: "Qual pasta?", type: "free_text", suggestions: ["Downloads", 3] }).suggestions).toEqual(["Downloads"]);
+  });
 });
