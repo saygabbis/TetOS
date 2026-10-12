@@ -50,5 +50,32 @@ describe("eventTranslator", () => {
     });
     expect(events.some((e) => e.type === "permission.request")).toBe(true);
     expect(events.some((e) => e.stepId === "utterance:ask_user:p1" && e.line === "Confirmar?")).toBe(true);
+    expect(events.find((e) => e.type === "permission.request").request.input).toBeUndefined();
+  });
+
+  const permissionFor = (question) =>
+    translateAutomateNotification("notifications/automate/clarification_needed", {
+      instructionId: "inst-1",
+      id: "p2",
+      questions: [question],
+    }).find((e) => e.type === "permission.request").request;
+
+  it("pergunta aberta (free_text) pede texto, não Confirmar/Negar", () => {
+    const request = permissionFor({ prompt: "O que adiciono nele?", type: "free_text" });
+    expect(request.question).toBe("O que adiciono nele?");
+    expect(request.input).toBe("text");
+    expect(request.options).toBeUndefined();
+  });
+
+  it("escolha vira chips com os ids reais das opções", () => {
+    const request = permissionFor({
+      prompt: "AÇÃO DESTRUTIVA — aprovar?",
+      type: "single_choice",
+      options: [{ id: "approve", label: "Aprovar" }, { id: "deny", label: "Negar" }],
+    });
+    expect(request.input).toBe("choice");
+    expect(request.options).toEqual([{ id: "approve", label: "Aprovar" }, { id: "deny", label: "Negar" }]);
+    expect(request.multiple).toBeUndefined();
+    expect(permissionFor({ prompt: "Quais?", type: "multiple_choice", options: [{ id: "a", label: "A" }] }).multiple).toBe(true);
   });
 });
