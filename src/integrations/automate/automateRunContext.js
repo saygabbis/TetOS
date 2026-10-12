@@ -1,3 +1,40 @@
+import { EventEmitter } from "node:events";
+
+/**
+ * Execuções que a IA (Teto) pediu ao AutoMate. Quando uma delas termina, o resultado volta para a IA explicar ao
+ * usuário (`automateOutcomes` emite `outcome`). Execuções pedidas direto pelo usuário (@automate) não entram aqui.
+ */
+export const automateOutcomes = new EventEmitter();
+
+/** @type {Map<string, { intent: string, at: number }>} */
+const explainRuns = new Map();
+const MAX_EXPLAIN_RUNS = 200;
+
+export function markRunForExplanation(runId, intent) {
+  if (!runId) return;
+  explainRuns.set(runId, { intent: String(intent ?? "").slice(0, 300), at: Date.now() });
+  if (explainRuns.size > MAX_EXPLAIN_RUNS) {
+    const oldest = [...explainRuns.entries()].sort((a, b) => a[1].at - b[1].at)[0];
+    if (oldest) explainRuns.delete(oldest[0]);
+  }
+}
+
+/** Avisa que a execução terminou (uma vez só). Devolve se alguém precisa explicar o resultado ao usuário. */
+export function reportAutomateOutcome({ runId, threadId, status, output, error }) {
+  const entry = runId ? explainRuns.get(runId) : null;
+  if (!entry) return false;
+  explainRuns.delete(runId);
+  automateOutcomes.emit("outcome", {
+    runId,
+    threadId,
+    status,
+    output: output ? String(output) : "",
+    error: error ? String(error) : "",
+    intent: entry.intent,
+  });
+  return true;
+}
+
 /** @type {Map<string, { runId: string, threadId: string }>} */
 const byInstructionId = new Map();
 

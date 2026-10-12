@@ -3,6 +3,7 @@ import { requireSession } from "../auth/sessionAuth.js";
 import { handleIncomingMessage } from "../../../app/createRuntime.js";
 
 import { applyUiOutgoingActions } from "../../../integrations/automate/uiReplies.js";
+import { automateOutcomes } from "../../../integrations/automate/automateRunContext.js";
 import { attachAutomateChatHistory } from "../../../integrations/automate/uiAutomateChatHistory.js";
 import { normalizeSkillRefs, skillRefsPipelinePrefix } from "../../../integrations/automate/skillRefs.js";
 import { parseAutomateMention, resolveUiMessageMode } from "../../../integrations/automate/parseAutomateMention.js";
@@ -94,6 +95,40 @@ async function describeFirstMedia(runtime, mediaDir, attachments, text) {
 
 const DEFAULT_THREAD_PAGE = 50;
 const DEFAULT_MESSAGE_PAGE = 40;
+
+/** Citação enviada pelo app (usuário respondeu a uma mensagem): só o necessário, com tamanho limitado. */
+export function normalizeReplyTo(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const text = typeof raw.text === "string" ? raw.text.trim() : "";
+  if (!text) return null;
+  const role = raw.role === "assistant" || raw.role === "system" ? raw.role : "user";
+  return { id: typeof raw.id === "string" ? raw.id.slice(0, 120) : "", role, text: text.slice(0, 1500) };
+}
+
+export function replyQuotePrefix(replyTo) {
+  const who = replyTo.role === "assistant" ? "uma mensagem da Teto" : replyTo.role === "system" ? "um aviso" : "uma mensagem dele(a)";
+  return `[O usuário está respondendo a ${who}: «${replyTo.text}»]\n`;
+}
+
+/** O que a Teto recebe quando uma tarefa que ela pediu ao AutoMate termina (não é fala do usuário). */
+export function buildAutomateOutcomePrompt({ status, output, error, intent }) {
+  const done = status === "completed";
+  return [
+    "[EVENTO DO SISTEMA — resultado do AutoMate]",
+    `A tarefa que você pediu ao AutoMate no computador do usuário${intent ? ` («${intent}»)` : ""} ${done ? "foi CONCLUÍDA" : "FALHOU"}.`,
+    error ? `Erro informado: ${error.slice(0, 600)}` : "",
+    output ? `Resposta do AutoMate:\n${output.slice(0, 3000)}` : "(o AutoMate não devolveu texto)",
+    "",
+    "Agora explique ao usuário, com suas palavras e no seu jeito, o que aconteceu:",
+    done
+      ? "- diga o resultado de forma clara e curta (o que foi feito, onde ficou). Se o AutoMate citou arquivos com caminho completo, mencione-os como link [nome](file:///…)."
+      : "- explique o motivo da falha em linguagem simples (sem culpar ninguém) e o que ele pode fazer agora.",
+    "- Isto NÃO é uma mensagem do usuário: não agradeça nem responda como se ele tivesse escrito.",
+    "- NÃO dispare novas tarefas no computador por conta própria; se valer a pena tentar de novo, pergunte antes.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
 
 function parseLimit(raw, defaultVal, max = 200) {
   const n = Number.parseInt(String(raw ?? defaultVal), 10);
@@ -222,6 +257,35 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     runtime,
     ensureThread,
   });
+
+  // A Teto pediu uma tarefa ao AutoMate e ela terminou (ou falhou): a Teto responde na conversa explicando o resultado.
+  automateOutcomes.on("outcome", (outcome) => {
+    void explainAutomateOutcome(outcome).catch((err) => console.error("[automate-outcome]", err?.message ?? err));
+  });
+
+  async function explainAutomateOutcome({ threadId, status, output, error, intent }) {
+    if (!threadId || !threadStore.has(threadId)) return;
+    const thread = threadStore.get(threadId);
+    const userId = "ui-user";
+    const mediaContext = { runtime, service: mediaService, userId };
+    publishAssistantTyping(uiBus, thread.id, true);
+    try {
+      const assistantDraftId = `a-${Date.now()}-outcome`;
+      const { replies } = await handleIncomingMessage(runtime, {
+        message: buildAutomateOutcomePrompt({ status, output, error, intent }),
+        userId,
+        sessionId: thread.id,
+        channelId: "ui-desktop",
+        uiAssistantMessageId: assistantDraftId,
+      });
+      // Só explica: tarefa nova no computador exige o usuário pedir (evita laço de tentativas).
+      if (Array.isArray(replies?.actions)) replies.actions = replies.actions.filter((a) => a?.type !== "automate");
+      await applyUiOutgoingActions({ replies, thread, uiBus, automateClient, assistantMessageId: assistantDraftId, mediaContext });
+      persistThreadStore(threadStore);
+    } finally {
+      publishAssistantTyping(uiBus, thread.id, false);
+    }
+  }
 
   app.get("/ui/threads", requireSession, (req, res) => {
     purgeEmptyThreads(threadStore);
@@ -354,6 +418,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
     const attachments = normalizeAttachments(req.body?.attachments, { mediaDir: mediaService.dir });
     const skillRefs = normalizeSkillRefs(req.body?.skillRefs);
+    const replyTo = normalizeReplyTo(req.body?.replyTo);
 
     if (!text.trim() && attachments.length === 0 && skillRefs.length === 0) {
 
@@ -381,8 +446,9 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
     const automateMention = parseAutomateMention(text);
     const uiMode = resolveUiMessageMode(req.body?.mode, text);
-    if (imageCount > 0 || skillRefs.length > 0 || uiMode === "automate") {
+    if (imageCount > 0 || skillRefs.length > 0 || uiMode === "automate" || replyTo) {
       userMsg.meta = {
+        ...(replyTo ? { replyTo } : {}),
         ...(imageCount > 0
           ? {
               insights: {
@@ -460,6 +526,8 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
           skillRefs.length > 0
             ? `${skillRefsPipelinePrefix(skillRefs)}${rawPipelineText}`
             : rawPipelineText;
+        // Citação: no modo AutoMate a intenção vai pronta ao PC, então o trecho citado entra no próprio texto.
+        const pipelineWithQuote = replyTo && uiMode === "automate" ? `${replyQuotePrefix(replyTo)}${pipelineWithSkills}` : pipelineWithSkills;
 
         const assistantDraftId = `a-${Date.now()}-stream`;
         const onLlmToken =
@@ -481,7 +549,8 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
               actions: [
                 {
                   type: "automate",
-                  intent: pipelineWithSkills,
+                  fromUser: true,
+                  intent: pipelineWithQuote,
                   ...(skillRefs.length ? { skillRefs } : {}),
                 },
               ],
@@ -504,6 +573,9 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
             onLlmToken,
             uiAssistantMessageId: assistantDraftId,
             messageKey: { id: userMsg.id },
+            ...(replyTo
+              ? { isReply: true, quotedMessage: replyTo.text, quotedMessageId: replyTo.id, isReplyToBot: replyTo.role === "assistant" }
+              : {}),
             ...(media ? { media } : {}),
           });
         await applyUiOutgoingActions({

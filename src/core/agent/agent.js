@@ -854,14 +854,16 @@ export class Agent {
     const quotedBlock = quotedText
       ? [
           "[REPLY / QUOTE]",
-          `O usuário marcou (reply) esta mensagem do chat: «${quotedText.slice(0, 500)}»`,
+          `O usuário marcou (reply) esta mensagem do chat: «${quotedText.slice(0, meta?.channelId === "ui-desktop" ? 1500 : 500)}»`,
           meta?.quotedMessageId
             ? `quotedMessageId (mensagem MARCADA por ele): ${meta.quotedMessageId} — use SOMENTE em toimage(), sticker(), removebg(), etc. quando o pedido for sobre ESSA mídia.`
             : null,
           meta?.incomingMessageId || meta?.messageKey?.id
             ? `incomingMessageId (mensagem DELE/ DELA agora): ${meta.incomingMessageId ?? meta.messageKey?.id} — é a bolha de texto/mídia que acabou de chegar; NÃO confunda com quotedMessageId.`
             : null,
-          "Responda ao texto novo dele(a). O quote marcado é só CONTEXTO — a resposta no WhatsApp deve citar a mensagem dele (incomingMessageId), não a mídia antiga, salvo pedido explícito sobre a mídia marcada.",
+          meta?.channelId === "ui-desktop"
+            ? "Ele(a) respondeu a essa mensagem no app: o que escreveu agora se refere a ELA. Use o conteúdo marcado para entender de que ele(a) está falando (um item, um trecho, um arquivo, um resultado) e responda a isso."
+            : "Responda ao texto novo dele(a). O quote marcado é só CONTEXTO — a resposta no WhatsApp deve citar a mensagem dele (incomingMessageId), não a mídia antiga, salvo pedido explícito sobre a mídia marcada.",
           threadSnippet ? `Fio recente:\n${threadSnippet}` : null
         ].filter(Boolean)
       : meta?.isReplyToBot
@@ -1073,6 +1075,17 @@ export class Agent {
       "Se errarem seu nome na despedida: correção leve (é Teto kkk) + tchau numa frase — sem bronca nem estender o papo."
     ];
 
+    // O app (AutoMate/TetOS Desktop e celular) renderiza Markdown e abre links de arquivo; o WhatsApp não.
+    const uiFormatBlock =
+      meta?.channelId === "ui-desktop"
+        ? [
+            "[FORMATO — app AutoMate/TetOS]",
+            "Esta conversa aparece no app, que renderiza **Markdown**: pode usar **negrito**, _itálico_, listas, títulos curtos, `código`, blocos de código com linguagem (```powershell), tabelas e links [texto](https://…). Use quando ajudar a leitura (passos, listas, código, comparações); em conversa leve continue falando do seu jeito, sem formatar à toa.",
+            "Dentro de mensagem(\"…\") pode haver várias linhas, parênteses e links; só evite aspas duplas soltas no texto (use \\\" se precisar).",
+            "ARQUIVOS: quando citar um arquivo do computador do usuário cujo caminho COMPLETO você sabe (informado por ele ou devolvido pelo AutoMate), escreva um link Markdown com URL file:/// para ele poder abrir com um clique: [relatorio.docx](file:///C:/Users/Nome/Desktop/relatorio.docx). Use barras normais, troque espaços por %20 e não use \\. NUNCA invente caminho; sem o caminho exato, descreva o arquivo em texto simples (nome e pasta)."
+          ]
+        : [];
+
     const tetosCommandBlock = meta?.tetosCommand
       ? []
       : [];
@@ -1081,6 +1094,7 @@ export class Agent {
 
     return [
       ...actionCommandsBlock,
+      ...uiFormatBlock,
       ...imageGenBlock,
       ...urlDownloadBlock,
       ...hardRulesBlock,
