@@ -166,8 +166,8 @@ export async function applyUiOutgoingActions({
     if (action.type === "automate" && action.intent) {
       const runId = `run-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       bindRunToThread(runId, thread.id);
-      // Pedido da Teto (não do usuário via @automate): quando terminar, ela explica o resultado na conversa.
-      if (!action.fromUser) markRunForExplanation(runId, action.intent);
+      // Quando terminar, a Teto explica o resultado na conversa (pedido dela ou do usuário via @automate).
+      markRunForExplanation(runId, action.intent, { fromUser: Boolean(action.fromUser) });
       publishAutomateRunStarted(uiBus, { runId, threadId: thread.id });
       try {
         const result = await automateClient.enqueue(action.intent, undefined, {

@@ -30,13 +30,40 @@ function flushThinking(runId, uiBus) {
  * escolha vira chips com os ids reais das opções (ex.: approve/deny do gate de aprovação).
  * Sem tipo conhecido devolve {} e a UI cai no Confirmar/Negar.
  */
+const FORM_FIELD_TYPES = new Set(["text", "textarea", "email", "cpf", "cnpj", "phone", "cep", "number", "date", "select"]);
+
+/** Formulário do AutoMate (`ask_user_form`): cada pergunta é um campo; o id dela é a chave do valor. */
+export function formFieldsFromQuestions(questions) {
+  if (!Array.isArray(questions)) return [];
+  return questions.flatMap((q) => {
+    if (!q || typeof q.id !== "string" || typeof q.prompt !== "string") return [];
+    const options = Array.isArray(q.options)
+      ? q.options.filter((o) => o && typeof o.id === "string" && typeof o.label === "string").map((o) => ({ id: o.id, label: o.label }))
+      : [];
+    const raw = typeof q.input === "string" ? q.input : options.length ? "select" : "text";
+    return [
+      {
+        key: q.id,
+        label: q.prompt,
+        type: FORM_FIELD_TYPES.has(raw) ? raw : "text",
+        required: q.required !== false,
+        ...(typeof q.placeholder === "string" && q.placeholder ? { placeholder: q.placeholder } : {}),
+        ...(options.length ? { options } : {}),
+      },
+    ];
+  });
+}
+
 function permissionInputFromQuestion(question) {
   const options = Array.isArray(question?.options)
     ? question.options
         .filter((o) => o && typeof o.id === "string" && typeof o.label === "string")
         .map((o) => ({ id: o.id, label: o.label }))
     : [];
-  if (question?.type === "free_text") return { input: "text" };
+  const suggestions = Array.isArray(question?.suggestions)
+    ? question.suggestions.filter((x) => typeof x === "string" && x.trim()).slice(0, 6)
+    : [];
+  if (question?.type === "free_text") return { input: "text", ...(suggestions.length ? { suggestions } : {}) };
   if ((question?.type === "single_choice" || question?.type === "multiple_choice") && options.length) {
     return { input: "choice", options, ...(question.type === "multiple_choice" ? { multiple: true } : {}) };
   }
@@ -146,7 +173,7 @@ export function translateAutomateNotification(method, params, options = {}) {
     }
     case "clarification_needed": {
       const kind = params?.kind ?? "question";
-      const isManual = kind === "manual_action" || kind === "action";
+      const isManual = kind === "manual_action" || kind === "action" || kind === "takeover";
       const question =
         params?.questions?.[0]?.prompt ??
         params?.question ??
@@ -161,16 +188,45 @@ export function translateAutomateNotification(method, params, options = {}) {
           {
             type: "control.request",
             runId,
-            request: { id: requestId, question },
+            // Intervenção manual: o usuário faz (login, senha, CAPTCHA) e responde "já fiz" ou "desisto" (ids do AutoMate).
+            request: {
+              id: requestId,
+              title: question,
+              detail: "",
+              question,
+              input: "takeover",
+              options: [
+                { id: "done", label: "Pronto, já fiz" },
+                { id: "refuse", label: "Não quero fazer / desistir" },
+              ],
+            },
           },
         ];
       }
+      if (kind === "form") {
+        return [
+          ...(utterance ? [utterance] : []),
+          {
+            type: "permission.request",
+            runId,
+            request: {
+              id: requestId,
+              question: typeof params?.context === "string" && params.context.trim() ? params.context : question,
+              input: "form",
+              fields: formFieldsFromQuestions(params?.questions),
+            },
+          },
+        ];
+      }
+      // Aprovação de ação sensível: Aprovar/Negar (com os ids que o AutoMate mandou, se vierem).
+      const approvalOptions = (params?.questions?.[0]?.options ?? []).filter((o) => o && typeof o.id === "string" && typeof o.label === "string");
+      const approval = kind === "approval" ? { input: "approval", ...(approvalOptions.length ? { options: approvalOptions.map((o) => ({ id: o.id, label: o.label })) } : {}) } : null;
       return [
         ...(utterance ? [utterance] : []),
         {
           type: "permission.request",
           runId,
-          request: { id: requestId, question, ...permissionInputFromQuestion(params?.questions?.[0]) },
+          request: { id: requestId, question, ...(approval ?? permissionInputFromQuestion(params?.questions?.[0])) },
         },
       ];
     }

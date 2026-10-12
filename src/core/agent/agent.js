@@ -1,5 +1,6 @@
 import { isMessyLaughterMessage } from "../memory/extractor.js";
-import { formatAutomateRunsBlock } from "../../integrations/automate/automateRunsContext.js";
+import { formatActiveRunsBlock, formatAutomateRunsBlock } from "../../integrations/automate/automateRunsContext.js";
+import { AUTOMATE_ABILITIES, formatAutomateCapabilitiesBlock } from "../../integrations/automate/automateCapabilities.js";
 import { buildInformalTypingPromptLines } from "../memory/informalTyping.js";
 import {
   isReactionDirectedAtAssistant,
@@ -196,7 +197,7 @@ export class Agent {
       '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
       '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
       '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
-      '22. computador("intenção em português") — Enfileira tarefa no AutoMate na máquina do usuário (abrir app, editar vídeo, automatizar desktop). Use quando pedirem algo no PC; descreva o objetivo claro na string. Pode combinar com mensagem("...") na mesma resposta.',
+      `22. computador("intenção em português") — Enfileira tarefa no AutoMate na máquina do usuário (abrir app, editar vídeo, automatizar desktop). Use quando pedirem algo no PC; descreva o objetivo claro na string. Pode combinar com mensagem("...") na mesma resposta. ${AUTOMATE_ABILITIES}`,
       "",
       ...downloadRulesLines,
       "COMANDOS DE MÍDIA — REGRAS:",
@@ -1085,7 +1086,9 @@ export class Agent {
             "Dentro de mensagem(\"…\") pode haver várias linhas, parênteses e links; só evite aspas duplas soltas no texto (use \\\" se precisar).",
             "ARQUIVOS: quando citar um arquivo do computador do usuário cujo caminho COMPLETO você sabe (informado por ele ou devolvido pelo AutoMate), escreva um link Markdown com URL file:/// para ele poder abrir com um clique: [relatorio.docx](file:///C:/Users/Nome/Desktop/relatorio.docx). Use barras normais, troque espaços por %20 e não use \\. NUNCA invente caminho; sem o caminho exato, descreva o arquivo em texto simples (nome e pasta).",
             "ANEXOS: prints e arquivos que o AutoMate entrega aparecem no cartão da tarefa, no app (inclusive no celular, onde o usuário vê e baixa): você não reenvia o conteúdo, só comenta citando o nome.",
-            ...formatAutomateRunsBlock(meta?.automateRuns)
+            ...formatAutomateCapabilitiesBlock(),
+            ...formatAutomateRunsBlock(meta?.automateRuns),
+            ...formatActiveRunsBlock(meta?.automateActiveRuns)
           ]
         : [];
 

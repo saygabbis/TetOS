@@ -31,7 +31,7 @@ describe("resultado do AutoMate volta para a Teto explicar", () => {
   it("tarefa pedida pela Teto: ao concluir, emite o resultado com a conversa, a intenção e a resposta", () => {
     const { runId, instructionId, threadId } = startRun("a", { explain: true });
     const events = translateAutomateNotification("notifications/automate/task_completed", { instructionId, output: "Abri e digitei o texto." });
-    expect(seen).toEqual([{ runId, threadId, status: "completed", output: "Abri e digitei o texto.", error: "", intent: "abrir o bloco de notas a" }]);
+    expect(seen).toEqual([{ runId, threadId, status: "completed", output: "Abri e digitei o texto.", error: "", intent: "abrir o bloco de notas a", fromUser: false }]);
     // a resposta final também vai no evento da interface (o cartão mostra o que o AutoMate respondeu)
     expect(events[0]).toMatchObject({ type: "run.status", status: "completed", output: "Abri e digitei o texto." });
   });
@@ -43,10 +43,20 @@ describe("resultado do AutoMate volta para a Teto explicar", () => {
     expect(seen[0]).toMatchObject({ status: "failed", error: "janela não abriu", output: "Tentei 2 vezes." });
   });
 
-  it("tarefa pedida direto pelo usuário (@automate) não vira explicação da Teto", () => {
+  it("execução que ninguém marcou para explicar não gera evento", () => {
     const { instructionId } = startRun("c", { explain: false });
     translateAutomateNotification("notifications/automate/task_completed", { instructionId, output: "ok" });
     expect(seen).toHaveLength(0);
+  });
+
+  it("tarefa pedida direto pelo usuário (@automate) também volta para a Teto explicar, marcada como do usuário", () => {
+    registerAutomateRun({ instructionId: "ins-u", runId: "run-test-u", threadId: "thread-u" });
+    markRunForExplanation("run-test-u", "exportar a planilha", { fromUser: true });
+    translateAutomateNotification("notifications/automate/task_completed", { instructionId: "ins-u", output: "Exportei." });
+    expect(seen).toEqual([expect.objectContaining({ runId: "run-test-u", fromUser: true, output: "Exportei." })]);
+    expect(buildAutomateOutcomePrompt({ status: "completed", output: "Exportei.", intent: "exportar", fromUser: true })).toContain(
+      "que o usuário pediu direto ao AutoMate (@automate)",
+    );
   });
 
   it("só uma vez por execução, mesmo se a notificação repetir", () => {
