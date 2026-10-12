@@ -30,6 +30,10 @@ export function registerAutomateRun({ instructionId, runId, threadId }) {
   bindRunToThread(runId, threadId);
 }
 
+/**
+ * Resolve run/thread conhecidos desta instância TetOS.
+ * @returns {{ runId: string, threadId: string, instructionId?: string | null } | null}
+ */
 export function resolveAutomateRun(params = {}) {
   const instructionId = params.instructionId ?? null;
   if (instructionId && byInstructionId.has(instructionId)) {
@@ -42,35 +46,22 @@ export function resolveAutomateRun(params = {}) {
       ? clientRunIdByThread.get(threadFromParam)
       : null;
 
-  if (instructionId) {
-    const recent = lastClientAutomateRun;
-    if (recent && Date.now() - recent.at < 120_000) {
-      return {
-        runId: clientFromThread ?? recent.runId,
-        threadId: threadFromParam ?? recent.threadId,
-        instructionId,
-      };
+  const runKey = params.runId ?? instructionId;
+  if (runKey) {
+    const threadFromRun = resolveThreadIdForRun(runKey);
+    if (threadFromRun) {
+      return { runId: runKey, threadId: threadFromRun, instructionId };
     }
   }
 
-  const recent = lastClientAutomateRun;
-  const fallbackRunId = params.turnId ?? "run-active";
-  const threadId =
-    threadFromParam ??
-    resolveThreadIdForRun(clientFromThread) ??
-    recent?.threadId ??
-    null;
-  const runId =
-    clientFromThread ??
-    (instructionId && recent && Date.now() - recent.at < 120_000 ? recent.runId : null) ??
-    (recent && Date.now() - recent.at < 120_000 ? recent.runId : null) ??
-    fallbackRunId;
+  if (clientFromThread) {
+    const threadId = threadFromParam ?? resolveThreadIdForRun(clientFromThread);
+    if (threadId) {
+      return { runId: clientFromThread, threadId, instructionId };
+    }
+  }
 
-  return {
-    runId,
-    threadId: threadId ?? recent?.threadId ?? "thread-1",
-    instructionId,
-  };
+  return null;
 }
 
 export function clearAutomateRun(instructionId) {

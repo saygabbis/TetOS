@@ -1,7 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeAll } from "vitest";
+import { registerAutomateRun } from "../../src/integrations/automate/automateRunContext.js";
 import { translateAutomateNotification } from "../../src/integrations/automate/eventTranslator.js";
 
 describe("eventTranslator", () => {
+  beforeAll(() => {
+    registerAutomateRun({
+      instructionId: "inst-1",
+      runId: "run-et-1",
+      threadId: "thread-et-1",
+    });
+  });
+
   it("traduz tool_call start", () => {
     const events = translateAutomateNotification("notifications/automate/tool_call", {
       instructionId: "inst-1",

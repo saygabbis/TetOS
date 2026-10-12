@@ -14,6 +14,7 @@ function threadIdForAutomateRun(runId) {
   const direct = resolveThreadIdForRun(runId);
   if (direct) return direct;
   const resolved = resolveAutomateRun({ instructionId: runId });
+  if (!resolved) return null;
   if (resolved.threadId && resolved.runId?.startsWith("run-")) {
     return resolved.threadId;
   }
@@ -148,7 +149,9 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
       if (!threadId) return;
       const step = event.step;
       if (USER_FACING_AUTOMATE_TOOLS.has(step.tool)) return;
-      const clientRunId = resolveAutomateRun({ instructionId: event.runId }).runId;
+      const planMapped = resolveAutomateRun({ instructionId: event.runId });
+      if (!planMapped) return;
+      const clientRunId = planMapped.runId;
       const runId = String(clientRunId).startsWith("run-") ? clientRunId : event.runId;
       upsertThreadMessage({
         threadStore,
@@ -174,6 +177,7 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
 
     if (event.type === "tool.log" && event.runId && event.line) {
       const mapped = resolveAutomateRun({ instructionId: event.runId });
+      if (!mapped) return;
       const runId = String(mapped.runId).startsWith("run-") ? mapped.runId : event.runId;
       const threadId = resolveThreadIdForRun(runId) ?? mapped.threadId;
       if (!threadId) return;
@@ -233,6 +237,7 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
 
     if (event.type === "run.status" && event.runId) {
       const mapped = resolveAutomateRun({ instructionId: event.runId });
+      if (!mapped) return;
       const runId = String(mapped.runId).startsWith("run-") ? mapped.runId : event.runId;
       const threadId = resolveThreadIdForRun(runId) ?? mapped.threadId;
       if (!threadId) return;

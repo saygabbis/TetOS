@@ -33,13 +33,28 @@ describe("fluxo UI + AutoMate", () => {
   });
 
   it("clarification manual vira control.request", () => {
+    registerAutomateRun({
+      instructionId: "inst-1",
+      runId: "run-manual",
+      threadId: "thread-manual",
+    });
     const events = translateAutomateNotification("notifications/automate/clarification_needed", {
       id: "c1",
       kind: "manual_action",
       questions: [{ prompt: "Clique em Permitir" }],
       instructionId: "inst-1",
     });
-    expect(events[0].type).toBe("control.request");
+    expect(events.some((e) => e.type === "control.request")).toBe(true);
+  });
+
+  it("ignora notificação de run desconhecido", () => {
+    expect(resolveAutomateRun({ turnId: "turn-estrangeiro" })).toBeNull();
+    const events = translateAutomateNotification("notifications/automate/tool_call", {
+      tool: "window_list",
+      status: "start",
+      turnId: "turn-estrangeiro",
+    });
+    expect(events).toEqual([]);
   });
 
   it("sequência task_progress + completed com mesmo runId", () => {

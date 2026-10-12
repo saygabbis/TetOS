@@ -165,7 +165,15 @@ describe("HubAgentLink", () => {
       expect(framesFromAgent.some((f) => f.t === "event" && f.event?.type === "assistant.typing")).toBe(
         true,
       );
-      expect(framesFromAgent.some((f) => f.t === "message" && f.message?.text === "oi")).toBe(true);
+      expect(
+        framesFromAgent.some(
+          (f) =>
+            f.t === "event" &&
+            f.event?.type === "message.final" &&
+            f.event?.message?.text === "oi" &&
+            f.durable === true,
+        ),
+      ).toBe(true);
     });
 
     const typingEvent = framesFromAgent.find((f) => f.t === "event" && f.event?.type === "assistant.typing");
@@ -174,6 +182,72 @@ describe("HubAgentLink", () => {
 
     const pong = framesFromAgent.find((f) => f.t === "pong");
     expect(pong).toBeTruthy();
+
+    await mockHub.close();
+  });
+
+  it("message.final em thread do hub usa t:message; thread só RPC usa t:event durable", async () => {
+    const dispatchUiRequest = vi.fn(async () => ({
+      status: 202,
+      headers: {},
+      body: JSON.stringify({ ok: true }),
+      bodyEncoding: "utf8",
+    }));
+    const mockHub = await listenWss();
+    const framesFromAgent = [];
+
+    mockHub.wss.on("connection", (ws) => {
+      ws.on("message", (raw) => {
+        const frame = JSON.parse(String(raw));
+        framesFromAgent.push(frame);
+        if (frame.t === "hello") {
+          ws.send(JSON.stringify({ t: "ready", agent: { id: "tetos", name: "TetOS" }, devices: [] }));
+          ws.send(
+            JSON.stringify({
+              t: "message",
+              agentId: "tetos",
+              threadId: "thr_hub_1",
+              message: { id: "u1", role: "user", text: "ping" },
+              history: [],
+              user: { id: "user-1" },
+            }),
+          );
+        }
+      });
+    });
+
+    const uiBus = new UiEventBus();
+    hub = new HubAgentLink({
+      config: { ...baseConfig, url: mockHub.url },
+      dispatchUiRequest,
+      uiBus,
+      onLog: () => {},
+      onError: () => {},
+    });
+    hub.start();
+
+    await vi.waitFor(() => expect(dispatchUiRequest).toHaveBeenCalled());
+    uiBus.publish({
+      type: "message.final",
+      threadId: "thread-rpc-only",
+      message: { id: "a-rpc", role: "assistant", text: "via rpc" },
+    });
+    uiBus.publish({
+      type: "message.final",
+      threadId: "thr_hub_1",
+      message: { id: "a-hub", role: "assistant", text: "via hub chat" },
+    });
+
+    await vi.waitFor(() => {
+      expect(
+        framesFromAgent.some(
+          (f) => f.t === "event" && f.threadId === "thread-rpc-only" && f.durable === true,
+        ),
+      ).toBe(true);
+      expect(framesFromAgent.some((f) => f.t === "message" && f.message?.text === "via hub chat")).toBe(
+        true,
+      );
+    });
 
     await mockHub.close();
   });

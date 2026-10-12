@@ -44,6 +44,12 @@ export class HubAgentLink {
     this.reconnectTimer = null;
     this.streamUnsubscribe = null;
     this.messageChain = Promise.resolve();
+    /** Threads criadas/roteadas pelo hub (`t:"message"`); demais usam `t:"event"` para o app. */
+    this.hubChatThreadIds = new Set();
+  }
+
+  isHubChatThread(threadId) {
+    return typeof threadId === "string" && threadId.length > 0 && this.hubChatThreadIds.has(threadId);
   }
 
   start() {
@@ -113,16 +119,25 @@ export class HubAgentLink {
     const threadId = typeof event.threadId === "string" ? event.threadId : undefined;
 
     if (event.type === "message.final" && event.message?.role === "assistant") {
+      if (this.isHubChatThread(threadId)) {
+        this.send({
+          t: "message",
+          threadId,
+          message: {
+            id: event.message.id,
+            role: "assistant",
+            text: event.message.text ?? "",
+            ...(event.message.meta ? { meta: event.message.meta } : {}),
+            final: true,
+          },
+        });
+        return;
+      }
       this.send({
-        t: "message",
-        threadId,
-        message: {
-          id: event.message.id,
-          role: "assistant",
-          text: event.message.text ?? "",
-          ...(event.message.meta ? { meta: event.message.meta } : {}),
-          final: true,
-        },
+        t: "event",
+        ...(threadId ? { threadId } : {}),
+        event,
+        durable: true,
       });
       return;
     }
@@ -308,6 +323,8 @@ export class HubAgentLink {
     if (!threadId || (!text.trim() && !attachments?.length)) {
       return;
     }
+
+    this.hubChatThreadIds.add(threadId);
 
     try {
       await this.dispatchUiRequest({
