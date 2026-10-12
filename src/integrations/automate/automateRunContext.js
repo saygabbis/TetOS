@@ -1,4 +1,5 @@
 import { EventEmitter } from "node:events";
+import { normalizeArtifactRefs } from "./automateRunsContext.js";
 
 /**
  * Execuções que a IA (Teto) pediu ao AutoMate. Quando uma delas termina, o resultado volta para a IA explicar ao
@@ -20,16 +21,18 @@ export function markRunForExplanation(runId, intent) {
 }
 
 /** Avisa que a execução terminou (uma vez só). Devolve se alguém precisa explicar o resultado ao usuário. */
-export function reportAutomateOutcome({ runId, threadId, status, output, error }) {
+export function reportAutomateOutcome({ runId, threadId, status, output, error, artifacts }) {
   const entry = runId ? explainRuns.get(runId) : null;
   if (!entry) return false;
   explainRuns.delete(runId);
+  const refs = normalizeArtifactRefs(artifacts);
   automateOutcomes.emit("outcome", {
     runId,
     threadId,
     status,
     output: output ? String(output) : "",
     error: error ? String(error) : "",
+    ...(refs.length ? { artifacts: refs } : {}),
     intent: entry.intent,
   });
   return true;

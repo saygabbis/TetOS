@@ -153,7 +153,7 @@ describe("timingChecks media hint", () => {
     const reasons = [];
     applyExtendedChecks(
       plan,
-      { mediaTimingHint: { readDelayBoost: 1200, note: "media_timing_hint" } },
+      { hourOfDay: 10, mediaTimingHint: { readDelayBoost: 1200, note: "media_timing_hint" } },
       reasons
     );
     expect(plan.readDelayMs).toBe(400);
@@ -166,6 +166,7 @@ describe("timingChecks media hint", () => {
     applyExtendedChecks(
       plan,
       {
+        hourOfDay: 10,
         media: { type: "image" },
         mediaTimingHint: { readDelayBoost: 1200, note: "media_timing_hint" }
       },

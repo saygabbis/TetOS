@@ -413,6 +413,7 @@ export class HubAgentLink {
           text,
           ...(Array.isArray(attachments) && attachments.length ? { attachments } : {}),
           ...(replyTo ? { replyTo } : {}),
+          ...(Array.isArray(frame.runs) && frame.runs.length ? { runs: frame.runs } : {}),
         },
       });
     } catch (error) {

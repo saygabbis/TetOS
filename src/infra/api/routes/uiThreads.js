@@ -4,6 +4,7 @@ import { handleIncomingMessage } from "../../../app/createRuntime.js";
 
 import { applyUiOutgoingActions } from "../../../integrations/automate/uiReplies.js";
 import { automateOutcomes } from "../../../integrations/automate/automateRunContext.js";
+import { formatArtifactsLines, normalizeAutomateRuns } from "../../../integrations/automate/automateRunsContext.js";
 import { attachAutomateChatHistory } from "../../../integrations/automate/uiAutomateChatHistory.js";
 import { normalizeSkillRefs, skillRefsPipelinePrefix } from "../../../integrations/automate/skillRefs.js";
 import { parseAutomateMention, resolveUiMessageMode } from "../../../integrations/automate/parseAutomateMention.js";
@@ -111,13 +112,14 @@ export function replyQuotePrefix(replyTo) {
 }
 
 /** O que a Teto recebe quando uma tarefa que ela pediu ao AutoMate termina (não é fala do usuário). */
-export function buildAutomateOutcomePrompt({ status, output, error, intent }) {
+export function buildAutomateOutcomePrompt({ status, output, error, intent, artifacts }) {
   const done = status === "completed";
   return [
     "[EVENTO DO SISTEMA — resultado do AutoMate]",
     `A tarefa que você pediu ao AutoMate no computador do usuário${intent ? ` («${intent}»)` : ""} ${done ? "foi CONCLUÍDA" : "FALHOU"}.`,
     error ? `Erro informado: ${error.slice(0, 600)}` : "",
     output ? `Resposta do AutoMate:\n${output.slice(0, 3000)}` : "(o AutoMate não devolveu texto)",
+    ...formatArtifactsLines(artifacts),
     "",
     "Agora explique ao usuário, com suas palavras e no seu jeito, o que aconteceu:",
     done
@@ -263,7 +265,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     void explainAutomateOutcome(outcome).catch((err) => console.error("[automate-outcome]", err?.message ?? err));
   });
 
-  async function explainAutomateOutcome({ threadId, status, output, error, intent }) {
+  async function explainAutomateOutcome({ threadId, status, output, error, intent, artifacts }) {
     if (!threadId || !threadStore.has(threadId)) return;
     const thread = threadStore.get(threadId);
     const userId = "ui-user";
@@ -272,7 +274,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     try {
       const assistantDraftId = `a-${Date.now()}-outcome`;
       const { replies } = await handleIncomingMessage(runtime, {
-        message: buildAutomateOutcomePrompt({ status, output, error, intent }),
+        message: buildAutomateOutcomePrompt({ status, output, error, intent, artifacts }),
         userId,
         sessionId: thread.id,
         channelId: "ui-desktop",
@@ -419,6 +421,8 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     const attachments = normalizeAttachments(req.body?.attachments, { mediaDir: mediaService.dir });
     const skillRefs = normalizeSkillRefs(req.body?.skillRefs);
     const replyTo = normalizeReplyTo(req.body?.replyTo);
+    // O que o AutoMate está fazendo/fez nesta conversa (o hub manda junto da mensagem): a Teto sabe sem ler os passos.
+    const automateRuns = normalizeAutomateRuns(req.body?.runs);
 
     if (!text.trim() && attachments.length === 0 && skillRefs.length === 0) {
 
@@ -573,6 +577,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
             onLlmToken,
             uiAssistantMessageId: assistantDraftId,
             messageKey: { id: userMsg.id },
+            ...(automateRuns.length ? { automateRuns } : {}),
             ...(replyTo
               ? { isReply: true, quotedMessage: replyTo.text, quotedMessageId: replyTo.id, isReplyToBot: replyTo.role === "assistant" }
               : {}),

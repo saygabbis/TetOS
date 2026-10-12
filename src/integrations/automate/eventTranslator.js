@@ -189,13 +189,13 @@ export function translateAutomateNotification(method, params, options = {}) {
       }
       return [{ type: "run.status", runId, status: "running" }];
     case "task_completed":
-      reportAutomateOutcome({ runId, threadId, status: "completed", output: params?.output });
+      reportAutomateOutcome({ runId, threadId, status: "completed", output: params?.output, artifacts: params?.artifacts });
       return [
         { type: "run.status", runId, status: "completed", ...(params?.output ? { output: String(params.output) } : {}) },
         { type: "presence", state: "awake", label: "acordada" },
       ];
     case "error":
-      reportAutomateOutcome({ runId, threadId, status: "failed", output: params?.output, error: params?.error ?? "erro" });
+      reportAutomateOutcome({ runId, threadId, status: "failed", output: params?.output, error: params?.error ?? "erro", artifacts: params?.artifacts });
       return [
         {
           type: "run.status",
