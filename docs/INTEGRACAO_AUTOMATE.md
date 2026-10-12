@@ -68,6 +68,16 @@ O TetOS reexecuta a chamada na API local (`127.0.0.1:TETOS_PORT`) com `TETOS_UI_
 - TetOS → hub: `{ t: "message", threadId?, message: { role, text, meta?, final? } }` quando a assistente finaliza (`message.final` no `UiEventBus`).
 - TetOS → hub: `{ t: "event", threadId?, event, durable? }` para digitando, deltas e passos (`durable: true` em aprovações e fim de execução).
 
+### Acionar o PC pelo hub (`call`)
+
+Com o hub ativo, o PC com AutoMate normalmente **não** conecta no `/device-link` da TetOS: ele conecta no hub. Então `automate_enqueue`, `automate_answer` e `automate_interrupt` saem da TetOS como frames `{ t: "call", id, deviceId, tool, args }` pelo `/agent-link`; o hub responde `{ t: "result", id, result }` ou `{ t: "error", id, code, message }` (`confirmation_denied`, `rate_limited`, `not_found`…).
+
+- `HubDeviceGateway` (`src/integrations/automate-hub/hubDeviceGateway.js`) faz a chamada; o PC é escolhido entre os que o hub informa em `ready.devices` / `presence` (se o `deviceId` pedido, ex. `default-device`, não existir no hub, usa o único/primeiro PC online).
+- `CompositeDeviceGateway` prefere o PC ligado direto ao `/device-link` local e cai para o hub quando não há.
+- O perfil do relay do PC no hub precisa ser `delegate` ou `full` (as tools `automate_*` não existem em `direct`).
+- Ações em `HUB_CONFIRM_TOOLS` pedem aprovação do usuário nos apps antes de rodar.
+- Log de debug do gateway: só grava se `TETOS_DEBUG_LOG` apontar para um arquivo.
+
 ### Contexto AutoMate
 
 Frames `{ t: "ctx", deviceId, method, params, ... }` são traduzidos com `eventTranslator` e republicados no `UiEventBus`.

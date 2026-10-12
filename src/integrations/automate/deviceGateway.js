@@ -1,13 +1,12 @@
 import { appendFile } from "node:fs/promises";
 import { WebSocketServer } from "ws";
 
-const DEBUG_LOG_PATH =
-  process.env.TETOS_DEBUG_LOG?.trim() ||
-  "C:\\Users\\Administrator\\Desktop\\Kevin\\AutoMate\\.cursor\\debug-9049d4.log";
-
+/** Log de debug opcional: só grava se TETOS_DEBUG_LOG apontar para um arquivo. */
 function agentDebugLog(payload) {
+  const debugPath = process.env.TETOS_DEBUG_LOG?.trim();
+  if (!debugPath) return;
   const line = JSON.stringify({ sessionId: "9049d4", timestamp: Date.now(), ...payload });
-  void appendFile(DEBUG_LOG_PATH, `${line}\n`).catch(() => undefined);
+  void appendFile(debugPath, `${line}\n`).catch(() => undefined);
 }
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { translateAutomateNotification, getProtocolVersion } from "./eventTranslator.js";

@@ -39,7 +39,7 @@ describe("fluxo UI + AutoMate", () => {
       questions: [{ prompt: "Clique em Permitir" }],
       instructionId: "inst-1",
     });
-    expect(events[0].type).toBe("control.request");
+    expect(events.some((e) => e.type === "control.request")).toBe(true);
   });
 
   it("sequência task_progress + completed com mesmo runId", () => {

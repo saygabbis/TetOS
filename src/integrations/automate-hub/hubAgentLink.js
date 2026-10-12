@@ -44,6 +44,72 @@ export class HubAgentLink {
     this.reconnectTimer = null;
     this.streamUnsubscribe = null;
     this.messageChain = Promise.resolve();
+    /** @type {Map<string, { resolve: Function, reject: Function, timer: NodeJS.Timeout }>} */
+    this.pending = new Map();
+    this.requestSeq = 0;
+    /** @type {Map<string, { id: string, online: boolean, profile?: string }>} */
+    this.devices = new Map();
+  }
+
+  isReady() {
+    return Boolean(this.ws && this.ws.readyState === this.ws.OPEN && this.authenticated);
+  }
+
+  /** PCs do usuário conhecidos pelo hub (via `ready`, `presence` e `devices`). */
+  listDevices() {
+    return [...this.devices.values()];
+  }
+
+  /** Envia um frame com `id` e aguarda `result`/`error`/`devices`/`tools` do hub. */
+  request(frame, timeoutMs = 120_000) {
+    if (!this.isReady()) {
+      return Promise.reject(new Error("Hub offline"));
+    }
+    const id = `tetos-${Date.now()}-${++this.requestSeq}`;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error("timeout aguardando o hub"));
+      }, timeoutMs);
+      this.pending.set(id, { resolve, reject, timer });
+      if (!this.send({ ...frame, id })) {
+        clearTimeout(timer);
+        this.pending.delete(id);
+        reject(new Error("Hub offline"));
+      }
+    });
+  }
+
+  settleRequest(frame) {
+    const entry = this.pending.get(frame.id);
+    if (!entry) return;
+    this.pending.delete(frame.id);
+    clearTimeout(entry.timer);
+    if (frame.t === "error") {
+      const err = new Error(frame.message ?? "erro do hub");
+      err.code = frame.code;
+      entry.reject(err);
+    } else {
+      entry.resolve(frame);
+    }
+  }
+
+  rejectAllPending(reason) {
+    for (const [id, entry] of this.pending) {
+      clearTimeout(entry.timer);
+      entry.reject(new Error(reason));
+      this.pending.delete(id);
+    }
+  }
+
+  setDevices(list) {
+    this.devices.clear();
+    if (!Array.isArray(list)) return;
+    for (const d of list) {
+      if (d && typeof d.id === "string") {
+        this.devices.set(d.id, { id: d.id, online: d.online !== false, profile: d.profile });
+      }
+    }
   }
 
   start() {
@@ -195,6 +261,8 @@ export class HubAgentLink {
 
     ws.on("close", () => {
       this.authenticated = false;
+      this.rejectAllPending("Hub desconectado");
+      this.devices.clear();
       this.detachStream();
       this.ws = null;
       this.reconnectAttempt += 1;
@@ -208,6 +276,7 @@ export class HubAgentLink {
 
   onHelloAccepted(frame) {
     this.authenticated = true;
+    this.setDevices(frame?.devices);
     const name = frame?.agent?.name ?? this.config.agentId;
     this.onLog(`[hub-agent] conectado como ${name} (${this.config.agentId})`);
     this.attachStream();
@@ -249,6 +318,13 @@ export class HubAgentLink {
         return;
       case "presence":
         this.handlePresence(frame);
+        return;
+      case "result":
+      case "error":
+      case "devices":
+      case "tools":
+        if (frame.t === "devices") this.setDevices(frame.devices);
+        this.settleRequest(frame);
         return;
       default: {
         const unknownType = frame.t;
@@ -346,6 +422,8 @@ export class HubAgentLink {
   handlePresence(frame) {
     const deviceId = typeof frame.deviceId === "string" ? frame.deviceId : "";
     if (!deviceId) return;
+    const known = this.devices.get(deviceId);
+    this.devices.set(deviceId, { ...(known ?? { id: deviceId }), id: deviceId, online: Boolean(frame.online) });
     this.uiBus?.publish({
       type: "device.presence",
       deviceId,

@@ -4,6 +4,7 @@ import express from "express";
 import { UiEventBus } from "../../core/events/uiEventBus.js";
 import { DeviceRegistry } from "./auth/deviceRegistry.js";
 import { DeviceGateway } from "../../integrations/automate/deviceGateway.js";
+import { HubDeviceGateway, CompositeDeviceGateway } from "../../integrations/automate-hub/hubDeviceGateway.js";
 import { AutomateClient } from "../../integrations/automate/automateClient.js";
 import { attachUiStream } from "./stream/uiGateway.js";
 import { registerUiThreadRoutes } from "./routes/uiThreads.js";
@@ -37,7 +38,12 @@ if (deviceRegistry.list().length === 0) {
   deviceRegistry.issue("default-device");
   console.log("[device] device default-device criado — emita o token em POST /ui/devices/default-device/issue (sessão UI)");
 }
-const deviceGateway = new DeviceGateway({ deviceRegistry, uiBus });
+const localDeviceGateway = new DeviceGateway({ deviceRegistry, uiBus });
+let hubAgentLink = null;
+const deviceGateway = new CompositeDeviceGateway({
+  local: localDeviceGateway,
+  hub: new HubDeviceGateway({ getLink: () => hubAgentLink }),
+});
 const automateClient = new AutomateClient(deviceGateway);
 
 const runtime = createRuntime();
@@ -324,7 +330,7 @@ function startServer(port, attempt = 0) {
   attachUiStream(server, uiBus);
   server.listen(port, () => {
     console.log(`TetOS API running on http://localhost:${port}`);
-    startHubAgentLinkIfConfigured({ uiBus, dispatchBaseUrl: `http://127.0.0.1:${port}` });
+    hubAgentLink = startHubAgentLinkIfConfigured({ uiBus, dispatchBaseUrl: `http://127.0.0.1:${port}` });
   });
 
   server.on("error", (error) => {
