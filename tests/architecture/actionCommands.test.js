@@ -55,8 +55,23 @@ function createBrain() {
 // Setup (apenas testes com LLM)
 // ---------------------------------------------------------------------------
 
+// Pula também quando a LLM configurada não está alcançável (sem Ollama local / sem chave MiniMax).
+async function llmReachable() {
+  if (DEFAULTS.llmProvider === "minimax") return Boolean(DEFAULTS.minimaxApiKey);
+  try {
+    const res = await fetch(`${String(DEFAULTS.ollamaBaseUrl).replace(/\/$/, "")}/api/tags`, {
+      signal: AbortSignal.timeout(1500)
+    });
+    return res.ok || res.status === 401;
+  } catch {
+    return false;
+  }
+}
+
 const skipLlmIntegration =
-  process.env.CI === "true" || process.env.TETOS_SKIP_LLM_TESTS === "1";
+  process.env.CI === "true" ||
+  process.env.TETOS_SKIP_LLM_TESTS === "1" ||
+  !(await llmReachable());
 
 // ---------------------------------------------------------------------------
 // Testes do parser (unitários, sem LLM)
