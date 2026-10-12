@@ -1,3 +1,4 @@
+import { clarificationUi } from "./clarificationEvent.js";
 import { resolveAutomateRun } from "./automateRunContext.js";
 import {
   USER_FACING_AUTOMATE_TOOLS,
@@ -123,33 +124,13 @@ export function translateAutomateNotification(method, params, options = {}) {
       ];
     }
     case "clarification_needed": {
-      const kind = params?.kind ?? "question";
-      const isManual = kind === "manual_action" || kind === "action";
-      const question =
-        params?.questions?.[0]?.prompt ??
-        params?.question ??
-        params?.prompt ??
-        "Confirma esta ação?";
       const requestId = params?.id ?? `perm-${Date.now()}`;
-      const channel = isManual ? "request_user_takeover" : "ask_user";
-      const utterance = emitUtteranceLog(runId, channel, question, "info", requestId);
-      if (isManual) {
-        return [
-          ...(utterance ? [utterance] : []),
-          {
-            type: "control.request",
-            runId,
-            request: { id: requestId, question },
-          },
-        ];
-      }
+      const ui = clarificationUi(params, requestId);
+      const question = ui.request.question ?? ui.request.title;
+      const utterance = emitUtteranceLog(runId, ui.channel, question, "info", requestId);
       return [
         ...(utterance ? [utterance] : []),
-        {
-          type: "permission.request",
-          runId,
-          request: { id: requestId, question },
-        },
+        { type: ui.eventType, runId, request: ui.request },
       ];
     }
     case "task_progress":

@@ -8,8 +8,9 @@ A TetOS mantém o gateway `/device-link` e um cliente MCP perfil `delegate` (`au
 |-----------------|-----------|
 | `tool_call` | `plan.step` |
 | `thinking` | `tool.log` |
-| `clarification_needed` (pergunta) | `permission.request` |
-| `clarification_needed` (ação manual) | `control.request` |
+| `clarification_needed` (pergunta) | `permission.request` — chips ou texto livre |
+| `clarification_needed` (`kind: approval`) | `permission.request` — Aprovar / Negar (`approve`) |
+| `clarification_needed` (`takeover` ou ação manual) | `control.request` — Pronto, já fiz / Desistir |
 | `task_completed` | `run.status` completed |
 
 Implementação: `src/integrations/automate/eventTranslator.js`.

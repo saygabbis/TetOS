@@ -41,5 +41,27 @@ describe("eventTranslator", () => {
     });
     expect(events.some((e) => e.type === "permission.request")).toBe(true);
     expect(events.some((e) => e.stepId === "utterance:ask_user:p1" && e.line === "Confirmar?")).toBe(true);
+    const perm = events.find((e) => e.type === "permission.request");
+    expect(perm.request).toMatchObject({ id: "p1", question: "Confirmar?", input: "text" });
+  });
+
+  it("aprovação manda a opção approve e takeover manda done", () => {
+    const approval = translateAutomateNotification("notifications/automate/clarification_needed", {
+      id: "a1",
+      kind: "approval",
+      questions: [{ prompt: "Apagar?", type: "single_choice", options: [{ id: "approve", label: "Aprovar" }, { id: "deny", label: "Negar" }] }],
+    });
+    const perm = approval.find((e) => e.type === "permission.request");
+    expect(perm.request.input).toBe("approval");
+    expect(perm.request.options.map((o) => o.id)).toEqual(["approve", "deny"]);
+
+    const takeover = translateAutomateNotification("notifications/automate/clarification_needed", {
+      id: "t1",
+      kind: "takeover",
+      questions: [{ prompt: "Faça login" }],
+    });
+    const ctrl = takeover.find((e) => e.type === "control.request");
+    expect(ctrl.request.input).toBe("takeover");
+    expect(ctrl.request.options.map((o) => o.id)).toEqual(["done", "refuse"]);
   });
 });
