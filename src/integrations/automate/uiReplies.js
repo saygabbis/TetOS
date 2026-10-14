@@ -185,4 +185,14 @@ export async function applyUiOutgoingActions({
       }
     }
   }
+
+  // A resposta virou só ação (figurinha, reação, execução no PC): o balão que recebeu o streaming fica sem dono.
+  // Final vazia com o mesmo id = o app descarta o balão, em vez de mostrar o comando cru (ex.: sticker("teto-pao")).
+  if (assistantMessageId && !usedStreamMessageId) {
+    uiBus.publish({
+      type: "message.final",
+      threadId: thread.id,
+      message: { id: assistantMessageId, role: "assistant", text: "", createdAt: new Date().toISOString() },
+    });
+  }
 }

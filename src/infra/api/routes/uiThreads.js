@@ -100,10 +100,19 @@ const DEFAULT_MESSAGE_PAGE = 40;
 /** Citação enviada pelo app (usuário respondeu a uma mensagem): só o necessário, com tamanho limitado. */
 export function normalizeReplyTo(raw) {
   if (!raw || typeof raw !== "object") return null;
+  const id = typeof raw.id === "string" ? raw.id.slice(0, 120) : "";
   const text = typeof raw.text === "string" ? raw.text.trim() : "";
-  if (!text) return null;
+  // Responder a uma mídia sem legenda (figurinha, foto) também vale, como no WhatsApp: basta o id.
+  if (!text && !id) return null;
   const role = raw.role === "assistant" || raw.role === "system" ? raw.role : "user";
-  return { id: typeof raw.id === "string" ? raw.id.slice(0, 120) : "", role, text: text.slice(0, 1500) };
+  return { id, role, text: (text || "[mídia]").slice(0, 1500) };
+}
+
+/** Mídias da mensagem citada (para `.sticker` respondendo a uma imagem, ou "faz figurinha dessa"). */
+export function quotedMediaOf(thread, replyTo) {
+  if (!replyTo?.id) return [];
+  const quoted = (thread?.messages ?? []).find((m) => m.id === replyTo.id);
+  return (quoted?.attachments ?? []).filter((a) => a?.mediaId);
 }
 
 export function replyQuotePrefix(replyTo) {
@@ -422,6 +431,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     const attachments = normalizeAttachments(req.body?.attachments, { mediaDir: mediaService.dir });
     const skillRefs = normalizeSkillRefs(req.body?.skillRefs);
     const replyTo = normalizeReplyTo(req.body?.replyTo);
+    const quotedMedia = quotedMediaOf(thread, replyTo);
     // O que o AutoMate está fazendo/fez nesta conversa (o hub manda junto da mensagem): a Teto sabe sem ler os passos.
     const automateRuns = normalizeAutomateRuns(req.body?.runs);
     // O que roda agora em outras conversas/PCs da conta.
@@ -509,7 +519,10 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
 
         // Comandos com prefixo (".sticker", ".yt <link>", ".gerar ...") rodam direto, como no WhatsApp.
         if (mode === "chat" && skillRefs.length === 0 && text.trim()) {
-          const handled = await tryHandleUiCommand({ ...mediaContext, uiBus, thread }, text.trim());
+          // Respondendo a uma mídia: o comando age nela (".sticker" citando a foto), não na última da conversa.
+          const handled = await tryHandleUiCommand({ ...mediaContext, uiBus, thread }, text.trim(), {
+            mediaRef: quotedMedia.length ? replyTo.id : null,
+          });
           if (handled) {
             persistThreadStore(threadStore);
             return;
@@ -567,11 +580,16 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
             automateClient,
           });
         } else {
-          const media = await describeFirstMedia(runtime, mediaService.dir, attachments, text.trim());
-          const messageForPipeline =
+          // Sem anexo novo, mas respondendo a uma mídia: a Teto vê a mídia citada e sabe o id dela (para sticker("id")…).
+          const ownMedia = attachments.some((a) => a.mediaId);
+          const mediaForPipeline = ownMedia ? attachments : quotedMedia;
+          const media = await describeFirstMedia(runtime, mediaService.dir, mediaForPipeline, text.trim());
+          const quotedNote = !ownMedia && quotedMedia.length ? describeAttachmentsForPipeline(quotedMedia, replyTo.id) : "";
+          const withAttachments =
             attachmentNote && text.trim() && skillRefs.length === 0 && !automateMention.hasAutomate
               ? `${pipelineWithSkills}\n[anexos: ${attachmentNote}]`
               : pipelineWithSkills;
+          const messageForPipeline = quotedNote ? `${withAttachments}\n[respondendo à mídia: ${quotedNote}]` : withAttachments;
         const { replies } = await handleIncomingMessage(runtime, {
             message: messageForPipeline,
             userId,
