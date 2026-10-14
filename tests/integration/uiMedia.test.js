@@ -116,6 +116,59 @@ describe("ações de mídia na UI (paridade com o WhatsApp)", () => {
     expect(published.filter((e) => e.type === "message.final")).toHaveLength(2);
   });
 
+  it("resposta só com figurinha descarta o balão do streaming (o app não mostra o comando cru)", async () => {
+    const runtime = makeRuntime();
+    mkdirSync(runtime.defaults.stickersPath, { recursive: true });
+    writeFileSync(join(runtime.defaults.stickersPath, "teto-linguinha.webp"), PNG);
+    const service = new UiMediaService({ runtime });
+    const { ctx, published, thread } = makeCtx(service, runtime);
+
+    await applyUiOutgoingActions({
+      replies: { actions: [{ type: "sticker", key: "teto-linguinha" }] },
+      thread,
+      uiBus: ctx.uiBus,
+      automateClient: {},
+      assistantMessageId: "a-1-stream",
+      mediaContext: { runtime, service, userId: "u1" },
+    });
+
+    const finals = published.filter((e) => e.type === "message.final");
+    const draft = finals.find((e) => e.message.id === "a-1-stream");
+    expect(draft?.message).toMatchObject({ role: "assistant", text: "" });
+    expect(thread.messages.some((m) => m.id === "a-1-stream")).toBe(false);
+    expect(thread.messages.at(-1).attachments[0].kind).toBe("sticker");
+  });
+
+  it("quando a mensagem usa o balão do streaming, nada é descartado", async () => {
+    const { thread, uiBus } = makeCtx({});
+    const events = [];
+    uiBus.subscribe?.((e) => events.push(e));
+    await applyUiOutgoingActions({
+      replies: { actions: [{ type: "message", text: "oi" }] },
+      thread,
+      uiBus,
+      automateClient: {},
+      assistantMessageId: "a-2-stream",
+    });
+    expect(thread.messages).toEqual([expect.objectContaining({ id: "a-2-stream", text: "oi" })]);
+  });
+
+  it(".sticker respondendo a uma mídia age nela, não na última da conversa", async () => {
+    const service = { runMediaCommand: vi.fn(async () => ({ attachments: [], notes: [] })) };
+    const thread = {
+      id: "t1",
+      messages: [
+        { id: "u-old", role: "user", text: "", attachments: [{ kind: "image", mediaId: "a-11111111.png", mimeType: "image/png" }] },
+        { id: "u-new", role: "user", text: "", attachments: [{ kind: "image", mediaId: "b-22222222.png", mimeType: "image/png" }] },
+      ],
+    };
+    const uiBus = { publish: () => undefined };
+    await tryHandleUiCommand({ runtime: makeRuntime(), service, userId: "u1", uiBus, thread }, ".sticker", { mediaRef: "u-old" });
+    expect(service.runMediaCommand.mock.calls[0][0].ref.mediaId).toBe("a-11111111.png");
+    await tryHandleUiCommand({ runtime: makeRuntime(), service, userId: "u1", uiBus, thread }, ".sticker");
+    expect(service.runMediaCommand.mock.calls[1][0].ref.mediaId).toBe("b-22222222.png");
+  });
+
   it("sem mediaContext, ações de mídia são ignoradas (compatibilidade)", async () => {
     const { thread, uiBus } = makeCtx({});
     await applyUiOutgoingActions({

@@ -9,6 +9,7 @@ import { translateAutomateNotification } from "../../src/integrations/automate/e
 import {
   buildAutomateOutcomePrompt,
   normalizeReplyTo,
+  quotedMediaOf,
   replyQuotePrefix,
 } from "../../src/infra/api/routes/uiThreads.js";
 
@@ -94,6 +95,20 @@ describe("responder a uma mensagem (replyTo)", () => {
     expect(normalizeReplyTo({ id: "m1", role: "assistant", text: "  Abri o Bloco de Notas.  " })).toEqual({ id: "m1", role: "assistant", text: "Abri o Bloco de Notas." });
     expect(normalizeReplyTo({ id: "m2", role: "user", text: "x".repeat(5000) }).text).toHaveLength(1500);
     expect(normalizeReplyTo({ role: "papel-estranho", text: "oi" })).toEqual({ id: "", role: "user", text: "oi" });
+  });
+
+  it("responder a uma mídia sem legenda vale (só o id): a citação vira [mídia] e a mídia é encontrada na conversa", () => {
+    const reply = normalizeReplyTo({ id: "a-9", role: "assistant", text: "" });
+    expect(reply).toEqual({ id: "a-9", role: "assistant", text: "[mídia]" });
+    const thread = {
+      messages: [
+        { id: "u-1", role: "user", text: "oi" },
+        { id: "a-9", role: "assistant", text: "", attachments: [{ kind: "sticker", mediaId: "s-1.webp" }] },
+      ],
+    };
+    expect(quotedMediaOf(thread, reply)).toEqual([{ kind: "sticker", mediaId: "s-1.webp" }]);
+    expect(quotedMediaOf(thread, { id: "u-1", role: "user", text: "oi" })).toEqual([]);
+    expect(quotedMediaOf(thread, null)).toEqual([]);
   });
 
   it("ignora citação vazia ou inválida", () => {

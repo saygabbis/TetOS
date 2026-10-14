@@ -223,9 +223,10 @@ function repertoireCommand(ctx, args) {
 
 /**
  * Interpreta comandos com prefixo digitados na interface (`.sticker`, `.yt <link>`, `.gerar ...`).
+ * `mediaRef`: mídia citada (resposta a uma mensagem); sem ela, a última mídia da conversa — como no WhatsApp.
  * @returns {Promise<boolean>} true quando o texto era um comando e foi executado (não chamar o LLM).
  */
-export async function tryHandleUiCommand(ctx, text) {
+export async function tryHandleUiCommand(ctx, text, { mediaRef = null } = {}) {
   const prefix = ctx.runtime?.defaults?.commandPrefix ?? ".";
   const parsed = parseWhatsAppCommand(text, prefix);
   if (!parsed) return false;
@@ -238,7 +239,7 @@ export async function tryHandleUiCommand(ctx, text) {
   if (command === "repertorio") {
     const outcome = repertoireCommand(ctx, args);
     if (outcome?.save) {
-      await runUiSaveSticker(ctx, { mediaRef: null, key: outcome.key });
+      await runUiSaveSticker(ctx, { mediaRef, key: outcome.key });
     }
     return true;
   }
@@ -257,7 +258,7 @@ export async function tryHandleUiCommand(ctx, text) {
     return true;
   }
   if (UI_MEDIA_COMMANDS.includes(command)) {
-    await runUiMediaCommand(ctx, { command, args, mediaRef: null });
+    await runUiMediaCommand(ctx, { command, args, mediaRef });
     return true;
   }
   return false;
