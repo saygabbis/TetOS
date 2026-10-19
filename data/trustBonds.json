@@ -1979,12 +1979,23 @@
     "190546341540031::group:120363258200906509@g.us": {
       "userId": "190546341540031",
       "channelScope": "group:120363258200906509@g.us",
-      "trust": 0.45,
-      "intimacy": 0.35,
+      "trust": 0.47300000000000003,
+      "intimacy": 0.368,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": null,
-      "notes": []
+      "lastInteractionAt": "2026-10-15T21:22:10.507Z",
+      "notes": [
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-14T12:59:57.422Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-15T21:22:10.507Z"
+        }
+      ]
     },
     "132813357596880::group:120363258200906509@g.us": {
       "userId": "132813357596880",
@@ -3013,16 +3024,46 @@
     "157947506229421::group:120363258200906509@g.us": {
       "userId": "157947506229421",
       "channelScope": "group:120363258200906509@g.us",
-      "trust": 0.458,
-      "intimacy": 0.356,
+      "trust": 0.506,
+      "intimacy": 0.392,
       "rupture": 0,
       "vulnerabilityEvents": 0,
-      "lastInteractionAt": "2026-08-23T22:32:12.538Z",
+      "lastInteractionAt": "2026-10-15T21:26:18.683Z",
       "notes": [
         {
           "type": "reinforce",
           "reason": "interaction",
           "ts": "2026-08-23T22:32:12.538Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-14T13:01:36.526Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-14T13:11:01.276Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-15T21:23:46.489Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-15T21:24:34.553Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-15T21:25:34.431Z"
+        },
+        {
+          "type": "reinforce",
+          "reason": "interaction",
+          "ts": "2026-10-15T21:26:18.683Z"
         }
       ]
     },

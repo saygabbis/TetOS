@@ -24,142 +24,6 @@
   },
   "creativeInsights": [
     {
-      "id": "insight_1789694289934",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:18:09.934Z"
-    },
-    {
-      "id": "insight_1789694318611",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:18:38.611Z"
-    },
-    {
-      "id": "insight_1789694321668",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:18:41.668Z"
-    },
-    {
-      "id": "insight_1789694331238",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:18:51.238Z"
-    },
-    {
-      "id": "insight_1789694361683",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:19:21.683Z"
-    },
-    {
-      "id": "insight_1789694428755",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:20:28.755Z"
-    },
-    {
-      "id": "insight_1789694431879",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:20:31.879Z"
-    },
-    {
-      "id": "insight_1789694564220",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:22:44.220Z"
-    },
-    {
-      "id": "insight_1789694587123",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:07.123Z"
-    },
-    {
-      "id": "insight_1789694589984",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:09.984Z"
-    },
-    {
-      "id": "insight_1789694597508",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:17.508Z"
-    },
-    {
-      "id": "insight_1789694600427",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:20.427Z"
-    },
-    {
-      "id": "insight_1789694600477",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:20.477Z"
-    },
-    {
-      "id": "insight_1789694603415",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:23.415Z"
-    },
-    {
-      "id": "insight_1789694606325",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:26.325Z"
-    },
-    {
-      "id": "insight_1789694612825",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:32.825Z"
-    },
-    {
-      "id": "insight_1789694617939",
-      "type": "style",
-      "text": "mensagens curtas dominam quando o clima está leve",
-      "confidence": 0.61,
-      "trigger": "chat.update",
-      "ts": "2026-09-18T01:23:37.939Z"
-    },
-    {
       "id": "insight_1789694734889",
       "type": "style",
       "text": "mensagens curtas dominam quando o clima está leve",
@@ -422,7 +286,143 @@
       "confidence": 0.52,
       "trigger": "chat.update",
       "ts": "2026-09-23T22:48:46.076Z"
+    },
+    {
+      "id": "insight_1791980897502",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.66,
+      "trigger": "chat.update",
+      "ts": "2026-10-14T12:28:17.502Z"
+    },
+    {
+      "id": "insight_1791981164624",
+      "type": "topic",
+      "text": "assunto \"conversa geral\" voltou várias vezes",
+      "confidence": 0.43000000000000005,
+      "trigger": "chat.update",
+      "ts": "2026-10-14T12:32:44.624Z"
+    },
+    {
+      "id": "insight_1791981256458",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.61,
+      "trigger": "chat.update",
+      "ts": "2026-10-14T12:34:16.458Z"
+    },
+    {
+      "id": "insight_1791981817342",
+      "type": "social",
+      "text": "grupo fica mais ativo à noite",
+      "confidence": 0.64,
+      "trigger": "chat.update",
+      "ts": "2026-10-14T12:43:37.342Z"
+    },
+    {
+      "id": "insight_1791981841987",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.5700000000000001,
+      "trigger": "chat.update",
+      "ts": "2026-10-14T12:44:01.988Z"
+    },
+    {
+      "id": "insight_1791981918124",
+      "type": "style",
+      "text": "mensagens curtas dominam quando o clima está leve",
+      "confidence": 0.41000000000000003,
+      "trigger": "chat.update",
+      "ts": "2026-10-14T12:45:18.124Z"
+    },
+    {
+      "id": "insight_1791994332257",
+      "type": "rhythm",
+      "text": "pico de conversa por volta das 16h",
+      "confidence": 0.4,
+      "trigger": "message.reaction",
+      "ts": "2026-10-14T16:12:12.257Z"
+    },
+    {
+      "id": "insight_1792046210389",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.67,
+      "trigger": "chat.update",
+      "ts": "2026-10-15T06:36:50.390Z"
+    },
+    {
+      "id": "insight_1792130571236",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:02:51.236Z"
+    },
+    {
+      "id": "insight_1792130571237",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:02:51.237Z"
+    },
+    {
+      "id": "insight_1792130571241",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:02:51.241Z"
+    },
+    {
+      "id": "insight_1792130571243",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:02:51.243Z"
+    },
+    {
+      "id": "insight_1792130571245",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:02:51.245Z"
+    },
+    {
+      "id": "insight_1792130571247",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:02:51.247Z"
+    },
+    {
+      "id": "insight_1792130583840",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:03:03.840Z"
+    },
+    {
+      "id": "insight_1792130583847",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:03:03.847Z"
+    },
+    {
+      "id": "insight_1792130583850",
+      "type": "media",
+      "text": "stickers aparecem mais quando o humor sobe",
+      "confidence": 0.52,
+      "trigger": "message.receipt_update",
+      "ts": "2026-10-16T06:03:03.850Z"
     }
   ],
-  "lastUpdated": "2026-09-23T22:48:52.301Z"
+  "lastUpdated": "2026-10-16T18:06:08.096Z"
 }

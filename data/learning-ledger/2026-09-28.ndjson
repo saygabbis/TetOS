@@ -1,0 +1,14 @@
+{"ts":"2026-09-28T03:22:17.245Z","eventType":"group.participants_update","remoteJid":"anon_59bee3ab6770","participants":["anon_1d8c51f3ed16"],"action":"remove","userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.079Z","eventType":"group.participants_update","remoteJid":"anon_d96cc55c01fe","participants":["anon_49b9151984cd"],"action":"remove","userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.903Z","eventType":"chat.update","remoteJid":"anon_59bee3ab6770","unreadCount":1916,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.905Z","eventType":"chat.update","remoteJid":"anon_79b814cf4c31","unreadCount":2,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.906Z","eventType":"chat.update","remoteJid":"anon_2d2b9ec8c27b","unreadCount":3,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.908Z","eventType":"chat.update","remoteJid":"anon_eb0b07d28561","unreadCount":32,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.909Z","eventType":"chat.update","remoteJid":"anon_9e2c26206de8","unreadCount":4,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.909Z","eventType":"chat.update","remoteJid":"anon_ef182f9cae13","unreadCount":4,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.910Z","eventType":"chat.update","remoteJid":"anon_e05e673c94fe","unreadCount":1,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:22:44.911Z","eventType":"chat.update","remoteJid":"anon_ddc491e56503","unreadCount":null,"archived":null,"userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:30:44.370Z","eventType":"message.reaction","actorId":"anon_4b7c23e06cd1","remoteJid":"anon_eb0b07d28561","messageId":"AC30A9C7F2B1A0439B9B231BEE5E527E","reactionText":"❤️","userId":"","participantId":""}
+{"ts":"2026-09-28T03:52:01.098Z","eventType":"message.deleted","messageId":"AC3DFA6C290BF13BC7349A3D339BEDD4","remoteJid":"anon_59bee3ab6770","beforeText":null,"beforeMediaType":null,"reason":"revoke","userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:55:12.811Z","eventType":"message.deleted","messageId":"ACC18788F451CE7B3B749670A6690744","remoteJid":"anon_59bee3ab6770","beforeText":null,"beforeMediaType":null,"reason":"revoke","userId":"","actorId":"","participantId":""}
+{"ts":"2026-09-28T03:56:00.872Z","eventType":"message.incoming","actorId":"anon_6bc7c2053bd9","userId":"anon_6bc7c2053bd9","remoteJid":"anon_e05e673c94fe","participantId":"","isGroup":false,"isReply":false,"hasQuotedMessage":false,"messageId":"AC4FA3210155BEEB209823C606B607EE","mediaType":null,"contentClass":"general","links":[],"pushName":"anon_name_30ae787c10b1"}

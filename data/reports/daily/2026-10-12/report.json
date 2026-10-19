@@ -1,0 +1,2041 @@
+{
+  "day": "2026-10-12",
+  "generatedAt": "2026-10-13T00:00:03.903Z",
+  "timezone": "America/Sao_Paulo",
+  "focus": {
+    "focus": "general",
+    "notes": "",
+    "updatedAt": "2026-04-27T18:53:20.288Z"
+  },
+  "totals": {
+    "events": 127,
+    "byEvent": {
+      "group.participants_update": 7,
+      "chat.update": 75,
+      "message.deleted": 1,
+      "message.receipt_update": 30,
+      "command.media": 3,
+      "message.outgoing": 3,
+      "message.update": 5,
+      "message.incoming": 1,
+      "message.reaction": 2
+    }
+  },
+  "timeline": {
+    "hourly": [
+      {
+        "hour": 0,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 1,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 2,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 3,
+        "events": 20,
+        "messages": 8,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 4,
+        "events": 1,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 5,
+        "events": 41,
+        "messages": 23,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 6,
+        "events": 16,
+        "messages": 9,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 7,
+        "events": 6,
+        "messages": 1,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 8,
+        "events": 1,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 9,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 10,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 11,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 12,
+        "events": 1,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 13,
+        "events": 2,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 14,
+        "events": 4,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 15,
+        "events": 4,
+        "messages": 1,
+        "media": 0,
+        "reactions": 1
+      },
+      {
+        "hour": 16,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 17,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 18,
+        "events": 12,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 19,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 20,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 21,
+        "events": 1,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 22,
+        "events": 0,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      },
+      {
+        "hour": 23,
+        "events": 18,
+        "messages": 0,
+        "media": 0,
+        "reactions": 0
+      }
+    ],
+    "events": [
+      {
+        "ts": "2026-10-12T03:19:20.267Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:19:20.796Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:19:20.855Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:21:27.974Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:10.710Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:33.117Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:33.118Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:33.119Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:33.120Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:33.120Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:33.121Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:33.121Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:22:35.000Z",
+        "eventType": "message.deleted",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:27:42.605Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:27:42.606Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:27:42.607Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:27:42.607Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:27:42.608Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:27:42.608Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T03:27:42.609Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T04:53:42.585Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:31.991Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:33.090Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:33.878Z",
+        "eventType": "command.media",
+        "actorId": "anon_6bc7c2053bd9",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:34.335Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:36.350Z",
+        "eventType": "message.outgoing",
+        "actorId": "dm-157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:36.357Z",
+        "eventType": "message.update",
+        "actorId": "anon_954600c27367",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:36.359Z",
+        "eventType": "message.update",
+        "actorId": "anon_954600c27367",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:36.366Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:37.154Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:39.271Z",
+        "eventType": "message.outgoing",
+        "actorId": "dm-157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:39.274Z",
+        "eventType": "message.update",
+        "actorId": "anon_954600c27367",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:39.277Z",
+        "eventType": "message.update",
+        "actorId": "anon_954600c27367",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:45.996Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:48.082Z",
+        "eventType": "message.incoming",
+        "actorId": "anon_6bc7c2053bd9",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:48.095Z",
+        "eventType": "message.update",
+        "actorId": "anon_954600c27367",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:33:59.679Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:18.358Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:19.627Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:20.735Z",
+        "eventType": "message.outgoing",
+        "actorId": "dm-157947506229421",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:20.740Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:20.743Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:20.743Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:20.985Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:21.025Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:40.794Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:46.891Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:48.910Z",
+        "eventType": "command.media",
+        "actorId": "anon_954600c27367",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:49.351Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:50.439Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:50.441Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:34:50.443Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:00.190Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:01.653Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:10.131Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:12.284Z",
+        "eventType": "command.media",
+        "actorId": "anon_954600c27367",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:12.736Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:13.947Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:13.948Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:13.948Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:21.397Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T05:35:24.848Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:09:23.815Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:09:23.816Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:09:23.816Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:09:40.221Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:10:40.480Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:10:40.481Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:10:40.482Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:10:59.468Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:11:08.300Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:12:05.946Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:12:05.947Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:12:05.948Z",
+        "eventType": "message.receipt_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:12:24.902Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:12:44.665Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:12:50.430Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T06:12:56.173Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T07:07:26.375Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T07:47:19.138Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T07:56:42.170Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_051f32a75c4b",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T07:59:32.374Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T07:59:35.352Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T07:59:38.231Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T08:28:28.038Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T12:07:06.266Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T13:51:49.121Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T13:59:50.733Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T14:17:45.003Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T14:31:51.310Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T14:31:55.231Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T14:31:58.911Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T15:18:37.572Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T15:28:10.896Z",
+        "eventType": "message.reaction",
+        "actorId": "anon_582976352d5a",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T15:28:13.231Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T15:28:49.728Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:02:50.224Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:25:51.371Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:25:54.028Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:26:14.146Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:28:36.235Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:29:01.728Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:30:25.436Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:34:09.050Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:34:12.760Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:34:24.308Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:43:31.579Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T18:52:53.398Z",
+        "eventType": "group.participants_update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T21:27:28.785Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:40:47.323Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:40:57.627Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:49:24.550Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:50:03.287Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:50:08.867Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:50:22.431Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:50:43.228Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:50:58.993Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:52:09.305Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:52:38.720Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:52:46.046Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:55:30.517Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:55:48.658Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:55:53.329Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:55:56.131Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:56:00.100Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:56:08.788Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      },
+      {
+        "ts": "2026-10-12T23:56:14.241Z",
+        "eventType": "chat.update",
+        "actorId": "",
+        "mediaType": null
+      }
+    ],
+    "gaps": [
+      {
+        "from": "2026-10-12T03:27:42.609Z",
+        "to": "2026-10-12T04:53:42.585Z",
+        "minutes": 86
+      },
+      {
+        "from": "2026-10-12T04:53:42.585Z",
+        "to": "2026-10-12T05:33:31.991Z",
+        "minutes": 40
+      },
+      {
+        "from": "2026-10-12T05:35:24.848Z",
+        "to": "2026-10-12T06:09:23.815Z",
+        "minutes": 34
+      },
+      {
+        "from": "2026-10-12T06:12:56.173Z",
+        "to": "2026-10-12T07:07:26.375Z",
+        "minutes": 55
+      },
+      {
+        "from": "2026-10-12T07:07:26.375Z",
+        "to": "2026-10-12T07:47:19.138Z",
+        "minutes": 40
+      },
+      {
+        "from": "2026-10-12T08:28:28.038Z",
+        "to": "2026-10-12T12:07:06.266Z",
+        "minutes": 219
+      },
+      {
+        "from": "2026-10-12T12:07:06.266Z",
+        "to": "2026-10-12T13:51:49.121Z",
+        "minutes": 105
+      },
+      {
+        "from": "2026-10-12T14:31:58.911Z",
+        "to": "2026-10-12T15:18:37.572Z",
+        "minutes": 47
+      },
+      {
+        "from": "2026-10-12T15:28:49.728Z",
+        "to": "2026-10-12T18:02:50.224Z",
+        "minutes": 154
+      },
+      {
+        "from": "2026-10-12T18:52:53.398Z",
+        "to": "2026-10-12T21:27:28.785Z",
+        "minutes": 155
+      },
+      {
+        "from": "2026-10-12T21:27:28.785Z",
+        "to": "2026-10-12T23:40:47.323Z",
+        "minutes": 133
+      }
+    ]
+  },
+  "timing": {
+    "byHour": [
+      {
+        "hour": 0,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 1,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 2,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 3,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 4,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 5,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 6,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 7,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 8,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 9,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 10,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 11,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 12,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 13,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 14,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 15,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 16,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 17,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 18,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 19,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 20,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 21,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 22,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      },
+      {
+        "hour": 23,
+        "messages": 0,
+        "reactions": 0,
+        "avgLatencyMs": null
+      }
+    ],
+    "avgLatencyMs": 8790293,
+    "p50Ms": 8790293
+  },
+  "duration": {
+    "activeSpanMinutes": 1237,
+    "longestSilenceMin": 219,
+    "silenceGaps": 11
+  },
+  "mindSnapshots": [
+    {
+      "ts": "2026-10-12T07:25:44.699Z",
+      "turnId": "thread-1791789800870-1791789944699",
+      "input": {
+        "message": "tetooo",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "Oieee"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:26:33.281Z",
+      "turnId": "thread-1791789800870-1791789993281",
+      "input": {
+        "message": "tetetetete to",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "que que é isso kkkkkkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:26:41.702Z",
+      "turnId": "thread-1791789800870-1791790001702",
+      "input": {
+        "message": "qual é seu nome",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "Kasane Teto, né? ué, esqueceu já kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:26:46.187Z",
+      "turnId": "thread-1791789800870-1791790006187",
+      "input": {
+        "message": "sabe mt",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "sei tudo sim kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:26:54.171Z",
+      "turnId": "thread-1791789800870-1791790014171",
+      "input": {
+        "message": "seguinte",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "fala"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:28:15.962Z",
+      "turnId": "thread-1791789800870-1791790095962",
+      "input": {
+        "message": "poderia por obsequio abrir a calculadora do meu pc e ver quanto é 20+20+20+7",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "por obsequio? kkkkkk que formalidade é essa"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:34:57.296Z",
+      "turnId": "thread-1791790496123-1791790497296",
+      "input": {
+        "message": "Abre a calculadora",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "já vai querer fazer conta agora? kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:35:40.682Z",
+      "turnId": "thread-1791790496123-1791790540682",
+      "input": {
+        "message": "Entra no duolingo",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "estudando agora? olha que orgulho kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:36:25.478Z",
+      "turnId": "thread-1791790496123-1791790585478",
+      "input": {
+        "message": "Fecha o duolingo",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "desistiu do curso já? kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:36:58.242Z",
+      "turnId": "thread-1791790496123-1791790618242",
+      "input": {
+        "message": "Depois, acessa pra mim o zap",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "vai fofocar com quem agora? kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:37:08.592Z",
+      "turnId": "thread-1791790496123-1791790628592",
+      "input": {
+        "message": "Não, melhor",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "melhor o que? falou a metade e me deixou no vácuo kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:37:16.315Z",
+      "turnId": "thread-1791790496123-1791790636315",
+      "input": {
+        "message": "Para esse aí",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "para o que? falou tudo errado agora kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:51:14.680Z",
+      "turnId": "thread-1791791473515-1791791474680",
+      "input": {
+        "message": "abre a calculadora",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "vou abrir agora"
+      }
+    },
+    {
+      "ts": "2026-10-12T07:54:54.830Z",
+      "turnId": "thread-1791791473515-1791791694830",
+      "input": {
+        "message": "abre a calculadora dnv",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "já vai, calma kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T08:14:25.710Z",
+      "turnId": "thread-1791792864682-1791792865710",
+      "input": {
+        "message": "Me traz por favor o arwuivos w estão na minha área de trabalho",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "vou ver o que tem aí"
+      }
+    },
+    {
+      "ts": "2026-10-12T08:22:05.851Z",
+      "turnId": "thread-1791792864682-1791793325851",
+      "input": {
+        "message": "Verifica os tokens do meu ollama e me diz quanto falta pra acaba",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "vou checar isso agora"
+      }
+    },
+    {
+      "ts": "2026-10-12T08:23:20.223Z",
+      "turnId": "thread-1791792864682-1791793400223",
+      "input": {
+        "message": "Eu digo o ollama web mesmo",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "ahhh entendi kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T08:50:51.774Z",
+      "turnId": "thread-1791795050688-1791795051774",
+      "input": {
+        "message": "Abre a calmculadora",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "vou abrir aqui"
+      }
+    },
+    {
+      "ts": "2026-10-12T09:14:54.584Z",
+      "turnId": "thread-1791795050688-1791796494584",
+      "input": {
+        "message": "Tenta agora",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "tô tentando aqui"
+      }
+    },
+    {
+      "ts": "2026-10-12T09:15:25.471Z",
+      "turnId": "thread-1791795050688-1791796525471",
+      "input": {
+        "message": "abre a calculadora",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "já foi kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T09:15:48.048Z",
+      "turnId": "thread-1791795050688-1791796548048",
+      "input": {
+        "message": "Abre a acalculadora e me manda um print",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "vou abrir, mas print eu não consigo mandar kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T09:17:16.308Z",
+      "turnId": "thread-1791795050688-1791796636308",
+      "input": {
+        "message": "Me manda um o .txt q ta na área de trabalho",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "vou ver se acho esse arquivo aqui"
+      }
+    },
+    {
+      "ts": "2026-10-12T09:22:36.490Z",
+      "turnId": "thread-1791795050688-1791796956490",
+      "input": {
+        "message": "E ent?",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "ainda tô esperando o computador responder, calma kkk"
+      }
+    },
+    {
+      "ts": "2026-10-12T20:47:30.927Z",
+      "turnId": "thread-1791838049337-1791838050927",
+      "input": {
+        "message": "Me conta uma novidade",
+        "channelId": "ui-desktop",
+        "isGroup": false
+      },
+      "brain": {
+        "emotion": {
+          "mood": null
+        },
+        "trustBond": null,
+        "worldContext": {
+          "currentLocation": null,
+          "isTraveling": false
+        },
+        "world": {
+          "currentLocation": null
+        },
+        "health": []
+      },
+      "output": {
+        "count": 1,
+        "preview": "novidade? ah, descobri que pão francês é quase a mesma coisa que baguete, só que menor kkk"
+      }
+    }
+  ],
+  "hourlySnapshots": [
+    {
+      "hour": 4,
+      "samples": 4,
+      "trust": null,
+      "world": {
+        "currentLocation": null,
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": null
+    },
+    {
+      "hour": 5,
+      "samples": 6,
+      "trust": null,
+      "world": {
+        "currentLocation": null,
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": null
+    },
+    {
+      "hour": 6,
+      "samples": 2,
+      "trust": null,
+      "world": {
+        "currentLocation": null,
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": null
+    },
+    {
+      "hour": 7,
+      "samples": 17,
+      "trust": null,
+      "world": {
+        "currentLocation": null,
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": null
+    },
+    {
+      "hour": 8,
+      "samples": 4,
+      "trust": null,
+      "world": {
+        "currentLocation": null,
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": null
+    },
+    {
+      "hour": 9,
+      "samples": 5,
+      "trust": null,
+      "world": {
+        "currentLocation": null,
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": null
+    },
+    {
+      "hour": 20,
+      "samples": 1,
+      "trust": null,
+      "world": {
+        "currentLocation": null,
+        "isTraveling": false
+      },
+      "health": [],
+      "emotion": null
+    }
+  ],
+  "edits": {
+    "count": 0,
+    "samples": []
+  },
+  "deletions": {
+    "count": 1,
+    "samples": [
+      {
+        "ts": "2026-10-12T03:22:35.000Z",
+        "messageId": "AC517451471BFD50D48D8389BA75806D",
+        "beforeText": null,
+        "reason": "revoke"
+      }
+    ]
+  },
+  "commandMedia": {
+    "total": 3,
+    "avgLatencyMs": 1059,
+    "byCommand": {
+      "sticker": 1,
+      "fsticker": 1,
+      "csticker": 1
+    },
+    "byStatus": {
+      "error": 1,
+      "ok": 2
+    },
+    "byInputType": {
+      "unknown": 1,
+      "gif": 2
+    },
+    "byOutputType": {
+      "unknown": 1,
+      "image": 2
+    },
+    "byTargetSource": {
+      "unknown": 1,
+      "reply": 2
+    }
+  },
+  "behavior": {
+    "targetUserId": "5516988137617",
+    "totals": {
+      "events": 6438,
+      "messages": 6409,
+      "reactions": 2,
+      "media": 1695,
+      "links": 187
+    },
+    "byHour": {
+      "0": 267,
+      "1": 163,
+      "2": 177,
+      "3": 288,
+      "4": 183,
+      "5": 158,
+      "6": 95,
+      "7": 61,
+      "8": 51,
+      "9": 14,
+      "10": 17,
+      "11": 133,
+      "12": 272,
+      "13": 228,
+      "14": 399,
+      "15": 261,
+      "16": 256,
+      "17": 151,
+      "18": 386,
+      "19": 591,
+      "20": 473,
+      "21": 751,
+      "22": 649,
+      "23": 414
+    },
+    "byChat": {
+      "5516997241905@s.whatsapp.net": 67,
+      "5516994435369@s.whatsapp.net": 25,
+      "5516988137617@s.whatsapp.net": 82,
+      "190546341540031@lid": 562,
+      "131778236952767@lid": 1489,
+      "264841222742022@lid": 3,
+      "5516991617729@s.whatsapp.net": 16,
+      "5516991476228@s.whatsapp.net": 2,
+      "65197804912879@lid": 47,
+      "6283879987068@s.whatsapp.net": 18,
+      "174165839581324@lid": 169,
+      "5511958102125@s.whatsapp.net": 5,
+      "157947506229421@lid": 311,
+      "5516988137617:47@s.whatsapp.net": 4,
+      "5516988137617:65@s.whatsapp.net": 6,
+      "132813357596880@lid": 1203,
+      "5516988776338@s.whatsapp.net": 63,
+      "185967939985556@lid": 1027,
+      "5517991664082@s.whatsapp.net": 41,
+      "5516991161180@s.whatsapp.net": 2,
+      "197096200257752@lid": 4,
+      "197053250547801@lid": 638,
+      "272172178223326@lid": 49,
+      "5516996242810@s.whatsapp.net": 4,
+      "74053859672191@lid": 23,
+      "238009924509886@lid": 23,
+      "5516997140666@s.whatsapp.net": 1,
+      "81544400130175@lid": 48,
+      "103659153158378@lid": 44,
+      "149684324700164@lid": 1,
+      "193819442184289@lid": 23,
+      "187995030323304@lid": 37,
+      "150242334867642@lid": 30,
+      "137053111091288@lid": 5,
+      "241162531147829@lid": 2,
+      "129386040836118@lid": 10,
+      "3689544732728@lid": 86,
+      "242794635518154@lid": 9,
+      "233882561564738@lid": 31,
+      "9281743114312@lid": 63,
+      "5516991962210@s.whatsapp.net": 1,
+      "214963146760277@lid": 40,
+      "168109465977059@lid": 1,
+      "33298965393637@lid": 13,
+      "134630229430311@lid": 1,
+      "228845085061267@lid": 3,
+      "207202157650019@lid": 26,
+      "124841948631110@lid": 15,
+      "69123321135269@lid": 1,
+      "164076609101978@lid": 4,
+      "206579353784338@lid": 2,
+      "5516996184325@s.whatsapp.net": 1,
+      "5516997824041@s.whatsapp.net": 1,
+      "58141777641473@lid": 1,
+      "141167085773019@lid": 1,
+      "49809339740364@lid": 5,
+      "238083022835725@lid": 7,
+      "206476459155457@lid": 1,
+      "224098508644548@lid": 1,
+      "140269471174762@lid": 6,
+      "120363425913528764@g.us": 34
+    },
+    "avgLatencyMs": 8790293
+  }
+}

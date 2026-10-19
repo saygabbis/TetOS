@@ -1,7 +1,7 @@
 {
-  "currentActivity": null,
-  "activityStartedAt": null,
-  "phase": "madrugada",
+  "currentActivity": "ouvindo Machine Love",
+  "activityStartedAt": "2026-10-16T18:01:15.662Z",
+  "phase": "tarde",
   "obligations": [
     {
       "id": "obligation_1780935846985_421",
@@ -411,35 +411,14 @@
   "goals": [],
   "privateThoughts": [],
   "sleep": {
-    "state": "deep_sleep",
+    "state": "awake",
     "sleepDebt": 1,
-    "lastSleepAt": "2026-10-08T03:53:40.508Z",
+    "lastSleepAt": "2026-10-16T02:01:11.432Z",
     "tonightPlan": {
       "bedHour": 23,
       "wakeHour": 7
     },
     "alarmHistory": [
-      {
-        "ts": "2026-09-01T10:01:38.877Z",
-        "missedAlarm": false,
-        "quality": 0.34,
-        "state": "groggy",
-        "disturbed": true
-      },
-      {
-        "ts": "2026-09-02T10:00:33.190Z",
-        "missedAlarm": false,
-        "quality": 0.34,
-        "state": "groggy",
-        "disturbed": true
-      },
-      {
-        "ts": "2026-09-03T10:01:35.140Z",
-        "missedAlarm": false,
-        "quality": 0.34,
-        "state": "groggy",
-        "disturbed": true
-      },
       {
         "ts": "2026-09-04T10:00:22.252Z",
         "missedAlarm": true,
@@ -565,18 +544,39 @@
         "quality": 0.34,
         "state": "groggy",
         "disturbed": true
+      },
+      {
+        "ts": "2026-10-14T10:00:15.007Z",
+        "missedAlarm": false,
+        "quality": 0.34,
+        "state": "groggy",
+        "disturbed": true
+      },
+      {
+        "ts": "2026-10-15T10:00:59.487Z",
+        "missedAlarm": false,
+        "quality": 0.34,
+        "state": "groggy",
+        "disturbed": true
+      },
+      {
+        "ts": "2026-10-16T10:01:12.587Z",
+        "missedAlarm": false,
+        "quality": 0.34,
+        "state": "groggy",
+        "disturbed": true
       }
     ],
     "wakeDelayUntil": null,
-    "lastWakeAt": "2026-10-07T21:30:23.140Z",
+    "lastWakeAt": "2026-10-16T10:01:12.587Z",
     "temporaryWakeUntil": null,
-    "disturbanceCount": 7,
+    "disturbanceCount": 0,
     "lastDisturbedAt": "2026-10-08T03:49:21.973Z",
     "disturbedNightKey": "2026-10-08",
     "tempWakeStartedAt": null,
     "tempWakeExtensionCount": 0,
     "tempWakeGrogginess": 0
   },
-  "lastTickAt": "2026-10-08T03:59:40.466Z",
-  "dayKey": "2026-10-08"
+  "lastTickAt": "2026-10-16T18:43:15.787Z",
+  "dayKey": "2026-10-16"
 }
