@@ -10,7 +10,7 @@ import {
   normalizeIncomingMentions,
   recordWaIdentity
 } from "../src/core/channels/waIdentity.js";
-import { applyWhatsAppMentions } from "../src/integrations/whatsapp/mentionResolver.js";
+import { applyWhatsAppMentions } from "../src/integrations/whatsapp/inbound/mentionResolver.js";
 import { assert, ok } from "./test-helpers.js";
 
 assert(cleanDisplayName("Gabbis( ˘ ³˘ )♥") === "Gabbis", "limpa pushName");

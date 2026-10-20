@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseUrlDownloadArgs } from "../../src/integrations/whatsapp/urlDownloadArgsParse.js";
+import { parseUrlDownloadArgs } from "../../src/integrations/whatsapp/commands/urlDownloadArgsParse.js";
 
 describe("url download args parser", () => {
   it("parses youtube url and mp3 mode", () => {

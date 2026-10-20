@@ -1,10 +1,12 @@
 import "./isolatedData.js";
-import { createRuntime } from "../src/app/createRuntime.js";
+import { planDay } from "../src/core/life/dayPlanner.js";
 import { assert, ok } from "./test-helpers.js";
 
-const runtime = createRuntime();
-const routine = runtime.brainOrchestrator?.life?.routine;
-assert(routine, "routine generator present");
-const day = routine.generateDay({ phase: "manha", isWeekend: false });
-assert(Array.isArray(day.items) || Array.isArray(day.obligations) || day, "day plan generated");
+const a = planDay("2026-10-23", { weekday: 5 });
+const b = planDay("2026-10-23", { weekday: 5 });
+assert(JSON.stringify(a) === JSON.stringify(b), "mesmo dia → mesma vida (determinístico)");
+assert(a.blocks.length >= 8, "dia com várias atividades");
+assert(a.blocks.some((x) => /rolê de sexta/.test(x.label)), "sexta tem rolê");
+for (let i = 1; i < a.blocks.length; i += 1) assert(a.blocks[i].start >= a.blocks[i - 1].end, "blocos não se sobrepõem");
+assert(a.events.length >= 1 && a.events.length <= 3, "1 a 3 acontecimentos");
 ok("test-life-creative");

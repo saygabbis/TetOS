@@ -1,4 +1,4 @@
-import { detectTetoNameCall } from "../../integrations/whatsapp/tetoNameDetect.js";
+import { detectTetoNameCall } from "../../integrations/whatsapp/inbound/tetoNameDetect.js";
 
 const WAKE_WORD_RE =
   /\b(acorda|acordar|acordaaa+|acordem|desperta|despertar|levanta|levantar|wake\s*up|me\s+deixa\s+dormir|para\s+de\s+dormir)\b/i;

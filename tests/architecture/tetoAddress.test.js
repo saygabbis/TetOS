@@ -5,7 +5,7 @@ import {
   isDirectTetoAddress,
   isFeminineTetoPerson,
   mentionedJidsIncludeBot
-} from "../../src/integrations/whatsapp/messageContext.js";
+} from "../../src/integrations/whatsapp/inbound/messageContext.js";
 
 describe("classifyTetoAddress", () => {
   it("treats vocative + look-at-this as a call to her", () => {

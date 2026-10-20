@@ -3,11 +3,11 @@ import {
   planGroupTurnSegments,
   shouldSplitGroupSegment,
   isGroupPriorityEntry
-} from "../src/integrations/whatsapp/groupTurnPlanner.js";
+} from "../src/integrations/whatsapp/conversation/groupTurnPlanner.js";
 import {
   buildOutgoingQuoteKey,
   shouldQuoteOutgoing
-} from "../src/integrations/whatsapp/messageContext.js";
+} from "../src/integrations/whatsapp/inbound/messageContext.js";
 
 function entry(overrides = {}) {
   return {
@@ -73,10 +73,11 @@ const key = buildOutgoingQuoteKey(
 assert.equal(key.participant, "5511999999999@s.whatsapp.net");
 
 assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isReplyToBot: true }), true);
-assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, quotedMessageId: "abc" }), true);
+// No PV ela não cita toda mensagem (gente não faz isso): só reply, rajada, mídia ou catch-up.
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, quotedMessageId: "abc", isReply: true }), true);
 assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, batchedCount: 2 }), true);
 assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: true }), false);
-assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: false }), true);
+assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: false }), false);
 assert.equal(shouldQuoteOutgoing({ messageKey: { id: "x" }, isGroup: true, isDirectMention: true }), true);
 
 console.log("test-group-turn-planner: ok");

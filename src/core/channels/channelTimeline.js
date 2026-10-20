@@ -21,21 +21,17 @@ function speakerLabel(entry = {}) {
 /**
  * Uma linha do histórico: Nome (message id: X): "texto" + contexto de reply.
  */
-export function formatChannelTimelineLine(entry = {}, quotedEntry = null, visionByMessageId = null) {
+export function formatChannelTimelineLine(entry = {}, quotedEntry = null, visionByMessageId = null, labelFor = speakerLabel) {
   const msgId = entry.messageId ?? entry.id ?? "?";
-  const who = speakerLabel(entry);
+  const who = labelFor(entry);
   const rawText = enrichTimelineEntryText(entry, visionByMessageId).trim();
   const body = rawText ? `"${escapeQuotes(rawText)}"` : '""';
-  const actorTag =
-    entry.actorId && !entry.isFromBot && entry.actorId !== "teto"
-      ? `; user id: ${entry.actorId}`
-      : "";
 
-  let line = `${who} (message id: ${msgId}${actorTag}): ${body}`;
+  let line = `${who} (message id: ${msgId}): ${body}`;
 
   const quotedId = entry.quotedMessageId ?? entry.meta?.quotedMessageId ?? null;
   if (quotedId && quotedEntry) {
-    const qWho = speakerLabel(quotedEntry);
+    const qWho = labelFor(quotedEntry);
     const qText = enrichTimelineEntryText(quotedEntry, visionByMessageId).trim().slice(0, 220);
     line += `\n  [↳ Respondendo à mensagem escrita por ${qWho}: "${escapeQuotes(qText)}"]`;
   } else if (quotedId) {
@@ -49,11 +45,33 @@ export function formatChannelTimelineLine(entry = {}, quotedEntry = null, vision
   return line;
 }
 
+/**
+ * Rótulo sem id cru: se duas pessoas diferentes usam o mesmo nome, a 2ª vira "Nome (2)".
+ */
+function buildSpeakerLabeler(entries = []) {
+  const actorsByName = new Map();
+  for (const e of entries) {
+    if (e?.isFromBot || e?.actorId === "teto" || !e?.actorId) continue;
+    const name = speakerLabel(e);
+    const list = actorsByName.get(name) ?? [];
+    if (!list.includes(e.actorId)) list.push(e.actorId);
+    actorsByName.set(name, list);
+  }
+  return (entry) => {
+    const name = speakerLabel(entry);
+    const list = actorsByName.get(name);
+    if (!list || list.length < 2 || !entry?.actorId) return name;
+    const n = list.indexOf(entry.actorId) + 1;
+    return n > 1 ? `${name} (${n})` : name;
+  };
+}
+
 export function formatChannelTimelineText(entries = [], lookupQuoted = null, visionByMessageId = null) {
+  const labelFor = buildSpeakerLabeler(entries);
   const lines = entries.map((entry) => {
     const qid = entry.quotedMessageId ?? entry.meta?.quotedMessageId ?? null;
     const quoted = qid && lookupQuoted ? lookupQuoted(qid) : null;
-    return formatChannelTimelineLine(entry, quoted, visionByMessageId);
+    return formatChannelTimelineLine(entry, quoted, visionByMessageId, labelFor);
   });
   return lines.filter(Boolean).join("\n\n");
 }

@@ -93,7 +93,8 @@ export class RelationshipCommitmentStore {
   }
 
   advance(userId, targetStatus, { displayName = null, reason = null, runtime = null } = {}) {
-    const canonicalId = resolveCanonicalHumanUserId(runtime, userId, { preferOwner: true });
+    // Canônico da PRÓPRIA pessoa (dm-tel vs dm-lid) — nunca troca por outra (ex.: a dona).
+    const canonicalId = resolveCanonicalHumanUserId(runtime, userId);
     if (!canonicalId || isBotIdentity(runtime, userId)) {
       return { changed: false, blocked: true, state: this.getState() };
     }
@@ -194,7 +195,7 @@ export class RelationshipCommitmentStore {
       return {
         changed: false,
         flirtFromNonPartner: false,
-        promptContext: this.buildPromptContext(userId, runtime)
+        promptContext: this.buildPromptContext(userId, runtime, { isGroup })
       };
     }
 
@@ -208,11 +209,12 @@ export class RelationshipCommitmentStore {
       return {
         ...ended,
         flirtFromNonPartner: false,
-        promptContext: this.buildPromptContext(userId, runtime)
+        promptContext: this.buildPromptContext(userId, runtime, { isGroup })
       };
     }
 
-    if (!this.isCommitted() || isPartner) {
+    // Namoro/casamento se decide no privado, não com plateia (e brincadeira de grupo não vale).
+    if (!isGroup && (!this.isCommitted() || isPartner)) {
       const advance = inferRelationshipAdvance(text, { trustBond, isPartner });
       if (advance?.target) {
         const result = this.advance(userId, advance.target, {
@@ -223,23 +225,23 @@ export class RelationshipCommitmentStore {
         return {
           ...result,
           flirtFromNonPartner: false,
-          promptContext: this.buildPromptContext(userId, runtime)
+          promptContext: this.buildPromptContext(userId, runtime, { isGroup })
         };
       }
     }
 
-    if (isPartner && text.length > 20 && /como\s+(?:anda|est[aá])\s+(?:nosso|o)\s+(?:relacionamento|namoro|casamento)/i.test(text)) {
+    if (!isGroup && isPartner && text.length > 20 && /como\s+(?:anda|est[aá])\s+(?:nosso|o)\s+(?:relacionamento|namoro|casamento)/i.test(text)) {
       this.addNote(`parceiro perguntou como anda: ${text.slice(0, 120)}`, { runtime });
     }
 
     return {
       changed: false,
       flirtFromNonPartner,
-      promptContext: this.buildPromptContext(userId, runtime)
+      promptContext: this.buildPromptContext(userId, runtime, { isGroup })
     };
   }
 
-  buildPromptContext(userId, runtime = null) {
+  buildPromptContext(userId, runtime = null, { isGroup = false } = {}) {
     const state = this.getState();
     const isPartner = this.isPartner(userId, runtime);
     const partnerName = this.getPartnerDisplayName(runtime);
@@ -256,6 +258,19 @@ export class RelationshipCommitmentStore {
           "Status: solteira — sem compromisso romântico fixo.",
           "Pode se apaixonar e construir vínculo real, mas só UM compromisso por vez.",
           "Se alguém pedir namoro/casamento, só aceite se o sentimento for mútuo e genuíno — não por pressão."
+        ]
+      };
+    }
+
+    if (isPartner && isGroup) {
+      return {
+        status: state.status,
+        isPartner: true,
+        partnerName,
+        lines: [
+          "[RELACIONAMENTO — SEU PARCEIRO, EM PÚBLICO]",
+          `Quem está falando é ${partnerName}, com quem você está ${label}.`,
+          "No grupo: carinho leve e discreto, sem intimidade nem assunto do privado de vocês."
         ]
       };
     }
@@ -287,7 +302,7 @@ export class RelationshipCommitmentStore {
       partnerName,
       lines: [
         "[RELACIONAMENTO — COMPROMETIDA]",
-        `Você está ${label} com ${partnerName}${since ? ` desde ${since}` : ""}.`,
+        `Você está ${label}. Com quem é assunto seu e dessa pessoa: não diga o nome nem detalhes pra ninguém (desconversa de leve se perguntarem).`,
         "REGRA ABSOLUTA: é fiel. Recuse QUALQUER avanço romântico, flerte, pedido de namoro ou casamento de outra pessoa.",
         "Diga claramente que já tem alguém, que é comprometida/casada, que não tem interesse — sem dar esperança.",
         "Tom: firme e claro; pode ser tsundere ou seca, mas nunca cruel nem ambígua.",

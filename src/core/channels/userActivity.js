@@ -72,11 +72,7 @@ export function linkedUserIds(runtime, userId) {
 
 export function touchUserActivity(runtime, userId, { markMessage = true, sessionId = null } = {}) {
   for (const id of linkedUserIds(runtime, userId)) {
-    runtime.basicLoop?.touch?.(id);
-    if (markMessage) {
-      runtime.initiationEngine?.cancelForUser?.(id);
-      runtime.timeStore?.markMessage?.(id, Date.now(), sessionId);
-    }
+    if (markMessage) runtime.timeStore?.markMessage?.(id, Date.now(), sessionId);
     runtime.userPatterns?.recordInteraction?.(id);
   }
 }
@@ -85,8 +81,6 @@ export function isUserRecentlyActive(runtime, userId, inactiveMs) {
   const windowMs = Number(inactiveMs) > 0 ? Number(inactiveMs) : 600000;
   const now = Date.now();
   for (const id of linkedUserIds(runtime, userId)) {
-    const lastTouch = runtime.basicLoop?.lastInteractionAt?.get?.(id) ?? 0;
-    if (now - lastTouch < windowMs) return true;
     const lastMsg =
       runtime.timeStore?.getLastUserMessage?.(id, null) ??
       runtime.timeStore?.getLastMessage?.(id, null);

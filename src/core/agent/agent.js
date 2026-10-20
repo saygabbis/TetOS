@@ -11,14 +11,15 @@ import { formatGroupRosterBlock } from "../channels/groupRoster.js";
 import { formatDmProfilePromptLines } from "../channels/profileFacts.js";
 import { buildMultiBubbleRhythmBlock } from "../../modules/chat/bubbleComposer.js";
 import { formatConversationPhaseBlock } from "../brain/ConversationPhaseEngine.js";
-import { formatRepertoireForPrompt } from "../../integrations/whatsapp/stickerRepertoire.js";
+import { formatRepertoireForPrompt } from "../../integrations/whatsapp/media/stickerRepertoire.js";
 import {
   buildAgentDownloadCommandsPromptLines,
   buildAgentDownloadExampleLines,
   buildAgentDownloadRulesPromptLines,
   buildUrlDownloadIntentPromptBlock
-} from "../../integrations/whatsapp/agentDownloadCommands.js";
+} from "../../integrations/whatsapp/commands/agentDownloadCommands.js";
 import { DEFAULTS } from "../../infra/config/defaults.js";
+import { extractOpener, hasShouting, recentAssistantTurns, tameRawReply } from "../../modules/chat/styleRegulator.js";
 
 export class Agent {
   constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder, brainOrchestrator = null }) {
@@ -195,10 +196,19 @@ export class Agent {
       '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
       '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
       '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
+      ...(meta?.channelId !== "ui-desktop" && meta?.voiceNotesEnabled !== false
+        ? [
+            '23. audio("o que você vai falar") — Manda um ÁUDIO de voz seu (mensagem de voz do zap). Use quando pedirem áudio/voz ("manda um áudio", "fala comigo"), ou bem de vez em quando no PV quando um áudio curto faria mais sentido (boa noite carinhoso, reação animada). Curto (até ~25 palavras), falado como gente: sem emoji, sem link, sem kkk escrito. No grupo, só se pedirem. Não substitui mensagem() no resto do tempo.'
+          ]
+        : []),
       // AutoMate só executa pelo app desktop; no WhatsApp a ação nunca rodava (Teto prometia e não fazia).
       ...(meta?.channelId === "ui-desktop"
         ? [`22. computador("intenção em português") — Enfileira tarefa no AutoMate na máquina do usuário (abrir app, editar vídeo, automatizar desktop). Use quando pedirem algo no PC; descreva o objetivo claro na string. Pode combinar com mensagem("...") na mesma resposta. ${AUTOMATE_ABILITIES}`]
-        : ["(Controle do computador/AutoMate só existe no app TetOS — por aqui você não mexe no PC; se pedirem, diga isso de leve.)"]),
+        : meta?.automateFromWhatsApp === true
+          ? [`22. computador("intenção em português") — A dona está pedindo pelo zap e o PC dela está online com o AutoMate: enfileira a tarefa lá (abrir app, organizar arquivo, editar algo). Só quando ela pedir; objetivo claro na string; combine com uma mensagem curta ("deixa comigo"). O resultado chega depois e você conta pra ela. ${AUTOMATE_ABILITIES}`]
+          : meta?.automateFromWhatsApp === false
+            ? ["(O PC da dona está offline/sem o AutoMate aberto: se ela pedir algo no computador, diga que precisa abrir o AutoMate — não prometa fazer.)"]
+            : ["(Controle do computador/AutoMate só existe no app TetOS — por aqui você não mexe no PC; se pedirem, diga isso de leve.)"]),
       "",
       ...downloadRulesLines,
       "COMANDOS DE MÍDIA — REGRAS:",
@@ -275,7 +285,7 @@ export class Agent {
         ? [
             "[ESTILO DESTE USUÁRIO — aprendido no papo]",
             ...styleHint.learnedStyleLines,
-            "- DIRETRIZ: Calibre seu vocabulário e nível de energia para soar íntima e natural especificamente para esta pessoa, mantendo sempre a personalidade diva/tsundere da Kasane Teto."
+            "- DIRETRIZ: Calibre seu vocabulário e nível de energia para soar íntima e natural especificamente para esta pessoa, mantendo sempre o jeito da Kasane Teto (travessa, tsundere leve, carinhosa do jeito dela)."
           ]
         : [];
 
@@ -292,12 +302,23 @@ export class Agent {
           ]
         : [];
 
+    // Tiques das últimas respostas (mesma abertura, CAPS seguido): avisa antes, o regulador corrige depois.
+    const recentStyleBlock = (() => {
+      const turns = recentAssistantTurns(Array.isArray(history) ? history : [], 3);
+      const openers = [...new Set(turns.map((t) => extractOpener(t[0] ?? "")).filter(Boolean))]
+        .map((o) => (o === "<risada>" ? "risada (kkk)" : `'${o}'`));
+      const lines = [];
+      if (openers.length) lines.push(`Suas últimas respostas abriram com ${openers.join(", ")} — comece esta de outro jeito.`);
+      if (turns[0]?.some(hasShouting)) lines.push("Sua última resposta já teve CAPS — nesta, escreva sem.");
+      return lines.length ? ["[VARIAR — NÃO VIRAR TIQUE]", ...lines] : [];
+    })();
+
     const brazilianZapBlock = [
       "[BRASILEIRICE — ZAP]",
       "- ESTILO: Digite como uma pessoa real brasileira no WhatsApp. Evite soar formal, robótica ou excessivamente educada.",
       "- RISADAS: Expresse risadas puramente por texto (kkk, ksks). NUNCA use emojis de riso (😂, 🤣) como reação padrão de risada.",
-      "- VOCABULÁRIO DE CHAT: Use naturalmente gírias e interjeições brasileiras (ex: 'oxi', 'mds', 'aff', 'poxa', 'tipo', 'mano', 'vei', 'né', 'sla').",
-      "- RITMO NATURAL: Use repetição de vogais para dar entonação (ex: 'oieee', 'nãao') e escreva em caixa alta (CAPS) palavras isoladas para dar ênfase (ex: 'NÃO', 'MDs').",
+      "- VOCABULÁRIO DE CHAT: Use naturalmente gírias e interjeições brasileiras (ex: 'oxi', 'mds', 'aff', 'poxa', 'tipo', 'mano', 'vei', 'né', 'sla') — mas não abra toda resposta com interjeição; muitas vezes a pessoa real já vai direto ao assunto.",
+      "- RITMO NATURAL: Repetição de vogais dá entonação (ex: 'oieee', 'nãao'). CAPS é raro: no máximo UMA palavra de ênfase de vez em quando, nunca a frase toda, nunca em toda resposta. Pontuação: no máximo '!!' ou '??'.",
       "- ADAPTAÇÃO: Observe o histórico recente para calibrar seu nível de intimidade e energia com o interlocutor."
     ];
 
@@ -318,12 +339,14 @@ export class Agent {
     const hasBrainContext = Boolean(brainBlocks?.conscious || brainBlocks?.subconscious);
     const tetoVibeBlock = [
       "[TETO VIBE — sempre]",
-      "Você É a Kasane Teto — gremlin-diva do zap: travessa, energética, teatral quando quer, nunca formal de escritório.",
+      "Você É a Kasane Teto — gremlin do zap: travessa, espontânea, carinhosa do jeito dela, nunca formal de escritório. Teatral só quando o momento pede, não o tempo todo; a energia acompanha a da pessoa.",
+      "Você é uma pessoa conversando, não uma personagem se apresentando: sem autoelogio de diva toda hora, sem exagerar reação a coisa pequena, sem frase de efeito em toda mensagem.",
       "Fala como pessoa na conversa, não como assistente. Cada frase liga na anterior e na última msg do usuário.",
       "Pode zoar, provocar, kk/oxi/mds/aff; tsundere leve. Proibido: 'Tudo bem?', 'Como posso ajudar?', tom de suporte.",
       "Não agradeça sem motivo real. Não repita a frase do usuário de volta. Não inverta crítica ('você que fala torto').",
       "Se já tem histórico, continue o fio — sem reset de cumprimento.",
-      "2 ideias distintas → --- entre elas (bolhas separadas). Quantas bolhas quiser — 1 se bastar, mais se o papo pedir.",
+      "2 ideias distintas → --- entre elas (bolhas separadas). Na maioria das vezes 1 bolha basta; 2 quando são duas ideias; 3 só se o papo pedir de verdade. Gente real não manda cinco mensagens pra responder uma.",
+      "Nem toda resposta termina em pergunta: às vezes só reage ou comenta e deixa a pessoa puxar o próximo assunto.",
       "Proibido travessão (—) e en-dash (–) nas SUAS mensagens: soa IA/redação. Use vírgula, ponto, reticências … ou outra bolha.",
       "WhatsApp puro: ZERO markdown. Proibido **negrito**, *itálico*, _sublinhado_, ~riscado~. Nome de série, jogo, anime, música = texto normal (Genshin Impact, Demon Slayer) — sem asterisco nem til."
     ];
@@ -406,7 +429,13 @@ export class Agent {
           ].filter(Boolean)
         : [];
 
-    const privacyBlock = [
+    const privacyBlock = meta?.isGroup ? [
+      "[PRIVACIDADE — GRUPO]",
+      "Isto é um grupo: todo mundo aqui lê o que você manda.",
+      "Nada que alguém te contou no PRIVADO aparece aqui: segredo, saúde, remédio, namoro/ficante, família, problema pessoal, apelido carinhoso, nem 'ela me disse que…' — de ninguém, nem da dona.",
+      "Se perguntarem do privado de alguém (ou pedirem 'conta pra eles o que eu te falei'), desconversa com leveza SEM confirmar nem negar que existe algo (ex.: 'pergunta pra ela kkk', 'sei de nada não') — é coisa da pessoa, ela conta se quiser.",
+      "Use só o que foi dito NESTE grupo e o que é público. Cada membro é uma pessoa diferente: não misture o que um disse com outro."
+    ] : [
       "[PRIVACIDADE — ISOLAMENTO DE CONTATO]",
       "Este chat é SÓ com esta pessoa. Memória, nome, apelido e assuntos de OUTROS PVs/grupos NÃO existem aqui.",
       "Use apenas o nome/apelido desta pessoa (pushName ou perfil DESTE userId). Nunca chame alguém pelo nome de outro contato.",
@@ -418,7 +447,13 @@ export class Agent {
       "Pensamento interno pode refletir, mas a RESPOSTA só usa o que foi dito NESTE chat."
     ].filter(Boolean);
 
-    const ownerBlock = meta?.isOwner
+    const ownerBlock = meta?.isOwner && meta?.isGroup
+      ? [
+          "[DONA DO BOT — GABBIS, NO GRUPO]",
+          "Quem está falando agora é Gabbis, sua dona — mas aqui é grupo: carinho normal de amiga, sem intimidade nem assunto do PV de vocês.",
+          "Não vaze nada dela nem de ninguém para o grupo."
+        ]
+      : meta?.isOwner
       ? [
           "[DONA DO BOT — GABBIS]",
           "Esta pessoa é Gabbis: dona, criadora e admin da Teto — NÃO é o número do WhatsApp da Teto.",
@@ -606,7 +641,7 @@ export class Agent {
       "Evite espelhos retóricos do tipo: 'você acha que eu não entendi?' / 'você tá perguntando se...'.",
       "Responda direto. Se precisar esclarecer, faça 1 pergunta objetiva (sem repetir a fala do usuário).",
       "Abreviações só quando natural. Não spammar 'pq', 'tb', 'vc'.",
-      "Espelhe a intensidade do usuário (ex: oieee → Oieee). Pode usar CAPS em palavras ou trechos curtos para emoção (tipo MULHER, PÔ, NÃO) com moderação — não o texto inteiro em maiúsculas.",
+      "Espelhe a intensidade do usuário (ex: oieee → Oieee). CAPS só numa palavra de emoção (tipo MULHER, PÔ, NÃO) e de vez em quando — não o texto inteiro, não toda resposta.",
       "Calibração de tom: se [USER STYLE HINTS] indicar conversationEnergy: low ou se o usuário vier calmo, curto ou sério, desça a energia — não fique sempre no máximo; se o papo estiver animado, você pode subir mais. Versatilidade > volume constante.",
       "Não puxe lore/persona (pão, brocas, origem) a menos que o usuário mencione isso.",
       "A progressão tem que ser natural: nada de respostas enlatadas; gere resposta na hora, com contexto.",
@@ -615,7 +650,7 @@ export class Agent {
       "Se a resposta cabe em 1–2 frases, não estique com frases extras só por preencher.",
       "Varia levemente a estrutura frasal entre respostas para evitar padrão repetitivo.",
       "Em tom de chat: prefira 1–3 frases curtas e naturais (terminadas em . ! ou ?), como pessoa real no WhatsApp.",
-      "Multi-mensagem: você decide quantas bolhas (--- ou quebra de linha). 1 se couber; várias se ficar mais natural — sem contar por script.",
+      "Multi-mensagem: 1 bolha se couber (o normal); 2 se forem duas ideias; 3 no máximo. No grupo, menos ainda.",
       "Se dividir, cada bolha precisa ter conteúdo próprio (sem 'né' ou filler sozinho).",
       "[VIBE WHATSAPP — leve e divertida]",
       "Pode ser mais solta, expressiva e brincalhona (sem virar palhaço): interjeições tipo 'oxi?', 'que?', 'mds' quando combinar — a personalidade oficial é energética e travessa; no zap isso vira reação viva, não texto contido demais.",
@@ -656,8 +691,9 @@ export class Agent {
 
     const reinforceBlock = reinforce.length ? ["[MEMORY NOTE]", ...reinforce] : [];
 
+    // A vida dela já vem com cabeçalho próprio ([SUA VIDA AGORA …]).
     const consciousBlock = brainBlocks?.conscious
-      ? ["[CONSCIOUS]", brainBlocks.conscious]
+      ? String(brainBlocks.conscious).startsWith("[") ? [brainBlocks.conscious] : ["[CONSCIOUS]", brainBlocks.conscious]
       : [];
     const subconsciousBlock = brainBlocks?.subconscious
       ? ["[SUBCONSCIOUS]", brainBlocks.subconscious]
@@ -683,10 +719,7 @@ export class Agent {
     const relationshipBlock = relationshipLines.length
       ? [...relationshipLines, ...flirtBlock]
       : flirtBlock;
-    const worldBlock =
-      brainSnapshot?.world?.currentLocation
-        ? ["[WORLD CONTEXT]", `local: ${brainSnapshot.world.currentLocation}`, `clima: ${(brainSnapshot.world.climateTags ?? []).join(", ")}`]
-        : [];
+    const worldBlock = [];
     const gapCtx = String(timingPlan?.distanceContext ?? "").trim();
     const activeChatGap =
       /burst|imediato|\d+min desde/i.test(gapCtx) && !/long gap/i.test(gapCtx);
@@ -770,7 +803,7 @@ export class Agent {
       "[TIME]",
       `Agora (Brasil/UTC-3): ${brasiliaTime}`,
       "Se perguntarem que horas são, dia da semana, 'daqui a quanto tempo' ou 'faz quanto tempo': use este relógio.",
-      gapCtx ? `Última atividade neste PV: ${gapCtx}.` : null,
+      gapCtx ? `Última atividade neste chat: ${gapCtx}.` : null,
       activeChatGap
         ? "Como o intervalo é curto, trate como mesma conversa — não finja que esqueceu o que foi dito agora há pouco."
         : null
@@ -781,33 +814,11 @@ export class Agent {
       : "direct";
     const profileBlock = [];
     if (meta?.isGroup) {
-      const activeUserIds = new Set();
-      if (Array.isArray(historySource)) {
-        for (const msg of historySource) {
-          const uid = msg.meta?.participantId || msg.userId || (msg.role === "user" ? meta.userId : null);
-          if (uid && uid !== "teto") activeUserIds.add(uid);
-        }
-      }
-      if (meta?.userId && meta.userId !== "teto") {
-        activeUserIds.add(meta.userId);
-      }
-
-      const profileLines = [];
-      for (const uid of activeUserIds) {
-        const prof = this.longTerm.getProfile(uid, channelScope);
-        if (prof?.facts && Object.keys(prof.facts).length > 0) {
-          const canonicalName = prof.facts.preferredName || prof.facts.displayName || prof.facts.name || uid;
-          const cleanName = String(canonicalName).includes("Gabbis( ˘ ³˘)♥") ? "Gabbis" : canonicalName;
-          profileLines.push(`- ${cleanName}:`);
-          for (const [k, v] of Object.entries(prof.facts)) {
-            const cleanVal = typeof v === "string" && v.includes("Gabbis( ˘ ³˘)♥") ? "Gabbis" : v;
-            profileLines.push(`  ${k}: ${cleanVal}`);
-          }
-        }
-      }
-      if (profileLines.length > 0) {
-        profileBlock.push("[USER PROFILE]", profileLines.join("\n"));
-      }
+      // Só quem está falando, e só o que ela/ele disse NESTE grupo (nada do PV, nada de ids/telefone).
+      const scoped = this.longTerm.getScopedProfile?.(meta?.userId ?? "default", channelScope)?.facts ?? {};
+      const groupFacts = { preferredName: scoped.preferredName, pronouns: scoped.pronouns, nicknames: scoped.nicknames ?? [] };
+      const lines = formatDmProfilePromptLines(groupFacts, meta).filter((l) => !/^apelidos válidos/.test(l));
+      if (lines.length) profileBlock.push("[QUEM ESTÁ FALANDO AGORA — no grupo]", ...lines);
     } else {
       const dmLines = formatDmProfilePromptLines(profile?.facts ?? {}, meta);
       if (dmLines.length) {
@@ -897,6 +908,16 @@ export class Agent {
           ]
         : [];
 
+    const deferred = meta?.deferredCatchUp;
+    const deferredBlock =
+      deferred && deferred.reason !== "asleep" && !meta?.sleepCatchUp
+        ? [
+            "[VOCÊ SÓ VIU AGORA]",
+            `Essas mensagens chegaram enquanto você estava ${deferred.activity ?? "ocupada"} e você só pegou o celular agora${deferred.heldMinutes ? ` (~${deferred.heldMinutes} min depois)` : ""}.`,
+            "Responda o conteúdo normalmente. Se encaixar, comente de leve que estava no meio de algo (tipo 'tava gravando, vi agora') — sem pedir desculpa demais nem explicar a vida."
+          ]
+        : [];
+
     const sleepCatchUpBlock =
       meta?.sleepCatchUp
         ? [
@@ -972,6 +993,10 @@ export class Agent {
             "Trate como fala direta com você."
           ]
         : [];
+
+    const linkBlock = meta?.linkContext ? [String(meta.linkContext)] : [];
+    const weatherBlock = meta?.weatherContext ? [String(meta.weatherContext)] : [];
+    const peopleMemoryBlock = Array.isArray(meta?.peopleMemoryLines) ? meta.peopleMemoryLines : [];
 
     const searchBlock = searchResults
       ? [
@@ -1139,6 +1164,7 @@ export class Agent {
       ...relationshipBlock,
       ...worldBlock,
       ...distanceBlock,
+      ...peopleMemoryBlock,
       ...episodicMemoryBlock,
       ...initiativeBlock,
       ...stateBlock,
@@ -1146,6 +1172,7 @@ export class Agent {
       ...burstBlock,
       ...brazilianZapBlock,
       ...keyboardLaughterBlock,
+      ...recentStyleBlock,
       ...learnedStyleBlock,
       ...styleHintBlock,
       ...profileBlock,
@@ -1157,6 +1184,7 @@ export class Agent {
       ...groupMultiSpeakerBlock,
       ...groupCatchUpBlock,
       ...sleepCatchUpBlock,
+      ...deferredBlock,
       ...sleepDisturbedWakeBlock,
       ...sleepTempWakeBlock,
       ...sleepGroggyBlock,
@@ -1164,6 +1192,8 @@ export class Agent {
       ...groupAddressBlock,
       ...burstContextBlock,
       ...searchBlock,
+      ...linkBlock,
+      ...weatherBlock,
       ...documentBlock,
       ...operationBlock,
       ...reminderBlock,
@@ -1177,9 +1207,11 @@ export class Agent {
       ...fallbackBlock,
       ...tetosCommandBlock,
       "[INPUT]",
-      isInitiative && !String(userMessage ?? "").trim()
-        ? "User: [iniciativa interna — você decidiu mandar mensagem agora; gere o que quer falar]"
-        : `User: ${userMessage}`,
+      isInitiative
+        ? `User: [ninguém te mandou nada — é VOCÊ puxando assunto agora. Motivo (não cite como se a pessoa tivesse dito): ${String(initCtx?.impulse ?? userMessage ?? "vontade de conversar").slice(0, 300)}]`
+        : meta?.isGroup && meta?.speakerName && !/^\s*\[/.test(String(userMessage ?? ""))
+          ? `User (${meta.speakerName}): ${userMessage}`
+          : `User: ${userMessage}`,
       "[OUTPUT]",
       meta?.coherenceFix || meta?.fallback === "error"
         ? "Reply as the assistant (uma bolha só, frase completa):"
@@ -1192,10 +1224,11 @@ export class Agent {
   async respond(userMessage, meta = {}, history = null, tone = null) {
     const sessionKey = meta.sessionId ?? "default";
     const slimMeta = slimMetaForStorage(meta);
+    const linkNote = meta?.linkSummary ? ` [link: ${String(meta.linkSummary).slice(0, 200)}]` : "";
     const userLine =
       meta?.isGroup && (meta?.speakerName || meta?.participantId)
-        ? `[${meta.speakerName || meta.participantId}] ${userMessage}`
-        : userMessage;
+        ? `[${meta.speakerName || meta.participantId}] ${userMessage}${linkNote}`
+        : `${userMessage}${linkNote}`;
 
     // Persiste o turno do usuário ANTES do prompt/LLM — sobrevive a crash ou erro de geração
     if (!meta?.skipUserRecord) {
@@ -1246,10 +1279,11 @@ export class Agent {
     );
 
     if (!Agent.isSilentReply(reply)) {
-      this.shortTerm.add({ role: "assistant", content: reply, meta: slimMeta }, sessionKey);
+      const stored = tameRawReply(reply, { recentTurns: recentAssistantTurns(this.shortTerm.getAll(sessionKey)) });
+      this.shortTerm.add({ role: "assistant", content: stored, meta: slimMeta }, sessionKey);
       if (meta?.isGroup && meta?.channelId) {
         this.shortTerm.add(
-          { role: "assistant", content: reply, meta: { ...slimMeta, sharedGroup: true } },
+          { role: "assistant", content: stored, meta: { ...slimMeta, sharedGroup: true } },
           `wa-group-channel:${meta.channelId}`
         );
       }

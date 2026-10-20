@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isStaleHistoryReplay } from "../../src/integrations/whatsapp/processedCommandDeduper.js";
+import { isStaleHistoryReplay } from "../../src/integrations/whatsapp/inbound/processedCommandDeduper.js";
 import { isLikelyStaticRaster } from "../../src/core/media/stickerAnimation.js";
 import { detectAgentMediaReplyIntent } from "../../src/core/media/agentMediaReplyIntent.js";
 

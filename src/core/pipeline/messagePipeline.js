@@ -31,6 +31,8 @@ import {
   timelineToHistoryRows
 } from "../channels/channelTimeline.js";
 import { buildGroupRoster } from "../channels/groupRoster.js";
+import { extractLinks, formatLinksForPrompt } from "../../modules/web/linkReader.js";
+import { detectWeatherQuestion, formatWeatherForPrompt } from "../../modules/web/weather.js";
 import {
   addProfileNicknames,
   captureTetoNicknamesFromReplies
@@ -43,14 +45,9 @@ import {
   isUserBoundaryActive,
   userBoundarySnapshot
 } from "../channels/userBoundaryDetect.js";
-import { assessActivityFocus } from "../life/activityFocus.js";
 import { scoreSleepDisturbance } from "../life/sleepDisturbanceDetect.js";
 import { contextualSeed, chance } from "../brain/rng.js";
 import { RESPONSE_MODES, shouldStartTypingIndicator } from "./responseModes.js";
-
-function chanceBusyAck(userId = "default") {
-  return chance(contextualSeed(["busy_ack", userId, new Date().toISOString().slice(0, 13)]), 0.38);
-}
 
 function clampString(value, max) {
   return typeof value === "string" ? value.slice(0, max) : value;
@@ -200,6 +197,28 @@ function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime
   };
 }
 
+/** O que um membro disse numa rajada de grupo: nome, pronome, fatos e resumo — no perfil DELE, escopo do grupo. */
+function learnFromGroupSpeaker(runtime, part, { channelId, channelScope }) {
+  const text = String(part?.message ?? "").trim();
+  if (!text) return;
+  const facts = extractFacts(text);
+  for (const fact of facts) {
+    runtime.longTerm.save({ tags: [fact.type], type: fact.type, value: fact.value, userId: part.userId, channelId, channelScope });
+  }
+  const nameFact = facts.find((f) => f.type === "user_name" && isPlausibleHumanNickname(f.value));
+  const pronouns = facts.find((f) => f.type === "user_pronouns")?.value;
+  if (nameFact || pronouns) {
+    runtime.longTerm.updateProfile(
+      part.userId,
+      { facts: { ...(nameFact ? { name: nameFact.value, preferredName: nameFact.value } : {}), ...(pronouns ? { pronouns } : {}) } },
+      channelScope
+    );
+  }
+  if (isMeaningful(text)) {
+    runtime.longTerm.addMediumTerm(part.userId, { summary: text, timestamp: new Date().toISOString(), channelId }, 20, channelScope);
+  }
+}
+
 export async function runMessagePipeline(runtime, payload = {}) {
   const {
     message,
@@ -224,9 +243,11 @@ export async function runMessagePipeline(runtime, payload = {}) {
     participantId = null,
     segmentSpeakers = null,
     segmentMultiSpeaker = false,
+    segmentParts = null,
     groupCatchUp = false,
     groupCatchUpSkipped = 0,
     sleepCatchUp = false,
+    deferredCatchUp = null,
     sleepCatchUpCount = 0,
     sleepDisturbedWake = false,
     sleepTemporarilyAwake = false,
@@ -250,9 +271,10 @@ export async function runMessagePipeline(runtime, payload = {}) {
     : (isGroup ? `group:${safeSessionId ?? safeUserId ?? "default"}` : `direct:${safeUserId ?? "default"}`);
   const isUiDesktopChannel = safeChannelId === "ui-desktop";
   const channelScope = isGroup ? `group:${safeChannelId.replace(/^group:/, "")}` : "direct";
+  // Rajada de várias pessoas: a última pode ser a dona, mas o texto não é só dela.
   const isOwner =
-    isOwnerFlag === true ||
-    (isOwnerFlag !== false && isOwnerContact(runtime, safeChannelId, safeUserId));
+    !(isGroup && segmentMultiSpeaker) &&
+    (isOwnerFlag === true || (isOwnerFlag !== false && isOwnerContact(runtime, safeChannelId, safeUserId)));
 
   let normalizedHistory = normalizeHistory(
     messages,
@@ -329,7 +351,6 @@ export async function runMessagePipeline(runtime, payload = {}) {
         { facts: { ...(existingProfile?.facts ?? {}), ...boundaryFacts } },
         channelScope
       );
-      runtime.initiationEngine?.cancelForUser?.(safeUserId ?? "default");
     }
   } else if (
     isUserBoundaryActive(existingProfile) &&
@@ -363,8 +384,6 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const profileAfterBoundary = runtime.longTerm.getProfile(safeUserId ?? "default", channelScope);
   const userBoundary = userBoundarySnapshot(profileAfterBoundary);
   let sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
-  const lifeSnap = runtime.brainOrchestrator?.life?.getSnapshot?.() ?? {};
-  const activityFocus = assessActivityFocus(lifeSnap);
 
   const styleHint = buildStyleHint(input, tone, profileWithLearned, normalizedHistory, runtime, safeSessionId);
   const groupMention = ChatService.extractGroupMention(input);
@@ -470,11 +489,11 @@ export async function runMessagePipeline(runtime, payload = {}) {
     sleep?.checkTemporaryWake?.();
     const wakeText = String(message ?? input ?? "").trim();
     const disturbScore = Math.max(scoreSleepDisturbance(wakeText, { floodCount: 3 }), 0.72);
-    sleep?.attemptDisturbanceWake?.({ score: disturbScore, floodCount: 3 });
+    // Acorda só pro app (a dona chamou ali); os outros chats continuam esperando de manhã.
+    sleep?.attemptDisturbanceWake?.({ score: disturbScore, floodCount: 3, chatId: "ui-desktop", isOwner: true });
     sleepSnap = sleep?.getSnapshot?.() ?? sleepSnap;
   }
 
-  const asleepUnavailable = !isUiDesktopChannel && sleepSnap.isAvailable === false;
   const boundaryBlocksReply =
     !isGroup &&
     userBoundary.active &&
@@ -498,13 +517,6 @@ export async function runMessagePipeline(runtime, payload = {}) {
       userId: safeUserId
     });
 
-  const busyHighFocus =
-    !isGroup &&
-    activityFocus.level === "high" &&
-    !effectiveMention &&
-    !isVulnerable &&
-    !ChatService.isDirectTetoCall(input);
-
   // timing_silence só corta resposta em grupo sem menção; no privado sempre gera reply.
   const timingSilenceSkip =
     isGroup &&
@@ -515,20 +527,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     finalCloseDecision !== "respond" &&
     !directSubstantive;
 
-  if (asleepUnavailable && !isTetosBypass) {
-    runtime.metrics?.increment?.("pipeline.sleep.unavailable");
-    runtime.logger?.log?.("pipeline.sleep_hold", { userId: safeUserId, sleepState: sleepSnap.state });
-    return {
-      replies: [],
-      userId: safeUserId ?? "default",
-      sessionId: safeSessionId ?? "default",
-      channelId: safeChannelId,
-      input,
-      tone,
-      policy: { ...policy, mode: RESPONSE_MODES.SLEEP_HOLD },
-      timingPlan
-    };
-  }
+  // Dormindo/ocupada/na rua é decidido antes (porta de disponibilidade do WhatsApp guarda e responde
+  // depois); aqui nada mais é descartado em silêncio.
 
   if (boundaryBlocksReply && !isTetosBypass) {
     runtime.metrics?.increment?.("pipeline.boundary.hold");
@@ -555,35 +555,6 @@ export async function runMessagePipeline(runtime, payload = {}) {
       input,
       tone,
       policy: { ...policy, mode: RESPONSE_MODES.MEDIA_WAIT },
-      timingPlan
-    };
-  }
-
-  if (busyHighFocus && finalCloseDecision !== "respond" && !isTetosBypass) {
-    const busyReply = activityFocus.busyRemainingMin
-      ? `pera, tô em ${activityFocus.activity} — já te respondo`
-      : null;
-    if (busyReply && chanceBusyAck(safeUserId)) {
-      return {
-        replies: [busyReply],
-        userId: safeUserId ?? "default",
-        sessionId: safeSessionId ?? "default",
-        channelId: safeChannelId,
-        input,
-        tone,
-        policy: { ...policy, mode: RESPONSE_MODES.BUSY_ACK },
-        timingPlan
-      };
-    }
-    runtime.metrics?.increment?.("pipeline.busy.hold");
-    return {
-      replies: [],
-      userId: safeUserId ?? "default",
-      sessionId: safeSessionId ?? "default",
-      channelId: safeChannelId,
-      input,
-      tone,
-      policy: { ...policy, mode: RESPONSE_MODES.BUSY_HOLD },
       timingPlan
     };
   }
@@ -653,6 +624,48 @@ export async function runMessagePipeline(runtime, payload = {}) {
         }
       : {};
 
+  // Link que mandaram (ou citaram perguntando "viu isso?"): ela abre e comenta — só baixa se pedirem.
+  let linkMeta = {};
+  if (runtime.linkReader && !detectAgentUrlDownloadIntent(input, { quotedMessage })) {
+    const quotedLinkAsked =
+      extractLinks(quotedMessage ?? "").length && /(?<!\p{L})(isso|esse|essa|viu|olha|v[eê]|acha|achou|assiste|assistiu|l[eê]|leu)(?!\p{L})/iu.test(input);
+    const linkText = extractLinks(input).length ? input : quotedLinkAsked ? quotedMessage : "";
+    if (linkText) {
+      try {
+        const items = await runtime.linkReader.readAll(linkText, { max: 2 });
+        const linkContext = formatLinksForPrompt(items);
+        if (linkContext) {
+          linkMeta = {
+            linkContext,
+            linkSummary: items
+              .filter((i) => !i.failed)
+              .map((i) => `${i.site}: ${i.title ?? i.text?.slice(0, 80) ?? i.kind}`)
+              .join(" | ")
+          };
+        }
+      } catch (error) {
+        console.warn(`[links] falhou: ${error?.message ?? error}`);
+      }
+    }
+  }
+
+  // Perguntou do tempo: olha a previsão de verdade (padrão: São Paulo, onde ela mora).
+  let weatherMeta = {};
+  const weatherAsk = runtime.weather ? detectWeatherQuestion(input) : null;
+  if (weatherAsk) {
+    try {
+      const forecast = await runtime.weather.forecast(weatherAsk.city ?? "São Paulo");
+      const weatherContext = formatWeatherForPrompt(forecast, weatherAsk);
+      if (weatherContext) weatherMeta = { weatherContext };
+    } catch (error) {
+      console.warn(`[clima] falhou: ${error?.message ?? error}`);
+    }
+  }
+
+  // PV da dona: ela pode pedir coisa no PC pelo zap (AutoMate via API). Só oferece se o PC estiver online.
+  const automatePcOnline =
+    isOwner && !isGroup && runtime.automateBridge?.enabled ? await runtime.automateBridge.isPcOnline() : null;
+
   const confirmationReply = detectConfirmationReply(input);
   let confirmationResult = null;
   if (confirmationReply !== null) {
@@ -662,7 +675,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
         confirmationResult = runtime.operationRouter.execute({
           type: pending.type,
           userId: safeUserId ?? "default",
-          payload: { ...(pending.payload ?? {}), confirmed: true }
+          payload: { ...(pending.payload ?? {}), confirmed: true },
+          isOwner
         });
       } else {
         confirmationResult = { cancelled: true, message: "Operação cancelada." };
@@ -673,7 +687,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
 
   const slashCommandResult = runtime.chatCommandRouter?.execute?.({
     text: input,
-    userId: safeUserId ?? "default"
+    userId: safeUserId ?? "default",
+    isOwner
   });
 
   // Documentos locais são da dona: terceiros não leem nem escrevem arquivos do computador dela.
@@ -704,12 +719,17 @@ export async function runMessagePipeline(runtime, payload = {}) {
   } else if (reminderIntent?.type === "needs_time") {
     reminderContext = `A pessoa pediu lembrete de "${reminderIntent.text}" mas sem dizer quando. Pergunte o horário (ex.: "daqui 30 min", "às 15h", "amanhã às 9") — ainda NÃO foi criado.`;
   } else if (reminderIntent?.type === "list") {
-    const reminders = runtime.reminders.list(safeUserId ?? "default");
+    // No grupo, só os lembretes pedidos ali; no PV, todos os da pessoa.
+    const chatJid = String(safeChannelId ?? "").includes("@") ? safeChannelId : null;
+    const reminders = runtime.reminders
+      .list(safeUserId ?? "default")
+      .filter((item) => !isGroup || !chatJid || item.chatJid === chatJid);
     reminderContext = reminders.length
       ? reminders.map((item) => `- ${item.id}: ${item.text}${item.done ? " [done]" : ""}`).join("\n")
       : "Nenhum lembrete encontrado.";
   } else if (reminderIntent?.type === "done") {
-    const done = runtime.reminders.markDone(reminderIntent.id);
+    const mine = runtime.reminders.list(safeUserId ?? "default").some((item) => item.id === reminderIntent.id);
+    const done = mine ? runtime.reminders.markDone(reminderIntent.id) : null;
     reminderContext = done ? `Lembrete concluído: ${done.text}` : "Não achei esse lembrete.";
     if (done) runtime.metrics?.increment?.("reminders.completed");
   }
@@ -954,6 +974,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       groupCatchUp: Boolean(groupCatchUp),
       groupCatchUpSkipped: Number(groupCatchUpSkipped) || 0,
       sleepCatchUp: Boolean(sleepCatchUp),
+      deferredCatchUp,
       sleepCatchUpCount: Number(sleepCatchUpCount) || 0,
       sleepDisturbedWake: Boolean(sleepDisturbedWake),
       sleepTemporarilyAwake: Boolean(sleepTemporarilyAwake),
@@ -981,6 +1002,14 @@ export async function runMessagePipeline(runtime, payload = {}) {
       ...(safeChannelId === "ui-desktop" && Array.isArray(automateActiveRuns) && automateActiveRuns.length ? { automateActiveRuns } : {}),
       ...(relationshipMeta ?? {}),
       ...searchMeta,
+      ...linkMeta,
+      ...weatherMeta,
+      automateFromWhatsApp: automatePcOnline,
+      peopleMemoryLines:
+        runtime.peopleMemory?.promptLines?.(isGroup ? `group:${safeChannelId}` : safeUserId ?? "default", channelScope, {
+          name: isGroup ? null : partnerDisplayName,
+          isGroup
+        }) ?? [],
       ...operationMeta
     },
     normalizedHistory,
@@ -1014,7 +1043,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     }
   }
 
-  if (replies.length > 0 && runtime.brainOrchestrator?.memory?.recordEpisode) {
+  // Episódio só de conteúdo de verdade ("[sticker]" sozinho não é lembrança).
+  if (replies.length > 0 && runtime.brainOrchestrator?.memory?.recordEpisode && isMeaningful(input) && !/^\[[^\]]+\]$/.test(input.trim())) {
     runtime.brainOrchestrator.memory.recordEpisode({
       userId: safeUserId ?? "default",
       channelId: safeChannelId,
@@ -1033,6 +1063,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     }
   }
 
+  runtime.initiativeState?.noteUserMessage?.(safeUserId ?? "default");
   touchUserActivity(runtime, safeUserId ?? "default", {
     markMessage: true,
     sessionId: safeSessionId
@@ -1044,28 +1075,25 @@ export async function runMessagePipeline(runtime, payload = {}) {
       { facts: { lastDmSessionId: safeSessionId } },
       channelScope
     );
-    if (
-      replies.length === 0 &&
-      (finalCloseDecision === "silent" || finalCloseDecision === "react") &&
-      !userBoundary.active &&
-      !isTetosBypass
-    ) {
-      runtime.initiationEngine?.scheduleFromTurn?.({
-        userId: safeUserId,
-        sessionId: safeSessionId,
-        mode: finalCloseDecision === "react" ? "natural_lull" : "post_close",
-        closeDecision: finalCloseDecision,
-        history: normalizedHistory,
-        brainTurn
-      });
-    }
   }
 
   if (replies.length > 0 && resumedAfterClose) {
     runtime.longTerm.updateProfile(safeUserId ?? "default", { conversationClosedAt: null }, channelScope);
   }
 
-  const facts = replies.length > 0 ? extractFacts(input) : [];
+  // Rajada de várias pessoas no grupo: cada um aprende só com o que ELE disse — não tudo em nome do último.
+  const multiSpeakerParts =
+    isGroup && Array.isArray(segmentParts) && new Set(segmentParts.map((p) => p?.userId)).size > 1 ? segmentParts : null;
+  const learnInput = multiSpeakerParts
+    ? multiSpeakerParts.filter((p) => p.userId === safeUserId).map((p) => p.message).join("\n")
+    : input;
+  if (multiSpeakerParts && replies.length > 0) {
+    for (const part of multiSpeakerParts) {
+      if (part.userId && part.userId !== safeUserId) learnFromGroupSpeaker(runtime, part, { channelId: safeChannelId, channelScope });
+    }
+  }
+
+  const facts = replies.length > 0 && learnInput ? extractFacts(learnInput) : [];
   if (replies.length > 0) {
     for (const fact of facts) {
       runtime.longTerm.save({
@@ -1078,7 +1106,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       });
     }
 
-    const style = extractStyle(input);
+    const style = extractStyle(learnInput || input);
     const profile = profileWithLearned;
     const counts = profile.counts ?? {};
     const nextCounts = {
@@ -1118,7 +1146,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     const displayName =
       profileFacts.preferredName || profileFacts.displayName || profileFacts.name || pushName;
     const prevTetoNicks = new Set((profileFacts.tetoNicknames ?? []).map((n) => String(n).toLowerCase()));
-    const capturedTetoNicks = captureTetoNicknamesFromReplies(replies, {
+    const capturedTetoNicks = multiSpeakerParts ? [] : captureTetoNicknamesFromReplies(replies, {
       displayName,
       existing: profileFacts.tetoNicknames ?? []
     });
@@ -1129,17 +1157,17 @@ export async function runMessagePipeline(runtime, payload = {}) {
     }
   }
 
-  if (replies.length > 0 && isMeaningful(input)) {
+  if (replies.length > 0 && learnInput && isMeaningful(learnInput)) {
     runtime.longTerm.addMediumTerm(safeUserId ?? "default", {
-      summary: input,
+      summary: learnInput,
       timestamp: new Date().toISOString(),
       channelId: safeChannelId
     }, 20, channelScope);
     runtime.longTerm.pruneMediumTerm(safeUserId ?? "default", 20, channelScope);
   }
 
-  const memoryCandidates = replies.length > 0
-    ? runtime.selectiveMemory.buildCandidate(input, facts)
+  const memoryCandidates = replies.length > 0 && learnInput
+    ? runtime.selectiveMemory.buildCandidate(learnInput, facts)
     : [];
   for (const candidate of memoryCandidates) {
     runtime.selectiveMemory.remember({
@@ -1148,6 +1176,25 @@ export async function runMessagePipeline(runtime, payload = {}) {
       content: candidate,
       source: facts.length ? "fact" : "message"
     });
+  }
+
+  // Caderno de memória: anota o que cada um disse e o que ela respondeu (consolida quando esfriar).
+  if (runtime.peopleMemory && !isTetosBypass) {
+    const notebookId = isGroup ? `group:${safeChannelId}` : safeUserId ?? "default";
+    const parts = multiSpeakerParts ?? [{ speakerName: partnerDisplayName ?? pushName, message: input }];
+    for (const part of parts) {
+      runtime.peopleMemory.record({
+        userId: notebookId,
+        scope: channelScope,
+        name: isGroup ? null : partnerDisplayName ?? pushName ?? null,
+        speaker: part.speakerName ?? null,
+        role: "user",
+        text: part.message
+      });
+    }
+    for (const reply of replies) {
+      runtime.peopleMemory.record({ userId: notebookId, scope: channelScope, role: "teto", text: reply });
+    }
   }
 
   const promoted = runtime.selectiveMemory.pullPromotions({

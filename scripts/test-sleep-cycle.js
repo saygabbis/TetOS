@@ -1,37 +1,21 @@
 import "./isolatedData.js";
-import { createRuntime } from "../src/app/createRuntime.js";
+import { DailyLife } from "../src/core/life/dailyLife.js";
 import { assert, ok } from "./test-helpers.js";
-import { isInSleepWindow, isPastWakeTime } from "../src/core/life/sleepSchedule.js";
 
-const runtime = createRuntime();
-const sleep = runtime.brainOrchestrator?.life?.sleep;
-assert(sleep, "sleep cycle present");
+// 03:10 de uma terça: dormindo; a dona insistindo acorda só pro chat dela.
+let now = new Date("2026-10-20T03:10:00-03:00");
+const life = new DailyLife({ statePath: null, now: () => now });
+life.save = () => {};
+assert(life.isAsleep(), "dorme de madrugada");
+assert(!life.sleep.getSnapshot().isAvailable, "indisponível dormindo");
+assert(life.availability({ chatId: "dona" }).mode === "asleep", "modo asleep");
+assert(!life.tryWake({ chatId: "estranho", score: 0.6, floodCount: 2, isOwner: false }), "estranho com pouca insistência não acorda");
+assert(life.tryWake({ chatId: "dona", score: 0.6, floodCount: 1, isOwner: true }), "dona com urgência acorda");
+assert(life.availability({ chatId: "dona" }).mode === "online", "acordada pro chat da dona");
+assert(life.availability({ chatId: "outro" }).mode === "asleep", "os outros chats continuam esperando");
 
-sleep.store.patch({
-  sleep: {
-    state: "light_sleep",
-    sleepDebt: 0,
-    lastSleepAt: new Date().toISOString(),
-    tonightPlan: { bedHour: 23, wakeHour: 7 },
-    alarmHistory: [],
-    wakeDelayUntil: null
-  }
-});
-
-const woke = sleep.reconcileWithSchedule({
-  timezone: "America/Sao_Paulo",
-  rhythm: {},
-  now: new Date("2026-06-12T16:00:00-03:00")
-});
-assert(woke?.state, "acorda fora da janela de sono (13h BRT)");
-assert(sleep.getSnapshot().isAvailable, "disponivel apos reconciliar");
-
-assert(!isInSleepWindow(13, 23, 7), "13h nao e janela de sono");
-assert(isPastWakeTime(13, 23, 7), "13h ja passou da hora de acordar");
-
-sleep.tick({ hourOfDay: 2, energy: 0.2, stress: 0.6, rhythm: {} });
-const snap = sleep.getSnapshot();
-assert(snap.state, "sleep state");
-assert(typeof snap.isAvailable === "boolean", "availability in snapshot");
-
+// 13h: acordada.
+now = new Date("2026-10-20T13:00:00-03:00");
+assert(!life.isAsleep(), "13h acordada");
+assert(life.sleep.getSnapshot().isAvailable, "disponível de tarde");
 ok("test-sleep-cycle");

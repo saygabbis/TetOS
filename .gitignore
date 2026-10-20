@@ -26,3 +26,7 @@ data/test-*.ndjson
 debug-*.log
 .cursor/debug-*.log
 .wa-runner.lock
+
+# Modelos baixados (Whisper etc.) e logs rotativos do supervisor — grandes demais para o git
+data/models/
+data/logs/runner-*.log

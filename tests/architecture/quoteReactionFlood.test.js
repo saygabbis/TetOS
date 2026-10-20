@@ -3,12 +3,12 @@ import { sanitizeOutgoingActions } from "../../src/modules/chat/chatService.js";
 import {
   resolveOutgoingQuoteId,
   shouldQuoteOutgoing
-} from "../../src/integrations/whatsapp/messageContext.js";
+} from "../../src/integrations/whatsapp/inbound/messageContext.js";
 import {
   compactGroupQueueSegments,
   planFloodAwareGroupSegments
-} from "../../src/integrations/whatsapp/groupFloodCoordinator.js";
-import { planWhatsAppReaction } from "../../src/integrations/whatsapp/reactionPlanner.js";
+} from "../../src/integrations/whatsapp/conversation/groupFloodCoordinator.js";
+import { planWhatsAppReaction } from "../../src/integrations/whatsapp/inbound/reactionPlanner.js";
 
 describe("resolveOutgoingQuoteId", () => {
   it("does not quote plain DM text by default", () => {

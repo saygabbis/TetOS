@@ -15,11 +15,15 @@ const ownerDm = `dm-${ownerJid.replace(/@.+$/, "")}`;
 
 runtime.defaults.ownerWaJids = [ownerJid];
 
+// A mesma pessoa pode ter tel, LID e dm-* ligados — mas nunca outro contato nem chave de grupo.
 const ownerLinked = linkedUserIds(runtime, ownerDm);
-assert(ownerLinked.length === 1 && ownerLinked[0] === ownerDm, "no cross-link between contacts");
+const ownerIds = new Set(ownerLinked);
+assert(ownerLinked.includes(ownerDm), "owner liga a si mesma");
+assert(ownerLinked.every((id) => !id.includes("::")), "sem chaves de grupo na identidade");
+assert(!ownerIds.has(`dm-${friendLid}`) && !ownerIds.has(friendLid), "no cross-link between contacts");
 
 const friendLinked = linkedUserIds(runtime, `dm-${friendLid}`);
-assert(friendLinked.length === 1, "friend isolated");
+assert(!friendLinked.some((id) => ownerIds.has(id)), "friend isolated");
 
 assert(isOwnerContact(runtime, ownerJid, ownerDm), "owner contact detected");
 assert(!isOwnerContact(runtime, `${friendLid}@lid`, `dm-${friendLid}`), "friend not owner");

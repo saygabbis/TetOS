@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   resolveOutgoingQuoteId,
   shouldQuoteOutgoing
-} from "../../src/integrations/whatsapp/messageContext.js";
+} from "../../src/integrations/whatsapp/inbound/messageContext.js";
 import { sanitizeOutgoingActions } from "../../src/modules/chat/chatService.js";
 import {
   detectVisualTeaching,

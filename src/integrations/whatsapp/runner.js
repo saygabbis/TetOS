@@ -3,12 +3,13 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 import { createRuntime } from "../../app/createRuntime.js";
-import { createBaileysClient } from "./baileysClient.js";
-import { registerMessageHandler } from "./messageHandler.js";
+import { createBaileysClient } from "./connection/baileysClient.js";
+import { registerMessageHandler } from "./inbound/messageHandler.js";
 import { DisconnectReason } from "baileys";
-import { msSinceLastInbound, resetInboundActivity } from "./inboundLiveness.js";
+import { msSinceLastInbound, resetInboundActivity } from "./connection/inboundLiveness.js";
 import { jidNormalizedUser } from "baileys";
-import { scheduleAuxiliaryLoops } from "./auxiliaryLoops.js";
+import { scheduleAuxiliaryLoops } from "./loops/auxiliaryLoops.js";
+import { startConnectionProbe } from "./connection/connectionProbe.js";
 
 /** Reconecta após queda — retenta até voltar, sem múltiplos loops paralelos. */
 function formatSocketJid(socket) {
@@ -196,7 +197,7 @@ function attachChatLedgerListeners(socket, runtime) {
   });
 }
 
-async function runSingleWhatsApp(runtime, nudgeEngine) {
+async function runSingleWhatsApp(runtime) {
   let socket = null;
   let isConnected = false;
   const reconnectState = { active: false };
@@ -265,22 +266,32 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
 
   await connect();
 
-  scheduleAuxiliaryLoops(runtime, nudgeEngine, () => socket, () => isConnected);
+  scheduleAuxiliaryLoops(runtime, () => socket, () => isConnected);
+  // Recria a conexão; a geração avança antes do end() para o "close" do socket velho não
+  // disparar um segundo reconnect em paralelo (dois sockets com a mesma sessão = conflito).
+  const forceReconnect = async (reason) => {
+    console.warn(`[whatsapp] reconectando: ${reason}`);
+    isConnected = false;
+    connectGeneration += 1;
+    try {
+      socket?.end?.(new Error(reason));
+    } catch {}
+    await connect();
+  };
   startInboundWatchdog({
     label: "whatsapp",
     getConnected: () => isConnected,
-    onDeaf: async () => {
-      console.warn("[whatsapp] reconectando sessão por possível socket surdo...");
-      isConnected = false;
-      try {
-        socket?.end?.(new Error("inbound stale reconnect"));
-      } catch {}
-      await connect();
-    }
+    onDeaf: () => forceReconnect("possível socket surdo")
+  });
+  startConnectionProbe({
+    label: "whatsapp",
+    getSocket: () => socket,
+    getConnected: () => isConnected,
+    onDead: () => forceReconnect("sonda sem resposta")
   });
 }
 
-async function runDualWhatsApp(runtime, nudgeEngine) {
+async function runDualWhatsApp(runtime) {
   let mainSocket = null;
   let mediaSocket = null;
   let mainConnected = false;
@@ -463,31 +474,29 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   const chatConnected = DEFAULTS.whatsappMainObserveOnly
     ? () => mediaConnected
     : () => mainConnected;
-  scheduleAuxiliaryLoops(runtime, nudgeEngine, chatSocket, chatConnected);
-  startInboundWatchdog({
-    label: "whatsapp:main",
-    getConnected: () => mainConnected,
-    onDeaf: async () => {
-      console.warn("[whatsapp:main] reconectando sessão principal (aprendizado)...");
-      mainConnected = false;
-      try {
-        mainSocket?.end?.(new Error("inbound stale reconnect"));
-      } catch {}
-      await connectMain();
-    }
-  });
-  startInboundWatchdog({
-    label: "whatsapp:bot",
-    getConnected: chatConnected,
-    onDeaf: async () => {
-      console.warn("[whatsapp:bot] reconectando sessão da Teto por inatividade de mensagens...");
-      mediaConnected = false;
-      try {
-        mediaSocket?.end?.(new Error("inbound stale reconnect"));
-      } catch {}
-      await connectMedia();
-    }
-  });
+  scheduleAuxiliaryLoops(runtime, chatSocket, chatConnected);
+  const reconnectMain = async (reason) => {
+    console.warn(`[whatsapp:main] reconectando sessão principal: ${reason}`);
+    mainConnected = false;
+    mainGeneration += 1;
+    try {
+      mainSocket?.end?.(new Error(reason));
+    } catch {}
+    await connectMain();
+  };
+  const reconnectMedia = async (reason) => {
+    console.warn(`[whatsapp:bot] reconectando sessão da Teto: ${reason}`);
+    mediaConnected = false;
+    mediaGeneration += 1;
+    try {
+      mediaSocket?.end?.(new Error(reason));
+    } catch {}
+    await connectMedia();
+  };
+  startInboundWatchdog({ label: "whatsapp:main", getConnected: () => mainConnected, onDeaf: () => reconnectMain("possível socket surdo") });
+  startInboundWatchdog({ label: "whatsapp:bot", getConnected: chatConnected, onDeaf: () => reconnectMedia("inatividade de mensagens") });
+  startConnectionProbe({ label: "whatsapp:main", getSocket: () => mainSocket, getConnected: () => mainConnected, onDead: () => reconnectMain("sonda sem resposta") });
+  startConnectionProbe({ label: "whatsapp:bot", getSocket: () => mediaSocket, getConnected: () => mediaConnected, onDead: () => reconnectMedia("sonda sem resposta") });
 }
 
 async function main() {
@@ -505,6 +514,12 @@ async function main() {
       return;
     }
     console.error("[whatsapp] rejeição não tratada:", reason);
+  });
+  // Estado desconhecido após exceção não capturada: sai (gravações pendentes são salvas no exit)
+  // e o supervisor (scripts/supervisor.js) religa limpo.
+  process.on("uncaughtException", (error) => {
+    console.error("[whatsapp] exceção não capturada — encerrando para religar:", error?.stack ?? error);
+    process.exit(1);
   });
 
   const lockPath = ".wa-runner.lock";
@@ -547,12 +562,13 @@ async function main() {
   }
 
   const runtime = createRuntime();
-  const initiationEngine = runtime.initiationEngine;
+  // Deixa o Whisper local baixado/carregado antes do 1º áudio chegar.
+  setTimeout(() => void runtime.audioTranscriber?.warmup?.().catch(() => {}), 20_000).unref();
 
   if (dual) {
-    await runDualWhatsApp(runtime, initiationEngine);
+    await runDualWhatsApp(runtime);
   } else {
-    await runSingleWhatsApp(runtime, initiationEngine);
+    await runSingleWhatsApp(runtime);
   }
 }
 

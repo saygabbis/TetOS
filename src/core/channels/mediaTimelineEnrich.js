@@ -85,7 +85,7 @@ export function formatMediaInputText({ text = "", media = null } = {}) {
   const kind = media?.type ?? "mídia";
   const vision =
     media?.type === "audio" && rawVision
-      ? media?.transcriptSource === "whisper"
+      ? String(media?.transcriptSource ?? "").startsWith("whisper")
         ? `[áudio transcrito: ${rawVision}]`
         : rawVision.startsWith("[áudio transcrito:")
           ? rawVision

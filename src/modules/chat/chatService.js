@@ -5,7 +5,7 @@ import {
   repairBubbleCoherence
 } from "./coherenceGuards.js";
 import { slimMetaForStorage } from "../../core/memory/slimMeta.js";
-import { detectTetoNameCall } from "../../integrations/whatsapp/tetoNameDetect.js";
+import { detectTetoNameCall } from "../../integrations/whatsapp/inbound/tetoNameDetect.js";
 import { detectUserBoundary } from "../../core/channels/userBoundaryDetect.js";
 import {
   AGENT_MEDIA_COMMANDS,
@@ -18,21 +18,21 @@ import {
   isSaveStickerCommand,
   normalizeAgentMediaCommand,
   parseRepertoireModeEnabled
-} from "../../integrations/whatsapp/agentMediaCommands.js";
+} from "../../integrations/whatsapp/commands/agentMediaCommands.js";
 import {
   AGENT_URL_DOWNLOAD_COMMAND_PATTERN,
   buildUrlDownloadAction,
   isAgentUrlDownloadCommand,
   parseAgentCommandArgs
-} from "../../integrations/whatsapp/agentDownloadCommands.js";
+} from "../../integrations/whatsapp/commands/agentDownloadCommands.js";
 import { detectAgentUrlDownloadIntent } from "../../core/media/agentUrlDownloadIntent.js";
-import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/messageContext.js";
+import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/inbound/messageContext.js";
 import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
-import { thinkDelaySleepMs } from "../../integrations/whatsapp/directBatchPlanner.js";
+import { thinkDelaySleepMs } from "../../integrations/whatsapp/conversation/directBatchPlanner.js";
 import { scanCommandArgs } from "./commandArgScanner.js";
 
 /** Comandos cujo texto é livre (pode ter Markdown, parênteses e apóstrofos): lidos com o leitor robusto. */
-const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar"]);
+const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar"]);
 
 export function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -77,6 +77,10 @@ export function parseActionCommands(rawText) {
     } else if (cmd === "mensagem" || cmd === "message" || cmd === "responder" || cmd === "reply" || cmd === "quote") {
       if (args[0]) {
         actions.push({ type: "message", text: args[0], quoteId: args[1] || null });
+      }
+    } else if (cmd === "audio" || cmd === "voz" || cmd === "falar") {
+      if (args[0]) {
+        actions.push({ type: "voice", text: args[0], quoteId: args[1] || null });
       }
     } else if (cmd === "gerarimagem" || cmd === "generateimage" || cmd === "gerar") {
       if (args[0]) {
@@ -136,7 +140,7 @@ function returnWithActions(actions) {
 
 /** Expande ações cujo text ainda contém comando cru (fallback do processor). */
 const EMBEDDED_COMMAND_RE = new RegExp(
-  `^(mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|calar|silenciar|responder|reply|quote|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
+  `^(mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
   "i"
 );
 
@@ -684,9 +688,11 @@ export class ChatService {
       } else {
         const userId = meta?.userId ?? "default";
         if (this.agent?.longTerm?.updateProfile) {
-          this.agent.longTerm.updateProfile(userId, {
-            conversationClosedAt: new Date().toISOString()
-          });
+          this.agent.longTerm.updateProfile(
+            userId,
+            { conversationClosedAt: new Date().toISOString() },
+            meta?.isGroup ? `group:${String(meta.channelId ?? meta.sessionId ?? "unknown").replace(/^group:/, "")}` : "direct"
+          );
         }
         return [];
       }

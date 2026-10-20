@@ -55,14 +55,15 @@ export class ChatCommandRouter {
     return { error: `unknown command: ${command}` };
   }
 
-  execute({ text, userId } = {}) {
+  execute({ text, userId, isOwner = false } = {}) {
     const parsed = this.parse(text);
     if (!parsed) return null;
     if (parsed.error) return parsed;
     return this.operationRouter.execute({
       type: parsed.type,
       userId,
-      payload: parsed.payload
+      payload: parsed.payload,
+      isOwner
     });
   }
 }

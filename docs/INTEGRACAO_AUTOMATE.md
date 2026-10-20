@@ -26,9 +26,22 @@ Device offline: verifique `automate link` na máquina e token emitido via UI (n�
 
 A rota `/ui/threads/:id/messages` usa o pipeline normal (`channelId: ui-desktop`). Para acionar o PC, a Teto emite `computador("intenção")` no protocolo de ações (`chatService.parseActionCommands`).
 
+## AutoMate pelo WhatsApp (só a dona, no PV)
+
+1. A dona pede no PV ("teto, abre o spotify no meu pc"). Se o PC está online, o prompt oferece `computador("…")`.
+2. O runner do WhatsApp chama a API: `POST /automate/whatsapp/run {intent, jid}` (Bearer `TETOS_API_TOKEN` obrigatório).
+   PC offline → 409 e ela avisa pra abrir o AutoMate.
+3. A API enfileira no AutoMate (`automateClient.enqueue`, thread `wa:<jid>`).
+4. Ao terminar, o resultado vai pra `data/whatsapp-outbox.json` (`kind: automate_outcome`); o runner explica no jeito dela.
+
+Também: `GET /automate/status` (PC online?). Desligar: `TETOS_AUTOMATE_WHATSAPP=false`.
+
 ## MCP
 
-O gateway usa `@modelcontextprotocol/sdk` (`Client` + `McpRelayTransport`) com `initialize` antes de `tools/call`.
+- Para o PC: o gateway usa `@modelcontextprotocol/sdk` (`Client` + `McpRelayTransport`) com `initialize` antes de `tools/call`.
+- Da Teto para outros apps: `npm run mcp` sobe `src/integrations/mcp/tetoMcpServer.js` (stdio). Ferramentas:
+  `conversar_com_teto`, `o_que_a_teto_esta_fazendo`, `mandar_whatsapp`, `lembretes_da_teto`, `memoria_sobre_pessoa`.
+  Config no cliente: `{"command":"node","args":["<repo>/src/integrations/mcp/tetoMcpServer.js"],"env":{"TETOS_API_URL":"http://127.0.0.1:3000","TETOS_API_TOKEN":"…"}}`.
 
 ## AutoMate Hub (cliente outbound)
 

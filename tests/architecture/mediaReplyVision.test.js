@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { describeMediaForPrompt } from "../../src/core/media/mediaHeuristics.js";
 import { sanitizeOutgoingActions } from "../../src/modules/chat/chatService.js";
-import { shouldQuoteOutgoing } from "../../src/integrations/whatsapp/messageContext.js";
+import { shouldQuoteOutgoing } from "../../src/integrations/whatsapp/inbound/messageContext.js";
 import { detectImageGenerationIntent } from "../../src/core/media/imageGenerationIntent.js";
 
 describe("reply and quote helpers", () => {

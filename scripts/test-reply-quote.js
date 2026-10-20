@@ -1,9 +1,9 @@
-import { ChatMessageIndex } from "../src/integrations/whatsapp/chatMessageIndex.js";
+import { ChatMessageIndex } from "../src/integrations/whatsapp/inbound/chatMessageIndex.js";
 import {
   extractQuotedText,
   isQuotedMessageFromBot,
   normalizeQuoteKey
-} from "../src/integrations/whatsapp/messageContext.js";
+} from "../src/integrations/whatsapp/inbound/messageContext.js";
 import { assert, ok } from "./test-helpers.js";
 
 const channel = "120363@g.us";

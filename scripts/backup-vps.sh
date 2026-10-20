@@ -15,7 +15,7 @@ BACKUP_PATHS="${TETOS_BACKUP_PATHS:-data/}"
 BRANCH="${TETOS_BACKUP_BRANCH:-main}"
 REMOTE="${TETOS_BACKUP_REMOTE:-origin}"
 SCREEN_NAME="${TETOS_SCREEN_NAME:-TetOS}"
-RUNNER_MATCH="${TETOS_RUNNER_MATCH:-src/integrations/whatsapp/runner.js}"
+RUNNER_MATCH="${TETOS_RUNNER_MATCH:-scripts/supervisor.js|src/integrations/whatsapp/runner.js}"
 STOP_WAIT_SECS="${TETOS_BACKUP_STOP_WAIT_SECS:-20}"
 
 if ! git remote get-url "$REMOTE" >/dev/null 2>&1; then

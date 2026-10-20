@@ -13,7 +13,7 @@ assert.ok(after.learned.expressions.oxi >= 1);
 assert.equal(after.learned.preferredLaughter, "kk");
 
 const lines = formatLearnedStyleForPrompt(after.learned, { prefersLaughter: true }, { userKkMaxRun: 7 });
-assert.ok(lines.some((l) => /kkk/i.test(l) && /emoji/i.test(l)));
+assert.ok(lines.some((l) => /kkk/i.test(l) && /😂|emoji/i.test(l)));
 
 const merged = updateLearnedStyle(after, "tipo sla néh blz");
 assert.ok(merged.learned.habits.usesNe >= 1);

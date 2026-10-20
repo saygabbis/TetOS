@@ -274,7 +274,7 @@ export function recordWaIdentity(
     facts.waRemoteJid = dmJid;
   }
 
-  if (remoteJid) facts.waRemoteJid = normalizeJidKey(remoteJid);
+  if (remoteJid && !String(remoteJid).endsWith("@g.us")) facts.waRemoteJid = normalizeJidKey(remoteJid);
   if (pushName) {
     facts.name = pushName;
     facts.displayName = cleanDisplayName(pushName) || facts.displayName;
@@ -565,5 +565,7 @@ export function linkedIdentityIds(runtime, userId) {
     }
   }
 
-  return [...ids].filter((id) => id && !isBotIdentity(runtime, id));
+  // Chave de perfil com escopo ("id::group:…") é o MESMO id em outro contexto — não é outra identidade.
+  // Incluir aqui copiava apelido/nome do PV para os perfis de grupo.
+  return [...ids].filter((id) => id && !id.includes("::") && !isBotIdentity(runtime, id));
 }

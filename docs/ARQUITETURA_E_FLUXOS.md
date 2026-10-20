@@ -7,7 +7,8 @@ Este documento mapeia como o programa roda, quais serviços ficam ativos em segu
 TetOS tem dois pontos principais de entrada:
 
 - **API HTTP**: `src/infra/api/server.js`, iniciada por `npm start` ou `npm run start:api`.
-- **Runner WhatsApp**: `src/integrations/whatsapp/runner.js`, iniciado por `npm run start:wa`.
+- **Runner WhatsApp**: `src/integrations/whatsapp/runner.js`, iniciado por `npm run start:wa` (produção: `npm run start:wa:supervised`, que reinicia sozinho se cair).
+- **Servidor MCP**: `src/integrations/mcp/tetoMcpServer.js` (`npm run mcp`), cliente fino da API para outros apps falarem com a Teto.
 
 Ambos criam o mesmo runtime central:
 
@@ -26,6 +27,40 @@ flowchart TD
   R --> P["Pipeline de mensagens"]
   R --> W["WhatsApp handler"]
   R --> S["Serviços em background"]
+```
+
+## Mapa de pastas
+
+```
+src/
+  app/createRuntime.js          monta tudo (memórias, LLM, vida, canais, mídia, integrações)
+  core/
+    agent/                      prompt da Teto (agent.js)
+    brain/                      cérebro do turno, LLM clients, fase da conversa
+    life/                       dayPlanner (plano do dia) + dailyLife (agora/sono/disponibilidade/humor)
+    autonomy/                   initiative.js (quando ela puxa assunto) + ghostingPolicy
+    memory/                     curto/longo prazo, peopleMemory (caderno por pessoa/grupo), grupo, episódica
+    channels/ media/ social/ timing/ operations/ pipeline/ …
+  integrations/
+    whatsapp/
+      runner.js                 entrada: conexão single/dual, reconexão, lock
+      connection/               baileysClient, sonda de conexão, liveness
+      inbound/                  messageHandler (recebe), contexto/quote, menções, digitação
+      conversation/             orquestrador (fila, rajadas, envio), planejadores de grupo,
+                                deferredInbox (respostas pra depois), outbox, presença online
+      commands/                 comandos .sticker/.toimg…, downloads, ações de mídia do agente
+      media/                    mídia recebida, repertório de figurinhas, view once
+      loops/                    rotinas (lembretes, memória, outbox) + initiativeLoop
+    automate/ automate-hub/     AutoMate (PC da dona) + ponte WhatsApp → AutoMate
+    mcp/                        servidor MCP da Teto
+    ui/                         app desktop
+  modules/
+    audio/                      transcrição (Whisper local em processo filho ou API compatível)
+    voice/                      mensagem de voz (TTS) da Teto
+    web/                        busca, leitura de links (YouTube/X/TikTok/Insta/páginas), clima
+    chat/                       ChatService, parser de ações, styleRegulator (anti-flood/estilo)
+    documents/ reminders/ vision/
+  infra/                        API HTTP, config, fileStore, observabilidade
 ```
 
 ## Runtime Central
@@ -55,10 +90,10 @@ Estes arquivos sao tratados como contrato entre camadas. Ao alterar comportament
 | Contrato | Arquivo | Responsabilidade |
 | --- | --- | --- |
 | Modos de resposta | `src/core/pipeline/responseModes.js` | Nomes canonicos para `full`, `react_only`, `sticker_only`, `learn_only`, bloqueios e saidas (`text`, `reaction`, `sticker`, `silent`, `command`, `ignored`). |
-| Identidade WhatsApp | `src/integrations/whatsapp/whatsappIdentityContract.js` | Normaliza `remoteJid`, `userId`, `participantId`, `sessionId`, `channelId` e `channelScope`. |
+| Identidade WhatsApp | `src/integrations/whatsapp/connection/whatsappIdentityContract.js` | Normaliza `remoteJid`, `userId`, `participantId`, `sessionId`, `channelId` e `channelScope`. |
 | Trace de decisao | `src/infra/observability/decisionTrace.js` | Registra a trilha de decisao por evento: entrada, comando, gate de grupo, ativacao, modo do pipeline e saida. |
-| Parser de comandos de midia | `src/integrations/whatsapp/mediaCommandParser.js` | Decide se texto com prefixo e comando suportado e normaliza aliases como `.stiker`, `.otimizar`, `.remove-bg`. |
-| Servico de comandos de midia | `src/integrations/whatsapp/mediaCommandService.js` | Processa `.sticker`, `.fsticker`, `.csticker`, `.optimize`, `.removebg` e `.toimg` fora do fluxo conversacional. |
+| Parser de comandos de midia | `src/integrations/whatsapp/commands/mediaCommandParser.js` | Decide se texto com prefixo e comando suportado e normaliza aliases como `.stiker`, `.otimizar`, `.remove-bg`. |
+| Servico de comandos de midia | `src/integrations/whatsapp/commands/mediaCommandService.js` | Processa `.sticker`, `.fsticker`, `.csticker`, `.optimize`, `.removebg` e `.toimg` fora do fluxo conversacional. |
 
 Regra pratica: handler de canal coleta contexto e decide gates de entrada; pipeline decide comportamento conversacional; servicos especializados executam comandos diretos sem chamar o LLM.
 
@@ -156,7 +191,7 @@ Esse caminho é parecido com uma mensagem normal, mas sem Baileys, sem fila de W
 
 ## Fluxo Geral de Mensagem no WhatsApp
 
-Arquivo principal: `src/integrations/whatsapp/messageHandler.js`
+Arquivo principal: `src/integrations/whatsapp/inbound/messageHandler.js`
 
 ```mermaid
 flowchart TD
@@ -221,7 +256,7 @@ Contrato atual: a montagem de identidade deve passar por `buildWhatsappIdentityS
 
 ### 3. Comandos slash de ativação
 
-Arquivo: `src/integrations/whatsapp/tetoSlashCommands.js`
+Arquivo: `src/integrations/whatsapp/commands/tetoSlashCommands.js`
 
 Comandos:
 
@@ -277,8 +312,8 @@ Contrato atual: comandos de midia sao saida `command` no `decisionTrace` e nao e
 
 Arquivos:
 
-- `src/integrations/whatsapp/stickerRepertoire.js`
-- `src/integrations/whatsapp/stickerRepertoireModeStore.js`
+- `src/integrations/whatsapp/media/stickerRepertoire.js`
+- `src/integrations/whatsapp/media/stickerRepertoireModeStore.js`
 - `data/stickers/catalog.json`
 
 Fluxo:
@@ -299,7 +334,7 @@ Persistência:
 Arquivos:
 
 - `src/modules/chat/chatService.js` (`parseActionCommands`)
-- `src/integrations/whatsapp/agentMediaCommands.js`
+- `src/integrations/whatsapp/commands/agentMediaCommands.js`
 
 Após o LLM responder, `ChatService` extrai comandos embutidos no texto:
 
@@ -389,7 +424,7 @@ Em DM, o fluxo é mais direto:
 
 ## Fila, Batch e Interrupção
 
-O `createConversationOrchestrator()` (`src/integrations/whatsapp/conversationOrchestrator.js`) organiza envio e geração.
+O `createConversationOrchestrator()` (`src/integrations/whatsapp/conversation/conversationOrchestrator.js`) organiza envio e geração.
 Ele sobrevive a reconexões ("handler religado, mesma fila"): por isso todo envio passa por `waSocket()`/`sendRaw()`
 e o serviço de mídia é obtido por getter — nunca pelo socket capturado na primeira conexão.
 
@@ -492,21 +527,19 @@ Dependendo da operação, pode:
 
 Arquivo: `src/core/brain/BrainOrchestrator.js`
 
-Em cada mensagem conversacional, `tickTurn()` atualiza:
+Em cada mensagem conversacional, `tickTurn()` monta:
 
-- sono e disponibilidade
-- mundo/contexto
-- corpo, saúde e emoção
-- vida/rotina
-- social
-- música
-- confiança/intimidade
+- a vida dela agora (`DailyLife`: atividade, sono, humor/energia — derivados do plano do dia)
+- confiança/intimidade com a pessoa
 - memória de recuperação
 - mídia atual
 - fase da conversa
 - plano de timing
 - arbitragem de comportamento
-- blocos consciente/subconsciente para o prompt
+- bloco `[SUA VIDA AGORA …]` (o que faz, fez, aconteceu, vem depois) + "fundo da cabeça" (vínculo, repetição, relacionamento)
+
+O narrador por LLM e os sistemas antigos de rotina/NPC/corpo/mundo foram removidos: inventavam coisas que não
+ficavam salvas, travavam (humor "irritada" e "com fome" pra sempre) e custavam uma chamada extra por mensagem.
 
 O resultado influencia:
 
@@ -606,12 +639,13 @@ Esses eventos:
 
 | Arquivo | Responsabilidade |
 | --- | --- |
-| `runner.js` | Ciclo de vida da conexão (single/dual), reconexão, lock, ponte `runtime.whatsappGetSocket`. |
-| `auxiliaryLoops.js` | Timers: vida, iniciativa, lembretes, relatório diário, retenção de mídia e mind-log. |
-| `presenceLoop.js` | Iniciativa: `listKnownUsers()` (1 entrada por pessoa/chat real) e `runPresence()`. |
-| `messageHandler.js` | Recepção (`messages.upsert`), filtros, identidade, comandos, gates de ativação/grupo. |
-| `conversationOrchestrator.js` | Fila/batch, geração, interrupção, envio de bolhas e ações do agente. |
-| `waHandlerUtils.js` | Utilitários compartilhados (logThinking, sleep, isWaConnectionError, extractPhone, applyVisionFields). |
+| `runner.js` | Ciclo de vida da conexão (single/dual), reconexão, lock, sonda ativa, ponte `runtime.whatsappGetSocket`. |
+| `loops/auxiliaryLoops.js` | Timers: vida, iniciativa, lembretes, consolidação de memória, caixa de saída, relatório, retenções. |
+| `loops/initiativeLoop.js` | Iniciativa: `listKnownUsers()` + `runPresence()` usando `chooseInitiative()`. |
+| `inbound/messageHandler.js` | Recepção, filtros, identidade, comandos, gates de ativação/grupo e **porta de disponibilidade**. |
+| `conversation/conversationOrchestrator.js` | Fila/rajadas, digitação, geração, interrupção, regulador de estilo, envio e ações do agente. |
+| `conversation/deferredInbox.js` | Mensagens guardadas enquanto ela dorme/está ocupada (em disco), entregues na hora certa. |
+| `inbound/waHandlerUtils.js` | Utilitários compartilhados (logThinking, sleep, isWaConnectionError, extractPhone, applyVisionFields). |
 
 ## Identidade e JIDs (regras)
 
@@ -659,9 +693,62 @@ O runner:
 | `data/stickers/catalog.json` | Catálogo do repertório de figurinhas. |
 | `data/stickerRepertoireMode.json` | Modo repertório por usuário. |
 | `data/logs/tetos.log` | Logs estruturados. |
+| `data/logs/runner-*.log` | Saída do runner sob o supervisor (7 dias; fora do git). |
+| `data/people.json` | Caderno de memória por pessoa (PV) e por grupo + falas ainda não consolidadas. |
+| `data/life/state.json` | Vida: acordadas no susto por noite, acordada temporária. |
+| `data/life/inbox.json` | Mensagens guardadas pra responder depois (dormindo/ocupada/na rua). |
+| `data/life/initiative.json` | Iniciativa: última vez, sem resposta, contagem do dia, motivos já usados. |
+| `data/whatsapp-outbox.json` | Pedidos de envio vindos da API/MCP/AutoMate para o runner. |
+| `data/models/` | Modelo Whisper local (baixado na 1ª vez; fora do git). |
 | `data/metrics.json` | Métricas. |
 | `data/mind-log` | Logs de mente/turnos. |
 | `data/reports/daily` | Relatórios diários. |
+
+## Reforma de outubro/2026 — como cada peça funciona
+
+**Vida 24/7** (`core/life/dayPlanner.js`, `core/life/dailyLife.js`)
+- O dia é gerado só a partir da data (PRNG com semente): acorda/dorme (fim de semana mais tarde), café, almoço,
+  jantar, banho, trabalho (gravar cover, ensaiar, mixar, call com produtor), lazer, saídas com amigos do universo dela
+  (Miku, Rin, Len, Luka, Neru, Momo, Defoko, Ted) e âncoras semanais (aula de canto na terça, rolê na sexta, live no sábado,
+  almoço na casa do Ted no domingo). 1–3 acontecimentos por dia mexem no humor. Mesma data → mesmo dia em qualquer processo.
+- `availability()` diz se dá pra responder agora: livre (na hora), ocupada (1–5 min pra dona, 3–14 pros outros),
+  na rua (2–10 / 5–28 min), dormindo (só depois de acordar). Urgência/insistência encurta. `TETOS_LIFE_REALISM=light|off`.
+- Dormindo: a dona insistindo ("acorda", CAPS, várias mensagens) a acorda grogue **só pro chat dela**, no máximo 2x por noite.
+
+**Porta de disponibilidade** (`inbound/messageHandler.js` + `conversation/deferredInbox.js`)
+- Se ela não está livre, a mensagem vai pra caixa (em disco) com a hora em que ela "pega o celular"; mensagens seguintes
+  entram na mesma leva. Na hora, vira um turno só, com `[VOCÊ SÓ VIU AGORA]` (ou catch-up de sono) no prompt.
+- Grupo: dormindo ou demorando > 15 min → não responde (o papo já seguiu).
+- Presença: online só enquanto ela usa o zap (`presenceManager`), lido (tique azul) quando abre a conversa pra responder.
+
+**Iniciativa** (`core/autonomy/initiative.js` + `loops/initiativeLoop.js`)
+- Só com gente próxima (dona, parceria, intimidade alta), só livre e acordada, nunca duas sem resposta, limite diário,
+  estado em disco. Motivos: aniversário, pendência vencida ("como foi a entrevista?"), bom dia, algo do dia dela, saudade.
+- O motivo entra no prompt como impulso interno (não é gravado como fala da pessoa).
+
+**Memória de gente** (`core/memory/peopleMemory.js`)
+- Cada fala vai pro buffer do caderno (PV: da pessoa; grupo: do grupo). Quando a conversa esfria (12 min) o modelo
+  auxiliar reescreve o caderno: resumo, fatos com importância, pendências com data, aniversários. Fatos miúdos somem com
+  o tempo; importantes ficam. No prompt: `[MEMÓRIA — o que você lembra de …]`. Escopo nunca cruza (PV ≠ grupo).
+
+**Conversa natural** (`modules/chat/styleRegulator.js`)
+- Antes de enviar: no máximo 3 bolhas no PV / 2 no grupo (excesso vai junto), um trecho curto em CAPS por resposta (nenhum
+  se a anterior gritou), `!!!` → `!!`, tira a interjeição que abriu as últimas respostas, remove bolha repetida.
+  O histórico guarda a versão corrigida (a IA não aprende os vícios de si mesma).
+- Grupo: chamadas quase simultâneas de várias pessoas viram um turno só; cada um aprende só com o que ELE disse.
+
+**Áudio, links, voz, clima**
+- Áudio recebido: Whisper local num processo filho (`modules/audio/whisperProcess.js`, modelo em `data/models`) ou API
+  compatível com OpenAI (`TETOS_STT_API_KEY`, ex. Groq). Silêncio/alucinação viram "sem fala".
+- Link: `modules/web/linkReader.js` abre YouTube (yt-dlp + legenda), X (fxtwitter + foto via visão), TikTok/Instagram,
+  Spotify e páginas comuns → `[LINK — você abriu e viu]`. Só baixa se pedirem ("baixa", "mp3", "manda o vídeo").
+- Voz: comando `audio("…")` → TTS (Edge, voz configurável) → ogg/opus como mensagem de voz, "gravando…" antes.
+- Clima: `modules/web/weather.js` (Open-Meteo) quando perguntam do tempo.
+
+**Integrações**
+- MCP: `npm run mcp` expõe conversar, o que ela está fazendo, mandar WhatsApp, lembretes e memória (via API + token).
+- AutoMate pelo zap (só PV da dona): `computador("…")` → API `POST /automate/whatsapp/run` → PC; o resultado volta pela
+  caixa de saída e ela explica. Exige `TETOS_API_TOKEN` e o AutoMate aberto.
 
 ## Resumo das Decisões Mais Importantes
 

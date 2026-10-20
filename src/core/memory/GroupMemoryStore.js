@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { contextualSeed, chance } from "../brain/rng.js";
 
@@ -23,8 +23,9 @@ function decayStrength(entry, now = Date.now()) {
 }
 
 export class GroupMemoryStore {
-  constructor(path, { maxEntries = 500, bus = null } = {}) {
+  constructor(path, { maxEntries = 500, maxPerChannel = 3000, bus = null } = {}) {
     this.path = path;
+    this.maxPerChannel = maxPerChannel;
     this.maxEntries = maxEntries;
     this.bus = bus;
     const dir = dirname(path);
@@ -36,13 +37,31 @@ export class GroupMemoryStore {
     if (!existsSync(this.path)) return [];
     const raw = readFileSync(this.path, "utf-8").trim();
     if (!raw) return [];
-    return raw.split("\n").map((line) => {
+    const all = raw.split("\n").map((line) => {
       try {
         return JSON.parse(line);
       } catch {
         return null;
       }
     }).filter(Boolean);
+    // Retenção: só as últimas N falas de cada grupo (o arquivo crescia sem fim e ia todo pra RAM).
+    const perChannel = new Map();
+    for (const e of all) perChannel.set(e.channelId, (perChannel.get(e.channelId) ?? 0) + 1);
+    const skip = new Map([...perChannel].map(([c, n]) => [c, Math.max(0, n - this.maxPerChannel)]));
+    const kept = all.filter((e) => {
+      const left = skip.get(e.channelId) ?? 0;
+      if (left > 0) {
+        skip.set(e.channelId, left - 1);
+        return false;
+      }
+      return true;
+    });
+    if (kept.length < all.length) {
+      const tmp = `${this.path}.tmp`;
+      writeFileSync(tmp, kept.map((e) => JSON.stringify(e)).join("\n") + "\n");
+      renameSync(tmp, this.path);
+    }
+    return kept;
   }
 
   append(entry) {

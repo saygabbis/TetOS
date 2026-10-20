@@ -5,6 +5,7 @@ import {
   resolveIdentityEntry
 } from "./waIdentity.js";
 import { isBotIdentity } from "./botIdentity.js";
+import { TETO_ENDEARMENTS } from "./profileFacts.js";
 
 function isPhoneId(id = "") {
   return isLikelyPhoneNumber(id);
@@ -112,28 +113,15 @@ export function buildGroupRoster(runtime, channelId, { participants = [] } = {})
   }
   const dedupedMembers = [...seen.values()];
 
+  // Só o que é público no grupo: nome e variações do nome. Apelido carinhoso do PV, telefone e
+  // LID ficam de fora — no grupo ninguém precisa saber como a Teto chama a pessoa no privado.
   const promptLines = dedupedMembers.map((m) => {
-    const nickParts = [];
-    if (m.preferredName && m.preferredName !== m.displayName) {
-      nickParts.push(`prefere: ${m.preferredName}`);
-    }
-    const userNicks = (m.nicknames ?? []).filter(
-      (n) => n !== m.displayName && !(m.tetoNicknames ?? []).includes(n)
-    );
-    if (userNicks.length) nickParts.push(`também: ${userNicks.join(", ")}`);
-    if ((m.tetoNicknames ?? []).length) {
-      nickParts.push(`Teto chama: ${m.tetoNicknames.join(", ")}`);
-    }
-    const nickLine = nickParts.length ? ` (${nickParts.join(" | ")})` : "";
-    const idParts = [];
-    if (m.waLid) idParts.push(`LID ${m.waLid}`);
-    if (m.waPhone) idParts.push(`tel ${m.waPhone}`);
-    if (!idParts.length) idParts.push(`id ${m.userId}`);
-    const altTags = (m.mentionAliases ?? []).map((a) => `@${a}`).join(", ");
-    const tagHint = altTags
-      ? ` — marcar: @${m.displayName} ou ${altTags} (mesma pessoa)`
-      : ` — marcar: @${m.displayName}`;
-    return `- ${m.displayName}${nickLine} — ${idParts.join(" ↔ ")}${tagHint}`;
+    const private_ = new Set((m.tetoNicknames ?? []).map((n) => String(n).toLowerCase()));
+    const aliases = [...new Set([...(m.nicknames ?? []), ...(m.mentionAliases ?? [])])].filter((n) => {
+      const lower = String(n ?? "").toLowerCase();
+      return n && n !== m.displayName && !private_.has(lower) && !TETO_ENDEARMENTS.has(lower) && !isPhoneId(n);
+    });
+    return `- ${m.displayName}${aliases.length ? ` (também: ${aliases.join(", ")})` : ""} — marcar: @${m.displayName}`;
   });
 
   return { members: dedupedMembers, promptLines };
@@ -144,9 +132,8 @@ export function formatGroupRosterBlock(roster) {
   return [
     "[GRUPO — QUEM ESTÁ AQUI]",
     ...roster.promptLines,
-    "LID, telefone e apelidos são a MESMA pessoa quando listados juntos — use sempre o NOME.",
-    "Apelidos que a Teto deu (Teto chama: ...) ou que a pessoa pediu (prefere: ...) valem no grupo.",
-    "Nunca cite @187995... ou id numérico cru; diga o nome (ex.: Gabbis, Duda).",
+    "Chame cada um pelo nome (ou pelo 'também:'). Apelido carinhoso e coisas que alguém te contou no privado NÃO aparecem aqui — não use nem comente no grupo.",
+    "Nunca cite número de telefone ou id numérico; diga o nome (ex.: Gabbis, Duda).",
     "O número/LID da própria Teto (conta do bot) NÃO é um membro do grupo — não marque como se fosse Gabbis ou outra pessoa.",
     "TRADUTOR DE MENÇÕES: você pode escrever @Gabbis ou @gabbis (maiúscula/minúscula) — o sistema traduz para a menção real no WhatsApp.",
     "Prefixo parcial também vale se for único no grupo: @Kzer pode marcar quem se chama Kzer0 (desde que não haja outra pessoa com nome parecido).",

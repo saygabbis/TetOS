@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { resolveCommandTarget } from "../../src/integrations/whatsapp/commandTargetResolver.js";
+import { resolveCommandTarget } from "../../src/integrations/whatsapp/commands/commandTargetResolver.js";
 
 function historyStore(latest = null) {
   return { latest: () => latest };

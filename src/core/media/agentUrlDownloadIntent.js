@@ -2,7 +2,7 @@ import {
   buildUrlDownloadAction,
   extractHttpUrlsFromText,
   inferDownloadCommandFromUrl
-} from "../../integrations/whatsapp/agentDownloadCommands.js";
+} from "../../integrations/whatsapp/commands/agentDownloadCommands.js";
 
 function normalizeIntentText(text = "") {
   return String(text ?? "")
@@ -41,14 +41,14 @@ export function detectAgentUrlDownloadIntent(text = "", meta = {}) {
   }
   if (!url) return null;
 
-  const t = normalizeIntentText(raw);
-  const bareLink = extractHttpUrlsFromText(raw).length > 0;
+  // Link compartilhado sozinho é pra ver/comentar, não pra baixar: só baixa com pedido explícito.
+  const t = normalizeIntentText(raw.replace(/https?:\/\/\S+/gi, " "));
   const wantsDownload =
-    bareLink ||
-    /\b(baixa|baixar|baixe|download|dl|manda|mandar|envia|enviar|pega|pegar|tira|tirar|salva|salvar|link)\b/.test(
-      t
-    ) ||
-    /\b(thumb|thumbnail|mp3|mp4|audio|video|musica)\b/.test(t);
+    /\b(baixa|baixar|baixe|baixo|download|dl|salva|salvar|salve)\b/.test(t) ||
+    /\b(manda|mandar|manda ai|envia|enviar|pega|pegar|tira|tirar|converte|converter)\b.{0,30}\b(video|audio|mp3|mp4|musica|som|foto|imagem|thumb|thumbnail|arquivo|aqui)\b/.test(t) ||
+    /\b(em|pra|para|no|como)\s+(mp3|mp4)\b/.test(t) ||
+    /^\s*(mp3|mp4|thumb|thumbnail)\s*$/.test(t) ||
+    /\b(thumb|thumbnail|miniatura)\b/.test(t);
 
   if (!wantsDownload) return null;
 
@@ -66,6 +66,6 @@ export function detectAgentUrlDownloadIntent(text = "", meta = {}) {
     command: action.command,
     url: action.url,
     args: action.args,
-    source: bareLink && !/\b(baixa|download|manda|envia)\b/.test(t) ? "bare_url" : "url_intent"
+    source: "url_intent"
   };
 }

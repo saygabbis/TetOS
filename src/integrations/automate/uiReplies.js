@@ -1,7 +1,7 @@
 import { bindRunToThread, markRunForExplanation, registerAutomateRun } from "./automateRunContext.js";
 import { applyUiMediaAction, isUiMediaAction } from "../ui/uiMediaActions.js";
 
-function parseInstructionFromEnqueueResult(result) {
+export function parseInstructionFromEnqueueResult(result) {
   const content = result?.content;
   if (!Array.isArray(content) || !content[0]?.text) return null;
   const text = content[0].text;

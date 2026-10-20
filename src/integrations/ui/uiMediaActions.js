@@ -5,7 +5,7 @@ import {
   formatWhatsAppHelpText,
   isUrlMediaCommand,
   parseWhatsAppCommand
-} from "../whatsapp/mediaCommandParser.js";
+} from "../whatsapp/commands/mediaCommandParser.js";
 
 /** Tipos de ação do agente que a UI sabe executar (equivalem aos do WhatsApp). */
 export const UI_MEDIA_ACTION_TYPES = Object.freeze([

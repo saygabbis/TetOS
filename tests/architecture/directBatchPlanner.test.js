@@ -9,8 +9,9 @@ import {
   shouldSkipThinkDelaySleep,
   shouldSplitBurst,
   stampMediaHoldStart,
-  thinkDelaySleepMs
-} from "../../src/integrations/whatsapp/directBatchPlanner.js";
+  thinkDelaySleepMs,
+  TYPING_RECHECK_MS
+} from "../../src/integrations/whatsapp/conversation/directBatchPlanner.js";
 
 describe("directBatchPlanner", () => {
   it("holds visual/audio media ~5s and does not reset remaining on merge", () => {
@@ -32,13 +33,16 @@ describe("directBatchPlanner", () => {
     ).toBe(3000);
   });
 
-  it("uses a short quiet window for DM text without media", () => {
-    const ms = computeDirectBatchMs({ message: "oi" }, null, {
-      stillTyping: false,
-      batchWindowMs: 1200
-    });
-    expect(ms).toBeGreaterThanOrEqual(400);
-    expect(ms).toBeLessThanOrEqual(700);
+  it("espera a rajada assentar: mais tempo se a msg parece incompleta, menos se fechou", () => {
+    const ms = (message) => computeDirectBatchMs({ message }, null, { stillTyping: false, batchWindowMs: 1200 });
+    expect(ms("oi teto, tudo bem?")).toBe(1600);
+    expect(ms("me conta uma coisa")).toBe(2600);
+    expect(ms("eu tava pensando e")).toBe(4500);
+    expect(ms("hoje eu fui no mercado,")).toBe(4500);
+  });
+
+  it("enquanto digita, só reconfere (não responde)", () => {
+    expect(computeDirectBatchMs({ message: "oi" }, null, { stillTyping: true })).toBe(TYPING_RECHECK_MS);
   });
 
   it("only flushes pending on a different quote, not any reply", () => {
@@ -52,7 +56,7 @@ describe("directBatchPlanner", () => {
     expect(shouldFlushPendingOnIncoming(previous, { isReply: true })).toBe(false);
   });
 
-  it("splits on a new media path and isolated question", () => {
+  it("separa só por mídia diferente — pergunta depois de texto longo é a mesma rajada", () => {
     expect(
       shouldSplitBurst(
         { media: { type: "image", path: "/a" }, message: "olha" },
@@ -65,7 +69,7 @@ describe("directBatchPlanner", () => {
         { message: "estava falando daquele assunto longo do almoco de ontem a tarde" },
         { message: "voce vai hoje?" }
       )
-    ).toBe(true);
+    ).toBe(false);
 
     expect(
       shouldSplitBurst(

@@ -1,6 +1,6 @@
 import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { TetoActivationStore } from "../src/core/channels/TetoActivationStore.js";
-import { parseTetoSlashCommand } from "../src/integrations/whatsapp/tetoSlashCommands.js";
+import { parseTetoSlashCommand } from "../src/integrations/whatsapp/commands/tetoSlashCommands.js";
 import { assert, ok } from "./test-helpers.js";
 
 const emptyStore = { dm: {}, groups: {}, meta: { lastUpdated: null } };

@@ -19,8 +19,16 @@ A TetOS cobre hoje:
 - Repertório de figurinhas com catálogo (`data/stickers/catalog.json`), auto-save por visão e envio via `sticker("chave")` na resposta do agente.
 - Ativação por DM/grupo com `/teto-ativar`, `/teto-desativar`, `/teto-grupo-ativar` e `/teto-grupo-desativar` (desativar persiste mesmo sem `TETOS_ACTIVATION_REQUIRED`).
 - Comando de agente `calar()` — silencia o chat por ~1 min (ignora menção/reply); `/teto-desativar` e `/teto-grupo-desativar` desligam até reativar.
-- Runtime de presença, timing, vida, emoção, aprendizado e relatórios diários.
-- Execução por PM2.
+- Vida 24/7 coerente: rotina do dia (acorda, come, grava, sai com amigos), sono, disponibilidade real
+  (responde depois quando está ocupada/dormindo, sem perder mensagem), online/visto por último e "lido" como gente.
+- Conversa natural: lê rajadas como um todo, espera quem ainda está digitando, poucas bolhas, sem CAPS/tique repetido.
+- Memória de gente: caderno por pessoa (fatos, pendências com data, aniversários), consolidado quando a conversa esfria.
+- Grupos com privacidade: nada do PV vaza; cada membro com o que disse; várias pessoas chamando = uma resposta só.
+- Ouve áudios (Whisper local, sem Python) e manda mensagem de voz (`audio("…")`).
+- Abre links (YouTube com legenda, X, TikTok, Instagram, Spotify, páginas) e comenta; só baixa se pedirem.
+- Clima real (Open-Meteo), iniciativa com motivo (aniversário, "como foi aquilo?", bom dia).
+- Servidor MCP (`npm run mcp`) e AutoMate pelo WhatsApp para a dona (via API com token).
+- Runner supervisionado (`npm run start:wa:supervised`), sonda de conexão e reconexão automática.
 
 ## Pré-requisitos
 
@@ -264,24 +272,33 @@ npm run data:sanitize
 - `src/modules/chat/`
 - `src/modules/reminders/`
 - `src/modules/documents/`
-- `src/modules/search/`
+- `src/modules/web/` (busca, leitura de links, clima)
+- `src/modules/audio/` e `src/modules/voice/` (ouvir e mandar áudio)
+- `src/core/life/` (rotina 24/7, sono, disponibilidade)
+- `src/core/memory/peopleMemory.js` (caderno de memória por pessoa)
 - `src/integrations/whatsapp/runner.js`
-- `src/integrations/whatsapp/messageHandler.js`
-- `src/integrations/whatsapp/stickerAssets.js`
-- `src/integrations/whatsapp/stickerRepertoire.js`
-- `src/integrations/whatsapp/agentMediaCommands.js`
+- `src/integrations/whatsapp/inbound/messageHandler.js`
+- `src/integrations/whatsapp/media/stickerAssets.js`
+- `src/integrations/whatsapp/media/stickerRepertoire.js`
+- `src/integrations/whatsapp/commands/agentMediaCommands.js`
 
 ## Documentação Técnica
 
-- `docs/MAPEAMENTO_FUNCIONALIDADES_TETO.md` - mapa detalhado de funcionalidades, condições de execução e referência de comandos (documento principal para inventário).
 - `docs/CAPACIDADES_TETO.md` - inventário prático de tudo que a Teto faz hoje.
 - `docs/ARQUITETURA_E_FLUXOS.md` - mapa dos serviços em background, fluxos da API, WhatsApp, comandos, grupos, pipeline e decisões de resposta.
 - `docs/RUNBOOK.md` - instalação, execução e validação rápida.
 - `docs/MANUAL_TEST_WA.md` - roteiro manual para testar WhatsApp.
-- `docs/HUMANIZATION_CHECKLIST.md` - checklist de humanização validado por testes.
-- `docs/TETO_EXTENSIONS.md` - adapters e pontos de extensão.
-- `docs/SESSION_SUMMARY.md` - registro histórico da etapa inicial.
-- `docs/FASE_FINAL_RESUMO_COMPLETO.md` - registro histórico da fase de consolidação.
+
+## Variáveis novas (opcionais)
+
+| Variável | Para quê |
+| --- | --- |
+| `TETOS_LIFE_REALISM` | `full` (padrão), `light` (demoras menores) ou `off` (sempre disponível). |
+| `TETOS_STT_API_KEY` / `TETOS_STT_API_URL` / `TETOS_STT_API_MODEL` | Transcrição por API (ex.: Groq `whisper-large-v3-turbo`); sem chave usa o Whisper local. |
+| `TETOS_WHISPER_MODEL` | `small` (padrão), `base`, ou id do Hugging Face. |
+| `TETOS_TTS_VOICE` / `TETOS_TTS_PITCH` / `TETOS_TTS_RATE` / `TETOS_TTS_ENABLED` | Voz da Teto nos áudios. |
+| `TETOS_API_TOKEN` / `TETOS_API_URL` | Protege a API e liga MCP + AutoMate pelo zap. |
+| `TETOS_AUTOMATE_WHATSAPP` | `false` desliga o AutoMate pelo WhatsApp. |
 
 ## Próximos Passos Opcionais
 

@@ -7,15 +7,15 @@ import {
   saveUiMediaFile,
   toMediaRef
 } from "./uiMediaStore.js";
-import { resolveStickerAsset } from "../whatsapp/stickerAssets.js";
+import { resolveStickerAsset } from "../whatsapp/media/stickerAssets.js";
 import {
   isBuiltinRepertoireKey,
   loadStickerCatalog,
   listRepertoireKeys,
   removeStickerFromRepertoire,
   saveStickerToRepertoireWithVision
-} from "../whatsapp/stickerRepertoire.js";
-import { parseUrlDownloadArgs } from "../whatsapp/urlDownloadArgsParse.js";
+} from "../whatsapp/media/stickerRepertoire.js";
+import { parseUrlDownloadArgs } from "../whatsapp/commands/urlDownloadArgsParse.js";
 import { resolveStickerDurationArg } from "../../core/media/stickerDurationParse.js";
 import { REMOVE_BG_MODEL_LABELS, resolveRemoveBgOptions } from "../../core/media/removeBgOptionsParse.js";
 

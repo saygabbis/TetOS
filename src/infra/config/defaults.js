@@ -252,6 +252,11 @@ export const DEFAULTS = {
   groupMemoryPath: process.env.TETOS_GROUP_MEMORY_PATH ?? "./data/groupMemory.ndjson",
   groupMemoryMaxEntries: Number(process.env.TETOS_GROUP_MEMORY_MAX_ENTRIES ?? 500),
   episodicMemoryPath: process.env.TETOS_MEMORY_EPISODIC_PATH ?? "./data/episodicMemory.ndjson",
+  peopleMemoryPath: process.env.TETOS_PEOPLE_MEMORY_PATH ?? "./data/people.json",
+  deferredInboxPath: process.env.TETOS_DEFERRED_INBOX_PATH ?? "./data/life/inbox.json",
+  dailyLifeStatePath: process.env.TETOS_DAILY_LIFE_PATH ?? "./data/life/state.json",
+  initiativeStatePath: process.env.TETOS_INITIATIVE_PATH ?? "./data/life/initiative.json",
+  whatsappOutboxPath: process.env.TETOS_WHATSAPP_OUTBOX_PATH ?? "./data/whatsapp-outbox.json",
   mindLogPath: process.env.TETOS_MIND_LOG_PATH ?? "./data/mind-log",
   mindLogEnabled: String(process.env.TETOS_MIND_LOG_ENABLED ?? "true").toLowerCase() === "true",
   /** slim = snapshot leve (VPS 24/7); full = dump completo (debug). */
@@ -293,9 +298,10 @@ export const DEFAULTS = {
   mediaEnrichEnabled: String(process.env.TETOS_MEDIA_ENRICH_ENABLED ?? "true").toLowerCase() === "true",
   audioTranscribeEnabled:
     String(process.env.TETOS_AUDIO_TRANSCRIBE_ENABLED ?? "true").toLowerCase() === "true",
+  /** "small" | "base" | id do Hugging Face (ex.: onnx-community/whisper-large-v3-turbo). */
   whisperModel: String(process.env.TETOS_WHISPER_MODEL ?? "small").trim() || "small",
   whisperLanguage: String(process.env.TETOS_WHISPER_LANGUAGE ?? "pt").trim() || "pt",
-  pythonPath: String(process.env.TETOS_PYTHON_PATH ?? "python").trim() || "python",
+  modelsDir: String(process.env.TETOS_MODELS_DIR ?? "./data/models").trim() || "./data/models",
   imageGenEnabled: String(process.env.TETOS_IMAGE_GEN_ENABLED ?? "true").toLowerCase() === "true",
   imageGenProvider: String(process.env.TETOS_IMAGE_GEN_PROVIDER ?? "pollinations")
     .trim()

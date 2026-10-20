@@ -77,6 +77,27 @@ export class ShortTermMemory {
     this.persistAll();
   }
 
+  /** Marcador do fim atual do histórico (para desfazer um turno descartado com popSince). */
+  mark(sessionId = "default") {
+    const history = this.sessions.get(sessionId) ?? [];
+    return history[history.length - 1] ?? null;
+  }
+
+  /** Remove o que foi adicionado depois do marcador (no máximo `max` entradas). */
+  popSince(sessionId = "default", marker = null, max = 4) {
+    const history = this.sessions.get(sessionId) ?? [];
+    let removed = 0;
+    while (history.length && history[history.length - 1] !== marker && removed < max) {
+      history.pop();
+      removed += 1;
+    }
+    if (removed) {
+      this.sessions.set(sessionId, history);
+      this.persistAll();
+    }
+    return removed;
+  }
+
   /** Remove a última mensagem da assistente (ex.: fallback terciário que descarta resposta). */
   popLastAssistant(sessionId = "default") {
     const history = this.sessions.get(sessionId) ?? [];

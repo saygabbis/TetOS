@@ -4,7 +4,7 @@ import {
   detectTopicClosed
 } from "../autonomy/ghostingPolicy.js";
 import { detectUserBoundary } from "../channels/userBoundaryDetect.js";
-import { detectWrongBotNameVocative } from "../../integrations/whatsapp/tetoNameDetect.js";
+import { detectWrongBotNameVocative } from "../../integrations/whatsapp/inbound/tetoNameDetect.js";
 import { contextualSeed, chance } from "./rng.js";
 
 const STOPWORDS = new Set([

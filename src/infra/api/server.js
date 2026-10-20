@@ -1,4 +1,6 @@
 import "dotenv/config";
+import { enqueueOutbox } from "../../integrations/whatsapp/conversation/outbox.js";
+import { registerWhatsAppAutomateBridge } from "../../integrations/automate/whatsappBridge.js";
 import http from "node:http";
 import express from "express";
 import { UiEventBus } from "../../core/events/uiEventBus.js";
@@ -61,7 +63,6 @@ const runtime = createRuntime();
 const {
   longTerm,
   shortTerm,
-  basicLoop,
   selectiveMemory,
   channelRegistry,
   channelAdmin,
@@ -170,18 +171,22 @@ app.post("/memory/search", (req, res) => {
 app.post("/nudge", async (req, res) => {
   const { userId } = req.body ?? {};
   const targetUser = typeof userId === "string" ? userId : "default";
-  const payload = basicLoop.maybeNudge(targetUser, { hasRecentMemory: true });
-  if (!payload?.text) {
-    return res.json({ message: null, reason: payload?.reason ?? null });
-  }
+  const impulse = "Você quis puxar assunto com essa pessoa agora, do seu jeito.";
   const replies = await runtime.chatService.handleMessage(
-    payload.text,
-    { userId: targetUser, sessionId: `api-nudge-${targetUser}`, fallback: "ground" },
+    impulse,
+    {
+      userId: targetUser,
+      sessionId: `api-nudge-${targetUser}`,
+      fallback: "ground",
+      isInitiative: true,
+      skipUserRecord: true,
+      initiationContext: { impulse, mode: "manual" }
+    },
     null,
-    "calm"
+    "playful"
   );
   const text = Array.isArray(replies) ? replies[0] : replies;
-  return res.json({ message: text ?? null, reason: payload?.reason ?? null });
+  return res.json({ message: text ?? null, reason: "manual" });
 });
 
 app.post("/session/clear", (req, res) => {
@@ -272,7 +277,8 @@ app.post("/documents/:id", (req, res) => {
 
 app.post("/operations", (req, res) => {
   const { type, userId, payload } = req.body ?? {};
-  const result = operationRouter.execute({ type, userId, payload });
+  // A API é a ponte local da dona (app desktop), protegida por TETOS_API_TOKEN.
+  const result = operationRouter.execute({ type, userId, payload, isOwner: true });
   if (!result) {
     return res.status(400).json({ error: "unknown operation" });
   }
@@ -294,6 +300,31 @@ app.get("/metrics", (req, res) => {
 
 app.get("/runtime/summary", (req, res) => {
   return res.json({ summary: buildRuntimeSummary(runtime) });
+});
+
+registerWhatsAppAutomateBridge(app, { automateClient, deviceGateway, apiToken });
+
+// Pede pro runner do WhatsApp mandar uma mensagem (PV). Protegido pelo TETOS_API_TOKEN.
+app.post("/whatsapp/send", (req, res) => {
+  try {
+    const { to, text } = req.body ?? {};
+    return res.json({ queued: enqueueOutbox(DEFAULTS.whatsappOutboxPath, { to, text, by: "api" }) });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// O que a Teto está fazendo agora (mesma vida pra todos os processos).
+app.get("/life/now", (req, res) => {
+  const life = runtime.brainOrchestrator?.life;
+  if (!life) return res.json({ life: null });
+  return res.json({ availability: life.availability({ isOwner: true }), mood: life.mood(), lines: life.promptLines() });
+});
+
+// Caderno de memória de uma pessoa (só a dona usa a API).
+app.get("/people/:userId", (req, res) => {
+  const scope = req.query.scope ? String(req.query.scope) : "direct";
+  return res.json({ notebook: runtime.peopleMemory?.notebook?.(req.params.userId, scope) ?? null });
 });
 
 app.get("/status", (req, res) => {

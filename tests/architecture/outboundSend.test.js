@@ -5,7 +5,7 @@ import {
   createOutboundMessageId,
   outboundDedupeKey,
   releaseOutboundDedupe
-} from "../../src/integrations/whatsapp/outboundSend.js";
+} from "../../src/integrations/whatsapp/conversation/outboundSend.js";
 
 describe("outboundSend", () => {
   it("builds a stable baileys-like id", () => {

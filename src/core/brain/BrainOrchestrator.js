@@ -1,14 +1,8 @@
 import { SignalBus } from "./SignalBus.js";
 import { RepetitionAwareness } from "./RepetitionAwareness.js";
 import { EmotionSystem } from "../emotion/EmotionSystem.js";
-import { BodyNeeds } from "../emotion/BodyNeeds.js";
-import { HealthConditions } from "../emotion/HealthConditions.js";
-import { LifeEngine } from "../life/lifeEngine.js";
-import { getLocalHour } from "../life/sleepSchedule.js";
-import { WorldContext } from "../life/WorldContext.js";
-import { AutonomousEvolution } from "../life/AutonomousEvolution.js";
+import { DailyLife } from "../life/dailyLife.js";
 import { LifeNarrator } from "../life/LifeNarrator.js";
-import { SocialGraph } from "../social/SocialGraph.js";
 import { TrustIntimacySystem } from "../social/TrustIntimacySystem.js";
 import { RelationshipCommitmentStore } from "../social/RelationshipCommitmentStore.js";
 import { MusicWorld } from "../music/MusicWorld.js";
@@ -21,13 +15,6 @@ import { MindLogger } from "../consciousness/MindLogger.js";
 import { AdapterRegistry } from "../adapters/AdapterRegistry.js";
 import { CandidateArbitrator } from "./CandidateArbitrator.js";
 import { analyzeConversationPhase } from "./ConversationPhaseEngine.js";
-import { appendFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
-
-function ensureJournal(path) {
-  const dir = dirname(path);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-}
 
 export class BrainOrchestrator {
   constructor(config = {}) {
@@ -37,27 +24,12 @@ export class BrainOrchestrator {
     this.behaviorProfiler = config.behaviorProfiler ?? null;
     this.timeStore = config.timeStore ?? null;
     this.userPatterns = config.userPatterns ?? null;
-    this.musicResearchIntervalMs = config.musicResearchIntervalMs ?? 86400000;
-    this._lastMusicResearchAt = 0;
-    this.soloThoughtIntervalMs = config.soloThoughtIntervalMs ?? 300000;
-    this._lastSoloThoughtAt = 0;
 
-    const journalPath = config.lifeJournalPath ?? "./data/lifeJournal.ndjson";
-    const journalAppend = (entry) => {
-      ensureJournal(journalPath);
-      appendFileSync(journalPath, `${JSON.stringify({ ts: new Date().toISOString(), ...entry })}\n`);
-    };
-
-    this.bodyNeeds = new BodyNeeds(config.bodyNeedsPath ?? "./data/bodyNeeds.json", { bus: this.bus });
-    this.health = new HealthConditions(config.healthStatePath, { bus: this.bus });
     this.emotion = new EmotionSystem(config.emotionStatePath, {
       bodyPath: null,
       healthPath: config.healthStatePath,
       bus: this.bus
     });
-    this.emotion.body = this.bodyNeeds;
-    this.world = new WorldContext(config.worldContextPath, { bus: this.bus, journalAppend });
-    this.social = new SocialGraph(config.socialGraphPath, { bus: this.bus, journalAppend });
     this.trust = new TrustIntimacySystem(config.trustBondsPath, { bus: this.bus });
     this.relationship =
       config.relationshipStore ??
@@ -68,29 +40,18 @@ export class BrainOrchestrator {
       bus: this.bus,
       searchAdapter: config.searchAdapter
     });
-    this.life = new LifeEngine({
-      profilePath: config.lifeProfilePath,
-      statePath: config.lifeStatePath,
-      bus: this.bus,
-      socialGraph: this.social,
-      musicWorld: this.music,
-      bodyNeeds: this.bodyNeeds,
-      journalAppend,
-      workerLlm: config.workerLlm
-    });
-    this.autonomous = new AutonomousEvolution(config.autonomousStatePath ?? "./data/autonomousState.json", {
-      bus: this.bus,
-      journalAppend,
-      workerLlm: config.workerLlm,
-      searchAdapter: config.searchAdapter,
-      worldContext: this.world
+    // A vida dela (rotina, sono, disponibilidade, humor) vem do plano do dia — uma fonte só,
+    // igual em qualquer processo. Substitui o motor antigo de atividades/obrigações/NPCs.
+    this.life = config.dailyLife ?? new DailyLife({
+      statePath: config.dailyLifeStatePath ?? "./data/life/state.json",
+      timeZone: config.timeZone ?? "America/Sao_Paulo",
+      bus: this.bus
     });
     this.absorbed = new AbsorbedKnowledgeBridge(config.absorbedPatternsPath, { bus: this.bus });
     this.insights = new CreativeInsightEngine({
       bridge: this.absorbed,
       bus: this.bus
     });
-    this.autonomous.insightEngine = this.insights;
 
     this.timing = new TimingEngine({
       enabled: config.timingEnabled !== false,
@@ -112,7 +73,7 @@ export class BrainOrchestrator {
       contextBuilder: config.contextBuilder,
       bus: this.bus
     });
-    this.narrator = new LifeNarrator({ workerLlm: config.workerLlm });
+    this.narrator = new LifeNarrator();
     this.mindLogger = config.mindLogEnabled
       ? new MindLogger(config.mindLogPath, { enabled: true, mode: config.mindLogMode ?? "slim" })
       : null;
@@ -120,6 +81,7 @@ export class BrainOrchestrator {
     this.arbitrator = new CandidateArbitrator();
 
     this._backgroundTimer = null;
+    this.backgroundTickMs = config.backgroundTickMs;
     if (config.backgroundTickMs > 0) {
       this._backgroundTimer = setInterval(() => this.tickBackground(), config.backgroundTickMs);
       if (this._backgroundTimer.unref) this._backgroundTimer.unref();
@@ -129,18 +91,25 @@ export class BrainOrchestrator {
   }
 
   reconcileSleepFromSchedule() {
-    const tz = this.life.profile.get().timezone ?? "America/Sao_Paulo";
-    const rhythm = this.absorbed.getPatterns().rhythm ?? {};
-    const result = this.life.sleep.reconcileWithSchedule({
-      timezone: tz,
-      rhythm,
-      now: new Date()
-    });
-    if (result?.state) {
-      console.log(
-        `[life.sleep] reconciliado — acordou (${result.state}) fora da janela de sono`
-      );
-    }
+    this.life.tick();
+  }
+
+  /** Humor/energia do dia por cima do sistema de emoções antigo (que travava em "irritada"). */
+  emotionSnapshot() {
+    const base = this.emotion.getSnapshot();
+    const day = this.life.mood();
+    return {
+      ...base,
+      mood: day.mood,
+      energy: day.energy,
+      social: day.social,
+      valence: day.valence,
+      body: undefined
+    };
+  }
+
+  localHour() {
+    return Math.floor(this.life.locate().minute / 60) % 24;
   }
 
   enrichTrustForTiming(userId, channelScope, emotion, hour) {
@@ -157,10 +126,10 @@ export class BrainOrchestrator {
   }
 
   buildTimingContext(turnContext = {}) {
-    const hour = turnContext.hourOfDay ?? new Date().getHours();
+    const hour = turnContext.hourOfDay ?? this.localHour();
     const userId = turnContext.userId ?? "default";
     const channelScope = turnContext.channelScope ?? "direct";
-    const emotion = turnContext.emotion ?? this.emotion.getSnapshot();
+    const emotion = turnContext.emotion ?? this.emotionSnapshot();
     const behaviorSnap = this.behaviorProfiler?.snapshot?.() ?? {};
     const lastMessageAt =
       this.timeStore?.getLastMessage?.(userId, turnContext.sessionId) ?? null;
@@ -171,7 +140,6 @@ export class BrainOrchestrator {
     const subconscious = this.narrator.buildSubconscious({
       emotion,
       life: this.life.getSnapshot(),
-      social: this.social.getSnapshot(),
       trustBond,
       repetition: this.repetition.getSnapshot(turnContext.sessionId)
     });
@@ -180,8 +148,8 @@ export class BrainOrchestrator {
       ...turnContext,
       hourOfDay: hour,
       emotion,
-      body: turnContext.body ?? this.bodyNeeds.getState(),
-      health: turnContext.health ?? this.health.getActive(),
+      body: turnContext.body ?? {},
+      health: turnContext.health ?? [],
       life: turnContext.life ?? { ...this.life.getSnapshot(), sleep: this.life.sleep.getSnapshot() },
       sleep: turnContext.sleep ?? this.life.sleep.getSnapshot(),
       trustBond,
@@ -203,15 +171,10 @@ export class BrainOrchestrator {
 
   buildSnapshot(turnContext = {}) {
     const lifeSnap = this.life.getSnapshot();
-    const emotionSnap = this.emotion.getSnapshot();
-    const sleepSnap = this.life.sleep.getSnapshot();
+    const emotionSnap = this.emotionSnapshot();
+    const sleepSnap = lifeSnap.sleep;
     const trustBond = turnContext.userId
-      ? this.enrichTrustForTiming(
-          turnContext.userId,
-          turnContext.channelScope ?? "direct",
-          emotionSnap,
-          new Date().getHours()
-        )
+      ? this.enrichTrustForTiming(turnContext.userId, turnContext.channelScope ?? "direct", emotionSnap, this.localHour())
       : null;
     const relationship = turnContext.userId
       ? this.relationship.getSnapshot(turnContext.userId, { longTerm: this.memory?.longTerm })
@@ -220,16 +183,16 @@ export class BrainOrchestrator {
     return {
       ts: new Date().toISOString(),
       emotion: emotionSnap,
-      body: this.bodyNeeds.getState(),
-      health: this.health.getActive(),
-      life: { ...lifeSnap, sleep: sleepSnap },
+      body: {},
+      health: [],
+      life: lifeSnap,
       sleep: sleepSnap,
-      world: this.world.getSnapshot(),
-      social: this.social.getSnapshot(),
-      music: this.music.getSnapshot(),
+      world: { currentLocation: "sp", isTraveling: false },
+      social: {},
+      music: {},
       trustBond,
       relationship,
-      autonomous: this.autonomous.getSnapshot(),
+      autonomous: {},
       absorbed: this.absorbed.getPatterns(),
       repetition: this.repetition.getSnapshot(turnContext.sessionId),
       timing: null,
@@ -241,39 +204,8 @@ export class BrainOrchestrator {
   async tickTurn(turnContext = {}) {
     if (!this.enabled) return { snapshot: {}, blocks: {}, timingPlan: {} };
 
-    const tz = this.life.profile.get().timezone ?? "America/Sao_Paulo";
-    const now = new Date();
-    const hour = turnContext.hourOfDay ?? getLocalHour(now, tz);
-    const rhythm = this.absorbed.getPatterns().rhythm ?? {};
-
-    this.life.sleep.reconcileWithSchedule({ timezone: tz, rhythm, now });
-
-    this.world.tick({
-      now,
-      emotion: this.emotion.getSnapshot(),
-      life: this.life.getSnapshot()
-    });
-    const worldSnap = this.world.getSnapshot();
-    this.bodyNeeds.tick({ hourOfDay: hour, activity: this.life.getSnapshot().currentActivity ?? "idle" });
-    this.health.tick({
-      region: worldSnap.currentLocation,
-      climateTags: worldSnap.climateTags,
-      sleepQuality: this.life.sleep.getSnapshot().quality ?? 0.7
-    });
-    this.emotion.tick({
-      hourOfDay: hour,
-      region: worldSnap.currentLocation,
-      climateTags: worldSnap.climateTags,
-      sleepQuality: this.life.sleep.getSnapshot().quality ?? 0.7
-    });
-    this.life.tick({
-      now,
-      hourOfDay: hour,
-      rhythm,
-      emotion: this.emotion.getSnapshot()
-    });
-    this.social.tick({ emotion: this.emotion.getSnapshot(), availability: this.life.sleep.isAvailable() ? "awake" : "sleeping" });
-    this.music.tick({ phase: this.life.getSnapshot().phase, emotion: this.emotion.getSnapshot() });
+    const hour = turnContext.hourOfDay ?? this.localHour();
+    this.life.tick();
 
     if (turnContext.userId && turnContext.message) {
       this.trust.recordInteraction({
@@ -337,76 +269,23 @@ export class BrainOrchestrator {
       snapshot.timing.initiateReason ??= snapshot.arbitration.winner.detail;
     }
 
-    const useLlmNarrator = Boolean(this.narrator.workerLlm) && (
-      turnContext.isVulnerable ||
-      turnContext.isDirectMention ||
-      turnContext.isReply ||
-      (hour >= 22 || hour < 5) ||
-      (snapshot.trustBond?.intimacy ?? 0) > 0.65 ||
-      snapshot.arbitration?.winner?.weight >= 0.7
-    );
-    let blocks;
-    if (useLlmNarrator) {
-      const narrated = await this.narrator.narrate(snapshot, { useLlm: true });
-      blocks = {
-        conscious: narrated.conscious ?? narrated.consciousBlock?.replace(/^\[CONSCIOUS[^\]]*\]\s*/i, ""),
-        subconscious: narrated.subconscious ?? narrated.subconsciousBlock?.replace(/^\[SUBCONSCIOUS[^\]]*\]\s*/i, ""),
-        source: narrated.source ?? "worker_llm"
-      };
-    } else {
-      const built = this.narrator.buildBlocks(snapshot);
-      blocks = {
-        conscious: built.conscious,
-        subconscious: built.subconscious,
-        source: "deterministic_v1"
-      };
-    }
+    // Narrador determinístico: a vida vem do plano do dia (o narrador por LLM inventava coisas que
+    // não ficavam salvas e custava uma chamada extra por mensagem).
+    const blocks = {
+      conscious: this.life.promptLines({ isGroup: Boolean(turnContext.isGroup) }).join("\n"),
+      subconscious: this.narrator.buildSubconscious(snapshot),
+      source: "daily_life_v2"
+    };
     return { snapshot, blocks, timingPlan: snapshot.timing };
   }
 
   async tickBackground() {
     if (!this.enabled) return;
-    const tz = this.life.profile.get().timezone ?? "America/Sao_Paulo";
-    const now = new Date();
-    const hour = getLocalHour(now, tz);
-    const rhythm = this.absorbed.getPatterns().rhythm ?? {};
-    const emotion = this.emotion.getSnapshot();
-    const ctx = {
-      now,
-      hourOfDay: hour,
-      rhythm,
-      emotion,
-      availability: this.life.sleep.isAvailable() ? "awake" : "sleeping"
-    };
-    this.world.tick({
-      now,
-      emotion,
-      life: this.life.getSnapshot()
-    });
-    this.life.tick(ctx);
-    this.social.tick(ctx);
-    this.music.tick({ life: this.life.getSnapshot(), emotion });
-    this.bodyNeeds.tick({ hourOfDay: hour });
-    this.health.tick({ world: this.world.getSnapshot() });
-    this.emotion.tick({ hourOfDay: hour, body: this.bodyNeeds.getState(), health: this.health.getActive() });
+    this.life.tick();
     this.repetition.tick();
-    this.trust.tick({ hoursElapsed: 1 });
+    // Vínculo esfria devagar com o tempo real (antes: 1h a cada 2 min).
+    this.trust.tick({ hoursElapsed: (this.backgroundTickMs ?? 120000) / 3600000 });
     this.memory.tick();
-
-    const nowMs = Date.now();
-    if (nowMs - this._lastMusicResearchAt >= this.musicResearchIntervalMs) {
-      this._lastMusicResearchAt = nowMs;
-      await this.music.research({ query: "Kasane Teto SynthV new release 2025" }).catch(() => null);
-    }
-
-    const snapshot = this.buildSnapshot();
-    if (nowMs - this._lastSoloThoughtAt >= this.soloThoughtIntervalMs) {
-      this._lastSoloThoughtAt = nowMs;
-      await this.autonomous.tick(snapshot, { useLlm: Boolean(this.autonomous.workerLlm?.generate) });
-    } else {
-      await this.autonomous.tick(snapshot, { useLlm: false });
-    }
-
     this.bus.emit("brain.background_tick", { ts: new Date().toISOString() });
   }
 

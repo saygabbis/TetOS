@@ -6,7 +6,7 @@ import {
   removeStickerFromRepertoire,
   saveStickerToRepertoire,
   findRepertoireEntryByMessageId
-} from "../../src/integrations/whatsapp/stickerRepertoire.js";
+} from "../../src/integrations/whatsapp/media/stickerRepertoire.js";
 
 describe("sticker repertoire remove", () => {
   it("remove by messageId deletes file and catalog entry", () => {

@@ -33,3 +33,18 @@ describe("resolveAutomateRun", () => {
     expect(resolveAutomateRun({})).toBeNull();
   });
 });
+
+import { beginEnqueue, endEnqueue, resolveAutomateRun as resolveRun } from "../../src/integrations/automate/automateRunContext.js";
+
+describe("evento do PC antes do register", () => {
+  it("id desconhecido durante um enfileiramento em andamento é desse run", () => {
+    beginEnqueue("run-early-1", "wa:5511@s.whatsapp.net");
+    expect(resolveRun({ instructionId: "instr-early-xyz" })).toMatchObject({ runId: "run-early-1", threadId: "wa:5511@s.whatsapp.net" });
+    // depois de reivindicado, continua resolvendo pelo instructionId
+    expect(resolveRun({ instructionId: "instr-early-xyz" })?.runId).toBe("run-early-1");
+    endEnqueue("run-early-1");
+  });
+  it("sem enfileiramento em andamento, id desconhecido continua null", () => {
+    expect(resolveRun({ instructionId: "instr-nada" })).toBeNull();
+  });
+});

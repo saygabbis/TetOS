@@ -1,4 +1,4 @@
-import { botMentionedInJids, classifyTetoAddress, isDirectTetoAddress } from "../src/integrations/whatsapp/messageContext.js";
+import { botMentionedInJids, classifyTetoAddress, isDirectTetoAddress } from "../src/integrations/whatsapp/inbound/messageContext.js";
 import { assert, ok } from "./test-helpers.js";
 
 assert(

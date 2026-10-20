@@ -1,5 +1,5 @@
-import { ChatMessageIndex } from "../src/integrations/whatsapp/chatMessageIndex.js";
-import { resolveVerifiedQuoteKey } from "../src/integrations/whatsapp/quoteMessageResolver.js";
+import { ChatMessageIndex } from "../src/integrations/whatsapp/inbound/chatMessageIndex.js";
+import { resolveVerifiedQuoteKey } from "../src/integrations/whatsapp/inbound/quoteMessageResolver.js";
 import { assert, ok } from "./test-helpers.js";
 
 const channel = "test@g.us";

@@ -52,14 +52,19 @@ export class ContextBuilder {
           .all()
           .filter((entry) => String(entry?.userId ?? "default") === safeUserId);
 
-    if (channelScope !== "direct") {
-      entries = entries.filter(
-        (entry) => !entry.channelScope || entry.channelScope === channelScope || entry.channelScope === "direct"
-      );
-    }
+    // Cada escopo só vê o que foi dito nele: grupo não puxa memória do PV (nem de outro grupo), e o PV
+    // não puxa o que a pessoa falou em grupo. Entradas antigas sem escopo seguem valendo.
+    const inScope = (entry) =>
+      channelScope === "direct"
+        ? !entry.channelScope || entry.channelScope === "direct"
+        : entry.channelScope === channelScope || (!entry.channelScope && !String(entry.userId ?? "").startsWith("dm-"));
+    entries = entries.filter(inScope);
 
     const searchHits = this.longTerm.search?.({ query: message }) ?? [];
-    const merged = dedupeEntries([...entries, ...searchHits.filter((e) => String(e.userId ?? "default") === safeUserId)]);
+    const merged = dedupeEntries([
+      ...entries,
+      ...searchHits.filter((e) => String(e.userId ?? "default") === safeUserId && inScope(e))
+    ]);
 
     const scored = merged.map((entry) => {
       const tags = Array.isArray(entry.tags)

@@ -1,4 +1,4 @@
-import { createProcessedCommandDeduper } from "../src/integrations/whatsapp/processedCommandDeduper.js";
+import { createProcessedCommandDeduper } from "../src/integrations/whatsapp/inbound/processedCommandDeduper.js";
 import { assert, ok } from "./test-helpers.js";
 
 const deduper = createProcessedCommandDeduper(1000);

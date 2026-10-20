@@ -48,16 +48,34 @@ const threadIdByRunId = new Map();
 /** @type {Map<string, string>} */
 const clientRunIdByThread = new Map();
 
-/** Último run cliente (run-*) enfileirado pela UI — mapeia instructionId antes do register. */
-let lastClientAutomateRun = null;
+/**
+ * Enfileiramentos em andamento: o PC pode mandar eventos (até o "concluído") antes de a resposta do
+ * automate_enqueue chegar com o instructionId. Enquanto houver UM em andamento, o id desconhecido é dele.
+ */
+const pendingEnqueues = [];
+const PENDING_TTL_MS = 15_000;
+const MAX_TRACKED = 500;
+
+const capMap = (map) => {
+  while (map.size > MAX_TRACKED) map.delete(map.keys().next().value);
+};
+
+export function beginEnqueue(runId, threadId) {
+  if (!runId || !threadId) return;
+  pendingEnqueues.push({ runId, threadId, at: Date.now() });
+}
+
+export function endEnqueue(runId) {
+  const i = pendingEnqueues.findIndex((p) => p.runId === runId);
+  if (i >= 0) pendingEnqueues.splice(i, 1);
+}
 
 export function bindRunToThread(runId, threadId) {
   if (!runId || !threadId) return;
   threadIdByRunId.set(runId, threadId);
-  if (String(runId).startsWith("run-")) {
-    clientRunIdByThread.set(threadId, runId);
-    lastClientAutomateRun = { runId, threadId, at: Date.now() };
-  }
+  if (String(runId).startsWith("run-")) clientRunIdByThread.set(threadId, runId);
+  capMap(threadIdByRunId);
+  capMap(clientRunIdByThread);
 }
 
 export function resolveThreadIdForRun(runId) {
@@ -68,7 +86,9 @@ export function resolveThreadIdForRun(runId) {
 export function registerAutomateRun({ instructionId, runId, threadId }) {
   if (!instructionId || !runId || !threadId) return;
   byInstructionId.set(instructionId, { runId, threadId });
+  capMap(byInstructionId);
   bindRunToThread(runId, threadId);
+  endEnqueue(runId);
 }
 
 /**
@@ -99,6 +119,17 @@ export function resolveAutomateRun(params = {}) {
     const threadId = threadFromParam ?? resolveThreadIdForRun(clientFromThread);
     if (threadId) {
       return { runId: clientFromThread, threadId, instructionId };
+    }
+  }
+
+  // Evento chegou antes do register: se há exatamente um enfileiramento recente em andamento, é dele.
+  if (instructionId) {
+    const fresh = pendingEnqueues.filter((p) => Date.now() - p.at <= PENDING_TTL_MS);
+    if (fresh.length === 1) {
+      const [claim] = fresh;
+      byInstructionId.set(instructionId, { runId: claim.runId, threadId: claim.threadId });
+      endEnqueue(claim.runId);
+      return { runId: claim.runId, threadId: claim.threadId, instructionId };
     }
   }
 

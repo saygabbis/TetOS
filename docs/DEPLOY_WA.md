@@ -1,4 +1,4 @@
-# Deploy do WhatsApp Runner (`npm run start:wa`)
+# Deploy do WhatsApp Runner (`npm run start:wa:supervised`)
 
 Este guia descreve como configurar **CI** (testes automáticos) e **CD** (deploy automático do runner WhatsApp) com GitHub Actions.
 
@@ -21,7 +21,7 @@ flowchart LR
   A[Push na main] --> B[CI — testes]
   B -->|sucesso| C[CD — SSH no servidor]
   C --> D[npm ci --omit=dev]
-  D --> E[reinicia npm run start:wa na screen TetOS]
+  D --> E[reinicia npm run start:wa:supervised na screen TetOS]
 ```
 
 O runner em produção equivale a:
@@ -29,9 +29,23 @@ O runner em produção equivale a:
 ```bash
 screen -r TetOS
 # dentro da screen:
-npm run start:wa
-# node src/integrations/whatsapp/runner.js
+npm run start:wa:supervised
+# = node scripts/supervisor.js → reinicia o runner (src/integrations/whatsapp/runner.js) se ele cair,
+#   com espera crescente (2s → 60s) e log em data/logs/runner-AAAA-MM-DD.log (7 dias)
 ```
+
+> **Por que supervisionado:** antes, se o processo morria (erro, conexão "zumbi"), a Teto ficava desligada até alguém
+> reiniciar na mão (houve buraco de 6 dias). Agora há sonda de conexão a cada 4 min, reconexão automática e o supervisor.
+> Recomendado no `.env` da VPS: `WHATSAPP_INBOUND_STALE_MS=3600000` e `TETOS_API_HOST=127.0.0.1`.
+
+### Depois de atualizar o código (uma vez)
+
+```bash
+npm ci                    # o .npmrc já pula o download de binários CUDA do onnxruntime (Whisper roda em CPU)
+npm run data:sanitize     # limpa identidades/lembretes quebrados e apaga arquivos dos sistemas antigos de vida
+```
+
+O Whisper local baixa o modelo (~240 MB) em `data/models/` na primeira vez (fica fora do git).
 
 ---
 
@@ -96,7 +110,7 @@ Configure também o LLM (`TETOS_LLM_PROVIDER`, chaves de API, etc.) conforme o [
 cd /opt/tetos
 npm ci
 screen -S TetOS
-npm run start:wa
+npm run start:wa:supervised
 ```
 
 Escaneie o QR Code se necessário. Para sair **sem parar** o processo:
@@ -224,14 +238,14 @@ O script `scripts/deploy-wa.sh`:
 
 - Verifica se `.env` existe
 - Roda `npm ci --omit=dev`
-- Se a screen **`TetOS`** já existe: envia `Ctrl+C` e relança `npm run start:wa`
+- Se a screen **`TetOS`** já existe: envia `Ctrl+C` e relança `npm run start:wa:supervised`
 - Se não existe: cria `screen -dmS TetOS` com o comando de start
 
 Variáveis opcionais no servidor:
 
 ```bash
 export TETOS_SCREEN_NAME=TetOS      # padrão
-export TETOS_START_CMD="npm run start:wa"  # padrão
+export TETOS_START_CMD="npm run start:wa:supervised"  # padrão
 ```
 
 ---
@@ -240,7 +254,7 @@ export TETOS_START_CMD="npm run start:wa"  # padrão
 
 Arquivo: `.github/workflows/backup-vps.yml` (nome **Backup VPS (encerra a TetOS)** no GitHub Actions).
 
-> **⚠️ AVISO:** Este workflow **encerra** o runner WhatsApp na screen `TetOS`, faz o backup e **deixa a aplicação encerrada**. Não há restart automático. Para subir de novo: `screen -r TetOS` + `npm run start:wa`, ou rode o workflow **CI/CD**.
+> **⚠️ AVISO:** Este workflow **encerra** o runner WhatsApp na screen `TetOS`, faz o backup e **deixa a aplicação encerrada**. Não há restart automático. Para subir de novo: `screen -r TetOS` + `npm run start:wa:supervised`, ou rode o workflow **CI/CD**.
 
 ### Como usar
 
@@ -290,7 +304,7 @@ backup(vps): snapshot antes de migração
 
 ```bash
 screen -r TetOS
-npm run start:wa
+npm run start:wa:supervised
 # Ctrl+A, depois D
 ```
 
@@ -338,7 +352,7 @@ screen -r TetOS
 # Reinício manual dentro da screen
 screen -r TetOS
 # Ctrl+C para parar
-npm run start:wa
+npm run start:wa:supervised
 # Ctrl+A, D para detach
 
 # Ou use o script de deploy

@@ -4,7 +4,7 @@ import {
   formatMissingMediaCommandHint,
   isUrlMediaCommand,
   parseWhatsAppCommand
-} from "../../src/integrations/whatsapp/mediaCommandParser.js";
+} from "../../src/integrations/whatsapp/commands/mediaCommandParser.js";
 
 describe("media command parser", () => {
   it("normalizes supported media command aliases", () => {

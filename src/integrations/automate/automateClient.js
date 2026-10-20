@@ -1,4 +1,4 @@
-import { registerAutomateRun } from "./automateRunContext.js";
+import { beginEnqueue, endEnqueue, registerAutomateRun } from "./automateRunContext.js";
 import { parseAutomateMention } from "./parseAutomateMention.js";
 
 function parseInstructionFromResult(result) {
@@ -27,12 +27,17 @@ export class AutomateClient {
     if (Array.isArray(meta.skillNames) && meta.skillNames.length > 0) {
       args.skillNames = meta.skillNames;
     }
-    const result = await this.gateway.callTool(deviceId, "automate_enqueue", args);
-    const instructionId = parseInstructionFromResult(result);
-    if (instructionId) {
-      registerAutomateRun({ instructionId, runId, threadId });
+    beginEnqueue(runId, threadId);
+    try {
+      const result = await this.gateway.callTool(deviceId, "automate_enqueue", args);
+      const instructionId = parseInstructionFromResult(result);
+      if (instructionId) {
+        registerAutomateRun({ instructionId, runId, threadId });
+      }
+      return result;
+    } finally {
+      endEnqueue(runId);
     }
-    return result;
   }
 
   async answer(clarificationId, answers, deviceId = this.defaultDeviceId) {

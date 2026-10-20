@@ -40,7 +40,27 @@ describe("relationship commitment store", () => {
     const ctx = store.buildPromptContext("dm-stranger", null);
     expect(ctx.isPartner).toBe(false);
     expect(ctx.lines.join(" ")).toMatch(/fiel|comprometida|casada/i);
-    expect(ctx.lines.join(" ")).toMatch(/Gabbis/);
+    // Com quem ela está não é da conta de terceiros.
+    expect(ctx.lines.join(" ")).not.toMatch(/Gabbis/);
+  });
+
+  it("no grupo, parceiro recebe tom discreto e namoro não avança", () => {
+    store.advance("dm-gabbis", "dating", { displayName: "Gabbis" });
+    const ctx = store.buildPromptContext("dm-gabbis", null, { isGroup: true });
+    expect(ctx.lines.join(" ")).toMatch(/discreto/i);
+    expect(ctx.lines.join(" ")).not.toMatch(/Como anda/);
+  });
+
+  it("pedido de namoro feito no grupo não muda o status", () => {
+    const turn = store.processTurn({ message: "teto namora comigo? eu te amo muito", userId: "5511999", isGroup: true });
+    expect(turn.changed).toBe(false);
+    expect(store.isCommitted()).toBe(false);
+  });
+
+  it("parceiro é a própria pessoa, nunca trocada pela dona", () => {
+    const runtime = { defaults: { learningTargetUserId: "5516999999999" }, longTerm: { getProfile: () => ({ facts: {} }), updateProfile() {} } };
+    store.advance("dm-5511888", "dating", { displayName: "Bia", runtime });
+    expect(store.getState().partnerUserId).toBe("dm-5511888");
   });
 
   it("builds partner prompt with warmth", () => {

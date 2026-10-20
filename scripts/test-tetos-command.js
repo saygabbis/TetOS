@@ -3,10 +3,10 @@ import {
   stripTetosPromptMentions,
   resolveTetosMessage,
   isQuotedTetosOneShot
-} from "../src/integrations/whatsapp/tetosCommand.js";
-import { parseTetoSlashCommand } from "../src/integrations/whatsapp/tetoSlashCommands.js";
-import { isGroupPriorityEntry } from "../src/integrations/whatsapp/groupTurnPlanner.js";
-import { planFloodAwareGroupSegments } from "../src/integrations/whatsapp/groupFloodCoordinator.js";
+} from "../src/integrations/whatsapp/commands/tetosCommand.js";
+import { parseTetoSlashCommand } from "../src/integrations/whatsapp/commands/tetoSlashCommands.js";
+import { isGroupPriorityEntry } from "../src/integrations/whatsapp/conversation/groupTurnPlanner.js";
+import { planFloodAwareGroupSegments } from "../src/integrations/whatsapp/conversation/groupFloodCoordinator.js";
 import { assert, ok } from "./test-helpers.js";
 
 const dot = parseTetosCommand(".tetos qual a capital do brasil?");

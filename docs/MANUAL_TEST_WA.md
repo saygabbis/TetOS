@@ -55,13 +55,27 @@ Use o prefixo configurado em `COMMAND_PREFIX` (padrão `.`).
 4. Teste reação via conversa quando apropriado (`reagir("❤️")` na saída do agente).
 5. Confira se figurinhas enviadas pelo agente usam chaves existentes em `data/stickers/`.
 
+## Checklist Novidades (reforma de outubro/2026)
+
+1. **Rajada**: mande 3 mensagens seguidas com pausas ("oi" / "tudo bem?" / "queria te contar uma coisa") → 1 resposta só.
+2. **Digitando**: escreva "então tipo" e continue digitando → ela espera você terminar.
+3. **Áudio**: mande uma mensagem de voz → ela responde ao que foi falado.
+4. **Voz**: "manda um áudio me dando boa noite" → chega mensagem de voz.
+5. **Link**: mande um link do YouTube/X sem pedir nada → ela comenta o conteúdo (não baixa). "baixa em mp3" → baixa.
+6. **Clima**: "vai chover amanhã?" → previsão real.
+7. **Vida**: "o que você tá fazendo?" → bate com `GET /life/now`; se estiver ocupada/dormindo, ela responde depois.
+8. **Memória**: conte algo com data ("sexta tenho entrevista"); ~15 min depois a conversa esfria e entra no caderno
+   (`GET /people/<id>`); depois do dia, ela pode perguntar "e aí, como foi?".
+9. **Grupo/privacidade**: conte um segredo no PV; no grupo, outra pessoa pergunta → "sei de nada não kkk".
+10. **Grupo/flood**: 3 pessoas chamando ao mesmo tempo → 1 resposta com até 2 bolhas, falando com cada um.
+
 ## O Que Observar no `mind:watch`
 
 - `reasons[]` no timing.
 - `trustBond` evoluindo gradualmente após várias mensagens.
 - `groupMemory` sendo alimentada em grupo.
 - `closeDecision` quando a conversa pede encerramento.
-- `worldContext` quando viagens/rotinas autônomas dispararem.
+- logs `[iniciativa]`, `away_hold`/`sleep_hold` e `pegou o celular` (respostas adiadas).
 - eventos `repertoire.vision` ao salvar figurinhas com visão.
 
 ## Modo Só Ativação

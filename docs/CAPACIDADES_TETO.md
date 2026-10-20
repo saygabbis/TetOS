@@ -176,6 +176,10 @@ Ela consegue:
 - recuperar contexto relevante antes de responder;
 - separar escopos de DM e grupo.
 
+**Caderno de memória (novo)**: cada pessoa (PV) e cada grupo tem um caderno reescrito pelo modelo auxiliar quando a conversa
+esfria: resumo de como a pessoa anda, fatos com importância (os miúdos somem com o tempo), pendências com data
+("entrevista na sexta") e aniversários. Entra no prompt como lembrança natural e alimenta a iniciativa.
+
 ## Reminders
 
 A Teto consegue:
@@ -218,16 +222,22 @@ Formatos pensados para uso local:
 - `.md`;
 - `.json`.
 
-## Busca e Leitura Web
+## Busca, Links e Clima
 
-A Teto possui módulo de busca:
+- **Busca**: "pesquisa…", "procura…" → resultados no prompt (`POST /search` também).
+- **Links**: qualquer link vira `[LINK — você abriu e viu]` e ela comenta como quem viu:
+  - YouTube: título, canal, duração, views e **o que falam no vídeo** (legenda automática);
+  - X/Twitter: texto, autor, curtidas, citação e **descrição da foto** (visão);
+  - TikTok e Instagram: legenda, autor e imagem; Spotify: música; páginas: título + texto principal.
+  - Só baixa quando pedem ("baixa", "manda o vídeo", "em mp3", "thumb").
+- **Clima**: "vai chover?", "tá frio aí?", "como tá o tempo em Recife" → previsão real (Open-Meteo); sem cidade = São Paulo.
 
-- endpoint `POST /search`;
-- busca integrada ao pipeline de conversa;
-- resultados podem entrar como contexto no prompt;
-- adapter de leitura/busca reutilizado por módulos de mundo, música e autonomia.
+## Áudio
 
-Observação: a qualidade dessa capacidade depende do adapter configurado e do ambiente com acesso à rede quando aplicável.
+- **Ouvir**: áudio recebido é transcrito (Whisper local num processo separado, sem Python; ou API com
+  `TETOS_STT_API_KEY`) e ela responde ao que foi FALADO. Silêncio/ruído = "só ouvi barulho"; falha = "não consegui ouvir agora".
+- **Falar**: `audio("…")` manda mensagem de voz (TTS neural, voz configurável). Quando pedem ("manda um áudio") ou
+  raramente no PV; em grupo só se pedirem; intervalo mínimo de 10 min para áudio espontâneo.
 
 ## Operações Administrativas
 
@@ -249,57 +259,23 @@ Exemplos de superfície:
 - ler/escrever documentos via operação;
 - responder a confirmações.
 
-## Vida, Emoção e Autonomia
+## Vida 24/7
 
-O `BrainOrchestrator` dá à Teto uma camada contínua de estado interno:
+- Um dia inteiro planejado a partir da data (igual em qualquer processo): acorda (mais tarde no fim de semana), café com pão,
+  grava cover, ensaia, mixa, call com produtor, aula de canto (terça), rolê de sexta, live no sábado, almoço na casa do Ted no
+  domingo, saídas com Miku/Rin/Len/Luka/Neru/Momo/Defoko, banho, dorme. 1–3 acontecimentos por dia mudam o humor.
+- No prompt: `[SUA VIDA AGORA]` — o que está fazendo (desde/até), o que fez hoje, o que aconteceu, o que vem, ontem, humor.
+- **Disponibilidade real**: livre responde na hora; ocupada/na rua responde depois ("tava gravando, vi agora");
+  dormindo responde quando acorda. Nada se perde (caixa em disco). A dona é vista antes; insistência/urgência encurta.
+- **Sono**: janela que varia por dia; a dona insistindo acorda ela grogue só pro chat dela (máx. 2x por noite).
+- **Presença**: online só enquanto está usando o zap; "visto por último" no resto; mensagens ficam lidas quando ela abre.
+- Ajuste: `TETOS_LIFE_REALISM=full|light|off`.
 
-- rotina de vida;
-- sono e disponibilidade;
-- corpo/necessidades;
-- saúde;
-- emoção;
-- mundo/contexto;
-- social graph;
-- confiança e intimidade;
-- música;
-- repetição;
-- memória orquestrada;
-- pensamentos/autonomia;
-- insights criativos;
-- narrador consciente/subconsciente.
+## Iniciativa
 
-Essas camadas influenciam:
-
-- se ela responde agora ou segura;
-- timing de leitura/pensamento/digitação;
-- humor e energia da resposta;
-- iniciativa para puxar assunto;
-- sensibilidade em mensagens vulneráveis;
-- comportamento em horários de sono;
-- foco/ocupação em atividades internas.
-
-## Iniciativa e Presença
-
-A Teto pode puxar assunto sozinha quando configurada:
-
-- avalia usuários conhecidos;
-- respeita cooldown;
-- respeita limite diário por usuário;
-- evita madrugada;
-- evita usuários que pediram espaço;
-- evita iniciar se o usuário está ativo demais;
-- usa `InitiationEngine` e `BasicLoop`;
-- envia iniciativa pelo WhatsApp quando há destino resolvido.
-
-Configs relacionadas:
-
-- `PRESENCE_ENABLED`;
-- `PRESENCE_CHECK_MS`;
-- `PRESENCE_MIN_COOLDOWN_MS`;
-- `PRESENCE_MAX_COOLDOWN_MS`;
-- `PRESENCE_MAX_DAILY_PER_USER`;
-- `PRESENCE_INACTIVE_MS`;
-- `TETOS_INITIATION_CHANCE`.
+- Só com gente próxima (dona, parceria, intimidade alta), só livre e acordada, nunca duas mensagens sem resposta,
+  no máximo 2/dia (dona/parceria) ou 1/dia (outros). Motivos: aniversário, "como foi aquilo?" (pendência vencida do
+  caderno), bom dia, algo que aconteceu no dia dela, saudade depois de dias sem falar.
 
 ## Aprendizado e Relatórios
 

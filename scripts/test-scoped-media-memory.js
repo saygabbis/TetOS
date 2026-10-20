@@ -1,6 +1,6 @@
 import { MultimodalMemoryStore } from "../src/core/memory/multimodalMemory.js";
 import { VisualAnalysisStore } from "../src/modules/vision/visualAnalysisStore.js";
-import { ChatMediaHistoryStore } from "../src/integrations/whatsapp/chatMediaHistoryStore.js";
+import { ChatMediaHistoryStore } from "../src/integrations/whatsapp/media/chatMediaHistoryStore.js";
 import { MediaLearningHub } from "../src/core/media/MediaLearningHub.js";
 import fs from "node:fs";
 import os from "node:os";

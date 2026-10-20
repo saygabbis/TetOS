@@ -11,10 +11,14 @@ export function describeMediaForPrompt(media, userText = "") {
   if (media.type === "image") hints.push("A mensagem veio com imagem.");
   if (media.type === "video") hints.push(media.isAnimated ? "A mensagem veio com mídia animada." : "A mensagem veio com vídeo.");
   if (media.type === "gif") hints.push("A mensagem veio com GIF.");
-  if (media.type === "audio") {
-    hints.push("A mensagem veio com áudio.");
-    if (media.transcriptSource === "fallback") {
-      hints.push("Transcrição automática indisponível — peça para repetir em texto se precisar do conteúdo exato.");
+  const isAudio = media.type === "audio";
+  if (isAudio) {
+    if (hasTranscript) {
+      hints.push("A pessoa mandou um ÁUDIO (mensagem de voz) e você ouviu. Responda ao que ela FALOU, como quem escutou o áudio — não diga que leu, não fale em transcrição.");
+    } else if (media.transcriptSource === "no_speech") {
+      hints.push("A pessoa mandou um áudio, mas só dá pra ouvir silêncio/ruído/música, sem fala clara. Reaja natural (ex.: 'mandou áudio mudo?', 'só ouvi barulho kkk').");
+    } else {
+      hints.push("A pessoa mandou um áudio que você não conseguiu ouvir agora (falha técnica). Diga isso de forma natural e curta (ex.: 'não tô conseguindo ouvir áudio agora, me manda escrito?') — não invente o conteúdo.");
     }
   }
   if (media.type === "sticker") {
@@ -30,14 +34,15 @@ export function describeMediaForPrompt(media, userText = "") {
     hints.push("Descrição visual ainda pendente — reaja ao tipo de mídia mesmo assim (comentário, emoji ou figurinha).");
   }
   if (media.caption) hints.push(`Legenda da mídia: ${media.caption}`);
-  if (media.transcript) {
+  if (media.transcript && isAudio) {
+    hints.push(`O que a pessoa falou no áudio: "${media.transcript}"`);
+  } else if (media.transcript) {
     hints.push(`Descrição visual da mídia (leitor de imagem): ${media.transcript}`);
     if (/kasane\s*teto|menina\s+(ruiva|rosa)|garota\s+(ruiva|rosa)|cabelo\s+(ruivo|rosa|vermelho)|twin\s*drill|brocas/i.test(media.transcript)) {
       hints.push("A figurinha/imagem parece ser a Kasane Teto (cabelo rosa/vermelho em brocas) — reaja como se estivesse vendo você ou seu meme.");
     }
   }
   if (text) hints.push(`Texto associado: ${text}`);
-  if (media.path) hints.push(`Arquivo persistido: ${media.path}`);
   if (isVisual && !visionFailed) {
     hints.push(
       "Figurinha/imagem sem legenda ainda exige reação — comentário curto, reagir() ou figurinha do repertório; não fique em silêncio salvo spam óbvio."

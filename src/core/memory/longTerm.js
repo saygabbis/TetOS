@@ -145,8 +145,15 @@ export class LongTermMemory {
     return next;
   }
 
+  /** Só o perfil deste escopo (sem herdar o geral) — para o que pode ser dito num grupo. */
+  getScopedProfile(userId = "default", channelScope = "direct") {
+    return this.data.profiles[profileKey(userId, channelScope)] ?? { facts: {}, style: {}, counts: {} };
+  }
+
   getMediumTerm(userId = "default", channelScope = "direct") {
     const key = profileKey(userId, channelScope);
+    // Grupo não herda memória do escopo geral (que pode ter vindo do PV).
+    if (channelScope && channelScope !== "direct") return this.data.mediumTerm[key] ?? [];
     return this.data.mediumTerm[key] ?? this.data.mediumTerm[userId] ?? [];
   }
 

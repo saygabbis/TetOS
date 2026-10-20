@@ -12,9 +12,6 @@ import { BrainOrchestrator } from "../core/brain/BrainOrchestrator.js";
 import { Agent } from "../core/agent/agent.js";
 import { ChatService } from "../modules/chat/chatService.js";
 import { ResponseProcessorPool } from "../modules/chat/responseProcessorPool.js";
-import { BasicLoop } from "../modules/scheduler/basicLoop.js";
-import { InitiationQueue } from "../core/autonomy/initiationQueue.js";
-import { InitiationEngine } from "../core/autonomy/initiationEngine.js";
 import { InternalState } from "../core/state/internalState.js";
 import { TimeStore } from "../core/time/timeStore.js";
 import { UserPatternsStore } from "../core/time/userPatternsStore.js";
@@ -22,14 +19,14 @@ import { ChannelRegistry } from "../core/channels/channelRegistry.js";
 import { GroupEngagementWindow } from "../core/channels/groupEngagementWindow.js";
 import { ChannelAdminService } from "../core/channels/channelAdmin.js";
 import { TetoActivationStore } from "../core/channels/TetoActivationStore.js";
-import { StickerRepertoireModeStore } from "../integrations/whatsapp/stickerRepertoireModeStore.js";
-import { ViewOnceMirrorStore } from "../integrations/whatsapp/viewOnceMirrorStore.js";
-import { ViewOnceMirrorService } from "../integrations/whatsapp/viewOnceMirrorService.js";
-import { SleepMessageBuffer } from "../core/life/sleepMessageBuffer.js";
+import { StickerRepertoireModeStore } from "../integrations/whatsapp/media/stickerRepertoireModeStore.js";
+import { ViewOnceMirrorStore } from "../integrations/whatsapp/media/viewOnceMirrorStore.js";
+import { ViewOnceMirrorService } from "../integrations/whatsapp/media/viewOnceMirrorService.js";
+import { DeferredInbox } from "../integrations/whatsapp/conversation/deferredInbox.js";
 import { VisualKnowledgeStore } from "../core/media/visualKnowledgeStore.js";
 import { runMessagePipeline } from "../core/pipeline/messagePipeline.js";
-import { SearchAdapter } from "../modules/search/searchAdapter.js";
-import { SearchModule } from "../modules/search/searchModule.js";
+import { SearchAdapter } from "../modules/web/searchAdapter.js";
+import { SearchModule } from "../modules/web/searchModule.js";
 import { DocumentStore } from "../modules/documents/documentStore.js";
 import { DocumentWriter } from "../modules/documents/documentWriter.js";
 import { DocumentModule } from "../modules/documents/documentModule.js";
@@ -46,6 +43,12 @@ import { VisualAnalysisStore } from "../modules/vision/visualAnalysisStore.js";
 import { VisualAnalyzer } from "../modules/vision/visualAnalyzer.js";
 import { SemanticVisionAnalyzer } from "../modules/vision/semanticVisionAnalyzer.js";
 import { OllamaVisionAnalyzer } from "../modules/vision/ollamaVisionAnalyzer.js";
+import { LinkReader } from "../modules/web/linkReader.js";
+import { WeatherService } from "../modules/web/weather.js";
+import { AutomateApiClient } from "../integrations/automate/automateApiClient.js";
+import { PeopleMemory } from "../core/memory/peopleMemory.js";
+import { InitiativeState } from "../core/autonomy/initiative.js";
+import { VoiceNotes } from "../modules/voice/voiceNotes.js";
 import { Logger } from "../infra/observability/logger.js";
 import { MetricsStore } from "../infra/observability/metricsStore.js";
 import { loadCharacter, loadPersonality } from "../core/personality/index.js";
@@ -147,7 +150,7 @@ export function createRuntime() {
     enabled: DEFAULTS.audioTranscribeEnabled,
     model: DEFAULTS.whisperModel,
     language: DEFAULTS.whisperLanguage,
-    pythonPath: DEFAULTS.pythonPath
+    modelsDir: DEFAULTS.modelsDir
   });
   const visualAnalyses = new VisualAnalysisStore(DEFAULTS.visualAnalysesPath, {
     maxPerScope: DEFAULTS.visualAnalysesMaxPerScope
@@ -168,6 +171,9 @@ export function createRuntime() {
       DEFAULTS.visionAdapter === "ollama" &&
       DEFAULTS.visionEnabled &&
       DEFAULTS.mediaEnrichEnabled
+  });
+  const linkReader = new LinkReader({
+    describeImageFile: (filePath) => ollamaVisionAnalyzer?.analyze?.({ filePath, mediaType: "image" }) ?? null
   });
   const primaryVisionAnalyzer =
     DEFAULTS.visionAdapter === "ollama" ? ollamaVisionAnalyzer : semanticVisionAnalyzer;
@@ -244,6 +250,17 @@ export function createRuntime() {
         })
       : null;
 
+  // Caderno de memória por pessoa/grupo: consolidado pelo modelo auxiliar (resposta maior que a do worker).
+  const peopleMemory = new PeopleMemory(DEFAULTS.peopleMemoryPath, {
+    llm: createLlmClient({
+      model: DEFAULTS.llmProvider === "minimax" ? DEFAULTS.minimaxWorkerModel : DEFAULTS.workerLlmModel || DEFAULTS.model,
+      temperature: 0.2,
+      numPredict: 900,
+      worker: true
+    }),
+    timeZone: DEFAULTS.dailyReportTz ?? "America/Sao_Paulo"
+  });
+
   const relationshipStore = new RelationshipCommitmentStore(DEFAULTS.relationshipStatePath, {
     bus: null
   });
@@ -281,6 +298,8 @@ export function createRuntime() {
         mindLogEnabled: DEFAULTS.mindLogEnabled,
         mindLogMode: DEFAULTS.mindLogMode,
         groupMemoryPath: DEFAULTS.groupMemoryPath,
+        dailyLifeStatePath: DEFAULTS.dailyLifeStatePath,
+        timeZone: DEFAULTS.dailyReportTz ?? "America/Sao_Paulo",
         episodicMemoryPath: DEFAULTS.episodicMemoryPath,
         timingEnabled: DEFAULTS.timingEngineEnabled,
         backgroundTickMs: DEFAULTS.brainBackgroundTickMs,
@@ -320,26 +339,6 @@ export function createRuntime() {
     maxParts: DEFAULTS.responseMaxParts,
     similarityThreshold: DEFAULTS.responseSimilarity,
     historyLimit: DEFAULTS.responseHistoryLimit
-  });
-  const initiationQueue = new InitiationQueue(DEFAULTS.initiationQueuePath);
-  const initiationEngine = new InitiationEngine({
-    brainOrchestrator,
-    timeStore,
-    userPatterns,
-    internalState,
-    shortTerm,
-    longTerm,
-    initiationQueue
-  });
-  const basicLoop = new BasicLoop({
-    inactiveMs: DEFAULTS.presenceInactiveMs,
-    chance: DEFAULTS.initiationChance,
-    minCooldownMs: DEFAULTS.presenceMinCooldownMs,
-    maxCooldownMs: DEFAULTS.presenceMaxCooldownMs,
-    maxDailyPerUser: DEFAULTS.presenceMaxDailyPerUser,
-    brainOrchestrator,
-    timeStore,
-    userPatterns
   });
   const chatService = new ChatService(agent, responseProcessor, internalState, { shortTerm });
   const channelAdmin = new ChannelAdminService(channelRegistry);
@@ -385,6 +384,12 @@ export function createRuntime() {
     multimodalMemory,
     audioTranscriptions,
     audioTranscriber,
+    linkReader,
+    weather: new WeatherService(),
+    automateBridge: new AutomateApiClient(),
+    peopleMemory,
+    voiceNotes: new VoiceNotes(),
+    initiativeState: new InitiativeState(DEFAULTS.initiativeStatePath),
     imageGenerationService,
     visualAnalyses,
     visualAnalyzer,
@@ -402,16 +407,11 @@ export function createRuntime() {
     relationshipStore,
     agent,
     responseProcessor,
-    basicLoop,
-    initiationQueue,
-    initiationEngine,
     chatService,
     internalState,
     timeStore,
     userPatterns,
-    sleepMessageBuffer: new SleepMessageBuffer({
-      maxPerSession: Number(process.env.TETOS_SLEEP_BUFFER_MAX ?? 12)
-    }),
+    deferredInbox: new DeferredInbox(DEFAULTS.deferredInboxPath),
     defaults: DEFAULTS
   };
   viewOnceMirror.runtime = runtime;

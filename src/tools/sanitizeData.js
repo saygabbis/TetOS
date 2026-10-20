@@ -2,7 +2,7 @@
 // Limpeza de dados: dedupe de memórias, reparo de identidades e remoção de perfis-artefato.
 // Faz backup do memory.json antes. Rode com o runner/API parados (eles mantêm o arquivo em memória).
 import "dotenv/config";
-import { copyFileSync, existsSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, unlinkSync } from "node:fs";
 import { DEFAULTS } from "../infra/config/defaults.js";
 import { LongTermMemory } from "../core/memory/longTerm.js";
 import { pruneIdentityArtifactProfiles, repairProfileContamination } from "../core/channels/botIdentity.js";
@@ -72,5 +72,13 @@ if (existsSync(DEFAULTS.remindersPath ?? "./data/reminders.json")) {
     writeJson(path, data);
   }
   console.log(`${path}: ${closed} lembretes sem horário encerrados`);
+}
+// Arquivos dos sistemas antigos de vida (substituídos pelo plano do dia em data/life/): ninguém lê mais.
+for (const legacy of ["lifeJournal.ndjson", "autonomousState.json", "socialGraph.json", "lifeState.json", "worldContext.json", "tetoLife.json", "bodyNeeds.json", "initiationQueue.json"]) {
+  const path = `./data/${legacy}`;
+  if (existsSync(path)) {
+    unlinkSync(path);
+    console.log(`removido (sistema antigo): ${path}`);
+  }
 }
 console.log("sanitize complete");

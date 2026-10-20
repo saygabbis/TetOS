@@ -7,7 +7,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 SCREEN_NAME="${TETOS_SCREEN_NAME:-TetOS}"
-START_CMD="${TETOS_START_CMD:-npm run start:wa}"
+# Supervisor religa o runner se ele cair (antes, um crash deixava a Teto fora até o próximo deploy).
+START_CMD="${TETOS_START_CMD:-npm run start:wa:supervised}"
 # API UI (desktop + relay): use PM2 na VPS — `npm run pm2:start` sobe tetos-api e tetos-wa.
 
 if [ ! -f ".env" ]; then

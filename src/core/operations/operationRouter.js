@@ -8,9 +8,10 @@ export class OperationRouter {
     this.pendingConfirmations = pendingConfirmations;
   }
 
+  /** Dona sempre; outra pessoa só se for o TETOS_ADMIN_USER_ID configurado (sem ele, ninguém mais). */
   isAdmin(userId, { isOwner = false } = {}) {
     if (isOwner) return true;
-    if (!this.adminUserId) return true;
+    if (!this.adminUserId) return false;
     return String(userId ?? "").trim() === this.adminUserId;
   }
 
@@ -32,11 +33,14 @@ export class OperationRouter {
       return this.channelAdmin.execute(payload);
     }
 
+    // Documentos são arquivos do computador da dona.
     if (type === "document_list") {
+      if (!this.isAdmin(userId, { isOwner })) return { error: "not authorized" };
       return { documents: this.documentModule.list() };
     }
 
     if (type === "document_read") {
+      if (!this.isAdmin(userId, { isOwner })) return { error: "not authorized" };
       return { document: this.documentModule.read(payload.id) };
     }
 

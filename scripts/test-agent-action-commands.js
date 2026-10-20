@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { parseActionCommands } from "../src/modules/chat/chatService.js";
 import { detectAgentUrlDownloadIntent } from "../src/core/media/agentUrlDownloadIntent.js";
-import { isPresetStickerKey, normalizeAgentMediaCommand } from "../src/integrations/whatsapp/agentMediaCommands.js";
+import { isPresetStickerKey, normalizeAgentMediaCommand } from "../src/integrations/whatsapp/commands/agentMediaCommands.js";
 import {
   deriveStickerKeyFromVision,
   extractDisplayName,
   sanitizeVisionDescription
-} from "../src/integrations/whatsapp/stickerVisionNaming.js";
+} from "../src/integrations/whatsapp/media/stickerVisionNaming.js";
 
 assert.equal(
   deriveStickerKeyFromVision('Sticker animada: a cat wearing a red hat'),

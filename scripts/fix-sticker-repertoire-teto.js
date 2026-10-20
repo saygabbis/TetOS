@@ -9,7 +9,7 @@
 import { existsSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { readJson, writeJson } from "../src/infra/utils/fileStore.js";
-import { slugifyStickerKey } from "../src/integrations/whatsapp/stickerVisionNaming.js";
+import { slugifyStickerKey } from "../src/integrations/whatsapp/media/stickerVisionNaming.js";
 
 const STICKERS_DIR = process.env.TETOS_STICKERS_PATH ?? "./data/stickers";
 const APPLY = process.argv.includes("--apply");

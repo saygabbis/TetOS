@@ -15,7 +15,7 @@ import {
   runUiSaveSticker,
   runUiUrlDownload
 } from "../../../integrations/ui/uiMediaActions.js";
-import { isUrlMediaCommand } from "../../../integrations/whatsapp/mediaCommandParser.js";
+import { isUrlMediaCommand } from "../../../integrations/whatsapp/commands/mediaCommandParser.js";
 
 function uploadLimitBytes() {
   const mb = Number(process.env.TETOS_UI_UPLOAD_LIMIT_MB ?? 64);

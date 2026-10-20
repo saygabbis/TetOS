@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { ChatMessageIndex } from "../../src/integrations/whatsapp/chatMessageIndex.js";
+import { ChatMessageIndex } from "../../src/integrations/whatsapp/inbound/chatMessageIndex.js";
 import {
   messageExistsInQuoteContext,
   resolveVerifiedQuoteKey,
   scoreMessageIdSimilarity
-} from "../../src/integrations/whatsapp/quoteMessageResolver.js";
+} from "../../src/integrations/whatsapp/inbound/quoteMessageResolver.js";
 
 const channel = "5516@s.whatsapp.net";
 

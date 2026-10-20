@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync, existsSync, renameSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, renameSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 
 export function readJson(path, fallback) {
   if (!existsSync(path)) {
@@ -18,6 +19,8 @@ export function readJson(path, fallback) {
 
 /** Grava em arquivo temporário e renomeia: queda no meio nunca deixa JSON truncado. */
 function writeJsonAtomic(path, data) {
+  // Pasta nova (ex.: data/life/) é criada na hora — antes a gravação falhava em silêncio.
+  mkdirSync(dirname(path), { recursive: true });
   const tmp = `${path}.${process.pid}.tmp`;
   writeFileSync(tmp, JSON.stringify(data, null, 2));
   renameSync(tmp, path);

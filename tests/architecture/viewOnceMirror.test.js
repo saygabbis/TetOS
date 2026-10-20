@@ -4,9 +4,9 @@ import {
   isViewOnceMessage,
   isViewOnceStub,
   viewOnceMediaKind
-} from "../../src/integrations/whatsapp/viewOnceDetect.js";
-import { ViewOnceMirrorStore } from "../../src/integrations/whatsapp/viewOnceMirrorStore.js";
-import { ViewOnceMirrorService } from "../../src/integrations/whatsapp/viewOnceMirrorService.js";
+} from "../../src/integrations/whatsapp/media/viewOnceDetect.js";
+import { ViewOnceMirrorStore } from "../../src/integrations/whatsapp/media/viewOnceMirrorStore.js";
+import { ViewOnceMirrorService } from "../../src/integrations/whatsapp/media/viewOnceMirrorService.js";
 
 describe("view once detect", () => {
   it("detects viewOnceMessageV2 wrapper", () => {
