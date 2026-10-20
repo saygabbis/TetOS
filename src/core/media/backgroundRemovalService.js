@@ -372,7 +372,6 @@ export async function removeAnimatedBackground(
     for (const frame of frames) {
       const src = join(framesDir, frame);
       const nobg = join(processedDir, frame);
-      const normalized = join(processedDir, `norm-${frame}`);
       const final = join(framesDir, frame);
       await removeImageBackground(src, nobg, { model, localOnly: true });
       if (background) {

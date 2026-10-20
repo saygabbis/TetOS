@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { createRuntime } from "../src/app/createRuntime.js";
 
 const runtime = createRuntime();

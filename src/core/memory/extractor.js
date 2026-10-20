@@ -1,8 +1,7 @@
+// Nome/apelido pedido pela pessoa: no máximo 2 palavras. "me chama no pv" não é nome.
 const NAME_PATTERNS = [
-  /\bmeu nome (?:é|eh)\s+([\p{L}][\p{L}\s'-]{1,40})/iu,
-  /\bme chama\s+([\p{L}][\p{L}\s'-]{1,40})/iu,
-  /\bpode me chamar de\s+([\p{L}][\p{L}\s'-]{1,40})/iu,
-  /\bme chame de\s+([\p{L}][\p{L}\s'-]{1,40})/iu
+  /\bmeu nome (?:é|eh)\s+([\p{L}][\p{L}'-]{1,24}(?:\s+[\p{L}][\p{L}'-]{1,24})?)/iu,
+  /\b(?:pode\s+)?me\s+cham(?:a|e|ar)\s+de\s+([\p{L}][\p{L}'-]{1,24}(?:\s+[\p{L}][\p{L}'-]{1,24})?)/iu
 ];
 
 const LIKE_PATTERNS = [

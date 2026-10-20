@@ -3,8 +3,15 @@ import {
   isBotIdentity,
   sanitizeIdentityAliases
 } from "./botIdentity.js";
-import { isOwnerContact, dmUserId, normalizeJidKey } from "./userActivity.js";
-import { OWNER_GIVEN_NAME_TOKENS, sanitizeProfileNicknames } from "./profileFacts.js";
+import { isBogusLidJid, isOwnerContact, dmUserId, normalizeJidKey } from "./userActivity.js";
+import {
+  OWNER_GIVEN_NAME_TOKENS,
+  TETO_ENDEARMENTS,
+  isIdentityIdLike,
+  isPlausibleHumanNickname,
+  isTetoNicknameCandidate,
+  sanitizeProfileNicknames
+} from "./profileFacts.js";
 
 /** "Gabbis( ˘ ³˘ )♥" → "Gabbis" */
 export function cleanDisplayName(raw = "") {
@@ -68,17 +75,11 @@ export function identityAliasKeys(userId = "", facts = {}) {
   }
   for (const a of facts.identityAliases ?? []) {
     const k = String(a ?? "").trim();
-    if (k) keys.add(k);
+    if (isIdentityIdLike(k)) keys.add(k);
   }
-  for (const n of facts.nicknames ?? []) {
-    const nick = cleanDisplayName(n);
-    if (nick) keys.add(nick.toLowerCase());
-  }
-  for (const n of facts.tetoNicknames ?? []) {
-    const nick = cleanDisplayName(n);
-    if (nick) keys.add(nick.toLowerCase());
-  }
-  return [...keys];
+  // Apelidos NÃO são identidade: "oi"/"kkk" como chave ligava centenas de contatos entre si.
+  // Busca por nome/apelido fica no índice de nomes (buildIdentityIndex).
+  return [...keys].filter((k) => k && (k === uid || isIdentityIdLike(k)));
 }
 
 /** Nomes/apelidos conhecidos de um contato (push, PV, grupo, apelidos da Teto). */
@@ -130,14 +131,14 @@ export function mergeProfileNicknames(existingFacts = {}, { userNick = null, tet
   };
   const addTeto = (n) => {
     const c = cleanDisplayName(n);
-    if (c && c.length >= 2) {
+    if (c && c.length >= 2 && isPlausibleHumanNickname(c)) {
       tetoNicknames.add(c);
       nicknames.add(c);
     }
   };
 
   if (pushName) addUser(pushName);
-  if (userNick) {
+  if (userNick && isPlausibleHumanNickname(userNick)) {
     addUser(userNick);
     existingFacts.preferredName = cleanDisplayName(userNick) || existingFacts.preferredName;
   }
@@ -185,39 +186,37 @@ export function addProfileNicknames(
   }
 }
 
-/** Captura vocativo no início da bolha da Teto (ex.: "Gabi, ..." / "bb "). */
+/**
+ * Captura como a Teto chama a pessoa: vocativo com vírgula no início da bolha ("amor, ..." / "Gabi, ...")
+ * ou "minha/meu <carinho> [Nome]". Só aceita termos de carinho ou variações do nome — a versão antiga
+ * pegava a 1ª palavra de qualquer bolha ("Oiii", "Tá", "Aff") e poluía perfis e o prompt.
+ */
 export function captureTetoNicknamesFromReplies(replies = [], { displayName = null, existing = [] } = {}) {
   const found = new Set((existing ?? []).map(cleanDisplayName).filter(Boolean));
   const base = cleanDisplayName(displayName)?.toLowerCase();
+  const accept = (raw) => {
+    const nick = cleanDisplayName(raw);
+    if (!nick) return;
+    const lower = nick.toLowerCase();
+    if (lower === base || OWNER_GIVEN_NAME_TOKENS.has(lower)) return;
+    if (!isTetoNicknameCandidate(nick, { displayName })) return;
+    found.add(nick);
+  };
 
   for (const reply of replies ?? []) {
     const text = String(reply ?? "").trim();
     if (!text) continue;
 
-    const vocative = text.match(/^([\p{L}][\p{L}'-]{1,24})[,!?.\s—-]/u);
-    if (vocative?.[1]) {
-      const nick = cleanDisplayName(vocative[1]);
-      if (
-        nick &&
-        nick.length >= 2 &&
-        nick.toLowerCase() !== base &&
-        !OWNER_GIVEN_NAME_TOKENS.has(nick.toLowerCase())
-      ) {
-        found.add(nick);
-      }
-    }
+    const vocative = text.match(/^([\p{L}][\p{L}'-]{1,24}),/u);
+    if (vocative?.[1]) accept(vocative[1]);
 
     const affectionCompound = text.match(
       /\b(?:minha|meu)\s+(?:princesa|príncipe|amor|beb[eê]|bb)\s+([\p{L}][\p{L}'-]{1,20})\b/iu
     );
     if (affectionCompound?.[1]) {
       const nick = cleanDisplayName(affectionCompound[1]);
-      if (
-        nick &&
-        nick.length >= 2 &&
-        nick.toLowerCase() !== base &&
-        !OWNER_GIVEN_NAME_TOKENS.has(nick.toLowerCase())
-      ) {
+      // Nome depois do carinho ("minha princesa Duda") é apelido mesmo sem parecer com o display.
+      if (nick && nick.length >= 2 && nick.toLowerCase() !== base && !OWNER_GIVEN_NAME_TOKENS.has(nick.toLowerCase()) && isPlausibleHumanNickname(nick)) {
         found.add(nick);
       }
     }
@@ -225,16 +224,8 @@ export function captureTetoNicknamesFromReplies(replies = [], { displayName = nu
     const affectionSimple = text.match(/\b(?:minha|meu)\s+([\p{L}][\p{L}'-]{1,20})\b/iu);
     if (affectionSimple?.[1]) {
       const skip = new Set(["princesa", "príncipe", "principe", "amor", "bebê", "bebe", "bb"]);
-      const nick = cleanDisplayName(affectionSimple[1]);
-      if (
-        nick &&
-        nick.length >= 2 &&
-        !skip.has(nick.toLowerCase()) &&
-        nick.toLowerCase() !== base &&
-        !OWNER_GIVEN_NAME_TOKENS.has(nick.toLowerCase())
-      ) {
-        found.add(nick);
-      }
+      const lower = affectionSimple[1].toLowerCase();
+      if (!skip.has(lower) && TETO_ENDEARMENTS.has(lower)) accept(affectionSimple[1]);
     }
   }
 
@@ -258,6 +249,8 @@ export function recordWaIdentity(
 ) {
   const profileKey = String(userId ?? "").trim();
   if (!profileKey || !runtime?.longTerm?.updateProfile) return;
+  // "<telefone>@lid" não existe — aprender identidade com ele corrompia o perfil (waLid = telefone).
+  if (isBogusLidJid(remoteJid) || isBogusLidJid(participantJid)) return;
 
   const existing = runtime.longTerm.getProfile?.(profileKey)?.facts ?? {};
   const facts = { ...existing };

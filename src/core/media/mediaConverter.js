@@ -139,7 +139,6 @@ export async function convertMedia(inputPath, targetFormat, outputDir, options =
       throw new Error("conversao nao gerou arquivo valido");
     }
 
-    const outSize = statSync(outputPath).size;
     const result = {
       path: outputPath,
       kind: dstKind,

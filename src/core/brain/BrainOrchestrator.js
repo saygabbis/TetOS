@@ -312,6 +312,7 @@ export class BrainOrchestrator {
       isDirectTetoCall: turnContext.isDirectTetoCall,
       isVulnerable: turnContext.isVulnerable,
       resumedAfterClose: turnContext.resumedAfterClose,
+      gapSinceLastMs: turnContext.gapSinceLastMs,
       tone: turnContext.tone,
       sessionId: turnContext.sessionId
     });

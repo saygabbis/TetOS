@@ -58,7 +58,6 @@ export class Agent {
 
     const profile = memoryBundle?.profile ?? this.longTerm.getProfile?.(meta.userId ?? "default") ?? {};
     const userName = profile?.facts?.name ?? null;
-    const userPronouns = profile?.facts?.pronouns ?? null;
 
     const reinforce = longTermEntries
       .filter((entry) => entry.type && entry.value)
@@ -94,7 +93,6 @@ export class Agent {
       : historySource
           .map((msg) => {
             const msgId = msg.meta?.messageId ?? msg.messageId ?? "";
-            const idPrefix = msgId ? `[ID: ${msgId}] ` : "";
             const quote = msg.meta?.quotedMessage
               ? ` [reply a: «${String(msg.meta.quotedMessage).slice(0, 120)}»]`
               : "";
@@ -197,7 +195,10 @@ export class Agent {
       '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
       '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
       '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
-      `22. computador("intenção em português") — Enfileira tarefa no AutoMate na máquina do usuário (abrir app, editar vídeo, automatizar desktop). Use quando pedirem algo no PC; descreva o objetivo claro na string. Pode combinar com mensagem("...") na mesma resposta. ${AUTOMATE_ABILITIES}`,
+      // AutoMate só executa pelo app desktop; no WhatsApp a ação nunca rodava (Teto prometia e não fazia).
+      ...(meta?.channelId === "ui-desktop"
+        ? [`22. computador("intenção em português") — Enfileira tarefa no AutoMate na máquina do usuário (abrir app, editar vídeo, automatizar desktop). Use quando pedirem algo no PC; descreva o objetivo claro na string. Pode combinar com mensagem("...") na mesma resposta. ${AUTOMATE_ABILITIES}`]
+        : ["(Controle do computador/AutoMate só existe no app TetOS — por aqui você não mexe no PC; se pedirem, diga isso de leve.)"]),
       "",
       ...downloadRulesLines,
       "COMANDOS DE MÍDIA — REGRAS:",
@@ -653,10 +654,6 @@ export class Agent {
       "Pontuação de zap gremlin: pode omitir ponto final; nunca termine com vírgula solta no fim. Use ? ! … ou nada. Sem travessão (—): humano no zap não escreve assim."
     ];
 
-    const factsBlock = [
-      ...(userName ? ["[FACTS]", `User name: ${userName}`] : []),
-      ...(userPronouns ? ["[FACTS]", `User pronouns: ${userPronouns}`] : [])
-    ];
     const reinforceBlock = reinforce.length ? ["[MEMORY NOTE]", ...reinforce] : [];
 
     const consciousBlock = brainBlocks?.conscious
@@ -986,7 +983,12 @@ export class Agent {
       : [];
 
     const documentBlock = documentContext
-      ? ["[DOCUMENT CONTEXT]", String(documentContext)]
+      ? [
+          "[DOCUMENT CONTEXT]",
+          "Você JÁ abriu e leu este documento — responda AGORA o que foi pedido usando o conteúdo (resuma/cite do seu jeito).",
+          "Não diga que ainda vai ler/abrir: a pessoa espera a resposta nesta mesma mensagem.",
+          String(documentContext)
+        ]
       : [];
 
     const operationBlock = operationContext

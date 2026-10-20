@@ -1,5 +1,7 @@
+import "dotenv/config";
 const port = process.env.TETOS_PORT ?? "6453";
-const response = await fetch(`http://localhost:${port}/status`);
+const authHeaders = process.env.TETOS_API_TOKEN ? { Authorization: `Bearer ${process.env.TETOS_API_TOKEN}` } : {};
+const response = await fetch(`http://localhost:${port}/status`, { headers: authHeaders });
 
 if (!response.ok) {
   const text = await response.text();

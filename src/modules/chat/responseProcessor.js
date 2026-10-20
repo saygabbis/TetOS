@@ -389,32 +389,6 @@ function splitMultiBubbleIntent(text) {
   return splitNewlineBubbles(text);
 }
 
-/** Linha única estilo zap: quebra só em conectores claros (evita fatiar palavras comuns). */
-function splitCapitalThoughtBoundaries(text) {
-  const s = String(text ?? "").trim();
-  if (!s || s.length < 12) return [s];
-  if (/\n/.test(s) || /\s---\s/.test(s)) return [s];
-
-  const connectors = [
-    /(?<=[a-záéíóúàâêôãõç])\s+(?=E\s+(?:você|voce)\b)/iu,
-    /(?<=[a-záéíóúàâêôãõç])\s+(?=Mas\s+)/iu,
-    /(?<=[a-záéíóúàâêôãõç])\s+(?=Só\s+)/iu,
-    /(?<=[a-záéíóúàâêôãõç])\s+(?=(?:Aff|Oxi|Ué|Mds|Nossa|Poxa)\s+)/iu
-  ];
-
-  let pieces = [s];
-  for (const re of connectors) {
-    const next = [];
-    for (const chunk of pieces) {
-      const parts = chunk.split(re).map((p) => p.trim()).filter(Boolean);
-      next.push(...(parts.length > 1 ? parts : [chunk]));
-    }
-    pieces = next;
-  }
-
-  return pieces.length >= 2 ? pieces : [s];
-}
-
 function isVocativeNameBubble(text) {
   const t = String(text ?? "")
     .trim()
@@ -443,46 +417,6 @@ function splitSentences(text) {
     }
   }
   return acc;
-}
-
-function splitByComma(sentence) {
-  const raw = String(sentence ?? "").trim();
-  if (!raw) return [];
-  const hadTrailingComma = /,\s*$/.test(raw);
-  const core = hadTrailingComma ? raw.replace(/,\s*$/, "") : raw;
-  const parts = core.split(/,\s+/).map((part) => part.trim()).filter((part) => part.length > 2);
-  if (parts.length <= 1) return [raw];
-  return parts;
-}
-
-/**
- * Quando o modelo manda uma linha só (sem .,!?), ainda dá para virar multi-bolha estilo zap.
- */
-function splitLongChatLine(sentence) {
-  const t = String(sentence ?? "").trim();
-  if (!t) return [];
-
-  const byComma = splitByComma(t);
-  if (byComma.length > 1) return byComma;
-
-  if (t.length < 24) return [t];
-
-  const byDash = t.split(/\s+[—–]\s+/).map((p) => p.trim());
-  if (byDash.length >= 2 && byDash.every((p) => p.length >= 10)) return byDash.filter(Boolean);
-
-  const tagEnd = t.match(/^(.{14,}?)\s+(né\??|néh|né\s*kkk+|néh\s*kkk+)\s*$/i);
-  if (tagEnd) {
-    const body = tagEnd[1].trim();
-    const tail = tagEnd[2].trim();
-    if (body.length >= 12 && tail.length >= 2) return [body, tail];
-  }
-
-  const masSplit = t.match(/^(.{16,}?)\s+((?:mas|só que)\s+.+)$/i);
-  if (masSplit && masSplit[2].trim().length >= 12) {
-    return [masSplit[1].trim(), masSplit[2].trim()];
-  }
-
-  return [t];
 }
 
 function isReactionOnly(sentence) {
@@ -759,29 +693,6 @@ function mergeShortParts(parts) {
   }
 
   return mergeTinyFragments(merged).map((text) => text.replace(/^,\s*/g, "").trim());
-}
-
-function chunkSentences(sentences, maxParts = Infinity) {
-  if (sentences.length <= 2) return [sentences.join(" ")];
-
-  const parts = [];
-  const target = Math.ceil(sentences.length / Math.min(maxParts, sentences.length));
-  let buffer = [];
-
-  for (const sentence of sentences) {
-    buffer.push(sentence);
-    const bufferText = buffer.join(" ");
-    if (bufferText.length > 140 || buffer.length >= target) {
-      parts.push(bufferText);
-      buffer = [];
-    }
-  }
-
-  if (buffer.length) {
-    parts.push(buffer.join(" "));
-  }
-
-  return parts;
 }
 
 function normalize(text) {

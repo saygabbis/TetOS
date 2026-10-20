@@ -30,6 +30,6 @@ export class DocumentModule {
 
   canHandle(text) {
     const t = String(text ?? "").toLowerCase();
-    return /\b(documento|arquivo|anota[cç][aã]o|nota|nota local|documento local)\b/.test(t);
+    return /(?<![\p{L}])(documento|arquivo|anota[cç][aã]o|nota|notas|documentos|arquivos)(?![\p{L}])/u.test(t);
   }
 }

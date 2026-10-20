@@ -14,10 +14,11 @@ export class ReminderStore {
     return all.filter((item) => String(item.userId ?? "") === String(userId));
   }
 
-  create({ userId, text, dueAt = null } = {}) {
+  create({ userId, text, dueAt = null, chatJid = null } = {}) {
     const reminder = {
       id: crypto.randomUUID(),
       userId: String(userId ?? "default"),
+      chatJid: chatJid ? String(chatJid) : null,
       text: String(text ?? "").trim(),
       dueAt,
       createdAt: new Date().toISOString(),

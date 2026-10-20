@@ -156,7 +156,7 @@ export function buildChannelTimelineForPrompt(
   };
 
   const text = formatChannelTimelineText(entries, lookupQuoted, visionByMessageId);
-  return { entries, text, limit: cap, visionByMessageId };
+  return { entries, text, limit: cap, visionByMessageId, source };
 }
 
 /** Converte timeline em history[] para compat (role user/assistant). */

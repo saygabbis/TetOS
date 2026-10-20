@@ -64,6 +64,22 @@ function detectTopicShift(message = "", history = []) {
   };
 }
 
+/** Sem falar há tanto tempo, a próxima mensagem abre papo novo (não é "fim de conversa"). */
+const NEW_CONVERSATION_GAP_MS = 20 * 60 * 1000;
+
+/** Cumprimento/abertura ("oi", "oiii", "bom dia", "voltei") — nunca é encerramento. */
+export function isGreetingOpener(text = "") {
+  const t = normalize(text).replace(/[^\p{L}\s]/gu, " ").replace(/\s+/g, " ").trim();
+  if (!t || t.length > 40) return false;
+  return /^(o+i+e*|o+l+a+|e+a+e+|e+ a+i+|ea+i+|he+y+|hello|salve|opa+|bom dia|boa tarde|cheguei|voltei|to de volta|ta ai|ta on)(\s|$)/.test(t);
+}
+
+/** Confirmação mínima sem conteúdo ("sim", "aham", "ata") — única msg curta que pode fechar papo. */
+function isMinimalAck(text = "") {
+  const t = normalize(text).replace(/[^\p{L}\s]/gu, "").replace(/(\p{L})\1+/gu, "$1").trim();
+  return /^(sim|s|aham|uhum|hum|hm|e|eh|ata|ah|ahn|sei|entendi|ne|pse|pois e|pois|ta|to|ok|blz|sim sim)$/.test(t);
+}
+
 function lastAssistantMessage(history = []) {
   for (let i = history.length - 1; i >= 0; i -= 1) {
     if (history[i]?.role === "assistant") return history[i];
@@ -222,6 +238,22 @@ export function analyzeConversationPhase(ctx = {}) {
     };
   }
 
+  const gapMs = Number(ctx.gapSinceLastMs);
+  const longGap = Number.isFinite(gapMs) && gapMs >= NEW_CONVERSATION_GAP_MS;
+  const greeting = isGreetingOpener(message) || (longGap && /^boa noite\b/.test(normalize(message)));
+  if ((greeting && (!isHardClose || longGap)) || (longGap && !isHardClose)) {
+    signals.push(greeting ? "abertura_cumprimento" : "papo_novo_apos_pausa");
+    return {
+      phase: "opening",
+      recommendedAction: "respond",
+      closeDecision: "none",
+      confidence: 0.9,
+      signals,
+      topicShift,
+      reasoning: greeting ? "cumprimento abre conversa — responder" : "pausa longa — conversa nova"
+    };
+  }
+
   if (ctx.resumedAfterClose && message.length > 6 && !isLull) {
     phase = "reopening";
     recommendedAction = "respond";
@@ -251,7 +283,7 @@ export function analyzeConversationPhase(ctx = {}) {
     });
     confidence = trailingBot >= 2 ? 0.84 : trailingBot >= 1 ? 0.76 : 0.68;
     signals.push(trailingBot >= 1 ? "lull_pos_resposta_bot" : "lull_simples");
-  } else if (trailingBot >= 2 && String(message).length < 8) {
+  } else if (trailingBot >= 2 && String(message).length < 8 && isMinimalAck(message) && !isDirectQuestion) {
     phase = "natural_end";
     recommendedAction = "silent";
     confidence = 0.72;
@@ -317,6 +349,10 @@ export function resolveCloseDecision(ctx = {}) {
   const analysis = analyzeConversationPhase(ctx);
   const heuristic = ctx.heuristicDecision ?? ctx.closeDecisionHint ?? null;
 
+  if (analysis.phase === "opening") {
+    return { closeDecision: "none", analysis };
+  }
+
   if (analysis.phase === "active" || analysis.phase === "topic_shift" || analysis.phase === "reopening") {
     if (analysis.phase === "topic_shift" && analysis.confidence >= 0.55) {
       return { closeDecision: "none", analysis };
@@ -350,6 +386,8 @@ export function mergeBrainCloseDecision(existing, phaseAnalysis) {
   if (phaseAnalysis.recommendedAction === "brief_farewell" && phaseAnalysis.confidence >= 0.58) {
     return "brief_farewell";
   }
+
+  if (phaseAnalysis.phase === "opening") return "none";
 
   if (phaseAnalysis.phase === "topic_shift" || phaseAnalysis.phase === "reopening") {
     if (current === "silent" || current === "react") return "none";
@@ -412,6 +450,10 @@ export function formatConversationPhaseBlock(phaseAnalysis) {
 
   if (phaseAnalysis.phase === "topic_shift") {
     lines.push("Assunto novo — responda ao que veio agora, não retome o tópico antigo por inércia.");
+  }
+
+  if (phaseAnalysis.phase === "opening") {
+    lines.push("Abertura de papo (cumprimento ou volta depois de um tempo) — responda com naturalidade, sem [SEM_RESPOSTA].");
   }
 
   if (phaseAnalysis.phase === "pending_answer") {

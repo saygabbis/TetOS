@@ -199,7 +199,6 @@ export class RelationshipCommitmentStore {
     }
 
     const text = String(message ?? "");
-    const state = this.getState();
     const isPartner = this.isPartner(userId, runtime);
     const flirtFromNonPartner =
       this.isCommitted() && !isPartner && detectFlirtTowardTeto(text, { isGroup });

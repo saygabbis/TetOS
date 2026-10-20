@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { CandidateArbitrator } from "../src/core/brain/CandidateArbitrator.js";
 import { createRuntime } from "../src/app/createRuntime.js";
 import { assert, ok } from "./test-helpers.js";

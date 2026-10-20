@@ -53,15 +53,78 @@ const NICKNAME_STOPWORDS = new Set([
   "calmaaa",
   "achei",
   "está",
-  "esta"
+  "esta",
+  // Palavras comuns que a captura antiga confundia com apelido (primeira palavra da bolha).
+  "a", "o", "as", "os", "um", "uma", "de", "da", "dos", "das", "em", "no", "na", "pra", "pro",
+  "se", "mas", "e", "é", "eh", "ou", "nem", "com", "sem", "por", "para", "lá", "la", "aqui",
+  "oi", "oii", "oiii", "oiie", "ooi", "ooooi", "olá", "ola", "ei", "eii", "eai", "eae", "opa", "salve",
+  "aff", "afff", "ugh", "ui", "ai", "aii", "ah", "ahh", "oh", "ohh", "eita", "eitaa", "nossa", "poxa",
+  "putz", "vish", "vixi", "xi", "oxí", "oxe", "ops", "hm", "hmm", "hmmm", "mmm", "uhul", "aham", "uhum",
+  "kk", "kkk", "kkkk", "haha", "hahaha", "rs", "rsrs", "ksks", "mano", "cara", "gente", "véi", "vei",
+  "sim", "nao", "não", "né", "ne", "tá", "ta", "tô", "to", "ok", "okay", "beleza", "blz", "certo", "claro",
+  "então", "entao", "bom", "boa", "bem", "mal", "sério", "serio", "calma", "pronto", "enfim", "tipo",
+  "olha", "vai", "vem", "bora", "deixa", "fala", "manda", "qual", "quando", "onde", "como", "porque",
+  "sou", "era", "foi", "fui", "vi", "já", "ja", "ainda", "agora", "hoje", "também", "tambem", "muito",
+  "nasci", "dormindo", "rindo", "sofrimento", "depende", "perfeito", "salvo", "salvooo", "três", "tres",
+  "aquele", "aquela", "isso", "esse", "essa", "xiu", "fica", "vou", "vamos", "acho", "sei", "sabe",
+  "obrigada", "obrigado", "valeu", "desculpa", "tchau", "bye", "teto", "vibe", "lado", "impaciente",
+  "deus", "vida", "celular", "casa", "dia", "noite", "tarde"
 ]);
 
-/** ID de grupo WhatsApp salvo por engano como alias de pessoa. */
+/** Termos de carinho que a Teto usa como vocativo ("amor, ..." / "minha linda"). */
+export const TETO_ENDEARMENTS = new Set([
+  "amor", "amorzinho", "amore", "mozão", "mozao", "mozinho", "mor", "bebê", "bebe", "bb", "bebezinha",
+  "bebezinho", "neném", "nenem", "nenê", "princesa", "princesinha", "príncipe", "principe", "linda",
+  "lindinha", "lindona", "lindeza", "fofa", "fofinha", "fofo", "fofinho", "gata", "gatinha", "gato",
+  "gatinho", "anjo", "anjinho", "flor", "florzinha", "querida", "querido", "docinho", "xuxu", "chuchu",
+  "coisinha", "diva", "rainha", "tesouro", "benzinho", "maninha", "miga", "amiga", "migs"
+]);
+
+/** Risada/interjeição de teclado: nunca é apelido nem identidade. */
+export function isLaughterOrNoiseToken(raw = "") {
+  const s = String(raw ?? "").toLowerCase().trim();
+  if (!s) return true;
+  if (/^k{2,}$/.test(s) || /^[ks]{3,}$/.test(s)) return true;
+  if (/^(rs)+$/.test(s) || /^(ha|he|hi|hu){2,}h?$/.test(s)) return true;
+  const letters = s.replace(/[^\p{L}]/gu, "");
+  if ((letters.match(/k/g) ?? []).length >= 2 && (letters.match(/[ksjdhf]/g) ?? []).length / letters.length >= 0.7) return true;
+  // "ooooi", "prontooo", "aiii" → forma base é palavra comum
+  const collapsed = s.replace(/(\p{L})\1+/gu, "$1");
+  if (collapsed !== s && NICKNAME_STOPWORDS.has(collapsed)) return true;
+  return false;
+}
+
+/**
+ * Vocativo/apelido que a Teto usou é aceitável? Só termos de carinho conhecidos ou
+ * variações do nome da pessoa (ex.: "Gabi" para "Gabbis") — nunca a 1ª palavra solta da bolha.
+ */
+export function isTetoNicknameCandidate(raw = "", { displayName = null, knownNames = [] } = {}) {
+  const n = cleanDisplayName(raw);
+  if (!n || n.length < 2 || n.length > 24) return false;
+  const lower = n.toLowerCase();
+  if (TETO_ENDEARMENTS.has(lower)) return true;
+  if (!isPlausibleHumanNickname(n)) return false;
+  const names = [displayName, ...(knownNames ?? [])]
+    .map((x) => cleanDisplayName(x)?.toLowerCase())
+    .filter((x) => x && x.length >= 3);
+  return names.some((name) => lower.length >= 3 && name.slice(0, 3) === lower.slice(0, 3));
+}
+
+/** ID de grupo WhatsApp salvo por engano como alias de pessoa (atual 120363… ou legado tel-timestamp). */
 export function isWhatsAppGroupIdAlias(alias = "") {
   const s = String(alias ?? "").trim();
   if (!s) return false;
+  const bare = (s.startsWith("dm-") ? s.slice(3) : s).replace(/@g\.us$/i, "");
+  return /^120\d{12,18}$/.test(bare) || /^\d{10,15}-\d{9,10}$/.test(bare) || /@g\.us$/i.test(s);
+}
+
+/** Chave de identidade = telefone, LID, dm-* ou JID de pessoa — nunca nome, apelido ou grupo. */
+export function isIdentityIdLike(alias = "") {
+  const s = String(alias ?? "").trim();
+  if (!s || isWhatsAppGroupIdAlias(s)) return false;
+  if (/^[\d]+@(s\.whatsapp\.net|lid|c\.us)$/i.test(s)) return true;
   const bare = s.startsWith("dm-") ? s.slice(3) : s;
-  return /^120\d{12,18}$/.test(bare);
+  return /^\d{6,20}$/.test(bare);
 }
 
 export function isPlausibleHumanNickname(raw = "") {
@@ -69,6 +132,7 @@ export function isPlausibleHumanNickname(raw = "") {
   if (!n || n.length < 2 || n.length > 28) return false;
   const lower = n.toLowerCase();
   if (NICKNAME_STOPWORDS.has(lower)) return false;
+  if (isLaughterOrNoiseToken(lower)) return false;
   if (/^\d+$/.test(n)) return false;
   if (!/[\p{L}]/u.test(n)) return false;
   return true;
@@ -104,6 +168,8 @@ export function filterIdentityAliasTokens(aliases = [], runtime, profileKey = ""
     const lower = String(alias).toLowerCase();
     if (!isOwner && OWNER_GIVEN_NAME_TOKENS.has(lower)) return false;
     if (isWhatsAppGroupIdAlias(alias)) return false;
+    // Só IDs (tel/LID/dm-*/JID); palavras e apelidos ligavam contatos diferentes entre si.
+    if (alias !== profileKey && !isIdentityIdLike(alias)) return false;
     return true;
   });
 }
@@ -143,7 +209,6 @@ export function fixMisaddressedOwnerName(text = "", { isOwner = false, interlocu
   if (!out || isOwner) return out;
 
   const name = cleanDisplayName(interlocutorName);
-  const replacement = name || "você";
 
   out = out.replace(/@gabbis\b/gi, name ? `@${name}` : "você");
   out = out.replace(

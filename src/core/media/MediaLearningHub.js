@@ -23,7 +23,8 @@ export class MediaLearningHub {
     this.path = path;
     this.bus = bus;
     this.visionAdapter = visionAdapter;
-    this.data = readJson(path, DEFAULT_AFFINITIES) ?? structuredClone(DEFAULT_AFFINITIES);
+    // clone: sem arquivo, readJson devolvia o próprio DEFAULT (todas as instâncias mutavam a constante)
+    this.data = readJson(path, null) ?? structuredClone(DEFAULT_AFFINITIES);
     this.data.scopes ??= {};
     this.migrateLegacyGlobal();
   }
@@ -66,6 +67,8 @@ export class MediaLearningHub {
     const scope = this.ensureScope(this.scopeKey(context));
     const type = media.type ?? "image";
     scope.mediaTypes[type] = (scope.mediaTypes[type] ?? 0) + 1;
+    this.data.mediaTypes ??= { image: 0, video: 0, audio: 0, sticker: 0 };
+    this.data.mediaTypes[type] = (this.data.mediaTypes[type] ?? 0) + 1;
 
     const perception = {
       type,

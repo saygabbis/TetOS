@@ -238,7 +238,6 @@ export class WorldContext {
   }
 
   tick({ now = new Date(), emotion = null, life = null } = {}) {
-    const seed = contextualSeed([this.state.currentLocation, now.getDate()]);
     this.state.localSeason = this.deriveSeason(now);
 
     if (this.state.localSeason === "inverno" && this.state.currentLocation === "sp") {

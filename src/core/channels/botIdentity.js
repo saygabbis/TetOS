@@ -1,7 +1,11 @@
-import { dmUserId, normalizeJidKey, ownerIdentityIds } from "./userActivity.js";
-import { extractLocalPart } from "./waIdentity.js";
+import { dmJidForLocalId, dmUserId, isBogusLidJid, normalizeJidKey, ownerIdentityIds } from "./userActivity.js";
+import { extractLocalPart, identityAliasKeys, isLikelyPhoneNumber } from "./waIdentity.js";
 import {
   filterIdentityAliasTokens,
+  isIdentityIdLike,
+  isPlausibleHumanNickname,
+  isTetoNicknameCandidate,
+  isWhatsAppGroupIdAlias,
   sanitizeProfileNicknames
 } from "./profileFacts.js";
 
@@ -113,53 +117,133 @@ export function buildBotActorIds(runtime, botPhone = "", botJid = "") {
   return ids;
 }
 
-/** Limpa aliases cruzados e apelidos espúrios em perfis já salvos. */
+/** waPhone/waLid só pertencem ao perfil se batem com a própria chave (senão vieram de propagação cruzada). */
+function trustedIdentityFacts(facts, profileKey, isOwner, runtime) {
+  const next = { ...facts };
+  const keyLocal = String(profileKey).split("::")[0].replace(/^dm-/, "");
+  // Telefone gravado como LID ("<tel>@lid") vinha de iniciativa com JID errado.
+  if (next.waLid && isLikelyPhoneNumber(next.waLid)) {
+    if (!next.waPhone) next.waPhone = next.waLid;
+    delete next.waLid;
+  }
+  if (next.waRemoteJid && isBogusLidJid(next.waRemoteJid)) next.waRemoteJid = dmJidForLocalId(next.waRemoteJid);
+  if (next.lastDmSessionId && isBogusLidJid(String(next.lastDmSessionId).replace(/^wa-dm:/, ""))) delete next.lastDmSessionId;
+  if (isOwner) {
+    const ownerJid = normalizeJidKey(runtime?.defaults?.ownerWaJids?.[0] ?? "");
+    const ownerPhone = String(runtime?.defaults?.learningTargetUserId ?? "").trim();
+    if (ownerPhone) next.waPhone = ownerPhone;
+    if (ownerJid.endsWith("@lid")) {
+      next.waLid = ownerJid.replace(/@.+$/, "");
+      next.waRemoteJid = ownerJid;
+    }
+    return next;
+  }
+  if ((next.waPhone || next.waLid) && keyLocal !== next.waPhone && keyLocal !== next.waLid) {
+    delete next.waPhone;
+    delete next.waLid;
+  }
+  if (next.waRemoteJid && !String(next.waRemoteJid).endsWith("@g.us")) {
+    const remoteLocal = extractLocalPart(next.waRemoteJid);
+    if (remoteLocal !== keyLocal && remoteLocal !== next.waPhone && remoteLocal !== next.waLid) {
+      delete next.waRemoteJid;
+    }
+  }
+  return next;
+}
+
+/**
+ * Limpa aliases cruzados e apelidos espúrios em perfis já salvos. Idempotente e grava uma vez só
+ * (antes regravava o memory.json inteiro por perfil reparado).
+ */
 export function repairProfileContamination(runtime) {
   const longTerm = runtime?.longTerm;
-  if (!longTerm?.data?.profiles) return { repaired: 0 };
+  const profiles = longTerm?.data?.profiles;
+  if (!profiles) return { repaired: 0 };
 
+  const ownerIds = ownerIdentityIds(runtime);
   let repaired = 0;
-  for (const [profileKey, profile] of Object.entries(longTerm.data.profiles)) {
+  for (const [profileKey, profile] of Object.entries(profiles)) {
     const facts = profile?.facts ?? {};
-    const aliases = facts.identityAliases ?? [];
-    const cleanedAliases = sanitizeIdentityAliases(aliases, runtime, profileKey);
-    const aliasesChanged = JSON.stringify(cleanedAliases) !== JSON.stringify(aliases);
+    const baseKey = String(profileKey).split("::")[0];
+    const isOwner = ownerIds.has(baseKey) || ownerIds.has(baseKey.replace(/^dm-/, ""));
+    const isBot = isBotIdentity(runtime, baseKey);
 
-    if (isBotIdentity(runtime, profileKey)) {
-      if (!aliasesChanged) continue;
-      longTerm.updateProfile(profileKey, {
-        facts: { ...facts, identityAliases: cleanedAliases }
-      });
-      repaired += 1;
-      continue;
+    const trusted = isBot ? { ...facts } : trustedIdentityFacts(facts, profileKey, isOwner, runtime);
+    const derived = identityAliasKeys(baseKey, { ...trusted, identityAliases: [] });
+    const seed = isBot
+      ? (facts.identityAliases ?? [])
+      : isOwner
+        ? [...derived, ...ownerIds]
+        : derived;
+    const identityAliases = sanitizeIdentityAliases([...new Set(seed)], runtime, baseKey);
+    const next = { ...trusted, identityAliases };
+
+    if (!isBot) {
+      const display = facts.preferredName || facts.displayName || facts.name || null;
+      if (next.preferredName && !isPlausibleHumanNickname(next.preferredName)) delete next.preferredName;
+      const knownNames = [facts.displayName, facts.name, next.preferredName].filter(Boolean);
+      const oldTeto = (facts.tetoNicknames ?? []).map((n) => String(n));
+      const keptTeto = oldTeto.filter((n) => isTetoNicknameCandidate(n, { displayName: display, knownNames }));
+      const droppedTeto = new Set(oldTeto.filter((n) => !keptTeto.includes(n)).map((n) => n.toLowerCase()));
+      next.tetoNicknames = sanitizeProfileNicknames(keptTeto, { displayName: display });
+      next.nicknames = sanitizeProfileNicknames(
+        (facts.nicknames ?? []).filter((n) => !droppedTeto.has(String(n).toLowerCase())),
+        { displayName: display }
+      );
     }
 
-    const display =
-      facts.preferredName || facts.displayName || facts.name || null;
-    const cleanedNicknames = sanitizeProfileNicknames(facts.nicknames ?? [], {
-      displayName: display
-    });
-    const cleanedTetoNicknames = sanitizeProfileNicknames(facts.tetoNicknames ?? [], {
-      displayName: display
-    });
-
-    const nicksChanged =
-      JSON.stringify(cleanedNicknames) !== JSON.stringify(facts.nicknames ?? []) ||
-      JSON.stringify(cleanedTetoNicknames) !== JSON.stringify(facts.tetoNicknames ?? []);
-
-    if (!aliasesChanged && !nicksChanged) continue;
-
-    longTerm.updateProfile(profileKey, {
-      facts: {
-        ...facts,
-        identityAliases: cleanedAliases,
-        nicknames: cleanedNicknames,
-        tetoNicknames: cleanedTetoNicknames
-      }
-    });
+    if (JSON.stringify(next) === JSON.stringify(facts)) continue;
+    profiles[profileKey] = { ...profile, facts: next };
     repaired += 1;
   }
+  if (repaired > 0) longTerm.persist?.();
   return { repaired };
+}
+
+/**
+ * Remove perfis-artefato com chave de palavra ("oi", "kkk", "gabbis", "luan savio"…) criados quando
+ * apelidos eram tratados como identidade. Destrutivo: só pelo `npm run data:sanitize` (com backup).
+ */
+export function pruneIdentityArtifactProfiles(runtime) {
+  const longTerm = runtime?.longTerm;
+  const profiles = longTerm?.data?.profiles;
+  if (!profiles) return { removed: 0 };
+
+  const nameTokens = new Set();
+  for (const [key, profile] of Object.entries(profiles)) {
+    if (!isIdentityIdLike(String(key).split("::")[0])) continue;
+    const f = profile?.facts ?? {};
+    for (const v of [f.displayName, f.name, f.preferredName, ...(f.nicknames ?? []), ...(f.tetoNicknames ?? []), ...(f.identityAliases ?? [])]) {
+      const c = String(v ?? "").trim().toLowerCase();
+      if (c) nameTokens.add(c);
+    }
+  }
+  const isArtifact = (base) => {
+    const lower = base.toLowerCase();
+    if (isIdentityIdLike(base) || ["default", "teto", "self", "local"].includes(lower)) return false;
+    if (/^\d+:\d+$/.test(base) || lower.startsWith("ui-")) return false; // grupo:participante / UI
+    return nameTokens.has(lower) || !isPlausibleHumanNickname(base) || isWhatsAppGroupIdAlias(base);
+  };
+
+  let removed = 0;
+  for (const [key, profile] of Object.entries(profiles)) {
+    const base = String(key).split("::")[0];
+    // Perfil real é escrito pelo pipeline (tem contagem de conversa); artefato de alias só tem fatos copiados.
+    const neverTalked = !(Number(profile?.counts?.total) > 0);
+    const keep = isIdentityIdLike(base) || ["default", "teto", "self", "local"].includes(base.toLowerCase()) || /^\d+:\d+$/.test(base);
+    if (isArtifact(base) || (!keep && neverTalked) || base.startsWith("eval-")) {
+      delete profiles[key];
+      removed += 1;
+    }
+  }
+  for (const key of Object.keys(longTerm.data.mediumTerm ?? {})) {
+    const base = String(key).split("::")[0];
+    if (!isIdentityIdLike(base) && isArtifact(base) && !String(key).includes(":")) {
+      delete longTerm.data.mediumTerm[key];
+    }
+  }
+  if (removed > 0) longTerm.persist?.();
+  return { removed };
 }
 
 /** @deprecated use repairProfileContamination */

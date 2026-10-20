@@ -32,6 +32,17 @@ attachUiCors(app);
 // Anexos pequenos ainda podem vir como dataUrl no JSON; arquivos grandes usam POST /ui/media.
 app.use(express.json({ limit: process.env.TETOS_UI_JSON_LIMIT ?? "25mb" }));
 
+// Endpoints antigos (/chat, /memory, /documents…) não têm sessão: com TETOS_API_TOKEN definido,
+// exigem "Authorization: Bearer <token>". Sem a variável, comportamento antigo (aberto).
+const apiToken = String(process.env.TETOS_API_TOKEN ?? "").trim();
+if (apiToken) {
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/ui")) return next();
+    if ((req.headers.authorization ?? "") === `Bearer ${apiToken}`) return next();
+    return res.status(401).json({ error: "Não autorizado" });
+  });
+}
+
 const uiBus = new UiEventBus();
 const deviceRegistry = new DeviceRegistry();
 if (deviceRegistry.list().length === 0) {
@@ -328,8 +339,10 @@ function startServer(port, attempt = 0) {
   const server = http.createServer(app);
   deviceGateway.attach(server);
   attachUiStream(server, uiBus);
-  server.listen(port, () => {
-    console.log(`TetOS API running on http://localhost:${port}`);
+  // TETOS_API_HOST=127.0.0.1 deixa a API só local (recomendado em VPS); padrão: todas as interfaces.
+  const host = String(process.env.TETOS_API_HOST ?? "").trim() || undefined;
+  server.listen(port, host, () => {
+    console.log(`TetOS API running on http://${host ?? "localhost"}:${port}`);
     hubAgentLink = startHubAgentLinkIfConfigured({ uiBus, dispatchBaseUrl: `http://127.0.0.1:${port}` });
   });
 

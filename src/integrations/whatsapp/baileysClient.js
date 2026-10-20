@@ -42,15 +42,29 @@ export async function createBaileysClient({
   };
   const { version } = await fetchLatestBaileysVersion();
 
+  // Antes era 100% mudo: erros reais (ex.: upload de mídia) sumiam. Agora repassa warn/error
+  // com filtro de ruído conhecido e no máximo 1 linha igual por minuto.
+  const NOISY = /decrypt|Bad MAC|No session|session_cipher|stale|closing (open )?session|prekey|retry receipt|sender key|init queries/i;
+  const lastPrinted = new Map();
+  const forward = (level) => (obj, msg) => {
+    const text = typeof obj === "string" ? obj : msg ?? obj?.msg ?? "";
+    if (!text || NOISY.test(text)) return;
+    const reason = typeof obj === "object" && obj?.uploadResult ? ` ${JSON.stringify(obj.uploadResult).slice(0, 160)}` : "";
+    const line = `[baileys:${sessionLabel}] ${level}: ${String(text).slice(0, 200)}${reason}`;
+    const now = Date.now();
+    if (now - (lastPrinted.get(line) ?? 0) < 60_000) return;
+    lastPrinted.set(line, now);
+    console.warn(line);
+  };
   const silentLogger = {
-    level: "silent",
+    level: "warn",
     child: () => silentLogger,
     trace() {},
     debug() {},
     info() {},
-    warn() {},
-    error() {},
-    fatal() {}
+    warn: forward("warn"),
+    error: forward("error"),
+    fatal: forward("fatal")
   };
 
   const socket = makeWASocket({

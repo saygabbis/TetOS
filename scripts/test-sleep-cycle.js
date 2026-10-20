@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { createRuntime } from "../src/app/createRuntime.js";
 import { assert, ok } from "./test-helpers.js";
 import { isInSleepWindow, isPastWakeTime } from "../src/core/life/sleepSchedule.js";

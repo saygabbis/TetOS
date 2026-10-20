@@ -3,7 +3,9 @@ export function detectDocumentIntent(text) {
   const lower = raw.toLowerCase();
   if (!raw) return null;
 
-  const readMatch = lower.match(/\b(ler|abre|abrir|mostrar|ver)\s+(?:o\s+)?(?:documento|arquivo|nota)\s+([\w.-]+)/i);
+  const readMatch = lower.match(
+    /(?<![\p{L}])(l[eê]|leia|ler|abre|abrir|mostra|mostrar|ver|v[eê]|resume|resumir|resuma)\s+(?:pra mim\s+)?(?:o\s+|a\s+)?(?:documento|arquivo|nota)\s+([\p{L}\p{N}._-]+)/iu
+  );
   if (readMatch?.[2]) {
     return { type: "read", id: readMatch[2].trim() };
   }

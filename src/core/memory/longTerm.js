@@ -1,4 +1,4 @@
-import { readJson, writeJson } from "../../infra/utils/fileStore.js";
+import { readJson, writeJsonDeferred as writeJson } from "../../infra/utils/fileStore.js";
 import crypto from "node:crypto";
 
 function fixEncoding(text) {
@@ -36,6 +36,11 @@ export class LongTermMemory {
     this.data = readJson(this.path, { entries: [], profiles: {}, mediumTerm: {} });
     this.data.profiles ??= {};
     this.data.mediumTerm ??= {};
+  }
+
+  /** Agenda gravação do estado atual (coalescida). */
+  persist() {
+    writeJson(this.path, this.data);
   }
 
   save(entry) {

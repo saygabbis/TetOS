@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { createRuntime } from "../src/app/createRuntime.js";
 import { runMessagePipeline } from "../src/core/pipeline/messagePipeline.js";
 import { assert, ok } from "./test-helpers.js";

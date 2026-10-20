@@ -1,4 +1,4 @@
-import { readJson, writeJson } from "../../infra/utils/fileStore.js";
+import { readJson, writeJsonDeferred as writeJson } from "../../infra/utils/fileStore.js";
 import { resolveTimeLookupKeys, resolveTimeWriteKey } from "./timeKeys.js";
 
 const DEFAULT_STATE = {

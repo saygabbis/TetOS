@@ -5,6 +5,7 @@ import { formatLearnedStyleForPrompt, updateLearnedStyle } from "../memory/userS
 import { detectDocumentIntent } from "../../modules/documents/documentIntent.js";
 import { buildDocumentContextPayload } from "../../modules/documents/documentContextBuilder.js";
 import { detectReminderIntent } from "../../modules/reminders/reminderIntent.js";
+import { shouldRespondToMediaOnly } from "../media/mediaSpamGate.js";
 import { detectOperationIntent } from "../operations/operationIntent.js";
 import { detectNaturalAdminIntent } from "../operations/naturalLanguageRouter.js";
 import { detectConfirmationReply } from "../operations/confirmationIntent.js";
@@ -23,7 +24,7 @@ import {
 } from "../media/visualKnowledgeIntent.js";
 import { mergeBrainCloseDecision } from "../brain/ConversationPhaseEngine.js";
 import { isOwnerContact, touchUserActivity } from "../channels/userActivity.js";
-import { fixMisaddressedOwnerNameInReplies } from "../channels/profileFacts.js";
+import { fixMisaddressedOwnerNameInReplies, isPlausibleHumanNickname } from "../channels/profileFacts.js";
 import {
   buildChannelTimelineForPrompt,
   DEFAULT_CHANNEL_HISTORY_LIMIT,
@@ -371,6 +372,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const isDirectQuestion = ChatService.isLikelyQuestion(input);
   const effectiveMention = isDirectMention || Boolean(groupMention);
 
+  const lastMessageAt = runtime.timeStore?.getLastMessage?.(safeUserId, safeSessionId);
+  const gapSinceLastMs = lastMessageAt ? Math.max(0, Date.now() - Date.parse(lastMessageAt)) : null;
+
   let brainTurn = null;
   if (!isUiDesktopChannel && runtime.brainOrchestrator?.tickTurn) {
     brainTurn = await runtime.brainOrchestrator.tickTurn({
@@ -387,6 +391,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       isDirectTetoCall: ChatService.isDirectTetoCall(input),
       isVulnerable,
       resumedAfterClose,
+      gapSinceLastMs,
       tone,
       media,
       recentHistory: recentHistory ?? [],
@@ -621,7 +626,16 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
-  const searchResult = await runtime.searchModule?.handle?.(input);
+  // Busca fora do ar (ex.: 503 do buscador) não derruba a resposta: segue sem resultados e avisa o modelo.
+  let searchResult = null;
+  let searchFailed = false;
+  try {
+    searchResult = await runtime.searchModule?.handle?.(input);
+  } catch (error) {
+    searchFailed = true;
+    runtime.metrics?.increment?.("search.failed");
+    console.warn(`[search] falhou: ${error?.message ?? error}`);
+  }
   if (searchResult?.results?.length) {
     runtime.metrics?.increment?.("search.executed");
   }
@@ -632,7 +646,12 @@ export async function runMessagePipeline(runtime, payload = {}) {
           .map((item, index) => `${index + 1}. ${item.title} — ${item.url}`)
           .join("\n")
       }
-    : {};
+    : searchFailed
+      ? {
+          searchQuery: input,
+          searchResults: "(a pesquisa na internet falhou agora — responda com o que você já sabe, avise de leve que não conseguiu pesquisar e não invente dados recentes)"
+        }
+      : {};
 
   const confirmationReply = detectConfirmationReply(input);
   let confirmationResult = null;
@@ -657,7 +676,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
     userId: safeUserId ?? "default"
   });
 
-  const documentIntent = runtime.documentModule?.canHandle?.(input)
+  // Documentos locais são da dona: terceiros não leem nem escrevem arquivos do computador dela.
+  const documentIntent = isOwner && runtime.documentModule?.canHandle?.(input)
     ? detectDocumentIntent(input)
     : null;
   if (documentIntent) {
@@ -666,16 +686,23 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const documentPayload = buildDocumentContextPayload(documentIntent, runtime.documentModule);
   const documentContext = documentPayload?.text ?? null;
 
-  const reminderIntent = detectReminderIntent(input);
+  const reminderTz = runtime.defaults.dailyReportTz ?? "America/Sao_Paulo";
+  const reminderIntent = detectReminderIntent(input, { timeZone: reminderTz });
   let reminderContext = null;
   if (reminderIntent?.type === "create") {
     const reminder = runtime.reminders.create({
       userId: safeUserId ?? "default",
+      // JID do chat (DM ou grupo) — a entrega vai para onde o pedido foi feito.
+      chatJid: String(safeChannelId ?? "").includes("@") ? safeChannelId : null,
       text: reminderIntent.text,
       dueAt: reminderIntent.dueAt ?? null
     });
-    reminderContext = `Lembrete criado: ${reminder.text} (id ${reminder.id})${reminder.dueAt ? ` para ${reminder.dueAt}` : ""}`;
+    const when = new Intl.DateTimeFormat("pt-BR", { timeZone: reminderTz, weekday: "short", hour: "2-digit", minute: "2-digit" })
+      .format(new Date(reminder.dueAt));
+    reminderContext = `Lembrete criado: "${reminder.text}" para ${when} (horário local). Confirme de leve, sem repetir o id.`;
     runtime.metrics?.increment?.("reminders.created");
+  } else if (reminderIntent?.type === "needs_time") {
+    reminderContext = `A pessoa pediu lembrete de "${reminderIntent.text}" mas sem dizer quando. Pergunte o horário (ex.: "daqui 30 min", "às 15h", "amanhã às 9") — ainda NÃO foi criado.`;
   } else if (reminderIntent?.type === "list") {
     const reminders = runtime.reminders.list(safeUserId ?? "default");
     reminderContext = reminders.length
@@ -1068,7 +1095,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       brevity: style.isShort ? "short" : style.isLong ? "long" : "medium"
     };
 
-    const userNameFact = facts.find((f) => f.type === "user_name");
+    const userNameFact = facts.find((f) => f.type === "user_name" && isPlausibleHumanNickname(f.value));
     runtime.longTerm.updateProfile(safeUserId ?? "default", {
       facts: {
         ...(userNameFact

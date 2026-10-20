@@ -31,14 +31,6 @@ export const UI_MEDIA_COMMANDS = Object.freeze([
   "convert"
 ]);
 
-function pickKind(output) {
-  const mime = String(output?.mimetype ?? "").toLowerCase();
-  if (mime.startsWith("image/")) return "image";
-  if (mime.startsWith("video/")) return "video";
-  if (mime.startsWith("audio/")) return "audio";
-  return output?.kind ?? "document";
-}
-
 /**
  * Executa na interface o que a Teto faz pelo WhatsApp: figurinhas, conversões,
  * downloads, geração de imagem e repertório — devolvendo MediaRefs em vez de enviar pelo Baileys.

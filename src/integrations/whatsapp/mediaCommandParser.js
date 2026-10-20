@@ -12,7 +12,6 @@ const MEDIA_COMMAND_ALIASES = Object.freeze({
   csticker: "csticker",
   cstiker: "csticker",
   img: "toimg",
-  imagem: "toimg",
   toimg: "toimg",
   optimize: "optimize",
   otimizar: "optimize",

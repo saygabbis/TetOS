@@ -389,7 +389,9 @@ Em DM, o fluxo é mais direto:
 
 ## Fila, Batch e Interrupção
 
-O `createConversationOrchestrator()` organiza envio e geração.
+O `createConversationOrchestrator()` (`src/integrations/whatsapp/conversationOrchestrator.js`) organiza envio e geração.
+Ele sobrevive a reconexões ("handler religado, mesma fila"): por isso todo envio passa por `waSocket()`/`sendRaw()`
+e o serviço de mídia é obtido por getter — nunca pelo socket capturado na primeira conexão.
 
 ### Por que existe
 
@@ -463,10 +465,13 @@ O usuário pode pedir para criar/listar/concluir reminders por linguagem natural
 
 O pipeline:
 
-- detecta intenção com `detectReminderIntent()`.
-- cria/lista/conclui no `ReminderStore`.
+- detecta intenção com `detectReminderIntent()` (relativo: "daqui 10 min", "em meia hora", "1h30"; absoluto:
+  "às 15h", "18:30", "amanhã às 9", "hoje à noite"; fuso `DAILY_REPORT_TZ`). "Você me lembra de…" não é pedido.
+- pedido sem horário vira `needs_time`: a Teto pergunta quando — nada é criado sem `dueAt`.
+- cria/lista/conclui no `ReminderStore`, gravando `chatJid` (chat onde foi pedido).
 - passa um `reminderContext` para a resposta.
-- o envio futuro do reminder vencido é feito pelo loop do WhatsApp runner.
+- a entrega do vencido é `deliverDueReminders()` (`src/modules/reminders/reminderDelivery.js`), chamada pelo loop do runner;
+  o destino é `resolveReminderJid()` (chatJid; legado: `dm-<lid>` → `@lid`, telefone → `@s.whatsapp.net`).
 
 ### Operações administrativas
 
@@ -596,6 +601,34 @@ Esses eventos:
 - alimentam `eventLedger`.
 - atualizam participantes no `ChannelRegistry`.
 - ajudam o sistema a saber tamanho/modo do grupo.
+
+## Estrutura do runner
+
+| Arquivo | Responsabilidade |
+| --- | --- |
+| `runner.js` | Ciclo de vida da conexão (single/dual), reconexão, lock, ponte `runtime.whatsappGetSocket`. |
+| `auxiliaryLoops.js` | Timers: vida, iniciativa, lembretes, relatório diário, retenção de mídia e mind-log. |
+| `presenceLoop.js` | Iniciativa: `listKnownUsers()` (1 entrada por pessoa/chat real) e `runPresence()`. |
+| `messageHandler.js` | Recepção (`messages.upsert`), filtros, identidade, comandos, gates de ativação/grupo. |
+| `conversationOrchestrator.js` | Fila/batch, geração, interrupção, envio de bolhas e ações do agente. |
+| `waHandlerUtils.js` | Utilitários compartilhados (logThinking, sleep, isWaConnectionError, extractPhone, applyVisionFields). |
+
+## Identidade e JIDs (regras)
+
+- Chave de identidade é **só ID**: telefone, LID, `dm-*` ou JID de pessoa (`isIdentityIdLike`). Apelido nunca é identidade —
+  antes "oi"/"kkk" viravam chave e ligavam centenas de contatos entre si (e ~800 regravações de arquivo por mensagem).
+- Busca por nome/apelido usa o índice de nomes (`buildIdentityIndex`).
+- `<telefone>@lid` não existe (`isBogusLidJid`); o JID de PV vem de `resolveNudgeRemoteJid()`: dona → `TETOS_OWNER_WA_JID`,
+  senão última sessão de PV vista, senão deduz pelo tipo do id (`dmJidForLocalId`).
+- `repairProfileContamination()` roda no boot (idempotente, uma gravação); `npm run data:sanitize` faz a limpeza pesada
+  (remove perfis-artefato, chaves lixo de time/userPatterns, lembretes sem horário) com backup.
+
+## Persistência
+
+- `writeJsonDeferred()` (fileStore) coalesce gravações dos stores quentes (memória, time, userPatterns): N mudanças → 1 escrita,
+  atômica (tmp + rename), com flush em `exit`/`SIGINT`/`SIGTERM`.
+- `readJson()` devolve cópia do padrão e não derruba o processo com JSON corrompido (move para `*.corrupt-<ts>`).
+- Scripts de teste que sobem o runtime importam `scripts/isolatedData.js` primeiro: rodam num diretório temporário.
 
 ## Reconnect, Lock e Estabilidade
 

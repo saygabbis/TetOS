@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { readJson, writeJson } from "../../infra/utils/fileStore.js";
 import { repairShortTermMessage, slimMetaForStorage } from "./slimMeta.js";

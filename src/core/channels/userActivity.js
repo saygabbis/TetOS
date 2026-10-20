@@ -1,4 +1,4 @@
-import { linkedIdentityIds } from "./waIdentity.js";
+import { classifyWaLocalId, isLikelyPhoneNumber, linkedIdentityIds } from "./waIdentity.js";
 
 /** Normaliza JID/LID para comparação estável (sem sufixo de dispositivo). */
 export function normalizeJidKey(jid = "") {
@@ -119,11 +119,33 @@ export function canonicalSessionId(_runtime, userId, { remoteJid = null } = {}) 
   return `wa-${canonicalUserId(null, userId, { remoteJid })}`;
 }
 
-export function resolveNudgeRemoteJid(_runtime, userId) {
+/** Telefone com sufixo @lid é endereço inexistente (vinha de "dm-<tel>" → "<tel>@lid"). */
+export function isBogusLidJid(jid = "") {
+  const key = normalizeJidKey(jid);
+  if (!key.endsWith("@lid")) return false;
+  return isLikelyPhoneNumber(key.replace(/@.+$/, ""));
+}
+
+/** JID de PV para um id local: telefone → @s.whatsapp.net, LID → @lid. */
+export function dmJidForLocalId(local = "") {
+  const id = String(local ?? "").replace(/^dm-/, "").replace(/@.+$/, "").trim();
+  if (!id) return null;
+  return classifyWaLocalId(id) === "lid" ? `${id}@lid` : `${id}@s.whatsapp.net`;
+}
+
+/**
+ * Chat de PV real de uma pessoa: dona → JID configurado; senão a última sessão de PV vista;
+ * senão deduz pelo tipo do id. Nunca monta "<telefone>@lid".
+ */
+export function resolveNudgeRemoteJid(runtime, userId) {
   const uid = String(userId ?? "").trim();
-  if (uid.startsWith("dm-")) {
-    return `${uid.slice(3)}@lid`;
+  if (/@/.test(uid)) return isBogusLidJid(uid) ? dmJidForLocalId(uid) : uid;
+  if (isOwnerContact(runtime, null, uid)) {
+    const ownerJid = normalizeJidKey(runtime?.defaults?.ownerWaJids?.[0] ?? "");
+    if (ownerJid) return ownerJid;
   }
-  if (/@/.test(uid)) return uid;
-  return `${uid}@s.whatsapp.net`;
+  const facts = runtime?.longTerm?.getProfile?.(uid)?.facts ?? {};
+  const fromSession = String(facts.lastDmSessionId ?? "").match(/^wa-dm:(.+@(?:lid|s\.whatsapp\.net))$/)?.[1];
+  if (fromSession && !isBogusLidJid(fromSession)) return fromSession;
+  return dmJidForLocalId(uid);
 }

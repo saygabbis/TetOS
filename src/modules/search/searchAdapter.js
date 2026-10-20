@@ -5,6 +5,17 @@ export class SearchAdapter {
   }
 
   async search(query) {
+    try {
+      return await this.searchOnce(query);
+    } catch (error) {
+      // O buscador às vezes devolve 5xx/timeout por anti-bot: uma segunda tentativa costuma passar.
+      if (!/search failed: 5\d\d|abort/i.test(String(error?.message ?? ""))) throw error;
+      await new Promise((r) => setTimeout(r, 900));
+      return this.searchOnce(query);
+    }
+  }
+
+  async searchOnce(query) {
     const q = String(query ?? "").trim();
     if (!q) return [];
 

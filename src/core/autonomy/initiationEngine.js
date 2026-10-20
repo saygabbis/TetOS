@@ -8,15 +8,16 @@ import {
 } from "./ghostingPolicy.js";
 import { buildInitiativeImpulse } from "./initiativeImpulse.js";
 import { userBoundarySnapshot } from "../channels/userBoundaryDetect.js";
+import { dmJidForLocalId, isBogusLidJid } from "../channels/userActivity.js";
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
 function resolveDmSessionId(userId, profile = null) {
-  if (profile?.facts?.lastDmSessionId) return profile.facts.lastDmSessionId;
+  const last = profile?.facts?.lastDmSessionId;
+  if (last && !isBogusLidJid(String(last).replace(/^wa-dm:/, ""))) return last;
   const uid = String(userId ?? "").trim();
-  if (uid.startsWith("dm-")) return `wa-dm:${uid.slice(3)}@lid`;
-  if (/@/.test(uid)) return `wa-dm:${uid}`;
-  return `wa-dm:${uid}@s.whatsapp.net`;
+  if (/@/.test(uid)) return `wa-dm:${isBogusLidJid(uid) ? dmJidForLocalId(uid) : uid}`;
+  return `wa-dm:${dmJidForLocalId(uid)}`;
 }
 
 function summarizeThread(history = [], max = 6) {
@@ -81,27 +82,6 @@ export function coerceImpulse(value) {
     if (typeof value.detail === "string") return value.detail.trim();
   }
   return String(value).trim();
-}
-
-function impulseFromArbitration(winner, snapshot = {}) {
-  if (!winner) return "";
-  const detail = coerceImpulse(winner.detail);
-  switch (winner.source) {
-    case "autonomous":
-      return coerceImpulse(snapshot.autonomous?.soloThoughts?.at(-1)?.text) || detail;
-    case "music":
-      return coerceImpulse(snapshot.music?.pendingComment) || detail;
-    case "social":
-      return detail;
-    case "trust":
-      return "vontade de chegar perto sem pressionar";
-    case "world":
-      return detail;
-    case "life":
-      return `ainda tô em ${detail} mas lembrei dessa pessoa`;
-    default:
-      return detail;
-  }
 }
 
 export class InitiationEngine {

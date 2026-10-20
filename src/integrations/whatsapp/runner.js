@@ -2,25 +2,13 @@ import "dotenv/config";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DEFAULTS } from "../../infra/config/defaults.js";
-import { runMediaRetentionSweep } from "../../infra/media/mediaRetentionSweep.js";
-import { sweepMindLogRetention } from "../../infra/mindLogRetention.js";
 import { createRuntime } from "../../app/createRuntime.js";
 import { createBaileysClient } from "./baileysClient.js";
 import { registerMessageHandler } from "./messageHandler.js";
 import { DisconnectReason } from "baileys";
-import { isUserRecentlyActive, resolveNudgeRemoteJid, touchUserActivity } from "../../core/channels/userActivity.js";
 import { msSinceLastInbound, resetInboundActivity } from "./inboundLiveness.js";
 import { jidNormalizedUser } from "baileys";
-import { getLocalHour } from "../../core/life/sleepSchedule.js";
-
-/** Pausa nudges/presence após 403 de assinatura (evita spam a cada 60s). */
-let presenceLlmPausedUntil = 0;
-let presenceSubscriptionWarned = false;
-
-function isOllamaSubscriptionError(message = "") {
-  const msg = String(message);
-  return /403/.test(msg) && /subscription|upgrade/i.test(msg);
-}
+import { scheduleAuxiliaryLoops } from "./auxiliaryLoops.js";
 
 /** Reconecta após queda — retenta até voltar, sem múltiplos loops paralelos. */
 function formatSocketJid(socket) {
@@ -124,174 +112,6 @@ function bindWhatsAppSocketBridge(runtime, getSocket, getConnected) {
   console.log("[whatsapp] outbound retry após reconexão ativo");
 }
 
-function listKnownUsers(runtime) {
-  const ids = new Set();
-  const profiles = runtime.longTerm?.data?.profiles ?? {};
-  Object.keys(profiles).forEach((id) => ids.add(id));
-  const mediumTerm = runtime.longTerm?.data?.mediumTerm ?? {};
-  Object.keys(mediumTerm).forEach((id) => ids.add(id));
-  ids.delete("default");
-  return [...ids];
-}
-
-async function runPresence(runtime, socket, initiationEngine) {
-  if (!DEFAULTS.replyEnabled) return;
-  if (!DEFAULTS.presenceEnabled) return;
-  if (Date.now() < presenceLlmPausedUntil) return;
-  const users = listKnownUsers(runtime);
-  for (const userId of users) {
-    const profile = runtime.longTerm.getProfile(userId);
-    const dmOnlyInGroup =
-      profile?.facts?.lastChannel === "group" &&
-      runtime.tetoActivation?.isActivationRequired?.() &&
-      !runtime.tetoActivation.isDmActive(userId);
-    if (dmOnlyInGroup) {
-      continue;
-    }
-    if (runtime.tetoActivation?.isActivationRequired?.() && !runtime.tetoActivation.isDmActive(userId)) {
-      continue;
-    }
-
-    const boundary = runtime.longTerm.getProfile(userId)?.facts ?? {};
-    const boundaryUntil = boundary.userBoundaryUntil ? Date.parse(boundary.userBoundaryUntil) : 0;
-    if (Number.isFinite(boundaryUntil) && boundaryUntil > Date.now()) continue;
-
-    const sleepSnap = runtime.brainOrchestrator?.life?.sleep?.getSnapshot?.() ?? {};
-    if (sleepSnap.isAvailable === false) continue;
-
-    const tz = runtime.brainOrchestrator?.life?.profile?.get?.()?.timezone ?? "America/Sao_Paulo";
-    const hour = getLocalHour(new Date(), tz);
-    if (hour >= 0 && hour < 7) continue;
-
-    const evaluation = initiationEngine?.evaluateForUser?.(userId);
-    if (!evaluation?.shouldInitiate) continue;
-
-    const isQueued = Boolean(evaluation.queueEntryId);
-    if (
-      !isQueued &&
-      isUserRecentlyActive(runtime, userId, DEFAULTS.presenceInactiveMs)
-    ) {
-      continue;
-    }
-
-    const allowed = runtime.basicLoop.maybeInitiate(userId, evaluation);
-    if (!allowed) continue;
-
-    const sessionId = evaluation.sessionId;
-    const history = runtime.shortTerm?.getAll?.(sessionId)?.slice(-12) ?? [];
-    const remoteJid = resolveNudgeRemoteJid(runtime, userId);
-    const tone = evaluation.tone ?? "playful";
-    const seedMessage =
-      String(evaluation.impulse ?? evaluation.threadHint ?? "").trim() ||
-      "Manda uma mensagem curta e natural pro usuario (iniciativa da Teto).";
-
-    const replies = await runtime.chatService.handleMessage(
-      seedMessage,
-      {
-        userId,
-        sessionId,
-        styleHint: { conversationEnergy: evaluation.mode?.includes("lull") ? "low" : "medium" },
-        fallback: "ground",
-        timingPlan: evaluation.timingPlan ?? null,
-        brainBlocks: evaluation.brainBlocks ?? null,
-        brainSnapshot: evaluation.brainSnapshot ?? null,
-        isInitiative: true,
-        initiationContext: evaluation,
-        recentHistory: history
-      },
-      history,
-      tone
-    );
-
-    const parts = Array.isArray(replies) ? replies.filter(Boolean) : replies ? [replies] : [];
-    if (!parts.length) continue;
-
-    if (!remoteJid.endsWith("@g.us")) {
-      if (typeof socket.sendPresenceUpdate === "function") {
-        try {
-          await socket.sendPresenceUpdate("composing", remoteJid);
-          const thinkMs = evaluation.timingPlan?.thinkDelayMs ?? 1200;
-          await new Promise((r) => setTimeout(r, Math.min(thinkMs, 4000) + Math.floor(Math.random() * 800)));
-          await socket.sendPresenceUpdate("paused", remoteJid);
-        } catch {
-          /* ignore */
-        }
-      }
-      for (const text of parts) {
-        await socket.sendMessage(remoteJid, { text });
-        if (parts.length > 1) {
-          await new Promise((r) => setTimeout(r, 400 + Math.floor(Math.random() * 900)));
-        }
-      }
-    }
-
-    if (evaluation.queueEntryId) {
-      initiationEngine?.markSent?.(evaluation.queueEntryId);
-    }
-    runtime.basicLoop?.recordOutbound?.(userId, evaluation);
-    touchUserActivity(runtime, userId, { markMessage: false, sessionId });
-    runtime.timeStore?.markAssistantMessage?.(userId, Date.now(), sessionId);
-    runtime.brainOrchestrator?.recordAssistantOutput?.(sessionId, parts.join("\n"), {
-      initiative: true,
-      mode: evaluation.mode
-    });
-  }
-}
-
-function isValidReminderRecipient(userId) {
-  const normalized = String(userId ?? "").trim();
-  return /^\d+$/.test(normalized) && normalized.length >= 8;
-}
-
-async function deliverDueReminders(runtime, socket) {
-  if (!DEFAULTS.replyEnabled) return;
-  const due = runtime.reminderScheduler?.pendingDelivery?.() ?? [];
-  runtime.reminderScheduler?.markDeliverySweep?.();
-  if (!due.length) return;
-
-  for (const reminder of due) {
-    const attemptedAt = new Date().toISOString();
-    if (!isValidReminderRecipient(reminder.userId)) {
-      runtime.reminders?.markDeliveryAttempt?.(reminder.id, {
-        attemptedAt,
-        error: "invalid_recipient"
-      });
-      runtime.logger?.log?.("reminders.delivery_skipped", {
-        reminderId: reminder.id,
-        userId: reminder.userId,
-        reason: "invalid_recipient"
-      });
-      runtime.metrics?.increment?.("reminders.delivery_skipped");
-      continue;
-    }
-
-    const remoteJid = `${reminder.userId}@s.whatsapp.net`;
-    try {
-      await socket.sendMessage(remoteJid, {
-        text: `⏰ Lembrete: ${reminder.text}`
-      });
-      runtime.reminders?.markDeliveryAttempt?.(reminder.id, { attemptedAt });
-      runtime.reminders?.markDelivered?.(reminder.id, attemptedAt);
-      runtime.logger?.log?.("reminders.delivered", {
-        reminderId: reminder.id,
-        userId: reminder.userId
-      });
-      runtime.metrics?.increment?.("reminders.delivered");
-    } catch (error) {
-      runtime.reminders?.markDeliveryAttempt?.(reminder.id, {
-        attemptedAt,
-        error: error.message
-      });
-      runtime.logger?.log?.("reminders.delivery_error", {
-        reminderId: reminder.id,
-        userId: reminder.userId,
-        error: error.message
-      });
-      runtime.metrics?.increment?.("reminders.delivery_error");
-    }
-  }
-}
-
 function suppressNoisyLogs() {
   const originalLog = console.log;
   const originalError = console.error;
@@ -376,100 +196,9 @@ function attachChatLedgerListeners(socket, runtime) {
   });
 }
 
-function scheduleAuxiliaryLoops(runtime, nudgeEngine, getSocket, getConnected) {
-  const lifeTickMs = Number(process.env.TETOS_LIFE_TICK_MS ?? 900000);
-  if (runtime.brainOrchestrator?.life?.tick && Number.isFinite(lifeTickMs) && lifeTickMs >= 120000) {
-    setInterval(() => {
-      try {
-        runtime.brainOrchestrator.life.tick({
-          emotion: runtime.brainOrchestrator.emotion?.getSnapshot?.() ?? {}
-        });
-      } catch (error) {
-        console.warn("[life] tick error:", error?.message ?? error);
-      }
-    }, lifeTickMs);
-  }
-
-  if (DEFAULTS.presenceEnabled) {
-    setInterval(() => {
-      const socket = getSocket();
-      if (!getConnected() || !socket) return;
-      runPresence(runtime, socket, nudgeEngine).catch((error) => {
-        const msg = String(error?.message ?? "");
-        if (isOllamaSubscriptionError(msg)) {
-          presenceLlmPausedUntil = Date.now() + 6 * 60 * 60 * 1000;
-          if (!presenceSubscriptionWarned) {
-            presenceSubscriptionWarned = true;
-            console.error(
-              `[presence] ${DEFAULTS.model} exige Pro na Ollama Cloud (403). Chat também falha com este modelo. Use gpt-oss:20b-cloud no free ou assine Pro. Nudges pausados 6h.`
-            );
-          }
-        } else {
-          console.error("[presence] error:", msg);
-        }
-      });
-    }, DEFAULTS.presenceCheckMs);
-  }
-
-  setInterval(() => {
-    const due = runtime.reminderScheduler?.sweep?.() ?? [];
-    if (due.length) {
-      runtime.logger?.log?.("reminders.scheduled_due", { count: due.length });
-    }
-    const socket = getSocket();
-    if (!getConnected() || !socket) return;
-    deliverDueReminders(runtime, socket).catch((error) => {
-      console.error("[reminders] delivery error:", error.message);
-    });
-  }, DEFAULTS.reminderSweepMs);
-
-  if (DEFAULTS.dailyReportEnabled) {
-    setInterval(() => {
-      const report = runtime.dailyReportGenerator?.maybeGenerateNow?.(
-        new Date(),
-        DEFAULTS.dailyReportTime
-      );
-      if (report) {
-        runtime.logger?.log?.("learning.daily_report_generated", report);
-      }
-    }, 30000);
-  }
-
-  if (DEFAULTS.mediaRetentionEnabled) {
-    const sweep = () =>
-      runMediaRetentionSweep({
-        mediaRoot: DEFAULTS.whatsappMediaPath,
-        maxBytes: DEFAULTS.mediaHotMaxBytes,
-        visualAnalysesPath: DEFAULTS.visualAnalysesPath,
-        multimodalMemoryPath: DEFAULTS.multimodalMemoryPath,
-        logger: runtime.logger
-      }).catch((error) => {
-        console.error("[media-retention]", error?.message ?? error);
-      });
-    setTimeout(sweep, 120_000);
-    setInterval(sweep, DEFAULTS.mediaRetentionIntervalMs);
-  }
-
-  if (DEFAULTS.mindLogEnabled && DEFAULTS.mindLogRetentionDays > 0) {
-    const sweepMindLog = () => {
-      try {
-        const result = sweepMindLogRetention(DEFAULTS.mindLogPath, DEFAULTS.mindLogRetentionDays);
-        if (result.removed > 0) {
-          console.log(`[mind-log] retencao: removidos ${result.removed}, mantidos ${result.kept}`);
-        }
-      } catch (error) {
-        console.error("[mind-log] retencao:", error?.message ?? error);
-      }
-    };
-    setTimeout(sweepMindLog, 180_000);
-    setInterval(sweepMindLog, 6 * 60 * 60 * 1000);
-  }
-}
-
 async function runSingleWhatsApp(runtime, nudgeEngine) {
   let socket = null;
   let isConnected = false;
-  let reconnecting = false;
   const reconnectState = { active: false };
   let connectGeneration = 0;
   bindWhatsAppSocketBridge(runtime, () => socket, () => isConnected);
@@ -485,7 +214,6 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
         const connection = update?.connection;
         if (connection === "open") {
           isConnected = true;
-          reconnecting = false;
           reconnectState.active = false;
           resetInboundActivity();
           console.log(`[whatsapp] connected — jid=${formatSocketJid(socket)}`);
@@ -501,7 +229,6 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
             console.error("[whatsapp] conflict detected: another session/process replaced this connection.");
           }
           if (loggedOut) {
-            reconnecting = false;
             reconnectState.active = false;
             console.error("[whatsapp] logged out — escaneie o QR novamente");
             return;
@@ -510,7 +237,6 @@ async function runSingleWhatsApp(runtime, nudgeEngine) {
             label: "single",
             state: reconnectState,
             onClose: () => {
-              reconnecting = true;
               try {
                 socket?.ws?.close();
               } catch {}
@@ -559,8 +285,6 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
   let mediaSocket = null;
   let mainConnected = false;
   let mediaConnected = false;
-  let mainReconnecting = false;
-  let mediaReconnecting = false;
   const mainReconnectState = { active: false };
   const mediaReconnectState = { active: false };
   let mainGeneration = 0;
@@ -593,7 +317,6 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         const connection = update?.connection;
         if (connection === "open") {
           mainConnected = true;
-          mainReconnecting = false;
           mainReconnectState.active = false;
           resetInboundActivity();
           const jid = formatSocketJid(mainSocket);
@@ -621,7 +344,6 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
             console.error("[whatsapp] main: conflict — outro processo substituiu esta sessão.");
           }
           if (loggedOut) {
-            mainReconnecting = false;
             mainReconnectState.active = false;
             console.error("[whatsapp] main logged out — escaneie o QR novamente");
             return;
@@ -630,7 +352,6 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
             label: "main",
             state: mainReconnectState,
             onClose: () => {
-              mainReconnecting = true;
               try {
                 mainSocket?.ws?.close();
               } catch {}
@@ -665,7 +386,6 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
         const connection = update?.connection;
         if (connection === "open") {
           mediaConnected = true;
-          mediaReconnecting = false;
           mediaReconnectState.active = false;
           resetInboundActivity();
           const jid = formatSocketJid(mediaSocket);
@@ -699,7 +419,6 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
             console.error("[whatsapp] media: conflict — outro processo substituiu esta sessão.");
           }
           if (loggedOut) {
-            mediaReconnecting = false;
             mediaReconnectState.active = false;
             console.error("[whatsapp] media logged out — escaneie o QR novamente");
             return;
@@ -708,7 +427,6 @@ async function runDualWhatsApp(runtime, nudgeEngine) {
             label: "media",
             state: mediaReconnectState,
             onClose: () => {
-              mediaReconnecting = true;
               try {
                 mediaSocket?.ws?.close();
               } catch {}

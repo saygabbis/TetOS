@@ -126,7 +126,7 @@ assert(
   "salva apelido pedido pelo usuário"
 );
 assert(
-  runtime.longTerm.data.profiles["5516988137617"]?.facts?.nicknames?.includes("Gabi"),
+  runtime.longTerm.data.profiles["5516988137617"]?.facts?.preferredName === "Gabi",
   "propaga apelido para id ligado (tel)"
 );
 
