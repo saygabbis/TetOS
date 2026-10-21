@@ -9,6 +9,50 @@ const PROTOCOL_VERSION = 1;
 
 const thinkingBuffer = new Map();
 
+/** Fases do `think()` que são bastidores: não viram log na tela. */
+const NOISE_PHASES = new Set([
+  "modo autônomo",
+  "objetivo",
+  "mcp",
+  "planejamento",
+  "grounding",
+  "goal verify",
+  "experience review",
+  "conclusão",
+]);
+
+const PLAN_STATUSES = new Set(["pending", "in_progress", "done", "blocked"]);
+
+function isNoiseThinking(params) {
+  const phase = typeof params?.phase === "string" ? params.phase.trim().toLowerCase() : "";
+  if (NOISE_PHASES.has(phase)) return true;
+  const line = String(params?.message ?? params?.text ?? "").trim();
+  if (/^Raciocinando/i.test(line)) return true;
+  if (/sem perguntas|inferir e decidir|modo autônomo/i.test(line)) return true;
+  if (line === "memória, tools e contexto prontos") return true;
+  return false;
+}
+
+/** Checklist de `notifications/automate/plan`, saneada antes de ir ao app. */
+function planItemsOf(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const raw of v.slice(0, 30)) {
+    if (!raw || typeof raw !== "object") continue;
+    const text = typeof raw.text === "string" ? raw.text.trim().slice(0, 200) : "";
+    if (!text) continue;
+    const status = typeof raw.status === "string" && PLAN_STATUSES.has(raw.status) ? raw.status : "pending";
+    const reason = typeof raw.reason === "string" && raw.reason.trim() ? raw.reason.trim().slice(0, 200) : undefined;
+    out.push({
+      text,
+      status,
+      ...(reason ? { reason } : {}),
+      ...(raw.mechanical === true ? { mechanical: true } : {}),
+    });
+  }
+  return out;
+}
+
 function flushThinking(runId, uiBus) {
   const buf = thinkingBuffer.get(runId);
   if (!buf) return;
@@ -70,6 +114,14 @@ function permissionInputFromQuestion(question) {
   return {};
 }
 
+/** Saída curta de uma tool que falhou, para o log do passo. */
+function failureLogs(params) {
+  if (params?.success !== false || params?.status === "start") return undefined;
+  const output = typeof params?.output === "string" ? params.output.replace(/\s+/g, " ").trim() : "";
+  if (!output) return undefined;
+  return [output.length > 400 ? `${output.slice(0, 400)}…` : output];
+}
+
 /**
  * Converte notificações MCP do AutoMate em eventos do protocolo da UI.
  * @param {string} method
@@ -93,6 +145,7 @@ export function translateAutomateNotification(method, params, options = {}) {
       const status = params?.status;
       const state =
         status === "start" ? "running" : params?.success === false ? "failed" : "done";
+      const logs = failureLogs(params);
       const events = [
         {
           type: "plan.step",
@@ -104,6 +157,7 @@ export function translateAutomateNotification(method, params, options = {}) {
             title: tool,
             state,
             args: params?.args ? JSON.stringify(params.args) : undefined,
+            ...(logs ? { logs } : {}),
           },
         },
       ];
@@ -136,7 +190,13 @@ export function translateAutomateNotification(method, params, options = {}) {
       );
       return u ? [u] : [];
     }
+    case "plan": {
+      const items = planItemsOf(params?.items);
+      if (items.length === 0) return [];
+      return [{ type: "automate.plan", runId, items }];
+    }
     case "thinking": {
+      if (isNoiseThinking(params)) return [];
       const line = params?.message ?? params?.text;
       if (!line || typeof line !== "string") return [];
       const uiBus = options.uiBus;

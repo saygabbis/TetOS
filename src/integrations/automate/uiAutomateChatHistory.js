@@ -153,21 +153,29 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
       if (!planMapped) return;
       const clientRunId = planMapped.runId;
       const runId = String(clientRunId).startsWith("run-") ? clientRunId : event.runId;
+      const msgId = `auto-${runId}-${step.id}`;
+      const existing = threadStore.get(threadId)?.messages?.find((m) => m.id === msgId);
+      const prev = existing?.meta?.automate?.step;
+      const merged = {
+        ...step,
+        args: step.args || prev?.args,
+        logs: step.logs?.length ? step.logs : prev?.logs,
+      };
       upsertThreadMessage({
         threadStore,
         persistThreadStore,
         uiBus,
         threadId,
         message: {
-          id: `auto-${runId}-${step.id}`,
+          id: msgId,
           role: "assistant",
-          text: formatStepText(step),
-          createdAt: new Date().toISOString(),
+          text: formatStepText(merged),
+          createdAt: existing?.createdAt ?? new Date().toISOString(),
           meta: {
             automate: {
               kind: "step",
               runId,
-              step: { ...step },
+              step: merged,
             },
           },
         },
@@ -235,6 +243,32 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
       return;
     }
 
+    if (event.type === "automate.plan" && event.runId && Array.isArray(event.items) && event.items.length > 0) {
+      const mapped = resolveAutomateRun({ instructionId: event.runId });
+      if (!mapped) return;
+      const runId = String(mapped.runId).startsWith("run-") ? mapped.runId : event.runId;
+      const threadId = resolveThreadIdForRun(runId) ?? mapped.threadId;
+      if (!threadId) return;
+      const done = event.items.filter((it) => it && it.status === "done").length;
+      upsertThreadMessage({
+        threadStore,
+        persistThreadStore,
+        uiBus,
+        threadId,
+        skipPublish: true,
+        message: {
+          id: `auto-${runId}-plan`,
+          role: "assistant",
+          text: `AutoMate · plano ${done}/${event.items.length}`,
+          createdAt: new Date().toISOString(),
+          meta: {
+            automate: { kind: "plan", runId, plan: event.items },
+          },
+        },
+      });
+      return;
+    }
+
     if (event.type === "run.status" && event.runId) {
       const mapped = resolveAutomateRun({ instructionId: event.runId });
       if (!mapped) return;
@@ -281,6 +315,7 @@ export function attachAutomateChatHistory(uiBus, { threadStore, persistThreadSto
               runId,
               status: event.status,
               error: event.error,
+              ...(event.output ? { output: event.output } : {}),
             },
           },
         },

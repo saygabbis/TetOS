@@ -22,6 +22,62 @@ describe("eventTranslator", () => {
     expect(events[0].step.state).toBe("running");
   });
 
+  it("no fim com falha guarda os args e um trecho da saída", () => {
+    const events = translateAutomateNotification("notifications/automate/tool_call", {
+      instructionId: "inst-1",
+      tool: "browser_click_selector",
+      status: "end",
+      success: false,
+      turnId: "t9",
+      args: { domId: "d1" },
+      output: "clicked:miss elemento não clicável",
+    });
+    expect(events[0].step).toMatchObject({
+      state: "failed",
+      args: JSON.stringify({ domId: "d1" }),
+      logs: ["clicked:miss elemento não clicável"],
+    });
+  });
+
+  it("traduz o plano e não publica pensamento de preparação como log", () => {
+    const events = translateAutomateNotification("notifications/automate/plan", {
+      instructionId: "inst-1",
+      items: [
+        { text: "abrir o site — feito quando o título aparece", status: "pending" },
+        { text: "  ", status: "done" },
+        { status: "done" },
+      ],
+    });
+    expect(events).toEqual([
+      {
+        type: "automate.plan",
+        runId: "run-et-1",
+        items: [{ text: "abrir o site — feito quando o título aparece", status: "pending" }],
+      },
+    ]);
+
+    expect(
+      translateAutomateNotification("notifications/automate/thinking", {
+        instructionId: "inst-1",
+        phase: "Planejamento",
+        message: "memória, tools e contexto prontos",
+      }),
+    ).toEqual([]);
+    expect(
+      translateAutomateNotification("notifications/automate/thinking", {
+        instructionId: "inst-1",
+        message: "Raciocinando…",
+      }),
+    ).toEqual([]);
+    expect(
+      translateAutomateNotification("notifications/automate/thinking", {
+        instructionId: "inst-1",
+        phase: "Modo autônomo",
+        message: "Sem perguntas — inferir e decidir",
+      }),
+    ).toEqual([]);
+  });
+
   it("emite utterance em user_feedback e tool_call de resposta", () => {
     const direct = translateAutomateNotification("notifications/automate/user_feedback", {
       instructionId: "inst-1",
