@@ -1,5 +1,7 @@
 node_modules
 .env
+.env.*
+!.env.example
 .DS_Store
 
 # Estado em runtime — não versionar (cresce muito / credenciais de sessão)
