@@ -6,6 +6,30 @@ import {
 } from "./automateUtterance.js";
 
 const PROTOCOL_VERSION = 1;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Referências que o app consegue baixar. Conteúdo (`data`) e itens sem id ficam de fora para não invalidar o evento. */
+function uiArtifactRefs(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const a of raw.slice(0, 8)) {
+    if (!a || typeof a.id !== "string" || !UUID_RE.test(a.id)) continue;
+    if ((a.kind !== "image" && a.kind !== "file") || typeof a.mimeType !== "string" || typeof a.size !== "number") continue;
+    const name = typeof a.name === "string" && a.name.trim() ? a.name.trim().slice(0, 120) : "arquivo";
+    const caption = typeof a.caption === "string" && a.caption.trim() ? a.caption.trim().slice(0, 300) : "";
+    out.push({
+      id: a.id,
+      kind: a.kind,
+      name,
+      mimeType: a.mimeType,
+      size: a.size,
+      ...(caption ? { caption } : {}),
+      ...(typeof a.width === "number" ? { width: a.width } : {}),
+      ...(typeof a.height === "number" ? { height: a.height } : {}),
+    });
+  }
+  return out;
+}
 
 const thinkingBuffer = new Map();
 
@@ -304,14 +328,23 @@ export function translateAutomateNotification(method, params, options = {}) {
         ];
       }
       return [{ type: "run.status", runId, status: "running" }];
-    case "task_completed":
+    case "task_completed": {
       reportAutomateOutcome({ runId, threadId, status: "completed", output: params?.output, artifacts: params?.artifacts });
+      const artifacts = uiArtifactRefs(params?.artifacts);
       return [
-        { type: "run.status", runId, status: "completed", ...(params?.output ? { output: String(params.output) } : {}) },
+        {
+          type: "run.status",
+          runId,
+          status: "completed",
+          ...(params?.output ? { output: String(params.output) } : {}),
+          ...(artifacts.length ? { artifacts } : {}),
+        },
         { type: "presence", state: "awake", label: "acordada" },
       ];
-    case "error":
+    }
+    case "error": {
       reportAutomateOutcome({ runId, threadId, status: "failed", output: params?.output, error: params?.error ?? "erro", artifacts: params?.artifacts });
+      const artifacts = uiArtifactRefs(params?.artifacts);
       return [
         {
           type: "run.status",
@@ -319,9 +352,11 @@ export function translateAutomateNotification(method, params, options = {}) {
           status: "failed",
           error: params?.error ?? "erro",
           ...(params?.output ? { output: String(params.output) } : {}),
+          ...(artifacts.length ? { artifacts } : {}),
         },
         { type: "presence", state: "awake", label: "acordada" },
       ];
+    }
     case "turn_started":
       return [{ type: "presence", state: "on_computer", label: "Teto está no computador" }];
     default:

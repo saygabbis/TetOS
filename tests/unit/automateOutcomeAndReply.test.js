@@ -35,6 +35,19 @@ describe("resultado do AutoMate volta para a Teto explicar", () => {
     expect(seen).toEqual([{ runId, threadId, status: "completed", output: "Abri e digitei o texto.", error: "", intent: "abrir o bloco de notas a", fromUser: false }]);
     // a resposta final também vai no evento da interface (o cartão mostra o que o AutoMate respondeu)
     expect(events[0]).toMatchObject({ type: "run.status", status: "completed", output: "Abri e digitei o texto." });
+    expect(events[0]).not.toHaveProperty("artifacts");
+  });
+
+  it("run.status leva só referências válidas; conteúdo e itens sem id ficam de fora", () => {
+    const { instructionId } = startRun("refs", { explain: false });
+    const ref = { id: "0b6f9a3e-1c2d-4e5f-8a7b-9c0d1e2f3a4b", kind: "image", name: "resultado.jpg", mimeType: "image/jpeg", size: 12, caption: "Fim" };
+    const events = translateAutomateNotification("notifications/automate/task_completed", {
+      instructionId,
+      output: "ok",
+      artifacts: [ref, { ...ref, id: "11111111-2222-4333-8444-555555555555", data: "SEVMTE8=" }, { ...ref, id: "nao-e-uuid" }],
+    });
+    expect(events[0].artifacts).toEqual([ref, { ...ref, id: "11111111-2222-4333-8444-555555555555" }]);
+    expect(JSON.stringify(events[0])).not.toContain("SEVMTE8=");
   });
 
   it("falha: emite failed com o erro e a saída parcial", () => {
