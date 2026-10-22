@@ -46,7 +46,6 @@ import {
   userBoundarySnapshot
 } from "../channels/userBoundaryDetect.js";
 import { scoreSleepDisturbance } from "../life/sleepDisturbanceDetect.js";
-import { contextualSeed, chance } from "../brain/rng.js";
 import { RESPONSE_MODES, shouldStartTypingIndicator } from "./responseModes.js";
 
 function clampString(value, max) {

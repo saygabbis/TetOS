@@ -2,6 +2,9 @@ import { readFileSync, writeFileSync, existsSync, renameSync, mkdirSync } from "
 import { dirname } from "node:path";
 
 export function readJson(path, fallback) {
+  // Gravação adiada ainda não foi pro disco → o estado certo é o pendente, não o arquivo velho.
+  const pending = pendingWrites.get(path);
+  if (pending) return structuredClone(pending.data);
   if (!existsSync(path)) {
     // Cópia: devolver o próprio objeto padrão fazia stores diferentes mutarem a mesma constante.
     return fallback && typeof fallback === "object" ? structuredClone(fallback) : fallback;
@@ -64,7 +67,7 @@ export function writeJsonDeferred(path, data, delayMs = DEFAULT_DEFER_MS) {
   pendingWrites.set(path, { data, timer });
 }
 
-export function flushJsonWrite(path) {
+function flushJsonWrite(path) {
   const pending = pendingWrites.get(path);
   if (!pending) return;
   pendingWrites.delete(path);

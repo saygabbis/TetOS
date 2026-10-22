@@ -22,7 +22,7 @@ function sessionLabel(role = "full") {
   return "sessão única";
 }
 
-export function resolveAdminNotifyJid(runtime) {
+function resolveAdminNotifyJid(runtime) {
   const ownerJids = runtime?.defaults?.ownerWaJids ?? [];
   if (ownerJids[0]) return jidNormalizedUser(ownerJids[0]);
 

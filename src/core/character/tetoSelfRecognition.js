@@ -42,13 +42,3 @@ export function detectTetoInMediaDescription(description = "", { mediaType = nul
     signals
   };
 }
-
-export function buildSelfImagePromptBlock(detection = {}, mediaType = "image") {
-  if (!detection?.isLikelySelf) return [];
-  return [
-    "[MÍDIA — PODE SER VOCÊ]",
-    `A ${mediaType === "sticker" ? "figurinha" : "imagem"} enviada parece te representar (Kasane Teto: cabelo vermelho/rosa em brocas/twin drills, visual icônico, baguete, etc.).`,
-    "Trate como se estivesse vendo um desenho/sticker SEU — pode reagir em primeira pessoa ('sou eu', 'essa sou eu', 'olha eu aí'), com humor de diva/gremlin se couber.",
-    "Não finja que é uma desconhecida aleatória."
-  ];
-}

@@ -5,7 +5,7 @@ function escapeRegExp(s = "") {
 }
 
 /** Chave de lookup: minúsculas, sem acento — @Gabbis e @gabbis viram a mesma chave. */
-export function normalizeMentionToken(raw = "") {
+function normalizeMentionToken(raw = "") {
   return String(raw ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -41,7 +41,7 @@ function mentionHandle(raw = "") {
 }
 
 /** Rótulos @ aceitos (nome, apelidos, primeiro nome). */
-export function collectMentionableLabels(member = {}) {
+function collectMentionableLabels(member = {}) {
   const labels = new Set();
   const add = (raw) => {
     const handle = mentionHandle(raw);
@@ -66,7 +66,7 @@ export function collectMentionableLabels(member = {}) {
 }
 
 /** Dígitos que o WhatsApp espera após @ no texto (telefone ou LID local). */
-export function mentionMarkInText(member = {}) {
+function mentionMarkInText(member = {}) {
   const phone = String(member.waPhone ?? "").trim().replace(/@.+$/, "");
   if (phone && /^\d{10,15}$/.test(phone)) return phone;
   const lid = String(member.waLid ?? "").trim().replace(/@.+$/, "");
@@ -79,7 +79,7 @@ export function mentionMarkInText(member = {}) {
 }
 
 /** JID para o array mentions do Baileys — prefere @s.whatsapp.net quando há telefone. */
-export function bestMentionJid(member = {}) {
+function bestMentionJid(member = {}) {
   const phone = String(member.waPhone ?? "").trim().replace(/@.+$/, "");
   if (phone && /^\d{10,15}$/.test(phone)) return `${phone}@s.whatsapp.net`;
   const jid = String(member.mentionJid ?? "").trim();
@@ -147,7 +147,7 @@ function resolvePartialMention(tokenKey, members = []) {
  * Índice tradutor: token normalizado (@gabbis) → membro + JID de menção real.
  * Várias grafias (@Gabbis, @gabbis, apelido) apontam para a mesma pessoa.
  */
-export function buildMentionTranslator(members = []) {
+function buildMentionTranslator(members = []) {
   /** @type {Map<string, { member: object, labels: string[], jid: string }>} */
   const byToken = new Map();
 

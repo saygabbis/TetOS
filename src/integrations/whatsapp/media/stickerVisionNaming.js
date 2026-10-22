@@ -90,7 +90,7 @@ const BOILERPLATE_PATTERNS = [
 ];
 
 /** Remove caminhos locais — nunca devem ir pro catálogo nem virar nome. */
-export function stripFilePaths(text = "") {
+function stripFilePaths(text = "") {
   let s = String(text ?? "");
   s = s.replace(/[a-zA-Z]:\\(?:[^\\\s]+\\)*[^\\\s]*/g, " ");
   s = s.replace(/\\\\(?:[^\\\s]+\\)*[^\\\s]*/g, " ");

@@ -1,4 +1,4 @@
-import { watchFile, unwatchFile } from "node:fs";
+import { watchFile } from "node:fs";
 import QRCode from "qrcode";
 import { readJson, writeJson } from "../../utils/fileStore.js";
 
@@ -80,10 +80,4 @@ export function attachWhatsAppStateFileWatcher(onChange) {
     lastSerialized = serialized;
     onChange(next);
   });
-}
-
-export function detachWhatsAppStateFileWatcher() {
-  if (!watchStarted) return;
-  unwatchFile(STORE_PATH);
-  watchStarted = false;
 }

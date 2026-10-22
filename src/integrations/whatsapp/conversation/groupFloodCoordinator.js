@@ -6,7 +6,7 @@ import {
 
 const MSG_THRESHOLD = Number(process.env.TETOS_GROUP_FLOOD_MSG_THRESHOLD ?? 8);
 const SEGMENT_CAP = Number(process.env.TETOS_GROUP_FLOOD_SEGMENT_CAP ?? 3);
-export const GROUP_QUEUE_DEPTH_CAP = Number(process.env.TETOS_GROUP_QUEUE_CAP ?? 4);
+const GROUP_QUEUE_DEPTH_CAP = Number(process.env.TETOS_GROUP_QUEUE_CAP ?? 4);
 const RECENT_MS = Number(process.env.TETOS_GROUP_CATCHUP_RECENT_MS ?? 40_000);
 const RECENT_COUNT = Number(process.env.TETOS_GROUP_CATCHUP_RECENT_COUNT ?? 6);
 

@@ -27,7 +27,7 @@ function runFfmpeg(command) {
  * Extrai 1–N PNGs para visão (vídeo, GIF, WebP animado).
  * @returns {{ frames: string[], tmpDir: string|null, disposable: string[] }}
  */
-export async function extractFramesForVision(filePath, { maxFrames = 3, maxDurationSec = 8 } = {}) {
+async function extractFramesForVision(filePath, { maxFrames = 3, maxDurationSec = 8 } = {}) {
   const ext = extname(filePath).toLowerCase();
   const disposable = [];
 

@@ -35,6 +35,38 @@ export class GroupEngagementWindow {
     return row;
   }
 
+  /** Ritmo do grupo (pra decisão dinâmica de entrar no papo): timestamps recentes por grupo. */
+  #pushPulse(map, groupId, now, keepMs) {
+    const gid = String(groupId ?? "").trim();
+    if (!gid) return;
+    const list = (map.get(gid) ?? []).filter((t) => now - t < keepMs);
+    list.push(now);
+    map.set(gid, list.slice(-50));
+  }
+
+  /** Alguém falou no grupo — mede se a conversa está viva. */
+  noteGroupMessage(groupId, now = Date.now()) {
+    this.groupMessageAt ??= new Map();
+    this.#pushPulse(this.groupMessageAt, groupId, now, 5 * 60_000);
+  }
+
+  /** A Teto vai falar no grupo — mede o quanto ela já falou há pouco (cansaço). */
+  noteBotTurn(groupId, now = Date.now()) {
+    this.botTurnAt ??= new Map();
+    this.#pushPulse(this.botTurnAt, groupId, now, 3 * 60_000);
+  }
+
+  groupPulse(groupId, now = Date.now()) {
+    const gid = String(groupId ?? "").trim();
+    const bot = (this.botTurnAt?.get(gid) ?? []).filter((t) => now - t < 3 * 60_000);
+    const msgs = (this.groupMessageAt?.get(gid) ?? []).filter((t) => now - t < 5 * 60_000);
+    return {
+      recentBotTurns: bot.length,
+      msSinceBotTurn: bot.length ? now - bot[bot.length - 1] : Infinity,
+      liveMessages: msgs.length
+    };
+  }
+
   isActive(groupId, userId, now = Date.now()) {
     const k = this.key(groupId, userId);
     const row = this.byKey.get(k);

@@ -10,7 +10,7 @@ import { recentAssistantTurns, regulateBubbles } from "../../../modules/chat/sty
 let presenceLlmPausedUntil = 0;
 let presenceSubscriptionWarned = false;
 
-export function isOllamaSubscriptionError(message = "") {
+function isOllamaSubscriptionError(message = "") {
   const msg = String(message);
   return /403/.test(msg) && /subscription|upgrade/i.test(msg);
 }
@@ -35,7 +35,7 @@ export function notePresenceError(error) {
  * Uma entrada por pessoa (por chat de PV real). Antes a mesma pessoa aparecia como tel, LID e dm-*
  * e podia receber a mesma iniciativa várias vezes — e chaves de grupo entravam na lista.
  */
-export function listKnownUsers(runtime) {
+function listKnownUsers(runtime) {
   const profiles = runtime.longTerm?.data?.profiles ?? {};
   const mediumTerm = runtime.longTerm?.data?.mediumTerm ?? {};
   const ids = [...new Set([...Object.keys(profiles), ...Object.keys(mediumTerm)])].filter(

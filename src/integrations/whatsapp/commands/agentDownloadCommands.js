@@ -2,7 +2,7 @@
 
 import { detectPlatform } from "../../../core/media/urlPlatformDetect.js";
 
-export const AGENT_URL_DOWNLOAD_COMMANDS = Object.freeze([
+const AGENT_URL_DOWNLOAD_COMMANDS = Object.freeze([
   "youtube",
   "yt",
   "twitter",
@@ -24,7 +24,7 @@ export const AGENT_URL_DOWNLOAD_COMMANDS = Object.freeze([
   "thumb"
 ]);
 
-export const AGENT_URL_DOWNLOAD_ALIASES = Object.freeze({
+const AGENT_URL_DOWNLOAD_ALIASES = Object.freeze({
   yt: "youtube",
   x: "twitter",
   tt: "twitter",
@@ -54,7 +54,7 @@ const PLATFORM_TO_COMMAND = Object.freeze({
 });
 
 /** Especificação canônica — fonte única para prompt da LLM (espelha urlDownloadArgsParse). */
-export const AGENT_URL_DOWNLOAD_PROMPT_SPECS = Object.freeze([
+const AGENT_URL_DOWNLOAD_PROMPT_SPECS = Object.freeze([
   {
     command: "youtube",
     aliases: ["yt"],
@@ -204,7 +204,7 @@ export function parseAgentCommandArgs(argsRaw = "") {
   return args;
 }
 
-export function normalizeAgentUrlDownloadCommand(cmd) {
+function normalizeAgentUrlDownloadCommand(cmd) {
   const raw = String(cmd ?? "").toLowerCase();
   return AGENT_URL_DOWNLOAD_ALIASES[raw] ?? raw;
 }

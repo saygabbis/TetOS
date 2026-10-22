@@ -30,20 +30,6 @@ export function scoreSleepDisturbance(text = "", { floodCount = 0 } = {}) {
   return Math.min(1, score);
 }
 
-export function isSleepDisturbanceEnabled() {
-  return String(process.env.TETOS_SLEEP_DISTURBANCE_ENABLED ?? "true").toLowerCase() !== "false";
-}
-
-export function sleepDisturbanceThreshold() {
-  const n = Number(process.env.TETOS_SLEEP_DISTURBANCE_THRESHOLD ?? 0.68);
-  return Number.isFinite(n) ? n : 0.68;
-}
-
-export function sleepTempWakeMs() {
-  const n = Number(process.env.TETOS_SLEEP_TEMP_WAKE_MS ?? 240_000);
-  return Number.isFinite(n) && n >= 60_000 ? Math.floor(n) : 240_000;
-}
-
 export function sleepDisturbanceFloodWindowMs() {
   const n = Number(process.env.TETOS_SLEEP_DISTURBANCE_FLOOD_WINDOW_MS ?? 90_000);
   return Number.isFinite(n) && n >= 10_000 ? Math.floor(n) : 90_000;

@@ -8,7 +8,7 @@ import {
 } from "../whatsapp/commands/mediaCommandParser.js";
 
 /** Tipos de ação do agente que a UI sabe executar (equivalem aos do WhatsApp). */
-export const UI_MEDIA_ACTION_TYPES = Object.freeze([
+const UI_MEDIA_ACTION_TYPES = Object.freeze([
   "sticker",
   "media",
   "toimage",
@@ -30,7 +30,7 @@ function nextId(prefix = "a") {
 }
 
 /** Publica uma bolha da Teto (texto e/ou mídias) na thread. */
-export function pushAssistantMessage({ thread, uiBus, text = "", attachments = [] }) {
+function pushAssistantMessage({ thread, uiBus, text = "", attachments = [] }) {
   const message = {
     id: nextId("a"),
     role: "assistant",

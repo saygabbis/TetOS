@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { MediaLearningHub } from "../src/core/media/MediaLearningHub.js";
 import { assert, ok } from "./test-helpers.js";
 

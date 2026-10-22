@@ -16,8 +16,9 @@ import { probeStickerIsAnimated } from "../../../core/media/stickerAnimation.js"
 import { detectConfirmationReply } from "../../../core/operations/confirmationIntent.js";
 import { formatMediaInputText } from "../../../core/channels/mediaTimelineEnrich.js";
 import { ChatMessageIndex } from "./chatMessageIndex.js";
-import { mentionedJidsIncludeBot, classifyTetoAddress, extractContextInfo, extractQuotedText, isQuotedMessageFromBot } from "./messageContext.js";
+import { mentionedJidsIncludeBot, classifyTetoAddress, isLowSignalGroupMessage, extractContextInfo, extractQuotedText, isQuotedMessageFromBot } from "./messageContext.js";
 import { buildBotActorIds } from "../../../core/channels/botIdentity.js";
+import { rollGroupJoin } from "../../../core/channels/groupJoinPolicy.js";
 import { parseTetoSlashCommand, handleTetoSlashCommand, formatTetoActivationCommand } from "../commands/tetoSlashCommands.js";
 import { parseTetosCommand, resolveTetosMessage, formatTetosUsage, isQuotedTetosOneShot } from "../commands/tetosCommand.js";
 import { formatWhatsAppHelpText as formatMediaCommandHelpText, parseWhatsAppCommand as parseMediaCommand } from "../commands/mediaCommandParser.js";
@@ -1183,7 +1184,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
               phase: "group_filtered",
               userId,
               remoteJid,
-              detail: "calar ativo — ignorando menção/janela por 1 min"
+              detail: "calar ativo — ignorando menção/janela"
             });
             continue;
           }
@@ -1197,19 +1198,41 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           groupAddressKind = classifyTetoAddress(text, { hasMention, isReplyToBot });
           if (isReplyToBot) isReply = true;
 
-          const windowActive = engagement?.isActive?.(remoteJid, userId) ?? false;
+          // Marcou outra pessoa ou respondeu a mensagem de outra pessoa → o papo é com outro alguém.
+          // Ela ainda pode comentar (como gente faz), mas sabendo que não era com ela.
+          const addressedToSomeoneElse =
+            (mentionHint.length > 0 && !hasMention) || (Boolean(stanzaId) && !isReplyToBot);
           const explicitAddress =
             groupAddressKind === "mention" ||
             groupAddressKind === "reply" ||
             groupAddressKind === "contextual";
+          engagement?.noteGroupMessage?.(remoteJid);
 
           if (explicitAddress || isReplyToBot) {
             isDirect = explicitAddress;
             engagement?.touch?.(remoteJid, userId);
-          } else if (windowActive) {
-            groupEngagementActive = true;
-            isDirect = false;
-            engagement?.touch?.(remoteJid, userId);
+          } else if (runtime.tetoActivation?.isGroupActive?.(remoteJid) !== false) {
+            // Sem chamada direta: decisão orgânica (groupJoinPolicy), não regra fixa.
+            const join = rollGroupJoin({
+              inWindow: engagement?.isActive?.(remoteJid, userId) ?? false,
+              addressedToSomeoneElse,
+              lowSignal: isLowSignalGroupMessage(text, { mediaType: mediaKind ?? null }),
+              isQuestion: /\?\s*$/.test(String(text ?? "").trim()),
+              isOwner: isOwnerContact(runtime, remoteJid, userId),
+              ...(engagement?.groupPulse?.(remoteJid) ?? {})
+            });
+            if (join.mode) {
+              // Não renova a janela: só falar COM ela estende a conversa.
+              groupEngagementActive = true;
+              isDirect = false;
+              if (join.mode === "bystander") groupAddressKind = "bystander";
+            }
+            logThinking(runtime, {
+              phase: join.mode ? "group_join" : "group_filtered",
+              userId,
+              remoteJid,
+              detail: `${join.mode ?? "fica de fora"} (chance ${(join.chance * 100).toFixed(0)}%${addressedToSomeoneElse ? ", papo com outra pessoa" : ""})`
+            });
           } else if (groupAddressKind === "name_ambiguous") {
             logThinking(runtime, {
               phase: "group_filtered",
@@ -1220,10 +1243,13 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
 
           const allowGroupReply = explicitAddress || groupEngagementActive;
+          if (allowGroupReply) engagement?.noteBotTurn?.(remoteJid);
           decisionTrace.groupGate = explicitAddress
             ? groupAddressKind
             : groupEngagementActive
-              ? "engagement_window"
+              ? groupAddressKind === "bystander"
+                ? "bystander"
+                : "engagement_window"
               : "ignored";
           addDecisionStep(decisionTrace, "group.gate", {
             groupAddressKind,
@@ -1661,7 +1687,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             phase: "dm_filtered",
             userId,
             remoteJid,
-            detail: "calar ativo — ignorando mensagens por 1 min"
+            detail: "calar ativo — ignorando mensagens"
           });
           continue;
         }
@@ -1719,20 +1745,6 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           continue;
         }
 
-        // "fica quieta um minuto" → silêncio de ~1 min já agora (o agente às vezes não chamava calar()).
-        if (!isFromMe && !parsedCommand && !isTetosCommand && (!isGroup || isDirect) && detectHushRequest(text)) {
-          const applied = runtime.groupEngagement?.muteFromAgent?.(remoteJid, userId, {
-            scope: isGroup ? "usuario" : null,
-            ttlMs: runtime.defaults.groupMuteMs
-          });
-          logThinking(runtime, {
-            phase: "hush_request",
-            userId,
-            remoteJid,
-            detail: `pedido de silêncio — calar até ${applied?.expiresAt ?? "?"}`
-          });
-        }
-
         if (!isFromMe) {
           logIncomingAudit(runtime, {
             remoteJid,
@@ -1750,6 +1762,40 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             messageId: incoming.key?.id ?? null,
             pushName
           });
+        }
+
+        // "fica quieta" → silêncio já agora (o agente às vezes não chamava calar()).
+        // No grupo cala o GRUPO TODO: antes calava só pra quem pediu (por 1 min) e ela seguia
+        // respondendo os outros.
+        if (
+          !isFromMe &&
+          !parsedCommand &&
+          (!isGroup || isDirect || isTetosCommand) &&
+          detectHushRequest(text)
+        ) {
+          const applied = runtime.groupEngagement?.muteFromAgent?.(remoteJid, userId, {
+            scope: "canal",
+            ttlMs: isGroup ? runtime.defaults.groupHushMs : runtime.defaults.groupMuteMs
+          });
+          if (isGroup) runtime.groupEngagement?.clearGroup?.(remoteJid);
+          logThinking(runtime, {
+            phase: "hush_request",
+            userId,
+            remoteJid,
+            detail: `pedido de silêncio — ${isGroup ? "grupo todo" : "chat"} calado até ${applied?.expiresAt ?? "?"}`
+          });
+          if (isGroup) {
+            try {
+              await safeSendMessage(remoteJid, { react: { text: "🤐", key: incoming.key } });
+            } catch (_) {
+              /* reação é cortesia */
+            }
+            finalizeDecisionTrace(runtime, decisionTrace, {
+              groupGate: "muted",
+              output: RESPONSE_OUTPUTS.REACTION
+            });
+            continue;
+          }
         }
 
         if (isFromMe) {

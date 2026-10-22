@@ -21,7 +21,7 @@ function speakerLabel(entry = {}) {
 /**
  * Uma linha do histórico: Nome (message id: X): "texto" + contexto de reply.
  */
-export function formatChannelTimelineLine(entry = {}, quotedEntry = null, visionByMessageId = null, labelFor = speakerLabel) {
+function formatChannelTimelineLine(entry = {}, quotedEntry = null, visionByMessageId = null, labelFor = speakerLabel) {
   const msgId = entry.messageId ?? entry.id ?? "?";
   const who = labelFor(entry);
   const rawText = enrichTimelineEntryText(entry, visionByMessageId).trim();
@@ -66,7 +66,7 @@ function buildSpeakerLabeler(entries = []) {
   };
 }
 
-export function formatChannelTimelineText(entries = [], lookupQuoted = null, visionByMessageId = null) {
+function formatChannelTimelineText(entries = [], lookupQuoted = null, visionByMessageId = null) {
   const labelFor = buildSpeakerLabeler(entries);
   const lines = entries.map((entry) => {
     const qid = entry.quotedMessageId ?? entry.meta?.quotedMessageId ?? null;
@@ -77,13 +77,13 @@ export function formatChannelTimelineText(entries = [], lookupQuoted = null, vis
 }
 
 /** Thread do índice em memória → entradas normalizadas. */
-export function entriesFromChatIndex(chatMessageIndex, channelId, limit = DEFAULT_CHANNEL_HISTORY_LIMIT) {
+function entriesFromChatIndex(chatMessageIndex, channelId, limit = DEFAULT_CHANNEL_HISTORY_LIMIT) {
   if (!chatMessageIndex?.getThread || !channelId) return [];
   return chatMessageIndex.getThread(channelId, limit);
 }
 
 /** Fallback: memória de grupo (todas as falas recentes do canal). */
-export function entriesFromGroupMemory(groupMemory, channelId, limit = DEFAULT_CHANNEL_HISTORY_LIMIT) {
+function entriesFromGroupMemory(groupMemory, channelId, limit = DEFAULT_CHANNEL_HISTORY_LIMIT) {
   const rows = groupMemory?.byChannel?.(channelId, { limit: limit * 2 }) ?? [];
   return rows
     .filter(

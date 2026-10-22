@@ -6,7 +6,7 @@ export const STICKER_DURATION_MAX_MS = 30_000;
  * Aceita: 5000, 5000ms, 5s, 5sec, 5.5s
  * @returns {number|null} ms ou null se vazio/inválido
  */
-export function parseStickerDurationMs(raw) {
+function parseStickerDurationMs(raw) {
   if (raw === undefined || raw === null) return null;
   const s = String(raw).trim().toLowerCase();
   if (!s) return null;

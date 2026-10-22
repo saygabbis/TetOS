@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { AbsorbedKnowledgeBridge } from "../src/core/learning/absorbedKnowledgeBridge.js";
 import { assert, ok } from "./test-helpers.js";
 

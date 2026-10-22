@@ -21,7 +21,7 @@ const COMMAND_ALIASES = Object.freeze({
   thumb: "thumbnail"
 });
 
-export const URL_DOWNLOAD_COMMANDS = Object.freeze([
+const URL_DOWNLOAD_COMMANDS = Object.freeze([
   "youtube",
   "twitter",
   "instagram",
@@ -32,13 +32,9 @@ export const URL_DOWNLOAD_COMMANDS = Object.freeze([
   "thumbnail"
 ]);
 
-export function normalizeUrlDownloadCommand(command) {
+function normalizeUrlDownloadCommand(command) {
   const raw = String(command ?? "").toLowerCase();
   return COMMAND_ALIASES[raw] ?? raw;
-}
-
-export function isUrlCommand(command) {
-  return URL_DOWNLOAD_COMMANDS.includes(normalizeUrlDownloadCommand(command));
 }
 
 function findUrlInArgs(args = []) {

@@ -8,15 +8,6 @@
  * - channelId: canal conversacional; normalmente remoteJid no WhatsApp.
  * - channelScope: escopo de memória; "direct" em DM, "group:<id>" em grupos.
  */
-export const WHATSAPP_IDENTITY_FIELDS = Object.freeze([
-  "remoteJid",
-  "userId",
-  "participantId",
-  "sessionId",
-  "channelId",
-  "channelScope"
-]);
-
 export function buildWhatsappIdentitySnapshot({
   remoteJid,
   userId,

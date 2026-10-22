@@ -113,7 +113,7 @@ const MESSAGE_COMMAND_RE = /\b(?:mensagem|message|responder|reply|quote)\s*\(/gi
 const ANY_COMMAND_START_RE = /^[a-z]+\s*\(/i;
 
 /** Textos dos `mensagem("…")` de uma resposta crua da IA. */
-export function messageTextsFromRaw(raw = "") {
+function messageTextsFromRaw(raw = "") {
   const text = String(raw ?? "").replace(/[\u201c\u201d\u201e\u201f]/g, '"');
   const out = [];
   for (const m of text.matchAll(MESSAGE_COMMAND_RE)) {

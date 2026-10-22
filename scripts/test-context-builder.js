@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { LongTermMemory } from "../src/core/memory/longTerm.js";
 import { ContextBuilder } from "../src/core/memory/contextBuilder.js";
 import { assert, ok } from "./test-helpers.js";

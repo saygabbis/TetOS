@@ -34,7 +34,7 @@ import { scanCommandArgs } from "./commandArgScanner.js";
 /** Comandos cujo texto é livre (pode ter Markdown, parênteses e apóstrofos): lidos com o leitor robusto. */
 const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar"]);
 
-export function normalizeActionCommandText(rawText = "") {
+function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
     .replace(/[\u201c\u201d\u201e\u201f\u2033\u2036]/g, '"')
     .replace(/[\u2018\u2019\u201a\u201b\u2032\u2035]/g, "'")
@@ -241,11 +241,15 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
       .filter(Boolean)
   );
   if (triggerId) recentIds.add(triggerId);
+  const quotedAlready = new Set();
 
   let out = actions.map((action) => {
     if ((action.type !== "message" && action.type !== "sticker") || !action.quoteId) return action;
     const qid = normActionMessageId(action.quoteId);
     if (!qid) return { ...action, quoteId: null };
+    // Uma citação por mensagem-alvo: várias bolhas citando a mesma msg parece spam.
+    if (quotedAlready.has(qid)) return { ...action, quoteId: null };
+    quotedAlready.add(qid);
     if (qid === triggerId) {
       // Reply conversacional: manter citação na mensagem que acabou de chegar.
       if (meta?.isReply) return action;

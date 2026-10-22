@@ -245,8 +245,3 @@ export function pruneIdentityArtifactProfiles(runtime) {
   if (removed > 0) longTerm.persist?.();
   return { removed };
 }
-
-/** @deprecated use repairProfileContamination */
-export function repairBotProfileContamination(runtime) {
-  return repairProfileContamination(runtime);
-}

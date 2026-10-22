@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { findPreferredDownloadFile } from "../../src/core/media/ytDlpRunner.js";
-import { mkdirSync, writeFileSync, utimesSync } from "node:fs";
+import { writeFileSync, utimesSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { mkdtempSync } from "node:fs";

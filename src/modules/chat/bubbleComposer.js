@@ -59,7 +59,7 @@ export function mergeBrokenPhrases(parts = []) {
   return out.length ? out : list;
 }
 
-export function inferRhythmMode({ emotion = {}, tone = null, timingPlan = null, subconscious = "" } = {}) {
+function inferRhythmMode({ emotion = {}, tone = null, timingPlan = null, subconscious = "" } = {}) {
   const energy = Number(emotion.energy ?? 0.5);
   const playful = Number(emotion.playfulness ?? emotion.mood === "playful" ? 0.75 : 0.45);
   const social = Number(emotion.social ?? 0.5);
@@ -112,7 +112,7 @@ export function buildMultiBubbleRhythmBlock(meta = {}) {
   ].filter(Boolean);
 }
 
-export function computeBubbleDelay(text, index, { emotion = {}, timingPlan = null, tone = null, mode = "moderate" } = {}) {
+function computeBubbleDelay(text, index, { emotion = {}, timingPlan = null, tone = null, mode = "moderate" } = {}) {
   const seed = contextualSeed([index, text?.length, emotion.mood, mode]);
   const rand = seededRandom(seed);
   const len = String(text ?? "").trim().length;

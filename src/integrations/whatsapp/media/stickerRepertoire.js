@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { readJson, writeJson } from "../../../infra/utils/fileStore.js";
 import { enrichMediaVision } from "../../../modules/vision/mediaVisionEnrich.js";
@@ -13,8 +13,6 @@ import {
 const CATALOG_NAME = "catalog.json";
 
 const BUILTIN_KEYS = new Set(["teto-linguinha", "teto-pao", "teto-saliente", "ack", "ok", "thumbs_up", "heart"]);
-
-export { slugifyStickerKey };
 
 function previewText(text, max = 120) {
   const s = String(text ?? "").trim();
@@ -214,8 +212,9 @@ export function saveStickerToRepertoire({
   } else {
     catalog.entries.push(entry);
   }
-  if (catalog.entries.length > 200) {
-    catalog.entries = catalog.entries.slice(-200);
+  // Repertório é memória persistente: não descartar figurinhas antigas do catálogo (antes cortava em 200).
+  if (catalog.entries.length > 5000) {
+    catalog.entries = catalog.entries.slice(-5000);
   }
   writeJson(catalogPath(basePath), catalog);
 
@@ -345,20 +344,158 @@ export async function saveStickerToRepertoireWithVision({
   return { ...saved, autoNamed, forwarded: isForwarded, visionSource };
 }
 
-export function formatRepertoireForPrompt(basePath = "./data/stickers", limit = 24) {
-  const catalog = loadStickerCatalog(basePath);
-  const learned = (catalog.entries ?? []).filter((e) => e?.key && !BUILTIN_KEYS.has(e.key));
+function foldSearchText(text = "") {
+  return String(text ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+const SEARCH_STOPWORDS = new Set(
+  "a o as os da de do das dos e em um uma uns umas pra pro para com que quer manda mande envia figurinha figurinhas sticker stickers fig aquela aquele essa esse isso teto tetos me te voce vc ai la so".split(
+    " "
+  )
+);
+
+function searchTokens(text = "") {
+  return foldSearchText(text)
+    .split(" ")
+    .filter((t) => t.length >= 3 && !SEARCH_STOPWORDS.has(t));
+}
+
+function mtimeOf(path) {
+  try {
+    return statSync(path).mtimeMs;
+  } catch {
+    return 0;
+  }
+}
+
+/** basePath → { stamp, entries } — o prompt lê o repertório a cada turno; só relê o disco se mudou. */
+const entriesCache = new Map();
+
+/**
+ * Repertório completo: catálogo + arquivos .webp que nunca entraram no catálogo (ex.: teto-auruda).
+ * Cada entrada já vem com o texto de busca normalizado.
+ */
+export function listRepertoireEntries(basePath = "./data/stickers") {
+  const stamp = `${mtimeOf(catalogPath(basePath))}:${mtimeOf(basePath)}`;
+  const cached = entriesCache.get(basePath);
+  if (cached?.stamp === stamp) return cached.entries;
+
+  const byKey = new Map();
+  for (const e of loadStickerCatalog(basePath).entries ?? []) {
+    if (e?.key) byKey.set(e.key, e);
+  }
+  let files = [];
+  try {
+    files = readdirSync(basePath).filter((name) => name.endsWith(".webp"));
+  } catch {
+    files = [];
+  }
+  for (const name of files) {
+    const key = name.replace(/\.webp$/i, "");
+    if (!byKey.has(key)) byKey.set(key, { key, label: key.replace(/[-_]+/g, " ") });
+  }
+  const entries = [...byKey.values()].map((e) => {
+    const searchText = entrySearchText(e);
+    return { ...e, searchText, searchWords: searchText.split(" ") };
+  });
+  entriesCache.set(basePath, { stamp, entries });
+  return entries;
+}
+
+function entrySearchText(e = {}) {
+  return foldSearchText(
+    [e.key?.replace(/[-_]+/g, " "), e.displayName, e.label, e.visionDescription].filter(Boolean).join(" ")
+  );
+}
+
+function rankEntries(entries = [], query = "", limit = 8) {
+  const tokens = searchTokens(query);
+  if (!tokens.length) return [];
+  const scored = [];
+  for (const e of entries) {
+    const hay = e.searchText ?? entrySearchText(e);
+    const words = e.searchWords ?? hay.split(" ");
+    let score = 0;
+    for (const t of tokens) {
+      if (words.includes(t)) score += 3;
+      else if (words.some((w) => w.startsWith(t) || (w.length >= 4 && t.startsWith(w)))) score += 2;
+      else if (hay.includes(t)) score += 1;
+      // "aura" ~ "auruda": nomes de figurinha costumam ser apelidos/trocadilhos da palavra pedida.
+      else if (t.length >= 4 && words.some((w) => w.length >= 4 && w.slice(0, 3) === t.slice(0, 3))) score += 1;
+    }
+    if (score > 0) scored.push({ entry: e, score });
+  }
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((s) => s.entry);
+}
+
+/** Figurinhas do repertório que combinam com o texto (pedido "manda a da aura", assunto da conversa). */
+export function searchRepertoire(basePath = "./data/stickers", query = "", limit = 8) {
+  return rankEntries(listRepertoireEntries(basePath), query, limit);
+}
+
+function labelRepertoireEntry(e) {
+  if (e.displayName) return `${e.key} ("${e.displayName}")`;
+  if (e.visionDescription) return `${e.key} (${String(e.visionDescription).slice(0, 48)})`;
+  return e.key;
+}
+
+function sampleEntries(entries = [], n = 0, seed = Date.now()) {
+  const pool = [...entries];
+  const out = [];
+  let s = Math.floor(seed) % 2147483647 || 1;
+  while (pool.length && out.length < n) {
+    s = (s * 48271) % 2147483647;
+    out.push(pool.splice(s % pool.length, 1)[0]);
+  }
+  return out;
+}
+
+/** A amostra do repertório gira a cada 6h — estável entre turnos pra não invalidar o cache do prompt. */
+export function repertoireRotationSeed(now = Date.now()) {
+  return Math.floor(now / (6 * 3600_000)) + 1;
+}
+
+/**
+ * Linha fixa do repertório (topo do prompt): metade recentes, metade amostra do acervo inteiro —
+ * pra ela variar em vez de repetir sempre as mesmas. Não depende da mensagem: o que combina com o
+ * pedido vai em `formatRepertoireMatchesForPrompt`, perto do [INPUT].
+ */
+export function formatRepertoireForPrompt(basePath = "./data/stickers", limit = 24, { seed = repertoireRotationSeed() } = {}) {
+  const learned = listRepertoireEntries(basePath).filter((e) => !BUILTIN_KEYS.has(e.key));
   if (!learned.length) {
     return "Repertório extra vazio — use salvarSticker(\"message_id\") (sem chave: o leitor de imagem nomeia) ou modoRepertorio(\"on\").";
   }
-  const recent = learned.slice(-limit);
-  const labels = recent.map((e) => {
-    if (e.displayName) return `${e.key} ("${e.displayName}")`;
-    if (e.visionDescription) return `${e.key} (${String(e.visionDescription).slice(0, 48)})`;
-    return e.key;
-  });
-  const tail = learned.length > limit ? ` (+${learned.length - limit} mais)` : "";
-  return `Figurinhas no repertório: ${labels.join(", ")}${tail}. Use sticker("chave") para enviar.`;
+  const recent = learned.slice(-Math.floor(limit / 2));
+  const recentKeys = new Set(recent.map((e) => e.key));
+  const sampled = sampleEntries(
+    learned.filter((e) => !recentKeys.has(e.key)),
+    limit - recent.length,
+    seed
+  );
+  const shown = [...recent, ...sampled];
+  const tail = learned.length > shown.length ? ` (+${learned.length - shown.length} no acervo)` : "";
+  return `Figurinhas no repertório: ${shown.map(labelRepertoireEntry).join(", ")}${tail}. Use sticker("chave") para enviar.`;
+}
+
+/** Bloco por turno: figurinhas que combinam com o pedido/assunto ("manda a figurinha da aura"). */
+export function formatRepertoireMatchesForPrompt(basePath = "./data/stickers", queryText = "", limit = 6) {
+  const matches = rankEntries(listRepertoireEntries(basePath), queryText, limit).filter(
+    (e) => !BUILTIN_KEYS.has(e.key)
+  );
+  if (!matches.length) return [];
+  return [
+    "[FIGURINHAS QUE COMBINAM COM ESTA MENSAGEM]",
+    `${matches.map(labelRepertoireEntry).join(", ")}.`,
+    'Se pediram uma figurinha pelo nome, mande a chave que combina com sticker("chave") — não use comando de conversão de mídia.'
+  ];
 }
 
 export function isForwardedMessage(contextInfo = {}) {

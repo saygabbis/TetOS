@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { MindLogger } from "../src/core/consciousness/MindLogger.js";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { assert, ok } from "./test-helpers.js";

@@ -77,7 +77,7 @@ function flushThinking(runId, uiBus) {
 const FORM_FIELD_TYPES = new Set(["text", "textarea", "email", "cpf", "cnpj", "phone", "cep", "number", "date", "select"]);
 
 /** Formulário do AutoMate (`ask_user_form`): cada pergunta é um campo; o id dela é a chave do valor. */
-export function formFieldsFromQuestions(questions) {
+function formFieldsFromQuestions(questions) {
   if (!Array.isArray(questions)) return [];
   return questions.flatMap((q) => {
     if (!q || typeof q.id !== "string" || typeof q.prompt !== "string") return [];

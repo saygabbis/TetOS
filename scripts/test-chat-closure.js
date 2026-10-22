@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { ChatService } from "../src/modules/chat/chatService.js";
 import { ResponseProcessor } from "../src/modules/chat/responseProcessor.js";
 import { assert, ok } from "./test-helpers.js";

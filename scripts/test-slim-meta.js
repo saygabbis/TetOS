@@ -1,4 +1,4 @@
-import { slimMetaForStorage, repairShortTermMessage } from "../src/core/memory/slimMeta.js";
+import { repairShortTermMessage } from "../src/core/memory/slimMeta.js";
 import { assert, ok } from "./test-helpers.js";
 
 const bloated = {

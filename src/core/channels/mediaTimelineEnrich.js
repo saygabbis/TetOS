@@ -51,7 +51,7 @@ export function buildVisionByMessageId(runtime, channelId, { stickersPath = null
   return map;
 }
 
-export function isMediaPlaceholderText(text = "") {
+function isMediaPlaceholderText(text = "") {
   const s = String(text ?? "").trim();
   return !s || MEDIA_PLACEHOLDER_RE.test(s);
 }

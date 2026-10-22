@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { MusicWorld } from "../src/core/music/MusicWorld.js";
 import { assert, ok } from "./test-helpers.js";
 

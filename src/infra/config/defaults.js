@@ -280,6 +280,8 @@ export const DEFAULTS = {
   /** Após menção/resposta em grupo, segue respondendo o mesmo usuário sem @ (ms). Padrão 2 min. */
   groupEngagementMs: Number(process.env.TETOS_GROUP_ENGAGEMENT_MS ?? 120000),
   groupMuteMs: Number(process.env.TETOS_GROUP_MUTE_MS ?? 60_000),
+  /** "fica quieta" no grupo: quanto tempo o grupo inteiro fica em silêncio (ms). Padrão 15 min. */
+  groupHushMs: Number(process.env.TETOS_GROUP_HUSH_MS ?? 15 * 60_000),
   multimodalMaxPerScope: Number(process.env.TETOS_MULTIMODAL_MAX_PER_SCOPE ?? 12),
   visualAnalysesMaxPerScope: Number(process.env.TETOS_VISUAL_MAX_PER_SCOPE ?? 10),
   typingGraceMs: Number(process.env.TETOS_TYPING_GRACE_MS ?? 2400),

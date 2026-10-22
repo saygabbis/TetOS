@@ -1723,6 +1723,8 @@ export function createConversationOrchestrator(
     const channelKey = item.remoteJid;
     if ((groupChannelEpoch.get(channelKey) ?? 0) !== groupEpoch) return true;
     if (activation && !activation.isGroupActive(channelKey)) return true;
+    // Mandaram calar o grupo enquanto esta resposta era gerada → não manda.
+    if (runtime.groupEngagement?.isMuted?.(channelKey)) return true;
     return false;
   }
 

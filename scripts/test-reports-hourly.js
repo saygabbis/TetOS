@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { DailyReportGenerator } from "../src/core/learning/dailyReportGenerator.js";
 import { EventLedger } from "../src/core/learning/eventLedger.js";
 import { BehaviorProfiler } from "../src/core/learning/behaviorProfiler.js";

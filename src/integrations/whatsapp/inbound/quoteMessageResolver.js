@@ -1,9 +1,9 @@
 import { buildOutgoingQuoteKey } from "./messageContext.js";
 
-export const QUOTE_RESOLVE_MIN_CONFIDENCE = 0.75;
+const QUOTE_RESOLVE_MIN_CONFIDENCE = 0.75;
 const MIN_PREFIX_OVERLAP = 8;
 
-export function normalizeQuoteMessageId(raw = "") {
+function normalizeQuoteMessageId(raw = "") {
   return String(raw ?? "")
     .trim()
     .replace(/^\[?ID:\s*/i, "")
@@ -66,7 +66,7 @@ export function scoreMessageIdSimilarity(requested = "", candidate = "") {
   return 0;
 }
 
-export function lookupIndexedMessage(channelId, messageId, { chatMessageIndex, groupMemory } = {}) {
+function lookupIndexedMessage(channelId, messageId, { chatMessageIndex, groupMemory } = {}) {
   const id = normalizeQuoteMessageId(messageId);
   if (!id || !channelId) return null;
 

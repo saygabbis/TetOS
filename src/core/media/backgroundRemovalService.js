@@ -21,8 +21,8 @@ const REMOVE_BG_WORKER = join(dirname(fileURLToPath(import.meta.url)), "removeBg
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-export const MAX_ANIMATED_FRAMES = 24;
-export const MAX_ANIMATED_DURATION_SEC = 5;
+const MAX_ANIMATED_FRAMES = 24;
+const MAX_ANIMATED_DURATION_SEC = 5;
 /** Pipeline local (animado) — menos frames = mais rápido e menos queda de conexão WA. */
 const MAX_ANIMATED_FRAMES_LOCAL = 12;
 const MAX_ANIMATED_DURATION_SEC_LOCAL = 4;

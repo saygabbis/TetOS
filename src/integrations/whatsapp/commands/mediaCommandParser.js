@@ -43,7 +43,7 @@ const MEDIA_COMMAND_ALIASES = Object.freeze({
   draw: "gerar"
 });
 
-export const MEDIA_COMMANDS = Object.freeze([
+const MEDIA_COMMANDS = Object.freeze([
   "sticker",
   "fsticker",
   "csticker",
@@ -64,7 +64,7 @@ export const MEDIA_COMMANDS = Object.freeze([
   "gerar"
 ]);
 
-export const URL_MEDIA_COMMANDS = Object.freeze([
+const URL_MEDIA_COMMANDS = Object.freeze([
   "youtube",
   "twitter",
   "instagram",

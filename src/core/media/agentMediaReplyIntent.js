@@ -33,6 +33,13 @@ function looksLikeImperativeRequest(t = "") {
   );
 }
 
+/** "manda a figurinha da aura" / "manda aquela fig do gato" = pedido do repertório, não conversão. */
+export function looksLikeRepertoireStickerRequest(t = "") {
+  return /\b(manda|mande|envia|joga|solta|usa|bota|coloca)\b.*\b(figurinha|sticker|fig)\s+(d[aeo]s?|com|que)\b/.test(
+    foldIntentText(t)
+  );
+}
+
 function resolveMediaCommandFromText(t = "") {
   if (!t || t.length > 100 || looksLikeCommentary(t) || !looksLikeImperativeRequest(t)) return null;
 
@@ -83,6 +90,9 @@ export function detectAgentMediaReplyIntent(text = "", meta = {}) {
     source = "self_media_intent";
   }
   if (!messageId) return null;
+  // Citou texto (não mídia) e pediu "manda a figurinha da X" → é do repertório, não converter a
+  // mensagem citada (dava "Nao achei midia"). Com mídia citada/anexada, converter continua valendo.
+  if (source === "reply_intent" && !isQuotedMedia && looksLikeRepertoireStickerRequest(raw)) return null;
 
   const command = resolveMediaCommandFromText(foldIntentText(raw));
   if (!command) return null;

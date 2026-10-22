@@ -83,7 +83,7 @@ export function identityAliasKeys(userId = "", facts = {}) {
 }
 
 /** Nomes/apelidos conhecidos de um contato (push, PV, grupo, apelidos da Teto). */
-export function collectNameVariants(facts = {}) {
+function collectNameVariants(facts = {}) {
   const raw = [
     facts.preferredName,
     facts.displayName,
@@ -113,7 +113,7 @@ export function collectNameVariants(facts = {}) {
   };
 }
 
-export function mergeProfileNicknames(existingFacts = {}, { userNick = null, tetoNick = null, pushName = null } = {}) {
+function mergeProfileNicknames(existingFacts = {}, { userNick = null, tetoNick = null, pushName = null } = {}) {
   const nicknames = new Set(
     (existingFacts.nicknames ?? [])
       .map(cleanDisplayName)

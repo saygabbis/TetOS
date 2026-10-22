@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { TetoActivationStore } from "../src/core/channels/TetoActivationStore.js";
 import { parseTetoSlashCommand } from "../src/integrations/whatsapp/commands/tetoSlashCommands.js";

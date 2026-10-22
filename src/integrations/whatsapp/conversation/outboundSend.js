@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 
-export const SEND_TIMEOUT_MS = 8000;
-export const SEND_HANG_WAIT_MS = 12000;
-export const OUTBOUND_DEDUPE_MS = 20_000;
+const SEND_TIMEOUT_MS = 8000;
+const SEND_HANG_WAIT_MS = 12000;
+const OUTBOUND_DEDUPE_MS = 20_000;
 const RECENT_STORE_MAX = 240;
 
 export function createOutboundMessageId() {
@@ -13,7 +13,7 @@ export function outboundDedupeKey(remoteJid, text) {
   return `${String(remoteJid ?? "").trim()}:${String(text ?? "").trim().toLowerCase()}`;
 }
 
-export function pruneRecentOutbound(store, now = Date.now(), ttlMs = OUTBOUND_DEDUPE_MS) {
+function pruneRecentOutbound(store, now = Date.now(), ttlMs = OUTBOUND_DEDUPE_MS) {
   if (!store || typeof store.entries !== "function") return store;
   for (const [key, ts] of store.entries()) {
     if (!Number.isFinite(ts) || now - ts > ttlMs) store.delete(key);
@@ -42,7 +42,7 @@ export function releaseOutboundDedupe(store, remoteJid, text) {
   store.delete(outboundDedupeKey(remoteJid, text));
 }
 
-export function isSendTimeoutError(error) {
+function isSendTimeoutError(error) {
   return /send timeout/i.test(String(error?.message ?? error ?? ""));
 }
 

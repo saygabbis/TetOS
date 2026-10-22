@@ -5,7 +5,7 @@ import { probeStickerIsAnimated } from "../../../core/media/stickerAnimation.js"
 import { fileExtFromDocumentMessage, persistMedia } from "../media/mediaStore.js";
 import { extractContextInfo } from "../inbound/messageContext.js";
 
-export function normAgentMessageId(id) {
+function normAgentMessageId(id) {
   return String(id ?? "")
     .trim()
     .replace(/^\[?ID:\s*/i, "")

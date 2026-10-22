@@ -2,7 +2,8 @@ import { requireSession } from "../auth/sessionAuth.js";
 import { DEFAULTS } from "../../config/defaults.js";
 import { readJson, writeJson } from "../../utils/fileStore.js";
 
-const SETTINGS_PATH = process.env.TETOS_UI_SETTINGS_PATH ?? "./data/uiSettings.json";
+/** Lido na hora (não no import) — assim TETOS_UI_SETTINGS_PATH definido depois também vale (ex.: testes). */
+const settingsPath = () => process.env.TETOS_UI_SETTINGS_PATH ?? "./data/uiSettings.json";
 
 const DEFAULT_SETTINGS = {
   locale: "pt-BR",
@@ -27,7 +28,7 @@ const WRITABLE_KEYS = new Set([
 ]);
 
 function loadSettings(deviceRegistry, deviceGateway) {
-  const stored = readJson(SETTINGS_PATH, {});
+  const stored = readJson(settingsPath(), {});
   const devices = deviceRegistry?.list?.() ?? [];
   const anyOnline = devices.some((d) => deviceGateway?.isDeviceConnected?.(d.id));
   const automateConnectionStatus = anyOnline ? "connected" : devices.length ? "offline" : "unknown";
@@ -47,7 +48,7 @@ export function registerUiSettingsRoutes(app, deviceRegistry, deviceGateway) {
 
   app.patch("/ui/settings", requireSession, (req, res) => {
     const body = req.body ?? {};
-    const current = readJson(SETTINGS_PATH, {});
+    const current = readJson(settingsPath(), {});
     const next = { ...current };
 
     for (const key of Object.keys(body)) {
@@ -55,7 +56,7 @@ export function registerUiSettingsRoutes(app, deviceRegistry, deviceGateway) {
       next[key] = body[key];
     }
 
-    writeJson(SETTINGS_PATH, next);
+    writeJson(settingsPath(), next);
     return res.json({
       settings: loadSettings(deviceRegistry, deviceGateway),
     });

@@ -49,7 +49,7 @@ export function getUiMediaDir(defaults = {}) {
   return process.env.TETOS_UI_MEDIA_PATH ?? join(defaults.whatsappMediaPath ?? "./data/media", "ui");
 }
 
-export function extFromMime(mimeType, fileName = "") {
+function extFromMime(mimeType, fileName = "") {
   const mime = String(mimeType ?? "").toLowerCase().split(";")[0].trim();
   if (EXT_BY_MIME[mime]) return EXT_BY_MIME[mime];
   const fromName = extname(String(fileName ?? "")).replace(".", "").toLowerCase();
@@ -62,7 +62,7 @@ export function mimeFromExt(ext) {
 }
 
 /** Tipo de mídia no vocabulário do MediaProcessor (image | video | gif | audio | sticker | document). */
-export function inputTypeFromMime(mimeType) {
+function inputTypeFromMime(mimeType) {
   const mime = String(mimeType ?? "").toLowerCase();
   if (mime === "image/webp") return "sticker";
   if (mime === "image/gif") return "gif";
@@ -73,7 +73,7 @@ export function inputTypeFromMime(mimeType) {
 }
 
 /** Tipo exibido na UI (MediaRef.kind). */
-export function uiKindFromMime(mimeType, { sticker = false } = {}) {
+function uiKindFromMime(mimeType, { sticker = false } = {}) {
   const mime = String(mimeType ?? "").toLowerCase();
   if (sticker || mime === "image/webp") return "sticker";
   if (mime.startsWith("image/")) return "image";
@@ -82,7 +82,7 @@ export function uiKindFromMime(mimeType, { sticker = false } = {}) {
   return "file";
 }
 
-export function parseDataUrl(dataUrl) {
+function parseDataUrl(dataUrl) {
   const match = /^data:([^;,]+)?(;[^,]*)?,([\s\S]*)$/.exec(String(dataUrl ?? ""));
   if (!match) return null;
   const mimeType = match[1] || "application/octet-stream";

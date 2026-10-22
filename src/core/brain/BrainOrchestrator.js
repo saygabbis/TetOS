@@ -204,7 +204,6 @@ export class BrainOrchestrator {
   async tickTurn(turnContext = {}) {
     if (!this.enabled) return { snapshot: {}, blocks: {}, timingPlan: {} };
 
-    const hour = turnContext.hourOfDay ?? this.localHour();
     this.life.tick();
 
     if (turnContext.userId && turnContext.message) {

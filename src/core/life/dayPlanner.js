@@ -31,7 +31,7 @@ export function seededRandom(seedText = "") {
 }
 
 /** Amigos do universo dela (artigo certo: "a Miku", "o Ted"). */
-export const FRIENDS = [
+const FRIENDS = [
   { name: "Miku", a: "a" }, { name: "Rin", a: "a" }, { name: "Len", a: "o" }, { name: "Luka", a: "a" },
   { name: "Neru", a: "a" }, { name: "Momo", a: "a" }, { name: "Defoko", a: "a" }, { name: "Ted", a: "o" }
 ];
@@ -119,7 +119,7 @@ const art = (f) => `${f.a} ${f.name}`;
 const de = (f) => `${f.a === "o" ? "do" : "da"} ${f.name}`;
 const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
-export function fillFriends(label, friends = []) {
+function fillFriends(label, friends = []) {
   const [f1 = FRIENDS[0], f2 = f1] = friends.map(friendByName);
   return label
     .replace("{friend2}", art(f2))

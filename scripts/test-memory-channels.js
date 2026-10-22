@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { GroupMemoryStore } from "../src/core/memory/GroupMemoryStore.js";
 import { EpisodicMemoryStore } from "../src/core/memory/EpisodicMemoryStore.js";
 import { assert, ok } from "./test-helpers.js";

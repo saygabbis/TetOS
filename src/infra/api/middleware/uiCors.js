@@ -40,7 +40,3 @@ export function attachUiCors(app) {
     return next();
   });
 }
-
-export function getDefaultUiOrigins() {
-  return DEFAULT_ORIGINS;
-}

@@ -1,5 +1,5 @@
 /** Colapsa letras repetidas: "tetoooo" → "teto", "teeetooo" → "teto" */
-export function collapseStretchyLetters(s = "") {
+function collapseStretchyLetters(s = "") {
   return String(s ?? "")
     .toLowerCase()
     .normalize("NFD")

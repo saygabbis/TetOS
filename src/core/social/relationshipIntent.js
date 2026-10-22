@@ -18,7 +18,7 @@ const FLIRT_RE =
 
 const TETO_DIRECT_RE = /\b(?:teto|tetozinha|kasane)\b/i;
 
-export function detectAcceptance(text = "") {
+function detectAcceptance(text = "") {
   const t = String(text ?? "").trim();
   if (!t || t.length > 120) return false;
   return ACCEPT_RE.test(t);

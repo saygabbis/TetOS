@@ -24,13 +24,6 @@ export function countTrailingAssistantTurns(history = []) {
   return count;
 }
 
-export function lastUserTurn(history = []) {
-  for (let i = history.length - 1; i >= 0; i -= 1) {
-    if (history[i]?.role === "user") return history[i];
-  }
-  return null;
-}
-
 export function analyzeGhosting({ history = [], gapSinceUserMs = 0, lastUserText = "" } = {}) {
   const trailingBot = countTrailingAssistantTurns(history);
   const topicClosed = detectTopicClosed(lastUserText);
@@ -84,15 +77,4 @@ export function shouldAllowInitiation(ghosting = {}, { mode = null, userBoundary
   }
 
   return { allow: true, reason: "ok" };
-}
-
-export function initiativeDeferMultiplier(ghosting = {}, mode = "") {
-  let mult = 1;
-  if (ghosting.topicClosed) mult *= 2.8;
-  if (ghosting.level === "soft") mult *= 1.6;
-  if (ghosting.level === "firm") mult *= 2.2;
-  if (ghosting.level === "heavy") mult *= 4;
-  if (ghosting.trailingBot >= 1) mult *= 1.8;
-  if (String(mode).includes("reconnect")) mult *= 1.3;
-  return mult;
 }

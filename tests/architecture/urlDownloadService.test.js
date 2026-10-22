@@ -105,7 +105,7 @@ describe("url download service", () => {
     runYtDlpMock.mockRejectedValue(
       new Error("[twitter] 2074118628430258680: No video could be found in this tweet")
     );
-    const jpg = seedFile("dl-2074118628430258680.jpg");
+    seedFile("dl-2074118628430258680.jpg");
     const fetchMock = vi.fn(async (_url, dest) => {
       const { writeFileSync } = await import("node:fs");
       writeFileSync(dest, Buffer.alloc(2048, 1));

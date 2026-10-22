@@ -1,20 +1,7 @@
-import { DEFAULTS } from "../../../infra/config/defaults.js";
-import { RESPONSE_MODES } from "../../../core/pipeline/responseModes.js";
-
 /**
  * Reações na mensagem do usuário (1 emoji por reação no WhatsApp).
  * Usa afinidades aprendidas do MediaLearningHub quando disponível.
  */
-
-/** @deprecated use planStickerOnly from reactionPlanner — integrado do antigo stickerPlanner */
-export function planStickerOnly({ policy, isGroup = false, hasMedia = false } = {}) {
-  if (!isGroup) return { useSticker: false };
-  if (hasMedia) return { useSticker: false };
-  if (policy?.mode === RESPONSE_MODES.REACT_ONLY && Math.random() < DEFAULTS.stickerOnlyChance) {
-    return { useSticker: true, stickerKey: "ack" };
-  }
-  return { useSticker: false };
-}
 
 const COOLDOWN_MS = 28_000;
 const MIN_MESSAGES_BETWEEN = 1;

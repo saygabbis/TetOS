@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { TrustIntimacySystem } from "../src/core/social/TrustIntimacySystem.js";
 
 const trust = new TrustIntimacySystem("./data/trustBonds.json");

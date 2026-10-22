@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { ResponseProcessorPool } from "../src/modules/chat/responseProcessorPool.js";
 import { assert, ok } from "./test-helpers.js";
 

@@ -1,5 +1,5 @@
 /** Detecta saída que deve ir como GIF animado no WhatsApp (videoMessage + gifPlayback). */
-export function isGifLikeOutput(output = {}) {
+function isGifLikeOutput(output = {}) {
   const mimetype = String(output.mimetype ?? "").toLowerCase();
   const fileName = String(output.fileName ?? output.path ?? "").toLowerCase();
   const kind = String(output.kind ?? "").toLowerCase();

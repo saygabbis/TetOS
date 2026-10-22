@@ -11,7 +11,10 @@ import { formatGroupRosterBlock } from "../channels/groupRoster.js";
 import { formatDmProfilePromptLines } from "../channels/profileFacts.js";
 import { buildMultiBubbleRhythmBlock } from "../../modules/chat/bubbleComposer.js";
 import { formatConversationPhaseBlock } from "../brain/ConversationPhaseEngine.js";
-import { formatRepertoireForPrompt } from "../../integrations/whatsapp/media/stickerRepertoire.js";
+import {
+  formatRepertoireForPrompt,
+  formatRepertoireMatchesForPrompt
+} from "../../integrations/whatsapp/media/stickerRepertoire.js";
 import {
   buildAgentDownloadCommandsPromptLines,
   buildAgentDownloadExampleLines,
@@ -148,6 +151,10 @@ export class Agent {
 
     const stickersPath = meta?.stickersPath ?? DEFAULTS.stickersPath;
     const repertoireLine = formatRepertoireForPrompt(stickersPath);
+    const stickerMatchBlock = formatRepertoireMatchesForPrompt(
+      stickersPath,
+      [userMessage, quotedMessage].filter(Boolean).join(" ")
+    );
     const repertoireModeLine = meta?.repertoireModeActive
       ? "Modo repertório automático ATIVO para este usuário — figurinhas que ele mandar ou encaminhar já entram no repertório."
       : 'Modo repertório automático inativo — ative com modoRepertorio("on") ou peça para usar .repertorio on';
@@ -992,7 +999,14 @@ export class Agent {
             "Chamaram você pelo nome de forma contextual (não foi só citar 'teto' no meio de outro assunto, tipo teto da casa).",
             "Trate como fala direta com você."
           ]
-        : [];
+        : meta?.isGroup && meta?.groupAddressKind === "bystander"
+          ? [
+              "[GRUPO — PAPO DOS OUTROS]",
+              "Essa mensagem NÃO foi pra você — é conversa entre outras pessoas do grupo. Você está só lendo e pode se meter, como amiga faria.",
+              "Não responda como se tivessem falado com você, não ache que te marcaram, não cobre ninguém. Comente só se tiver algo natural a acrescentar ao assunto (opinião, zoeira, informação) e use o contexto recente do grupo.",
+              "Se não tiver nada que valha, [SEM_RESPOSTA] ou uma reação leve é o certo."
+            ]
+          : [];
 
     const linkBlock = meta?.linkContext ? [String(meta.linkContext)] : [];
     const weatherBlock = meta?.weatherContext ? [String(meta.weatherContext)] : [];
@@ -1202,6 +1216,7 @@ export class Agent {
       ...mediaDescribeBlock,
       ...selfImageBlock,
       ...mediaBlock,
+      ...stickerMatchBlock,
       ...metaBlock,
       ...reinforceBlock,
       ...fallbackBlock,

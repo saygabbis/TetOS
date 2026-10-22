@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { assert, ok } from "./test-helpers.js";
 
 const sessionA = "551111@g.us";

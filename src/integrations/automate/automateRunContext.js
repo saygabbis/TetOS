@@ -135,7 +135,3 @@ export function resolveAutomateRun(params = {}) {
 
   return null;
 }
-
-export function clearAutomateRun(instructionId) {
-  if (instructionId) byInstructionId.delete(instructionId);
-}

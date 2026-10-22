@@ -1,4 +1,4 @@
-import { closeSync, existsSync, openSync, readSync, statSync } from "node:fs";
+import { closeSync, existsSync, openSync, readSync } from "node:fs";
 
 const NDJSON_READ_CHUNK_BYTES = 256 * 1024;
 
@@ -45,11 +45,6 @@ export function readNdjsonFile(path) {
   return readNdjsonStream(path);
 }
 
-export function readNdjsonFileSize(path) {
-  if (!existsSync(path)) return 0;
-  return statSync(path).size;
-}
-
 /** Itera linhas NDJSON sem acumular objetos parseados na memória. */
 export function forEachNdjsonLine(path, onLine, { lineFilter = null } = {}) {
   if (!existsSync(path)) return 0;
@@ -84,7 +79,7 @@ export function forEachNdjsonLine(path, onLine, { lineFilter = null } = {}) {
   return lines;
 }
 
-export const NDJSON_TS_DAY_RE = /"ts"\s*:\s*"(\d{4}-\d{2}-\d{2})/;
+const NDJSON_TS_DAY_RE = /"ts"\s*:\s*"(\d{4}-\d{2}-\d{2})/;
 
 export function extractNdjsonDay(line) {
   const match = String(line).match(NDJSON_TS_DAY_RE);

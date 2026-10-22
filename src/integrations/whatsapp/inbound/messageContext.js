@@ -168,7 +168,9 @@ function isContextualNameCall(text = "") {
  * mention | reply | contextual | name_ambiguous | none
  */
 export function classifyTetoAddress(text = "", { hasMention = false, isReplyToBot = false } = {}) {
-  if (hasMention || /@\d{4,}/.test(String(text ?? "")) || hasNormalizedTetoMention(text)) {
+  // Só menção À TETO conta. Antes qualquer "@123456" (marcar outra pessoa) virava "mention" e ela
+  // achava que era com ela.
+  if (hasMention || hasNormalizedTetoMention(text)) {
     return "mention";
   }
   if (isReplyToBot) return "reply";
@@ -189,6 +191,24 @@ export function classifyTetoAddress(text = "", { hasMention = false, isReplyToBo
   if (isContextualNameCall(t)) return "contextual";
   if (PERSON_NAME_RE.test(t) || fuzzy.detected) return "name_ambiguous";
   return "none";
+}
+
+/**
+ * Mensagem de grupo sem conteúdo pra puxar resposta ("KKKK", "mds", emoji, figurinha solta).
+ * Dentro da janela de conversa isso não deve virar resposta — no máximo ela reage sozinha.
+ */
+export function isLowSignalGroupMessage(text = "", { mediaType = null } = {}) {
+  const t = String(text ?? "").trim();
+  if (!t) return mediaType === "sticker" || mediaType === "reaction" || !mediaType;
+  if (t.length <= 2) return true;
+  const folded = t
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+  if (/^(?:[kh]+|(?:ha)+h?|(?:he)+|(?:hu)+|rs+|ks+|lol+|mds+|meu deus\W*|eita+|nossa+|caraca+|vish+|oxi+|ata+|ah+|eh+|ih+|oh+|hm+|aff+|pse|tmj|sim|nao|ss|n|ok|blz|vdd|slk|krl+|pqp+)(?:[\s!?.,…]+(?:[kh]+|rs+|ks+|mds+))*[\s!?.,…]*$/u.test(folded)) {
+    return true;
+  }
+  return /^[\p{Extended_Pictographic}\p{Emoji_Component}\s!?.]+$/u.test(t);
 }
 
 /** Menção direta explícita (menção @, reply ou chamada contextual pelo nome). */

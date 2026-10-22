@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { TimingEngine } from "../src/core/timing/TimingEngine.js";
 import { assert, ok } from "./test-helpers.js";
 

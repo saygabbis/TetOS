@@ -3,7 +3,6 @@ import { join } from "node:path";
 import {
   getUiMediaDir,
   mediaInputFromRef,
-  mimeFromExt,
   saveUiMediaFile,
   toMediaRef
 } from "./uiMediaStore.js";
@@ -22,7 +21,7 @@ import { REMOVE_BG_MODEL_LABELS, resolveRemoveBgOptions } from "../../core/media
 /** Erro com mensagem pronta para a bolha da Teto na interface. */
 export class UiMediaError extends Error {}
 
-export const UI_STICKER_COMMANDS = Object.freeze(["sticker", "fsticker", "csticker"]);
+const UI_STICKER_COMMANDS = Object.freeze(["sticker", "fsticker", "csticker"]);
 export const UI_MEDIA_COMMANDS = Object.freeze([
   ...UI_STICKER_COMMANDS,
   "optimize",
@@ -286,5 +285,3 @@ export class UiMediaService {
     return Boolean(store?.isActive?.(userId));
   }
 }
-
-export { mimeFromExt };

@@ -1,15 +1,5 @@
 /** Detecção de plataforma por URL para comandos de download. */
 
-export const PLATFORMS = Object.freeze([
-  "youtube",
-  "twitter",
-  "instagram",
-  "reddit",
-  "tiktok",
-  "facebook",
-  "generic"
-]);
-
 const COMMAND_TO_PLATFORM = Object.freeze({
   youtube: "youtube",
   yt: "youtube",
@@ -31,15 +21,6 @@ const COMMAND_TO_PLATFORM = Object.freeze({
   thumbnail: "youtube",
   thumb: "youtube"
 });
-
-export function normalizeDownloadCommand(cmd) {
-  return COMMAND_TO_PLATFORM[String(cmd ?? "").toLowerCase()] ?? String(cmd ?? "").toLowerCase();
-}
-
-export function isUrlDownloadCommand(cmd) {
-  const key = String(cmd ?? "").toLowerCase();
-  return key in COMMAND_TO_PLATFORM || PLATFORMS.includes(key);
-}
 
 export function detectPlatform(url = "") {
   const u = String(url ?? "").toLowerCase();

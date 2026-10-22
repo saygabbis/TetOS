@@ -23,7 +23,7 @@ export function extractLinks(text = "") {
 
 const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'", "#x27": "'", "#x2F": "/" };
 
-export function decodeEntities(s = "") {
+function decodeEntities(s = "") {
   return String(s ?? "")
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
     .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))

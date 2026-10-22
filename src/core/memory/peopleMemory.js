@@ -22,7 +22,7 @@ const KINDS = new Set(["gosto", "rotina", "trabalho", "estudo", "saude", "relaca
 const clip = (s, n) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, n);
 const norm = (s) => clip(s, 300).toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[^\p{L}\p{N} ]/gu, "").trim();
 
-export function notebookKey(userId, scope = "direct") {
+function notebookKey(userId, scope = "direct") {
   return `${String(userId ?? "default")}|${scope || "direct"}`;
 }
 

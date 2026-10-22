@@ -218,9 +218,3 @@ export async function encodeGifToMp4(gifPath, outputMp4, { maxDurationSec = 30 }
 
   throw new Error("falha ao converter GIF animado para MP4");
 }
-
-/** Reaplica selagem WA num MP4 já gerado (ex.: após reencode). */
-export function sealExistingMp4InPlace(mp4Path) {
-  sealMp4ForMobile(mp4Path);
-  return mp4OkForPlayback(mp4Path);
-}

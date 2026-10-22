@@ -1,3 +1,4 @@
+import "./isolatedData.js";
 import { TimingEngine } from "../src/core/timing/TimingEngine.js";
 
 const engine = new TimingEngine({ enabled: true });

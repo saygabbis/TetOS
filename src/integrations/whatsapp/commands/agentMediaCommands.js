@@ -11,7 +11,7 @@ export const AGENT_MEDIA_COMMANDS = Object.freeze([
   "convert"
 ]);
 
-export const SAVE_STICKER_COMMANDS = Object.freeze([
+const SAVE_STICKER_COMMANDS = Object.freeze([
   "salvarsticker",
   "salvarrepertorio",
   "adicionarrepertorio",
@@ -21,7 +21,7 @@ export const SAVE_STICKER_COMMANDS = Object.freeze([
   "salvarepertorio"
 ]);
 
-export const REPERTOIRE_MODE_COMMANDS = Object.freeze([
+const REPERTOIRE_MODE_COMMANDS = Object.freeze([
   "modorepertorio",
   "ativarrepertorio",
   "desativarrepertorio",
@@ -29,7 +29,7 @@ export const REPERTOIRE_MODE_COMMANDS = Object.freeze([
   "ligarrepertorio"
 ]);
 
-export const AGENT_MEDIA_COMMAND_ALIASES = Object.freeze({
+const AGENT_MEDIA_COMMAND_ALIASES = Object.freeze({
   fig: "sticker",
   figurinizar: "sticker",
   ffig: "fsticker",
@@ -51,7 +51,7 @@ export const AGENT_MEDIA_COMMAND_ALIASES = Object.freeze({
   converter: "convert"
 });
 
-export const PRESET_STICKER_KEYS = Object.freeze(
+const PRESET_STICKER_KEYS = Object.freeze(
   new Set(["teto-linguinha", "teto-pao", "teto-saliente", "ack", "ok", "thumbs_up", "heart"])
 );
 
@@ -87,12 +87,6 @@ export function isPresetStickerKey(key, { stickersPath = null } = {}) {
   if (stickersPath && isKnownStickerKey(k, stickersPath)) return true;
   if (/^rep-[a-z0-9_-]+$/i.test(k)) return true;
   return true;
-}
-
-export function buildGenerateImageAction(prompt, caption = null) {
-  const clean = String(prompt ?? "").trim();
-  if (!clean) return null;
-  return { type: "generate_image", prompt: clean, caption: caption || null };
 }
 
 export function buildMediaAction(command, messageId, extraArgs = []) {
