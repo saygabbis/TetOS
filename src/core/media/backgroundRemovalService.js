@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -51,7 +51,40 @@ function resolveImglyModel(model = "small") {
   return m === "medium" ? "medium" : "small";
 }
 
-function removeBgWithImgly(inputPath, outputPath, model = "small") {
+const WORKER_TIMEOUT_MS = 180_000;
+
+/**
+ * Roda o worker em processo filho SEM travar o bot. Antes era spawnSync: durante a remoção (8s, até
+ * 3 min no limite) a Teto inteira congelava — nem lia nem respondia ninguém.
+ */
+function runRemoveBgWorker(inputPath, outputPath, imglyModel) {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [REMOVE_BG_WORKER, inputPath, outputPath, imglyModel], {
+      windowsHide: true
+    });
+    let output = "";
+    const collect = (chunk) => {
+      if (output.length < 8192) output += chunk;
+    };
+    child.stdout.on("data", collect);
+    child.stderr.on("data", collect);
+    const timer = setTimeout(() => {
+      collect("\ntempo esgotado na remoção de fundo");
+      child.kill("SIGKILL");
+    }, WORKER_TIMEOUT_MS);
+    const finish = (status) => {
+      clearTimeout(timer);
+      resolve({ status, detail: output.trim().slice(0, 200) });
+    };
+    child.on("error", (error) => {
+      collect(String(error?.message ?? error));
+      finish(null);
+    });
+    child.on("close", finish);
+  });
+}
+
+async function removeBgWithImgly(inputPath, outputPath, model = "small") {
   const chain = [];
   const primary = resolveImglyModel(model);
   chain.push(primary);
@@ -59,14 +92,9 @@ function removeBgWithImgly(inputPath, outputPath, model = "small") {
 
   let lastDetail = "";
   for (const imglyModel of chain) {
-    const r = spawnSync(process.execPath, [REMOVE_BG_WORKER, inputPath, outputPath, imglyModel], {
-      encoding: "utf8",
-      windowsHide: true,
-      maxBuffer: 4 * 1024 * 1024,
-      timeout: 180_000
-    });
+    const r = await runRemoveBgWorker(inputPath, outputPath, imglyModel);
     if (r.status === 0 && existsSync(outputPath)) return;
-    lastDetail = String(r.stderr || r.stdout || "").trim().slice(0, 200);
+    lastDetail = r.detail;
     if (!/not found|publicPath/i.test(lastDetail)) break;
   }
   throw new Error(lastDetail || "falha ao remover fundo (modelo local)");
@@ -155,7 +183,7 @@ export async function removeImageBackground(
   const keys = normalizeRemoveBgKeys(removeBgApiKeys, removeBgApiKey);
 
   if (localOnly) {
-    removeBgWithImgly(inputPath, outputPath, pipeline.model);
+    await removeBgWithImgly(inputPath, outputPath, pipeline.model);
     return { usedApi: false, localOnly: true };
   }
 
@@ -189,11 +217,11 @@ export async function removeImageBackground(
     if (process.env.TETOS_REMOVEBG_DEBUG && !removeBgKeyPool.hasAvailableKey(keys)) {
       console.warn("[removebg] todas as chaves esgotadas — usando modelo local");
     }
-    removeBgWithImgly(inputPath, outputPath, pipeline.model);
+    await removeBgWithImgly(inputPath, outputPath, pipeline.model);
     return { usedApi: false, apiExhausted: !removeBgKeyPool.hasAvailableKey(keys) };
   }
 
-  removeBgWithImgly(inputPath, outputPath, pipeline.model);
+  await removeBgWithImgly(inputPath, outputPath, pipeline.model);
   return { usedApi: false };
 }
 
