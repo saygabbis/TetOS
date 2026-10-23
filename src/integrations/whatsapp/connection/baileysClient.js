@@ -7,6 +7,24 @@ import makeWASocket, {
   useMultiFileAuthState
 } from "baileys";
 
+/**
+ * Últimas mensagens que ELA enviou (id → proto). Quando o aparelho de alguém não consegue ler uma
+ * mensagem dela, o WhatsApp pede reenvio e a Baileys chama getMessage — sem isso a pessoa ficava
+ * com "Aguardando mensagem". Fica fora do socket pra sobreviver a reconexões.
+ */
+const SENT_CACHE_MAX = 1000;
+const sentMessages = new Map();
+
+function rememberSent(messages = []) {
+  for (const m of messages) {
+    const id = m?.key?.id;
+    if (!id || !m.key.fromMe || !m.message) continue;
+    sentMessages.delete(id);
+    sentMessages.set(id, m.message);
+    if (sentMessages.size > SENT_CACHE_MAX) sentMessages.delete(sentMessages.keys().next().value);
+  }
+}
+
 function ensureSessionDir(sessionPath) {
   if (!existsSync(sessionPath)) {
     mkdirSync(sessionPath, { recursive: true });
@@ -76,10 +94,12 @@ export async function createBaileysClient({
     shouldSyncHistoryMessage: () => false,
     markOnlineOnConnect: DEFAULTS.whatsappMarkOnlineOnConnect,
     keepAliveIntervalMs: 10_000,
-    logger: silentLogger
+    logger: silentLogger,
+    getMessage: async (key) => sentMessages.get(key?.id) ?? undefined
   });
 
   socket.ev.on("creds.update", saveCreds);
+  socket.ev.on("messages.upsert", ({ messages }) => rememberSent(messages));
 
   socket.ev.on("connection.update", async (update) => {
     if (update?.qr) {

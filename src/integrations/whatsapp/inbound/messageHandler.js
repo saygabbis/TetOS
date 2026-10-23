@@ -171,6 +171,8 @@ function buildMessageSnapshot({ messageId, remoteJid, actorId, text, mediaType, 
 }
 
 const WA_MESSAGE_CACHE_MAX = 250;
+/** proto.WebMessageInfo.StubType.CIPHERTEXT — mensagem que chegou mas não deu pra descriptografar. */
+const WA_STUB_CIPHERTEXT = 2;
 
 function rememberWaMessage(cache, incoming, rawMessage) {
   const id = incoming?.key?.id;
@@ -719,7 +721,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
       try {
         const rawIncomingMessage = incoming?.message ?? {};
         const viewOnceStubOnly = !incoming?.message && isViewOnceStub(incoming);
-        if (!incoming?.message && !viewOnceStubOnly) continue;
+        if (!incoming?.message && !viewOnceStubOnly) {
+          // Mensagem que chegou sem conteúdo porque o WhatsApp não conseguiu descriptografar
+          // (stub CIPHERTEXT). A Baileys já pede reenvio ao aparelho de quem mandou; aqui só
+          // registramos — antes sumia sem rastro e parecia que ela "ignorou".
+          if (incoming?.messageStubType === WA_STUB_CIPHERTEXT) {
+            const params = (incoming.messageStubParameters ?? []).join(" | ").slice(0, 120);
+            console.warn(
+              `${waLogPrefix} mensagem ilegível de ${incoming.key?.participant ?? incoming.key?.remoteJid ?? "?"} em ${incoming.key?.remoteJid ?? "?"} (id ${incoming.key?.id ?? "?"}): ${params || "sem detalhe"} — pedido de reenvio feito`
+            );
+            runtime.metrics?.increment?.("whatsapp.inbound.undecryptable");
+          }
+          continue;
+        }
         if (incoming?.messageStubType && !incoming.message?.conversation && !isViewOnceStub(incoming)) {
           continue;
         }
