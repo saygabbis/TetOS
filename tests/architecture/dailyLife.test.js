@@ -34,15 +34,57 @@ describe("vida diária", () => {
     const { life, set } = make("2026-10-20T03:10:00-03:00");
     expect(life.availability({ chatId: "a" }).mode).toBe("asleep");
     expect(life.promptLines()[1]).toMatch(/dormindo/);
-    set("2026-10-20T15:30:00-03:00");
+    set("2026-10-20T15:10:00-03:00");
     const av = life.availability({ chatId: "a" });
     expect(av.mode).toBe("busy");
     expect(av.activity).toBe("na aula de canto");
     expect(life.promptLines().join("\n")).toMatch(/Agora: na aula de canto/);
   });
 
+  it("bloco longo de foco/rua tem pausas com o celular na mão", () => {
+    for (const [ymd, weekday] of [["2026-10-22", 4], ["2026-10-23", 5], ["2026-10-24", 6]]) {
+      const p = planDay(ymd, { weekday });
+      // Nenhum trecho ocupado/na rua (fora banho) passa de 40 min sem pausa.
+      for (const b of p.blocks) {
+        if ((b.availability === "busy" || b.availability === "away") && b.kind !== "selfcare") {
+          expect(b.end - b.start).toBeLessThanOrEqual(55);
+        }
+      }
+      for (const pause of p.blocks.filter((b) => b.kind === "break")) {
+        expect(pause.availability).toBe("online");
+        expect(pause.during).toBeTruthy();
+        expect(pause.end - pause.start).toBeLessThanOrEqual(10);
+      }
+    }
+  });
+
+  it("dias já vividos não mudam; só ganham as pausas", () => {
+    const today = planDay("2026-10-22", { weekday: 4 }).blocks.filter((b) => b.kind !== "break");
+    const labels = [...new Set(today.map((b) => b.label))];
+    expect(labels).toContain("ensaiando vocal");
+    expect(labels).toContain("no karaokê com a Momo e o Ted");
+  });
+
+  it("pausa: conversa na hora e o prompt diz do que ela pausou", () => {
+    const { life } = make("2026-10-22T20:55:00-03:00");
+    const av = life.availability({ chatId: "a" });
+    expect(av.mode).toBe("online");
+    expect(av.delayMs).toBe(0);
+    expect(life.promptLines().join("\n")).toMatch(/no meio de: ensaiando vocal/);
+  });
+
+  it("fazendo algo com o celular do lado: responde em segundos, não em minutos", () => {
+    const partial = planDay("2026-10-22", { weekday: 4 }).blocks.find((b) => b.availability === "partial");
+    expect(partial).toBeTruthy();
+    const { life } = make(zonedDate("2026-10-22", partial.start + 5, "America/Sao_Paulo").toISOString());
+    const other = life.availability({ chatId: "x" });
+    expect(other.mode).toBe("partial");
+    expect(other.delayMs).toBeLessThanOrEqual(90_000);
+    expect(life.availability({ chatId: "x", isOwner: true }).delayMs).toBeLessThanOrEqual(30_000);
+  });
+
   it("ocupada: a dona é vista antes, urgência encurta", () => {
-    const { life } = make("2026-10-20T15:30:00-03:00");
+    const { life } = make("2026-10-20T15:10:00-03:00");
     const other = life.availability({ chatId: "x", isOwner: false }).delayMs;
     const owner = life.availability({ chatId: "x", isOwner: true }).delayMs;
     expect(owner).toBeLessThanOrEqual(other);

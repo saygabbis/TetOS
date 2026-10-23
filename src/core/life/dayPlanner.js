@@ -37,7 +37,8 @@ const FRIENDS = [
 ];
 
 /**
- * Atividades por tipo. availability: online (no celular), busy (focada), away (na rua).
+ * Atividades por tipo. availability: online (no celular), partial (fazendo algo, mas com o celular
+ * do lado — conversa normal, só um pouco mais devagar), busy (focada), away (na rua).
  * `hours` = janela em que faz sentido (minutos do dia). {friend} = "a Miku", {dafriend} = "da Miku".
  */
 const POOLS = {
@@ -45,8 +46,8 @@ const POOLS = {
     { label: "gravando um cover", availability: "busy", place: "estúdio" },
     { label: "ensaiando vocal", availability: "busy", place: "estúdio" },
     { label: "mixando uma faixa", availability: "busy", place: "estúdio" },
-    { label: "compondo uma música nova", availability: "busy", place: "quarto" },
-    { label: "editando um vídeo pro canal", availability: "busy", place: "quarto" },
+    { label: "compondo uma música nova", availability: "partial", place: "quarto" },
+    { label: "editando um vídeo pro canal", availability: "partial", place: "quarto" },
     { label: "gravando as vozes de uma collab com {friend}", availability: "busy", place: "estúdio", withFriend: 1 },
     { label: "em call com o produtor", availability: "busy", place: "quarto", hours: [10 * 60, 19 * 60] }
   ],
@@ -64,7 +65,7 @@ const POOLS = {
     { label: "saindo com {friend}", availability: "away", place: "rua", withFriend: 1, hours: [14 * 60, 22 * 60] },
     { label: "no karaokê com {friend} e {friend2}", availability: "away", place: "karaokê", withFriend: 2, hours: [17 * 60, 23 * 60] },
     { label: "tomando sorvete com {friend}", availability: "away", place: "sorveteria", withFriend: 1, hours: [13 * 60, 20 * 60] },
-    { label: "na casa {dafriend}", availability: "away", place: "casa de amigo", withFriend: 1, hours: [14 * 60, 22 * 60] },
+    { label: "na casa {dafriend}", availability: "partial", place: "casa de amigo", withFriend: 1, hours: [14 * 60, 22 * 60] },
     { label: "jogando online com {friend}", availability: "online", place: "quarto", withFriend: 1, hours: [16 * 60, 25 * 60] }
   ],
   errand: [
@@ -81,6 +82,51 @@ const POOLS = {
 };
 const KIND_HOURS = { work: [9 * 60, 21 * 60 + 30], social: [13 * 60, 23 * 60], errand: [8 * 60, 20 * 60], chores: [9 * 60, 22 * 60], leisure: [0, 30 * 60] };
 const KIND_DURATION = { work: [60, 140], leisure: [45, 120], social: [90, 180], errand: [25, 60], chores: [20, 45] };
+
+/**
+ * A partir desse dia: mais tempo livre e blocos de trabalho mais curtos. Dias anteriores ficam
+ * exatamente como ela viveu (o que ela já contou não muda).
+ */
+const LIGHTER_DAYS_FROM = "2026-10-23";
+const LIGHTER_WORK_DURATION = [50, 110];
+
+/** Pausas dentro de blocos longos de foco/rua: ninguém fica 2h sem olhar o celular. */
+const BREAK_LABELS = {
+  work: ["dando uma pausa, tomando água", "no intervalo, mexendo no celular", "esticando as pernas e olhando o celular"],
+  social: ["foi no banheiro e aproveitou pra ver o celular", "numa pausa do rolê, mexendo no celular", "esperando o pedido, mexendo no celular"],
+  errand: ["na fila, mexendo no celular", "parada um pouco, olhando o celular"]
+};
+
+function addBreaks(blocks, rng) {
+  const out = [];
+  for (const b of blocks) {
+    const pausable = (b.availability === "busy" || b.availability === "away") && b.kind !== "selfcare" && b.end - b.start >= 40;
+    if (!pausable) {
+      out.push(b);
+      continue;
+    }
+    let s = b.start;
+    for (;;) {
+      const segEnd = s + rng.int(22, 40);
+      if (b.end - segEnd < 15) break;
+      const pauseEnd = segEnd + rng.int(5, 10);
+      out.push({ ...b, start: s, end: segEnd });
+      out.push({
+        kind: "break",
+        label: rng.pick(BREAK_LABELS[b.kind] ?? BREAK_LABELS.work),
+        availability: "online",
+        place: b.place,
+        friends: b.friends,
+        during: b.label,
+        start: segEnd,
+        end: pauseEnd
+      });
+      s = pauseEnd;
+    }
+    out.push({ ...b, start: s, end: b.end });
+  }
+  return out;
+}
 
 const ANCHORS = {
   // 0 = domingo
@@ -180,9 +226,13 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
   ];
   let showerDone = false;
   const usedTemplates = new Set();
+  const lighter = ymd >= LIGHTER_DAYS_FROM;
+  const durations = lighter ? { ...KIND_DURATION, work: LIGHTER_WORK_DURATION } : KIND_DURATION;
   const weights = weekday === 0 || weekday === 6
     ? { leisure: 4, social: 2, errand: 1, chores: 1, work: 1 }
-    : { work: 4, leisure: 3, errand: 1, chores: 1, social: 1 };
+    : lighter
+      ? { work: 3, leisure: 4, errand: 1, chores: 1, social: 1 }
+      : { work: 4, leisure: 3, errand: 1, chores: 1, social: 1 };
 
   let guard = 0;
   while (t < bed - 20 && guard++ < 40) {
@@ -211,7 +261,7 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
     );
     const prev = blocks[blocks.length - 1];
     const kinds = Object.entries(weights)
-      .filter(([k]) => fits(KIND_HOURS[k], t) && KIND_DURATION[k][0] <= nextFixed - t && !(prev?.kind === k && k !== "leisure" && k !== "work"))
+      .filter(([k]) => fits(KIND_HOURS[k], t) && durations[k][0] <= nextFixed - t && !(prev?.kind === k && k !== "leisure" && k !== "work"))
       .flatMap(([k, w]) => Array(w).fill(k));
     const kind = t >= bed - 90 || !kinds.length ? "leisure" : rng.pick(kinds);
     // Mesma coisa duas vezes no dia (fora lazer) não: ninguém toma sorvete às 15h e às 19h.
@@ -219,7 +269,7 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
     const template = rng.pick(options.length ? options : POOLS.leisure);
     usedTemplates.add(template.label);
     const entry = materialize(rng, template, options.length ? kind : "leisure");
-    const [dmin, dmax] = KIND_DURATION[entry.kind];
+    const [dmin, dmax] = durations[entry.kind];
     t = push(t, Math.max(15, Math.min(nextFixed - t, rng.int(dmin, dmax))), entry);
   }
   if (!showerDone && bed - t > 15) t = push(t, 20, { kind: "selfcare", label: "tomando banho", availability: "busy", place: "banheiro" });
@@ -240,7 +290,8 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
   }
   events.sort((a, b) => a.at - b.at);
 
-  return { date: ymd, weekday, wake, bed, blocks, events };
+  // Semente própria: as pausas não mudam o resto do dia já sorteado.
+  return { date: ymd, weekday, wake, bed, blocks: addBreaks(blocks, seededRandom(`pausas:${ymd}`)), events };
 }
 
 export const fmtClock = (min) => {

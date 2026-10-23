@@ -14,6 +14,7 @@ const MIN = 60_000;
 const WEEKDAYS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const AVAIL_LABEL = {
   online: "livre, com o celular na mão",
+  partial: "fazendo outra coisa, mas com o celular do lado — dá pra conversar",
   busy: "ocupada/focada — olha o celular de vez em quando",
   away: "na rua — responde quando dá",
   asleep: "dormindo"
@@ -153,8 +154,12 @@ export class DailyLife {
       return { ...base, mode: "asleep", delayMs: Math.max(0, loc.wakeAt.getTime() - date.getTime()) + wakeLag };
     }
     if (block.availability === "online") return { ...base, delayMs: 0 };
-    // Ocupada/na rua: olha o celular de vez em quando — a dona é vista antes; urgência encurta.
     const rng = seededRandom(`olha:${loc.day.date}:${block.start}:${chatId ?? ""}`);
+    // Fazendo algo com o celular do lado: responde em segundos, sem segurar a conversa.
+    if (block.availability === "partial") {
+      return { ...base, delayMs: (isOwner ? rng.int(5, 30) : rng.int(20, 90)) * 1000 };
+    }
+    // Ocupada/na rua: olha o celular de vez em quando — a dona é vista antes; urgência encurta.
     const [lo, hi] = block.availability === "busy" ? (isOwner ? [1, 5] : [3, 14]) : isOwner ? [2, 10] : [5, 28];
     let delay = rng.int(lo, hi) * MIN;
     delay = Math.min(delay, Math.max(MIN, untilMs + rng.int(1, 4) * MIN));
@@ -208,7 +213,8 @@ export class DailyLife {
     energy = clamp01(energy);
     let label = valence >= 0.75 ? "animada" : valence >= 0.55 ? "de boa" : valence >= 0.42 ? "meio pra baixo" : "chateada";
     if (energy < 0.4) label = valence >= 0.55 ? "com soninho" : "cansada";
-    return { mood: label, energy, valence, social: loc.block.availability === "online" ? 0.7 : 0.4 };
+    const social = { online: 0.7, partial: 0.6 }[loc.block.availability] ?? 0.4;
+    return { mood: label, energy, valence, social };
   }
 
   /** Blocos do prompt: o que está fazendo, o que fez, o que aconteceu, o que vem — pra falar com coerência. */
@@ -222,22 +228,39 @@ export class DailyLife {
       return [header, "Agora: você estava dormindo. Se está respondendo, é porque acordou com o celular — sono, frases curtas, meio grogue."];
     }
     const lines = [header];
-    lines.push(`Agora: ${block.label} (desde ${fmtClock(block.start)}${block.end - minute > 5 ? `, até ~${fmtClock(block.end)}` : ""}) — ${AVAIL_LABEL[block.availability]}.`);
+    const now = block.kind === "break" ? `${block.label} (no meio de: ${block.during})` : block.label;
+    // Pausa: o "até" que importa é quando volta pro que estava fazendo.
+    lines.push(`Agora: ${now} (desde ${fmtClock(block.start)}${block.end - minute > 5 || block.kind === "break" ? `, até ~${fmtClock(block.end)}` : ""}) — ${AVAIL_LABEL[block.availability]}.`);
     lines.push(`Humor: ${m.mood}${m.energy < 0.4 ? " (energia baixa)" : m.energy > 0.7 ? " (com energia)" : ""}.`);
     if (!isGroup) {
-      const earlier = day.blocks.filter((b) => b.end <= minute && !["waking", "meal", "selfcare", "free"].includes(b.kind)).slice(-3).map((b) => b.label);
+      // Blocos partidos por pausas aparecem uma vez só.
+      const unique = (list) => [...new Set(list)];
+      const earlier = unique(day.blocks.filter((b) => b.end <= minute && !["waking", "meal", "selfcare", "free", "break"].includes(b.kind)).map((b) => b.label)).slice(-3);
       lines.push(`Hoje: acordou ${fmtClock(day.wake)}${earlier.length ? `; já esteve ${earlier.join("; ")}` : ""}.`);
       const happened = day.events.filter((e) => e.at <= minute).slice(-2).map((e) => e.text);
       if (happened.length) lines.push(`Aconteceu hoje: ${happened.join("; ")}.`);
-      const next = day.blocks.filter((b) => b.start >= block.end && b.kind !== "selfcare").slice(0, 2).map((b) => `${b.label.replace(/^(tomando|almoçando|jantando)/, "$1")} ~${fmtClock(b.start)}`);
+      const currentLabel = block.kind === "break" ? block.during : block.label;
+      const next = day.blocks
+        .filter((b) => b.start >= block.end && !["selfcare", "break"].includes(b.kind) && b.label !== currentLabel)
+        .filter((b, i, list) => list.findIndex((x) => x.label === b.label) === i)
+        .slice(0, 2)
+        .map((b) => `${b.label} ~${fmtClock(b.start)}`);
       lines.push(`Depois: ${next.length ? `${next.join("; ")}; ` : ""}dormir lá pra ${fmtClock(day.bed)}.`);
       const yesterday = this.plan(shiftYmd(day.date, -1));
-      const yHighlights = yesterday.blocks.filter((b) => ["social", "work"].includes(b.kind)).slice(-2).map((b) => b.label);
+      const yHighlights = unique(yesterday.blocks.filter((b) => ["social", "work"].includes(b.kind)).map((b) => b.label)).slice(-2);
       if (yHighlights.length) lines.push(`Ontem: ${yHighlights.join("; ")}; dormiu ${fmtClock(yesterday.bed)}.`);
     }
     lines.push(
       "Essa é a sua vida de verdade, a mesma pra todo mundo. Cite só quando encaixar (perguntaram o que tá fazendo, ou combina com o papo) — sem contar a rotina toda, sem inventar outra coisa, e sem falar de quem conversa com você no privado.",
-      block.availability === "busy" ? "Ocupada: respostas mais curtas; pode dizer que tá no meio de algo." : block.availability === "away" ? "Na rua: respostas curtas, de celular." : ""
+      block.kind === "break"
+        ? "Pausa rápida: conversa normal, mas daqui a pouco volta pro que estava fazendo."
+        : block.availability === "partial"
+          ? "Fazendo outra coisa ao mesmo tempo: conversa normal; às vezes comenta o que tá fazendo."
+          : block.availability === "busy"
+            ? "Ocupada: respostas mais curtas; pode dizer que tá no meio de algo."
+            : block.availability === "away"
+              ? "Na rua: respostas curtas, de celular."
+              : ""
     );
     return lines.filter(Boolean);
   }
