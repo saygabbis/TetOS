@@ -95,4 +95,14 @@ Com o hub ativo, o PC com AutoMate normalmente **não** conecta no `/device-link
 
 Frames `{ t: "ctx", deviceId, method, params, ... }` são traduzidos com `eventTranslator` e republicados no `UiEventBus`.
 
+### Objetivos e agenda (aba Objetivos do app)
+
+O hub anuncia a ferramenta da conta `organizer` em `ready.accountTools` e manda o snapshot (`organizer`) em cada `message`. Ela vale **sem PC online** (o `call` não leva `deviceId`). Contrato: [organizer.md do hub](https://github.com/Kzer05/automate-hub/blob/main/docs/organizer.md). Implementação: `src/integrations/automate-hub/hubOrganizer.js`.
+
+- **Estado no prompt.** No app (`ui-desktop`), `formatOrganizerBlock()` lista objetivos ativos (com a autonomia concedida), próximos passos, agenda e decisões pendentes, mais as regras. Sem `accountTools` no hub, o bloco não existe e a Teto não oferece nem promete Objetivos.
+- **Comandos da Teto** (como `computador(...)`; argumento vazio = `""`, datas em ISO com fuso): `tarefa(goalId, título, quando, prazo, minutos)`, `moverTarefa(taskId, quando)`, `concluirTarefa(taskId, evidência)`, `compromisso(goalId, título, início, fim)` e `objetivo(título, resultado, prazo)`. Viram `{ t: "call", tool: "organizer", args: { action: "command", command } }`.
+- **Resultado real.** O app (`applyUiOutgoingActions`) posta o que o hub respondeu: aplicado, **proposta pendente** (fora do combinado: "ainda não foi aplicado… decida em «Preciso de você»") ou erro (nada alterado). A Teto não afirma que aplicou antes disso. Só o usuário concede autonomia; `concluirTarefa` só vale com confirmação ou evidência `run:<runId>` verificada pelo hub.
+- **Acompanhamento proativo.** O hub abre turnos sozinho como mensagem `role: "system"` com `meta.organizer = { goalId, scheduled: true }` (até 3 por conta por dia, só com autonomia concedida). O link repassa ao `POST /ui/threads/:id/messages` com `organizerReview`; a rota não cria fala do usuário: roda um turno de evento do sistema (sem `computador(...)`) e responde na conversa de acompanhamento. Outras mensagens de sistema do hub são ignoradas.
+- **WhatsApp.** Os comandos de Objetivos só entram no prompt do app; se aparecerem numa resposta do WhatsApp, a ação é ignorada.
+
 Implementação: `src/integrations/automate-hub/`.

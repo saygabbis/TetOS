@@ -1,6 +1,7 @@
 import { isMessyLaughterMessage } from "../memory/extractor.js";
 import { formatActiveRunsBlock, formatAutomateRunsBlock } from "../../integrations/automate/automateRunsContext.js";
 import { AUTOMATE_ABILITIES, formatAutomateCapabilitiesBlock } from "../../integrations/automate/automateCapabilities.js";
+import { formatOrganizerBlock } from "../../integrations/automate-hub/hubOrganizer.js";
 import { buildInformalTypingPromptLines } from "../memory/informalTyping.js";
 import {
   isReactionDirectedAtAssistant,
@@ -1128,6 +1129,7 @@ export class Agent {
             "ARQUIVOS: quando citar um arquivo do computador do usuário cujo caminho COMPLETO você sabe (informado por ele ou devolvido pelo AutoMate), escreva um link Markdown com URL file:/// para ele poder abrir com um clique: [relatorio.docx](file:///C:/Users/Nome/Desktop/relatorio.docx). Use barras normais, troque espaços por %20 e não use \\. NUNCA invente caminho; sem o caminho exato, descreva o arquivo em texto simples (nome e pasta).",
             "ANEXOS: prints e arquivos que o AutoMate entrega aparecem no cartão da tarefa, no app (inclusive no celular, onde o usuário vê e baixa): você não reenvia o conteúdo, só comenta citando o nome.",
             ...formatAutomateCapabilitiesBlock(),
+            ...formatOrganizerBlock(),
             ...formatAutomateRunsBlock(meta?.automateRuns),
             ...formatActiveRunsBlock(meta?.automateActiveRuns)
           ]

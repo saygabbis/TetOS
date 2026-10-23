@@ -1,5 +1,6 @@
 import { bindRunToThread, markRunForExplanation, registerAutomateRun } from "./automateRunContext.js";
 import { applyUiMediaAction, isUiMediaAction } from "../ui/uiMediaActions.js";
+import { applyOrganizerAction } from "../automate-hub/hubOrganizer.js";
 
 export function parseInstructionFromEnqueueResult(result) {
   const content = result?.content;
@@ -160,6 +161,21 @@ export async function applyUiOutgoingActions({
     // Figurinhas, mídia, downloads, geração de imagem, repertório e reações: mesmas ações do WhatsApp.
     if (mediaContext && isUiMediaAction(action)) {
       await applyUiMediaAction({ ...mediaContext, thread, uiBus }, action);
+      continue;
+    }
+
+    // Objetivos e agenda: o hub decide (aplica, guarda como proposta ou recusa) e o usuário lê o que de fato houve.
+    if (action.type === "organizer") {
+      const outcome = await applyOrganizerAction(action, { threadId: thread.id });
+      const outcomeMsg = {
+        id: `a-org-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        role: "assistant",
+        text: outcome.text,
+        createdAt: new Date().toISOString(),
+      };
+      thread.messages.push(outcomeMsg);
+      thread.updatedAt = new Date().toISOString();
+      uiBus.publish({ type: "message.final", threadId: thread.id, message: outcomeMsg });
       continue;
     }
 

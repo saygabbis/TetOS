@@ -2,6 +2,7 @@ import WebSocket from "ws";
 import { readHubAgentConfig } from "./hubAgentConfig.js";
 import { translateAutomateNotification } from "../automate/eventTranslator.js";
 import { setAutomateDevicePresence, setAutomateDevices } from "../automate/automateCapabilities.js";
+import { resetHubOrganizer, setHubOrganizerLink, updateHubOrganizerFromFrame } from "./hubOrganizer.js";
 
 function parseJson(raw) {
   try {
@@ -131,6 +132,7 @@ export class HubAgentLink {
     this.stopped = true;
     this.clearTimers();
     this.detachStream();
+    resetHubOrganizer();
     if (this.ws) {
       try {
         this.ws.close();
@@ -282,6 +284,7 @@ export class HubAgentLink {
       this.authenticated = false;
       this.rejectAllPending("Hub desconectado");
       this.devices.clear();
+      resetHubOrganizer();
       this.detachStream();
       this.ws = null;
       this.reconnectAttempt += 1;
@@ -296,6 +299,9 @@ export class HubAgentLink {
   onHelloAccepted(frame) {
     this.authenticated = true;
     this.setDevices(frame?.devices);
+    // Objetivos e agenda: o hub anuncia a ferramenta da conta aqui (e manda o estado em cada mensagem).
+    updateHubOrganizerFromFrame(frame, { replace: true });
+    setHubOrganizerLink(this);
     const name = frame?.agent?.name ?? this.config.agentId;
     this.onLog(`[hub-agent] conectado como ${name} (${this.config.agentId})`);
     this.attachStream();
@@ -398,6 +404,10 @@ export class HubAgentLink {
     const threadId = typeof frame.threadId === "string" ? frame.threadId : "";
     const raw = frame.message;
     const text = typeof raw?.text === "string" ? raw.text : "";
+    updateHubOrganizerFromFrame(frame);
+    // Acompanhamento agendado de um objetivo: o hub o manda como mensagem de sistema (não é fala do usuário).
+    const review = raw?.role === "system" && raw?.meta?.organizer?.scheduled === true;
+    if (raw?.role === "system" && !review) return;
     const attachments = raw?.meta?.attachments;
     // Mensagem a que o usuário respondeu no app (a IA precisa saber o que ele está referenciando).
     const replyTo = raw?.meta?.replyTo && typeof raw.meta.replyTo === "object" ? raw.meta.replyTo : null;
@@ -416,6 +426,7 @@ export class HubAgentLink {
           text,
           ...(Array.isArray(attachments) && attachments.length ? { attachments } : {}),
           ...(replyTo ? { replyTo } : {}),
+          ...(review ? { organizerReview: { goalId: raw.meta.organizer.goalId } } : {}),
           ...(Array.isArray(frame.runs) && frame.runs.length ? { runs: frame.runs } : {}),
           ...(Array.isArray(frame.activeRuns) && frame.activeRuns.length ? { activeRuns: frame.activeRuns } : {}),
         },

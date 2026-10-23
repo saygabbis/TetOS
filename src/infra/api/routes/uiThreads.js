@@ -6,6 +6,7 @@ import { applyUiOutgoingActions } from "../../../integrations/automate/uiReplies
 import { automateOutcomes } from "../../../integrations/automate/automateRunContext.js";
 import { normalizeAutomateRuns } from "../../../integrations/automate/automateRunsContext.js";
 import { buildAutomateOutcomePrompt } from "../../../integrations/automate/automateOutcomePrompt.js";
+import { buildOrganizerReviewPrompt, isHubOrganizerAvailable } from "../../../integrations/automate-hub/hubOrganizer.js";
 import { attachAutomateChatHistory } from "../../../integrations/automate/uiAutomateChatHistory.js";
 import { normalizeSkillRefs, skillRefsPipelinePrefix } from "../../../integrations/automate/skillRefs.js";
 import { parseAutomateMention, resolveUiMessageMode } from "../../../integrations/automate/parseAutomateMention.js";
@@ -280,6 +281,29 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     }
   }
 
+  // O hub abriu um acompanhamento agendado de objetivo (mensagem de sistema, não fala do usuário): a Teto revisa e age.
+  async function runOrganizerReview(thread, { goalId, text }) {
+    const userId = "ui-user";
+    const mediaContext = { runtime, service: mediaService, userId };
+    publishAssistantTyping(uiBus, thread.id, true);
+    try {
+      const assistantDraftId = `a-${Date.now()}-review`;
+      const { replies } = await handleIncomingMessage(runtime, {
+        message: buildOrganizerReviewPrompt({ goalId, text }),
+        userId,
+        sessionId: thread.id,
+        channelId: "ui-desktop",
+        uiAssistantMessageId: assistantDraftId,
+      });
+      // Revisar objetivos não abre tarefa no computador: isso exige o usuário pedir.
+      if (Array.isArray(replies?.actions)) replies.actions = replies.actions.filter((a) => a?.type !== "automate");
+      await applyUiOutgoingActions({ replies, thread, uiBus, automateClient, assistantMessageId: assistantDraftId, mediaContext });
+      persistThreadStore(threadStore);
+    } finally {
+      publishAssistantTyping(uiBus, thread.id, false);
+    }
+  }
+
   app.get("/ui/threads", requireSession, (req, res) => {
     purgeEmptyThreads(threadStore);
     const limit = parseLimit(req.query.limit, DEFAULT_THREAD_PAGE);
@@ -408,6 +432,18 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     const thread = ensureThread(threadStore, req.params.id);
 
     const text = req.body?.text ?? "";
+
+    if (req.body?.organizerReview && typeof req.body.organizerReview === "object") {
+      if (!String(text).trim()) return res.status(400).json({ error: "text é obrigatório" });
+      res.status(202).json({ ok: true, accepted: true });
+      if (isHubOrganizerAvailable()) {
+        const goalId = typeof req.body.organizerReview.goalId === "string" ? req.body.organizerReview.goalId : undefined;
+        void runOrganizerReview(thread, { goalId, text: String(text) }).catch((err) =>
+          console.error("[organizer-review]", err?.message ?? err),
+        );
+      }
+      return;
+    }
 
     const attachments = normalizeAttachments(req.body?.attachments, { mediaDir: mediaService.dir });
     const skillRefs = normalizeSkillRefs(req.body?.skillRefs);
