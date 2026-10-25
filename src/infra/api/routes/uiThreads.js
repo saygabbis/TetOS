@@ -7,6 +7,7 @@ import { automateOutcomes } from "../../../integrations/automate/automateRunCont
 import { normalizeAutomateRuns } from "../../../integrations/automate/automateRunsContext.js";
 import { buildAutomateOutcomePrompt } from "../../../integrations/automate/automateOutcomePrompt.js";
 import { buildOrganizerReviewPrompt, isHubOrganizerAvailable } from "../../../integrations/automate-hub/hubOrganizer.js";
+import { normalizeHubContext } from "../../../integrations/automate-hub/hubProjects.js";
 import { attachAutomateChatHistory } from "../../../integrations/automate/uiAutomateChatHistory.js";
 import { normalizeSkillRefs, skillRefsPipelinePrefix } from "../../../integrations/automate/skillRefs.js";
 import { parseAutomateMention, resolveUiMessageMode } from "../../../integrations/automate/parseAutomateMention.js";
@@ -304,6 +305,30 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
     }
   }
 
+  // O hub abriu um turno do projeto sozinho (tarefa da Teto no prazo, ajuda numa tarefa, resultado de rotina).
+  async function runProjectEvent(thread, { text, hubContext, requireApprovalForPc }) {
+    const userId = "ui-user";
+    const mediaContext = { runtime, service: mediaService, userId };
+    publishAssistantTyping(uiBus, thread.id, true);
+    try {
+      const assistantDraftId = `a-${Date.now()}-prjevt`;
+      const { replies } = await handleIncomingMessage(runtime, {
+        message: text,
+        userId,
+        sessionId: thread.id,
+        channelId: "ui-desktop",
+        uiAssistantMessageId: assistantDraftId,
+        ...(hubContext ? { hubContext } : {}),
+      });
+      // Com aprovação exigida, a Teto não abre tarefa no computador sozinha: pede ao usuário.
+      if (requireApprovalForPc && Array.isArray(replies?.actions)) replies.actions = replies.actions.filter((a) => a?.type !== "automate");
+      await applyUiOutgoingActions({ replies, thread, uiBus, automateClient, assistantMessageId: assistantDraftId, mediaContext });
+      persistThreadStore(threadStore);
+    } finally {
+      publishAssistantTyping(uiBus, thread.id, false);
+    }
+  }
+
   app.get("/ui/threads", requireSession, (req, res) => {
     purgeEmptyThreads(threadStore);
     const limit = parseLimit(req.query.limit, DEFAULT_THREAD_PAGE);
@@ -442,6 +467,19 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
           console.error("[organizer-review]", err?.message ?? err),
         );
       }
+      return;
+    }
+
+    const hubContext = normalizeHubContext(req.body?.hubContext);
+
+    if (req.body?.projectEvent && typeof req.body.projectEvent === "object") {
+      if (!String(text).trim()) return res.status(400).json({ error: "text é obrigatório" });
+      res.status(202).json({ ok: true, accepted: true });
+      void runProjectEvent(thread, {
+        text: String(text),
+        hubContext,
+        requireApprovalForPc: req.body.projectEvent.requireApprovalForPc !== false,
+      }).catch((err) => console.error("[project-event]", err?.message ?? err));
       return;
     }
 
@@ -615,6 +653,7 @@ export function registerUiThreadRoutes(app, runtime, uiBus, automateClient, devi
             onLlmToken,
             uiAssistantMessageId: assistantDraftId,
             messageKey: { id: userMsg.id },
+            ...(hubContext ? { hubContext } : {}),
             ...(automateRuns.length ? { automateRuns } : {}),
             ...(automateActiveRuns.length ? { automateActiveRuns } : {}),
             ...(replyTo

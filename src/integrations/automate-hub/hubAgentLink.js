@@ -3,6 +3,7 @@ import { readHubAgentConfig } from "./hubAgentConfig.js";
 import { translateAutomateNotification } from "../automate/eventTranslator.js";
 import { setAutomateDevicePresence, setAutomateDevices } from "../automate/automateCapabilities.js";
 import { resetHubOrganizer, setHubOrganizerLink, updateHubOrganizerFromFrame } from "./hubOrganizer.js";
+import { buildProjectEventPrompt, normalizeHubContext, rememberThreadProject, resetHubProjects, setHubProjectsLink } from "./hubProjects.js";
 
 function parseJson(raw) {
   try {
@@ -133,6 +134,7 @@ export class HubAgentLink {
     this.clearTimers();
     this.detachStream();
     resetHubOrganizer();
+    resetHubProjects();
     if (this.ws) {
       try {
         this.ws.close();
@@ -285,6 +287,7 @@ export class HubAgentLink {
       this.rejectAllPending("Hub desconectado");
       this.devices.clear();
       resetHubOrganizer();
+      resetHubProjects();
       this.detachStream();
       this.ws = null;
       this.reconnectAttempt += 1;
@@ -302,6 +305,7 @@ export class HubAgentLink {
     // Objetivos e agenda: o hub anuncia a ferramenta da conta aqui (e manda o estado em cada mensagem).
     updateHubOrganizerFromFrame(frame, { replace: true });
     setHubOrganizerLink(this);
+    setHubProjectsLink(this);
     const name = frame?.agent?.name ?? this.config.agentId;
     this.onLog(`[hub-agent] conectado como ${name} (${this.config.agentId})`);
     this.attachStream();
@@ -338,6 +342,11 @@ export class HubAgentLink {
       case "cancel":
         this.handleCancel(frame);
         return;
+      case "task_due":
+      case "task_help":
+      case "routine_result":
+        await this.handleProjectEvent(frame);
+        return;
       case "ctx":
         this.handleCtx(frame);
         return;
@@ -346,6 +355,7 @@ export class HubAgentLink {
         return;
       case "result":
       case "error":
+      case "project":
       case "devices":
       case "tools":
         if (frame.t === "devices") this.setDevices(frame.devices);
@@ -417,6 +427,9 @@ export class HubAgentLink {
     }
 
     this.hubChatThreadIds.add(threadId);
+    // Memória da conta e, em conversa de projeto, o projeto (briefing, fontes, itens, regras de proatividade).
+    const hubContext = normalizeHubContext(frame);
+    rememberThreadProject(threadId, hubContext);
 
     try {
       await this.dispatchUiRequest({
@@ -424,6 +437,7 @@ export class HubAgentLink {
         path: `/ui/threads/${encodeURIComponent(threadId)}/messages`,
         body: {
           text,
+          ...(hubContext ? { hubContext } : {}),
           ...(Array.isArray(attachments) && attachments.length ? { attachments } : {}),
           ...(replyTo ? { replyTo } : {}),
           ...(review ? { organizerReview: { goalId: raw.meta.organizer.goalId } } : {}),
@@ -433,6 +447,29 @@ export class HubAgentLink {
       });
     } catch (error) {
       this.onError("[hub-agent] falha ao processar message do hub", error?.message ?? error);
+    }
+  }
+
+  /** O hub abriu um turno do projeto sozinho (tarefa da Teto no prazo, ajuda numa tarefa do usuário, rotina que terminou). */
+  async handleProjectEvent(frame) {
+    const threadId = typeof frame.threadId === "string" ? frame.threadId : "";
+    const prompt = buildProjectEventPrompt(frame);
+    if (!threadId || !prompt) return;
+    this.hubChatThreadIds.add(threadId);
+    const hubContext = normalizeHubContext({ projectId: frame.projectId, contextText: frame.context });
+    rememberThreadProject(threadId, hubContext ?? { projectId: frame.projectId });
+    try {
+      await this.dispatchUiRequest({
+        method: "POST",
+        path: `/ui/threads/${encodeURIComponent(threadId)}/messages`,
+        body: {
+          text: prompt,
+          ...(hubContext ? { hubContext } : {}),
+          projectEvent: { kind: frame.t, requireApprovalForPc: frame.requireApprovalForPc !== false },
+        },
+      });
+    } catch (error) {
+      this.onError("[hub-agent] falha ao processar evento do projeto", error?.message ?? error);
     }
   }
 

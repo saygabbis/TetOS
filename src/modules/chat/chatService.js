@@ -31,9 +31,10 @@ import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyInt
 import { thinkDelaySleepMs } from "../../integrations/whatsapp/conversation/directBatchPlanner.js";
 import { scanCommandArgs } from "./commandArgScanner.js";
 import { ORGANIZER_COMMANDS } from "../../integrations/automate-hub/hubOrganizer.js";
+import { PROJECT_COMMANDS } from "../../integrations/automate-hub/hubProjects.js";
 
 /** Comandos cujo texto é livre (pode ter Markdown, parênteses e apóstrofos): lidos com o leitor robusto. */
-const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", ...Object.keys(ORGANIZER_COMMANDS)]);
+const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", ...Object.keys(ORGANIZER_COMMANDS), ...Object.keys(PROJECT_COMMANDS)]);
 
 function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -107,6 +108,9 @@ export function parseActionCommands(rawText) {
     } else if (cmd in ORGANIZER_COMMANDS) {
       // Objetivos e agenda (hub): só roda no app; no WhatsApp a ação é ignorada.
       actions.push({ type: "organizer", command: cmd, op: ORGANIZER_COMMANDS[cmd].op, args });
+    } else if (cmd in PROJECT_COMMANDS) {
+      // Memória e projetos (hub): só rodam no app; no WhatsApp a ação é ignorada.
+      actions.push({ type: "project", command: cmd, op: PROJECT_COMMANDS[cmd].op, args });
     } else if (cmd === "calar" || cmd === "silenciar" || cmd === "silencio" || cmd === "quiet") {
       actions.push({ type: "silence", scope: args[0] ?? null });
     } else if (isRepertoireModeCommand(cmd)) {
@@ -144,7 +148,7 @@ function returnWithActions(actions) {
 
 /** Expande ações cujo text ainda contém comando cru (fallback do processor). */
 const EMBEDDED_COMMAND_RE = new RegExp(
-  `^(mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
+  `^(mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|${Object.keys(PROJECT_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
   "i"
 );
 
