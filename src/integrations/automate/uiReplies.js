@@ -1,6 +1,7 @@
 import { bindRunToThread, markRunForExplanation, registerAutomateRun } from "./automateRunContext.js";
 import { applyUiMediaAction, isUiMediaAction } from "../ui/uiMediaActions.js";
 import { applyOrganizerAction } from "../automate-hub/hubOrganizer.js";
+import { applyProjectAction } from "../automate-hub/hubProjects.js";
 
 export function parseInstructionFromEnqueueResult(result) {
   const content = result?.content;
@@ -169,6 +170,21 @@ export async function applyUiOutgoingActions({
       const outcome = await applyOrganizerAction(action, { threadId: thread.id });
       const outcomeMsg = {
         id: `a-org-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        role: "assistant",
+        text: outcome.text,
+        createdAt: new Date().toISOString(),
+      };
+      thread.messages.push(outcomeMsg);
+      thread.updatedAt = new Date().toISOString();
+      uiBus.publish({ type: "message.final", threadId: thread.id, message: outcomeMsg });
+      continue;
+    }
+
+    // Memória e projetos: o hub decide (registra, propõe, pede aprovação ou recusa) e o usuário lê o que de fato houve.
+    if (action.type === "project") {
+      const outcome = await applyProjectAction(action, { threadId: thread.id });
+      const outcomeMsg = {
+        id: `a-prj-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         role: "assistant",
         text: outcome.text,
         createdAt: new Date().toISOString(),

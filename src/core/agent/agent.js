@@ -2,6 +2,7 @@ import { isMessyLaughterMessage } from "../memory/extractor.js";
 import { formatActiveRunsBlock, formatAutomateRunsBlock } from "../../integrations/automate/automateRunsContext.js";
 import { AUTOMATE_ABILITIES, formatAutomateCapabilitiesBlock } from "../../integrations/automate/automateCapabilities.js";
 import { formatOrganizerBlock } from "../../integrations/automate-hub/hubOrganizer.js";
+import { formatHubContextBlock } from "../../integrations/automate-hub/hubProjects.js";
 import { buildInformalTypingPromptLines } from "../memory/informalTyping.js";
 import {
   isReactionDirectedAtAssistant,
@@ -1130,6 +1131,7 @@ export class Agent {
             "ANEXOS: prints e arquivos que o AutoMate entrega aparecem no cartão da tarefa, no app (inclusive no celular, onde o usuário vê e baixa): você não reenvia o conteúdo, só comenta citando o nome.",
             ...formatAutomateCapabilitiesBlock(),
             ...formatOrganizerBlock(),
+            ...formatHubContextBlock(meta?.hubContext),
             ...formatAutomateRunsBlock(meta?.automateRuns),
             ...formatActiveRunsBlock(meta?.automateActiveRuns)
           ]
