@@ -221,6 +221,23 @@ export const DEFAULTS = {
     .split(/[,;]/)
     .map((item) => item.trim().toLowerCase().split(":")[0])
     .filter(Boolean),
+  /** Discord — bot da Teto nos servidores (roda no mesmo processo do WhatsApp). */
+  discordToken: String(process.env.DISCORD_BOT_TOKEN ?? process.env.DISCORD_TOKEN ?? "").trim(),
+  discordEnabled:
+    String(process.env.DISCORD_ENABLED ?? "true").toLowerCase() !== "false" &&
+    Boolean(String(process.env.DISCORD_BOT_TOKEN ?? process.env.DISCORD_TOKEN ?? "").trim()),
+  /** Servidores onde os comandos / aparecem na hora (sem: registro global). */
+  discordGuildIds: (process.env.DISCORD_GUILD_IDS ?? "").split(/[,;\s]+/).map((item) => item.trim()).filter(Boolean),
+  /** IDs de usuário do Discord da dona. */
+  ownerDiscordIds: (process.env.TETOS_OWNER_DISCORD_IDS ?? process.env.TETOS_OWNER_DISCORD_ID ?? "")
+    .split(/[,;\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean),
+  discordStatePath: process.env.TETOS_DISCORD_STATE_PATH ?? "./data/discord/state.json",
+  discordInboxPath: process.env.TETOS_DISCORD_INBOX_PATH ?? "./data/life/inbox-discord.json",
+  discordMediaPath: process.env.TETOS_DISCORD_MEDIA_PATH ?? "./data/media/discord",
+  /** Contas vinculadas entre apps (Discord ↔ WhatsApp). */
+  identityLinksPath: process.env.TETOS_IDENTITY_LINKS_PATH ?? "./data/identityLinks.json",
   learningLedgerPath: process.env.LEARNING_LEDGER_PATH ?? "./data/learning-ledger",
   learningFocusPath: process.env.LEARNING_FOCUS_PATH ?? "./data/learningFocus.json",
   behaviorProfilesPath: process.env.BEHAVIOR_PROFILES_PATH ?? "./data/behaviorProfiles.json",

@@ -15,6 +15,7 @@ const WEEKDAYS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "
 const AVAIL_LABEL = {
   online: "livre, com o celular na mão",
   partial: "fazendo outra coisa, mas com o celular do lado — dá pra conversar",
+  absorbed: "entretida com outra coisa — olha o celular de vez em quando",
   busy: "ocupada/focada — olha o celular de vez em quando",
   away: "na rua — responde quando dá",
   asleep: "dormindo"
@@ -159,8 +160,13 @@ export class DailyLife {
     if (block.availability === "partial") {
       return { ...base, delayMs: (isOwner ? rng.int(5, 30) : rng.int(20, 90)) * 1000 };
     }
-    // Ocupada/na rua: olha o celular de vez em quando — a dona é vista antes; urgência encurta.
-    const [lo, hi] = block.availability === "busy" ? (isOwner ? [1, 5] : [3, 14]) : isOwner ? [2, 10] : [5, 28];
+    // Entretida/ocupada/na rua: olha o celular de vez em quando — a dona é vista antes; urgência encurta.
+    const [lo, hi] =
+      block.availability === "absorbed"
+        ? isOwner ? [1, 4] : [2, 9]
+        : block.availability === "busy"
+          ? isOwner ? [1, 5] : [3, 14]
+          : isOwner ? [2, 10] : [5, 28];
     let delay = rng.int(lo, hi) * MIN;
     delay = Math.min(delay, Math.max(MIN, untilMs + rng.int(1, 4) * MIN));
     if (urgency >= 0.7 || (isOwner && urgency >= 0.5)) delay = Math.min(delay, rng.int(30, 90) * 1000);
@@ -213,7 +219,7 @@ export class DailyLife {
     energy = clamp01(energy);
     let label = valence >= 0.75 ? "animada" : valence >= 0.55 ? "de boa" : valence >= 0.42 ? "meio pra baixo" : "chateada";
     if (energy < 0.4) label = valence >= 0.55 ? "com soninho" : "cansada";
-    const social = { online: 0.7, partial: 0.6 }[loc.block.availability] ?? 0.4;
+    const social = { online: 0.7, partial: 0.6, absorbed: 0.5 }[loc.block.availability] ?? 0.4;
     return { mood: label, energy, valence, social };
   }
 
@@ -256,7 +262,9 @@ export class DailyLife {
         ? "Pausa rápida: conversa normal, mas daqui a pouco volta pro que estava fazendo."
         : block.availability === "partial"
           ? "Fazendo outra coisa ao mesmo tempo: conversa normal; às vezes comenta o que tá fazendo."
-          : block.availability === "busy"
+          : block.availability === "absorbed"
+            ? "Entretida: pegou o celular rapidinho; respostas curtas, e logo volta pro que tava fazendo (pode dizer)."
+            : block.availability === "busy"
             ? "Ocupada: respostas mais curtas; pode dizer que tá no meio de algo."
             : block.availability === "away"
               ? "Na rua: respostas curtas, de celular."

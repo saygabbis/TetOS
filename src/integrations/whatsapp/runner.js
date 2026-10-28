@@ -10,6 +10,7 @@ import { msSinceLastInbound, resetInboundActivity } from "./connection/inboundLi
 import { jidNormalizedUser } from "baileys";
 import { scheduleAuxiliaryLoops } from "./loops/auxiliaryLoops.js";
 import { startConnectionProbe } from "./connection/connectionProbe.js";
+import { startDiscordBot } from "../discord/discordBot.js";
 
 /** Reconecta após queda — retenta até voltar, sem múltiplos loops paralelos. */
 function formatSocketJid(socket) {
@@ -564,6 +565,8 @@ async function main() {
   const runtime = createRuntime();
   // Deixa o Whisper local baixado/carregado antes do 1º áudio chegar.
   setTimeout(() => void runtime.audioTranscriber?.warmup?.().catch(() => {}), 20_000).unref();
+  // Discord no mesmo processo (mesma memória/vida); se falhar, o zap segue normal.
+  void startDiscordBot(runtime).catch((error) => console.error("[discord] não subiu:", error?.message ?? error));
 
   if (dual) {
     await runDualWhatsApp(runtime);

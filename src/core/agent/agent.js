@@ -24,6 +24,7 @@ import {
   buildUrlDownloadIntentPromptBlock
 } from "../../integrations/whatsapp/commands/agentDownloadCommands.js";
 import { DEFAULTS } from "../../infra/config/defaults.js";
+import { buildPlatformBlock, markdownRuleLine } from "./platformPrompt.js";
 import { extractOpener, hasShouting, recentAssistantTurns, tameRawReply } from "../../modules/chat/styleRegulator.js";
 
 export class Agent {
@@ -357,7 +358,7 @@ export class Agent {
       "2 ideias distintas → --- entre elas (bolhas separadas). Na maioria das vezes 1 bolha basta; 2 quando são duas ideias; 3 só se o papo pedir de verdade. Gente real não manda cinco mensagens pra responder uma.",
       "Nem toda resposta termina em pergunta: às vezes só reage ou comenta e deixa a pessoa puxar o próximo assunto.",
       "Proibido travessão (—) e en-dash (–) nas SUAS mensagens: soa IA/redação. Use vírgula, ponto, reticências … ou outra bolha.",
-      "WhatsApp puro: ZERO markdown. Proibido **negrito**, *itálico*, _sublinhado_, ~riscado~. Nome de série, jogo, anime, música = texto normal (Genshin Impact, Demon Slayer) — sem asterisco nem til."
+      markdownRuleLine(meta)
     ];
 
     const selfAwarenessBlock = [
@@ -919,7 +920,7 @@ export class Agent {
 
     const deferred = meta?.deferredCatchUp;
     const deferredBlock =
-      deferred && deferred.reason !== "asleep" && !meta?.sleepCatchUp
+      deferred && deferred.reason !== "asleep"
         ? [
             "[VOCÊ SÓ VIU AGORA]",
             `Essas mensagens chegaram enquanto você estava ${deferred.activity ?? "ocupada"} e você só pegou o celular agora${deferred.heldMinutes ? ` (~${deferred.heldMinutes} min depois)` : ""}.`,
@@ -927,8 +928,9 @@ export class Agent {
           ]
         : [];
 
+    // Guardada porque estava ocupada/na rua (não dormindo) não é "enquanto você dormia".
     const sleepCatchUpBlock =
-      meta?.sleepCatchUp
+      meta?.sleepCatchUp && (!deferred || deferred.reason === "asleep")
         ? [
             "[SONO — CATCH-UP AO ACORDAR]",
             `Enquanto você dormia, ${meta.sleepCatchUpCount ?? "várias"} mensagem(ns) chegaram sem resposta.`,
@@ -1116,7 +1118,9 @@ export class Agent {
       "Proibido repetir tema (café, partida, highscore, 'me conta depois') se você já disse na msg anterior ou no histórico recente.",
       "Não faça pergunta extra no fim só para manter conversa — deixa respirar.",
       "Resposta curta > duas msgs repetitivas.",
-      "Vocês estão no WhatsApp por TEXTO — nunca peça ligação, telefone ou 'me liga quando acordar'. Diga 'me manda msg' ou 'me chama no zap' se precisar.",
+      meta?.platform === "discord"
+        ? "Vocês estão conversando por TEXTO — nunca peça ligação, call ou telefone. Diga 'me manda msg' ou 'me marca' se precisar."
+        : "Vocês estão no WhatsApp por TEXTO — nunca peça ligação, telefone ou 'me liga quando acordar'. Diga 'me manda msg' ou 'me chama no zap' se precisar.",
       "Se errarem seu nome na despedida: correção leve (é Teto kkk) + tchau numa frase — sem bronca nem estender o papo."
     ];
 
@@ -1137,6 +1141,8 @@ export class Agent {
           ]
         : [];
 
+    const platformBlock = buildPlatformBlock(meta);
+
     const tetosCommandBlock = meta?.tetosCommand
       ? []
       : [];
@@ -1146,6 +1152,7 @@ export class Agent {
     return [
       ...actionCommandsBlock,
       ...uiFormatBlock,
+      ...platformBlock,
       ...imageGenBlock,
       ...urlDownloadBlock,
       ...hardRulesBlock,

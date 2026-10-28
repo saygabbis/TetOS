@@ -79,6 +79,18 @@ function normalizeHistory(messages, safeUserId, safeSessionId, maxHistory, maxCo
     }));
 }
 
+function safePlatformFromChannel(channelId) {
+  const id = String(channelId ?? "");
+  if (id === "ui-desktop") return "app";
+  return id.startsWith("discord:") ? "discord" : "whatsapp";
+}
+
+/** Chat onde um lembrete deve ser entregue: JID do zap ou canal do Discord ("discord:<id>"). */
+export function reminderChatId(channelId) {
+  const id = String(channelId ?? "");
+  return id.includes("@") || id.startsWith("discord:") ? id : null;
+}
+
 export function groupChannelSessionId(channelId) {
   return `wa-group-channel:${String(channelId ?? "").trim()}`;
 }
@@ -260,7 +272,10 @@ export async function runMessagePipeline(runtime, payload = {}) {
     onLlmToken = null,
     automateRuns = null,
     automateActiveRuns = null,
-    hubContext = null
+    hubContext = null,
+    // De onde veio: "whatsapp" (padrão), "discord" ou o app. `platformPlace` = "#geral do servidor X", "DM".
+    platform = safePlatformFromChannel(payload.channelId),
+    platformPlace = null
   } = payload;
   const isTetosBypass = Boolean(tetosCommand);
   const effectiveCloseDecision = isTetosBypass ? "open" : (closeDecision ?? null);
@@ -707,8 +722,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
   if (reminderIntent?.type === "create") {
     const reminder = runtime.reminders.create({
       userId: safeUserId ?? "default",
-      // JID do chat (DM ou grupo) — a entrega vai para onde o pedido foi feito.
-      chatJid: String(safeChannelId ?? "").includes("@") ? safeChannelId : null,
+      // Chat (DM ou grupo, zap ou Discord) — a entrega vai para onde o pedido foi feito.
+      chatJid: reminderChatId(safeChannelId),
       text: reminderIntent.text,
       dueAt: reminderIntent.dueAt ?? null
     });
@@ -720,7 +735,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     reminderContext = `A pessoa pediu lembrete de "${reminderIntent.text}" mas sem dizer quando. Pergunte o horário (ex.: "daqui 30 min", "às 15h", "amanhã às 9") — ainda NÃO foi criado.`;
   } else if (reminderIntent?.type === "list") {
     // No grupo, só os lembretes pedidos ali; no PV, todos os da pessoa.
-    const chatJid = String(safeChannelId ?? "").includes("@") ? safeChannelId : null;
+    const chatJid = reminderChatId(safeChannelId);
     const reminders = runtime.reminders
       .list(safeUserId ?? "default")
       .filter((item) => !isGroup || !chatJid || item.chatJid === chatJid);
@@ -1005,7 +1020,11 @@ export async function runMessagePipeline(runtime, payload = {}) {
       ...searchMeta,
       ...linkMeta,
       ...weatherMeta,
-      automateFromWhatsApp: automatePcOnline,
+      automateFromWhatsApp: platform === "whatsapp" ? automatePcOnline : null,
+      platform,
+      platformPlace,
+      discordAvailable: Boolean(runtime.discord?.ready),
+      attentionLine: runtime.attention?.promptLine?.(platform) ?? null,
       peopleMemoryLines:
         runtime.peopleMemory?.promptLines?.(isGroup ? `group:${safeChannelId}` : safeUserId ?? "default", channelScope, {
           name: isGroup ? null : partnerDisplayName,
@@ -1062,6 +1081,11 @@ export async function runMessagePipeline(runtime, payload = {}) {
         channelId: safeChannelId
       });
     }
+  }
+
+  // Ela está com esse app aberto agora (uma conversa por vez: zap ↔ Discord).
+  if (replies.length > 0 && platform !== "app") {
+    runtime.attention?.note?.(platform, safeChannelId, platformPlace ?? (isGroup ? "num grupo" : "no privado"));
   }
 
   runtime.initiativeState?.noteUserMessage?.(safeUserId ?? "default");

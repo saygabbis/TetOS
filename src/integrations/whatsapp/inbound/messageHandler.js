@@ -20,6 +20,8 @@ import { mentionedJidsIncludeBot, classifyTetoAddress, isLowSignalGroupMessage, 
 import { buildBotActorIds } from "../../../core/channels/botIdentity.js";
 import { rollGroupJoin } from "../../../core/channels/groupJoinPolicy.js";
 import { parseTetoSlashCommand, handleTetoSlashCommand, formatTetoActivationCommand } from "../commands/tetoSlashCommands.js";
+import { parseLinkCommand } from "../../../core/identity/identityLinks.js";
+import { platformLabel } from "../../../core/presence/attentionFocus.js";
 import { parseTetosCommand, resolveTetosMessage, formatTetosUsage, isQuotedTetosOneShot } from "../commands/tetosCommand.js";
 import { formatWhatsAppHelpText as formatMediaCommandHelpText, parseWhatsAppCommand as parseMediaCommand } from "../commands/mediaCommandParser.js";
 import { buildWhatsappIdentitySnapshot } from "../connection/whatsappIdentityContract.js";
@@ -576,6 +578,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         sleepCatchUpCount:
           (buffered.sleepCatchUpCount ?? buffered.batchedCount ?? 1) + (entry.batchedCount ?? 1),
         messageKey: entry.messageKey ?? buffered.messageKey,
+        deferredCatchUp: buffered.deferredCatchUp ?? null,
         quotedMessageId: entry.quotedMessageId ?? buffered.quotedMessageId ?? null,
         isReply: entry.isReply || buffered.isReply
       });
@@ -983,6 +986,28 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             });
             continue;
           }
+        }
+
+        // Vincular a conta do Discord: o código vem de /vincular lá e só vale no PV daqui.
+        const linkCmd = !isFromMe && !isGroup && (role !== "media" || botChatRole) ? parseLinkCommand(text, commandPrefix) : null;
+        if (linkCmd && runtime.identityLinks) {
+          let reply;
+          if (linkCmd.action === "unlink") {
+            const ids = runtime.identityLinks.discordIdsFor(userId);
+            for (const id of ids) runtime.identityLinks.unlink(id);
+            reply = ids.length ? "pronto, desvinculei teu discord. lá eu não vou mais saber que é você" : "você não tem discord vinculado comigo";
+          } else if (!linkCmd.code) {
+            reply = "manda /vincular lá no discord que eu te dou um código, aí você me manda aqui: .vincular CÓDIGO";
+          } else {
+            const linked = runtime.identityLinks.redeem(linkCmd.code, { userId, waJid: remoteJid, name: incoming.pushName?.trim() || null });
+            reply = linked
+              ? `vinculado! o discord ${linked.discordName ? `@${linked.discordName} ` : ""}agora é você. lá eu vou lembrar de tudo daqui`
+              : "esse código não existe ou já venceu (dura 10 min). pede outro com /vincular no discord";
+            if (linked) void runtime.discord?.notifyLinked?.(linked).catch?.(() => {});
+          }
+          await safeSendMessage(remoteJid, { text: reply });
+          finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+          continue;
         }
 
         if (parsedCommand?.command === "help") {
@@ -2022,6 +2047,12 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 detail: `acordou com o celular (urgência ${urgency.toFixed(2)}, ${flood.count} msgs)`
               });
             }
+          }
+          // No meio de um papo no Discord: sai de lá e vem pro zap, mas leva uns segundos pra trocar de app.
+          const switchMs = avail.mode === "asleep" ? 0 : runtime.attention?.switchDelayMs?.("whatsapp", { isOwner }) ?? 0;
+          if (switchMs > avail.delayMs) {
+            const from = runtime.attention.active();
+            avail = { ...avail, mode: "other_app", activity: `conversando no ${platformLabel(from?.platform)}`, delayMs: switchMs };
           }
           const alreadyHeld = runtime.deferredInbox?.peekCount?.(sessionId) > 0;
           if (avail.delayMs > 0 || alreadyHeld) {

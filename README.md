@@ -29,6 +29,9 @@ A TetOS cobre hoje:
 - Clima real (Open-Meteo), iniciativa com motivo (aniversário, "como foi aquilo?", bom dia).
 - Servidor MCP (`npm run mcp`) e AutoMate pelo WhatsApp para a dona (via API com token).
 - Runner supervisionado (`npm run start:wa:supervised`), sonda de conexão e reconexão automática.
+- Discord no mesmo processo (`DISCORD_BOT_TOKEN`): conversa marcando/dando reply (ou com `/teto conversar` no canal),
+  comandos `/` portados do zap + novos, contas vinculadas ao zap (`/vincular`) e uma conversa por vez entre os dois apps.
+  Detalhes em `docs/ARQUITETURA_E_FLUXOS.md#discord`.
 
 ## Pré-requisitos
 
@@ -134,6 +137,9 @@ npm run start:wa
 ```
 
 No primeiro start, autentique pelo QR Code.
+
+Com `DISCORD_BOT_TOKEN` no `.env`, o bot do Discord sobe junto (mesmo processo). No Developer Portal, ligue
+**Bot → Privileged Gateway Intents → Message Content Intent**, senão o login falha com "Used disallowed intents".
 
 ### PM2
 

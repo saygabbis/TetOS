@@ -750,6 +750,39 @@ O runner:
 - AutoMate pelo zap (só PV da dona): `computador("…")` → API `POST /automate/whatsapp/run` → PC; o resultado volta pela
   caixa de saída e ela explica. Exige `TETOS_API_TOKEN` e o AutoMate aberto.
 
+## Discord
+
+Arquivos: `src/integrations/discord/` (bot, conversa, comandos, mídia, texto, estado).
+
+- **Mesmo processo do WhatsApp**: `runner.js` chama `startDiscordBot(runtime)` depois de criar o runtime. Memória, vida e
+  atenção são as mesmas (dois processos gravando os mesmos JSONs corromperiam os dados). Sem `DISCORD_BOT_TOKEN`, ou com
+  `DISCORD_ENABLED=false`, não sobe; falha no Discord nunca derruba o zap.
+- **Quando ela responde**: DM sempre; no servidor quando marcam (@Teto ou o cargo dela), dão reply numa mensagem dela ou
+  chamam pelo nome ("teto, …"). `/teto conversar` liga a *conversa livre* no canal: ela entra no papo sem ser marcada
+  enquanto ele está "quente" (2 min depois da última fala dela) e, de vez em quando, puxa conversa (30%, com intervalo).
+  `/teto calar` / `calar()` deixa ela quieta no canal.
+- **Mesmo pipeline**: `runMessagePipeline` com `platform: "discord"`, `channelId: "discord:<canal>"`, `platformPlace`
+  ("#geral no servidor X"). O prompt ganha `[ONDE VOCÊ ESTÁ — DISCORD]` (`core/agent/platformPrompt.js`): Discord é o canto
+  de servidor; papo pessoal é no zap; markdown leve liberado. Ações (`mensagem`, `reagir`, `sticker`, `audio`, mídia,
+  downloads, `gerarImagem`, `salvarSticker`, `calar`) são executadas em `discordConversation.js`; `@nome` vira `<@id>` só
+  de quem está no papo (nunca @everyone).
+- **Vida e disponibilidade**: mesma porta do zap — dormindo/ocupada/entretida, a mensagem vai pra caixa
+  (`data/life/inbox-discord.json`) e ela responde quando "pega o celular". No servidor, se ela só veria depois de 15 min,
+  não responde (o papo já seguiu). A bolinha do Discord acompanha a vida (livre = online, focada = não perturbe, resto = ausente).
+- **Uma conversa por vez** (`core/presence/attentionFocus.js`): ao responder num app, ela "está" nele por 3 min. Mensagem
+  no outro app nesse meio-tempo espera 15–45 s (dona: 8–25 s) — ela sai de um e vai pro outro — e o prompt ganha
+  `[TROCOU DE APP]`.
+- **Contas vinculadas** (`core/identity/identityLinks.js`, `data/identityLinks.json`): `/vincular` no Discord dá um código;
+  a pessoa manda `.vincular CÓDIGO` no PV do zap. A partir daí, no Discord ela usa o mesmo userId do PV (`dm-<id>`):
+  mesmo caderno de memória, perfil e confiança. A dona (`TETOS_OWNER_DISCORD_IDS`) é reconhecida mesmo sem vincular.
+  Quem não vinculou é `discord:<id>`, separado.
+- **Comandos**: `/teto conversar|parar|calar|voltar|status`, `/perguntar`, `/vincular`, `/desvincular`, `/memoria`,
+  `/lembretes`, `/figurinha`, `/removerfundo`, `/paraimagem`, `/converter`, `/baixar`, `/thumb`, `/gerar`, `/falar`, `/clima`,
+  `/ajuda` e, no clique direito de uma mensagem, *Fazer figurinha*, *Remover fundo* e *Perguntar pra Teto*. Os comandos de
+  ponto do zap (`.sticker`, `.removebg`, `.yt`…) também funcionam.
+- **Lembretes**: pedido no Discord grava `chatJid: "discord:<canal>"` e é entregue pelo bot do Discord
+  (`deliverDueReminders(..., { platform: "discord", send })`); o loop do zap ignora esses.
+
 ## Resumo das Decisões Mais Importantes
 
 | Pergunta | Quem decide | Resultado |

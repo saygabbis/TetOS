@@ -83,6 +83,26 @@ describe("vida diária", () => {
     expect(life.availability({ chatId: "x", isOwner: true }).delayMs).toBeLessThanOrEqual(30_000);
   });
 
+  it("celular na mão é coisa de minutinhos: lazer de verdade deixa ela entretida, com pausas", () => {
+    for (const [ymd, weekday] of [["2026-10-28", 3], ["2026-10-31", 6], ["2026-11-02", 1]]) {
+      const p = planDay(ymd, { weekday });
+      const awake = p.blocks.reduce((sum, b) => sum + b.end - b.start, 0);
+      const online = p.blocks.filter((b) => b.availability === "online").reduce((sum, b) => sum + b.end - b.start, 0);
+      expect(online / awake).toBeLessThan(0.3);
+      // Nenhum trecho "livre no celular" (fora acordar/dormir) passa de 40 min.
+      for (const b of p.blocks.filter((x) => x.availability === "online" && !["waking", "winddown"].includes(x.kind))) {
+        expect(b.end - b.start).toBeLessThanOrEqual(40);
+      }
+      for (const b of p.blocks.filter((x) => x.availability === "absorbed")) expect(b.end - b.start).toBeLessThanOrEqual(30);
+    }
+    const absorbed = planDay("2026-10-28", { weekday: 3 }).blocks.find((b) => b.availability === "absorbed");
+    const { life } = make(zonedDate("2026-10-28", absorbed.start + 2, "America/Sao_Paulo").toISOString());
+    const av = life.availability({ chatId: "x" });
+    expect(av.mode).toBe("absorbed");
+    expect(av.delayMs).toBeGreaterThanOrEqual(60_000);
+    expect(life.availability({ chatId: "x", isOwner: true }).delayMs).toBeLessThanOrEqual(4 * 60_000);
+  });
+
   it("ocupada: a dona é vista antes, urgência encurta", () => {
     const { life } = make("2026-10-20T15:10:00-03:00");
     const other = life.availability({ chatId: "x", isOwner: false }).delayMs;

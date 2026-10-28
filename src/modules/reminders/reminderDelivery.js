@@ -14,16 +14,23 @@ export function resolveReminderJid(reminder = {}) {
   return classifyWaLocalId(local) === "phone" ? `${local}@s.whatsapp.net` : `${local}@lid`;
 }
 
-/** Entrega lembretes vencidos no chat onde foram pedidos; registra tentativas e erros. */
-export async function deliverDueReminders(runtime, socket, { replyEnabled = true } = {}) {
+/** Lembrete pedido no Discord (chatJid "discord:<canal>") — quem entrega é o bot do Discord. */
+export const isDiscordReminder = (reminder = {}) => String(reminder.chatJid ?? "").startsWith("discord:");
+
+/**
+ * Entrega lembretes vencidos no chat onde foram pedidos; registra tentativas e erros.
+ * WhatsApp: `socket.sendMessage`. Discord: `{ platform: "discord", send(channelId, text) }`.
+ */
+export async function deliverDueReminders(runtime, socket, { replyEnabled = true, platform = "whatsapp", send = null } = {}) {
   if (!replyEnabled) return;
-  const due = runtime.reminderScheduler?.pendingDelivery?.() ?? [];
+  const discord = platform === "discord";
+  const due = (runtime.reminderScheduler?.pendingDelivery?.() ?? []).filter((r) => isDiscordReminder(r) === discord);
   runtime.reminderScheduler?.markDeliverySweep?.();
   if (!due.length) return;
 
   for (const reminder of due) {
     const attemptedAt = new Date().toISOString();
-    const remoteJid = resolveReminderJid(reminder);
+    const remoteJid = discord ? String(reminder.chatJid).slice("discord:".length) : resolveReminderJid(reminder);
     if (!remoteJid) {
       runtime.reminders?.markDeliveryAttempt?.(reminder.id, {
         attemptedAt,
@@ -39,9 +46,9 @@ export async function deliverDueReminders(runtime, socket, { replyEnabled = true
     }
 
     try {
-      await socket.sendMessage(remoteJid, {
-        text: `⏰ ei, lembrete: ${reminder.text}`
-      });
+      const text = `⏰ ei, lembrete: ${reminder.text}`;
+      if (send) await send(remoteJid, text, reminder);
+      else await socket.sendMessage(remoteJid, { text });
       runtime.reminders?.markDeliveryAttempt?.(reminder.id, { attemptedAt });
       runtime.reminders?.markDelivered?.(reminder.id, attemptedAt);
       runtime.logger?.log?.("reminders.delivered", {

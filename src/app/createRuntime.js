@@ -23,6 +23,8 @@ import { StickerRepertoireModeStore } from "../integrations/whatsapp/media/stick
 import { ViewOnceMirrorStore } from "../integrations/whatsapp/media/viewOnceMirrorStore.js";
 import { ViewOnceMirrorService } from "../integrations/whatsapp/media/viewOnceMirrorService.js";
 import { DeferredInbox } from "../integrations/whatsapp/conversation/deferredInbox.js";
+import { IdentityLinkStore } from "../core/identity/identityLinks.js";
+import { AttentionFocus } from "../core/presence/attentionFocus.js";
 import { VisualKnowledgeStore } from "../core/media/visualKnowledgeStore.js";
 import { runMessagePipeline } from "../core/pipeline/messagePipeline.js";
 import { SearchAdapter } from "../modules/web/searchAdapter.js";
@@ -412,6 +414,8 @@ export function createRuntime() {
     timeStore,
     userPatterns,
     deferredInbox: new DeferredInbox(DEFAULTS.deferredInboxPath),
+    identityLinks: new IdentityLinkStore(DEFAULTS.identityLinksPath),
+    attention: new AttentionFocus(),
     defaults: DEFAULTS
   };
   viewOnceMirror.runtime = runtime;

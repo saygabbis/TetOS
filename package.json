@@ -32,13 +32,14 @@
     "test:brain": "node scripts/test-brain-tick.js",
     "test:timing": "node scripts/test-timing-engine.js",
     "test:trust": "node scripts/test-trust-intimacy.js",
-    "test:brain:all": "node scripts/test-brain-tick.js && node scripts/test-agent-brain-slim.js && node scripts/test-timing-checks-count.js && node scripts/test-sleep-cycle.js && node scripts/test-timing-engine.js && node scripts/test-life-creative.js && node scripts/test-memory-channels.js && node scripts/test-context-builder.js && node scripts/test-arbitration.js && node scripts/test-group-memory.js && node scripts/test-group-context.js && node scripts/test-chat-closure.js && node scripts/test-response-processor-sessions.js && node scripts/test-mind-logger.js && node scripts/test-media-learning.js && node scripts/test-absorbed-bridge.js && node scripts/test-music-research.js && node scripts/test-trust-intimacy.js && node scripts/test-teto-activation.js && node scripts/test-reports-hourly.js && node scripts/test-reply-pipeline.js"
+    "test:brain:all": "node scripts/test-brain-tick.js && node scripts/test-agent-brain-slim.js && node scripts/test-timing-checks-count.js && node scripts/test-sleep-cycle.js && node scripts/test-timing-engine.js && node scripts/test-life-creative.js && node scripts/test-memory-channels.js && node scripts/test-context-builder.js && node scripts/test-arbitration.js && node scripts/test-group-memory.js && node scripts/test-group-context.js && node scripts/test-chat-closure.js && node scripts/test-response-processor-sessions.js && node scripts/test-mind-logger.js && node scripts/test-media-learning.js && node scripts/test-absorbed-bridge.js && node scripts/test-music-research.js && node scripts/test-trust-intimacy.js && node scripts/test-teto-activation.js && node scripts/test-reports-hourly.js && node scripts/test-reply-pipeline.js && node scripts/test-discord-flow.js"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@imgly/background-removal-node": "^1.4.5",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "baileys": "^6.7.18",
+    "discord.js": "^14.26.5",
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
     "fluent-ffmpeg": "^2.1.3",

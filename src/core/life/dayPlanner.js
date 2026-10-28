@@ -38,8 +38,10 @@ const FRIENDS = [
 
 /**
  * Atividades por tipo. availability: online (no celular), partial (fazendo algo, mas com o celular
- * do lado — conversa normal, só um pouco mais devagar), busy (focada), away (na rua).
- * `hours` = janela em que faz sentido (minutos do dia). {friend} = "a Miku", {dafriend} = "da Miku".
+ * do lado — conversa normal, só um pouco mais devagar), absorbed (entretida — anime, jogo, desenho:
+ * olha o celular de vez em quando), busy (focada), away (na rua).
+ * `hours` = janela em que faz sentido (minutos do dia). `maxDur` = teto de duração do bloco.
+ * {friend} = "a Miku", {dafriend} = "da Miku".
  */
 const POOLS = {
   work: [
@@ -52,21 +54,21 @@ const POOLS = {
     { label: "em call com o produtor", availability: "busy", place: "quarto", hours: [10 * 60, 19 * 60] }
   ],
   leisure: [
-    { label: "jogando no PC", availability: "online", place: "quarto" },
-    { label: "vendo anime", availability: "online", place: "sala" },
-    { label: "maratonando uma série", availability: "online", place: "sala" },
-    { label: "lendo mangá", availability: "online", place: "quarto" },
-    { label: "vendo vídeo no YouTube", availability: "online", place: "quarto" },
-    { label: "desenhando", availability: "online", place: "quarto" },
-    { label: "ouvindo música nova", availability: "online", place: "quarto" },
-    { label: "de bobeira no quarto", availability: "online", place: "quarto" }
+    { label: "jogando no PC", availability: "absorbed", place: "quarto" },
+    { label: "vendo anime", availability: "absorbed", place: "sala" },
+    { label: "maratonando uma série", availability: "absorbed", place: "sala" },
+    { label: "lendo mangá", availability: "absorbed", place: "quarto" },
+    { label: "vendo vídeo no YouTube", availability: "absorbed", place: "quarto" },
+    { label: "desenhando", availability: "absorbed", place: "quarto" },
+    { label: "ouvindo música nova", availability: "partial", place: "quarto" },
+    { label: "de bobeira no quarto", availability: "online", place: "quarto", maxDur: 40 }
   ],
   social: [
     { label: "saindo com {friend}", availability: "away", place: "rua", withFriend: 1, hours: [14 * 60, 22 * 60] },
     { label: "no karaokê com {friend} e {friend2}", availability: "away", place: "karaokê", withFriend: 2, hours: [17 * 60, 23 * 60] },
     { label: "tomando sorvete com {friend}", availability: "away", place: "sorveteria", withFriend: 1, hours: [13 * 60, 20 * 60] },
     { label: "na casa {dafriend}", availability: "partial", place: "casa de amigo", withFriend: 1, hours: [14 * 60, 22 * 60] },
-    { label: "jogando online com {friend}", availability: "online", place: "quarto", withFriend: 1, hours: [16 * 60, 25 * 60] }
+    { label: "jogando online com {friend}", availability: "absorbed", place: "quarto", withFriend: 1, hours: [16 * 60, 25 * 60] }
   ],
   errand: [
     { label: "na padaria comprando baguete", availability: "away", place: "padaria", hours: [8 * 60, 19 * 60] },
@@ -75,9 +77,9 @@ const POOLS = {
     { label: "na academia", availability: "away", place: "academia", hours: [8 * 60, 21 * 60] }
   ],
   chores: [
-    { label: "arrumando o quarto", availability: "online", place: "quarto", hours: [9 * 60, 21 * 60] },
-    { label: "lavando a louça", availability: "online", place: "cozinha", hours: [9 * 60, 22 * 60] },
-    { label: "lavando roupa", availability: "online", place: "área", hours: [9 * 60, 20 * 60] }
+    { label: "arrumando o quarto", availability: "partial", place: "quarto", hours: [9 * 60, 21 * 60] },
+    { label: "lavando a louça", availability: "partial", place: "cozinha", hours: [9 * 60, 22 * 60] },
+    { label: "lavando roupa", availability: "partial", place: "área", hours: [9 * 60, 20 * 60] }
   ]
 };
 const KIND_HOURS = { work: [9 * 60, 21 * 60 + 30], social: [13 * 60, 23 * 60], errand: [8 * 60, 20 * 60], chores: [9 * 60, 22 * 60], leisure: [0, 30 * 60] };
@@ -90,30 +92,46 @@ const KIND_DURATION = { work: [60, 140], leisure: [45, 120], social: [90, 180], 
 const LIGHTER_DAYS_FROM = "2026-10-23";
 const LIGHTER_WORK_DURATION = [50, 110];
 
+/**
+ * A partir desse dia: tempo livre no celular vira blocos curtos (no resto do lazer ela está
+ * entretida com outra coisa). Dias anteriores ficam como ela viveu.
+ */
+const PHONE_TIME_FROM = "2026-10-28";
+const PHONE_TIME_LEISURE = [{ label: "de bobeira no celular", availability: "online", place: "quarto", maxDur: 30 }];
+
 /** Pausas dentro de blocos longos de foco/rua: ninguém fica 2h sem olhar o celular. */
 const BREAK_LABELS = {
   work: ["dando uma pausa, tomando água", "no intervalo, mexendo no celular", "esticando as pernas e olhando o celular"],
   social: ["foi no banheiro e aproveitou pra ver o celular", "numa pausa do rolê, mexendo no celular", "esperando o pedido, mexendo no celular"],
-  errand: ["na fila, mexendo no celular", "parada um pouco, olhando o celular"]
+  errand: ["na fila, mexendo no celular", "parada um pouco, olhando o celular"],
+  absorbed: ["deu uma pausa e pegou o celular", "foi pegar água e aproveitou pra ver o celular", "parou um pouquinho pra olhar o celular"]
 };
 
-function addBreaks(blocks, rng) {
+/**
+ * Pausas: foco/rua a cada 22–40 min (5–10 de pausa); entretida (anime, jogo) a cada 15–30 min (4–9).
+ * Cada tipo tem sua semente, pra um não mudar as pausas do outro.
+ */
+function addBreaks(blocks, rng, absorbedRng = rng) {
   const out = [];
   for (const b of blocks) {
-    const pausable = (b.availability === "busy" || b.availability === "away") && b.kind !== "selfcare" && b.end - b.start >= 40;
+    const absorbed = b.availability === "absorbed";
+    const pausable =
+      (absorbed || b.availability === "busy" || b.availability === "away") && b.kind !== "selfcare" && b.end - b.start >= (absorbed ? 30 : 40);
     if (!pausable) {
       out.push(b);
       continue;
     }
+    const r = absorbed ? absorbedRng : rng;
+    const [segLo, segHi, pauseLo, pauseHi] = absorbed ? [15, 30, 4, 9] : [22, 40, 5, 10];
     let s = b.start;
     for (;;) {
-      const segEnd = s + rng.int(22, 40);
-      if (b.end - segEnd < 15) break;
-      const pauseEnd = segEnd + rng.int(5, 10);
+      const segEnd = s + r.int(segLo, segHi);
+      if (b.end - segEnd < (absorbed ? 10 : 15)) break;
+      const pauseEnd = segEnd + r.int(pauseLo, pauseHi);
       out.push({ ...b, start: s, end: segEnd });
       out.push({
         kind: "break",
-        label: rng.pick(BREAK_LABELS[b.kind] ?? BREAK_LABELS.work),
+        label: r.pick(absorbed ? BREAK_LABELS.absorbed : BREAK_LABELS[b.kind] ?? BREAK_LABELS.work),
         availability: "online",
         place: b.place,
         friends: b.friends,
@@ -183,7 +201,9 @@ function pickFriends(rng, n, { femaleOnly = false } = {}) {
 
 function materialize(rng, template, kind) {
   const friends = template.friends ?? pickFriends(rng, template.withFriend ?? 0);
-  return { kind, label: fillFriends(template.label, friends), availability: template.availability, place: template.place, friends };
+  const entry = { kind, label: fillFriends(template.label, friends), availability: template.availability, place: template.place, friends };
+  if (template.maxDur) entry.maxDur = template.maxDur;
+  return entry;
 }
 
 const fits = (hours, t) => !hours || (t >= hours[0] && t < hours[1]);
@@ -216,7 +236,7 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
   };
 
   let t = push(wake, rng.int(15, 30), { kind: "waking", label: "acordando, ainda na cama mexendo no celular", availability: "online", place: "quarto" });
-  t = push(t, rng.int(20, 35), { kind: "meal", label: rng.pick(["tomando café com pão", "tomando café com baguete", "comendo pão na chapa"]), availability: "online", place: "cozinha" });
+  t = push(t, rng.int(20, 35), { kind: "meal", label: rng.pick(["tomando café com pão", "tomando café com baguete", "comendo pão na chapa"]), availability: "partial", place: "cozinha" });
 
 
   const anchors = (ANCHORS[weekday] ?? []).map((a) => ({ ...a, ...materialize(rng, a, a.kind), start: a.at, end: a.at + a.dur }));
@@ -227,6 +247,7 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
   let showerDone = false;
   const usedTemplates = new Set();
   const lighter = ymd >= LIGHTER_DAYS_FROM;
+  const pools = ymd >= PHONE_TIME_FROM ? { ...POOLS, leisure: [...POOLS.leisure, ...PHONE_TIME_LEISURE] } : POOLS;
   const durations = lighter ? { ...KIND_DURATION, work: LIGHTER_WORK_DURATION } : KIND_DURATION;
   const weights = weekday === 0 || weekday === 6
     ? { leisure: 4, social: 2, errand: 1, chores: 1, work: 1 }
@@ -245,7 +266,7 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
     const meal = meals.find((m) => !m.used && t >= m.at - 20);
     if (meal) {
       meal.used = true;
-      t = push(t, meal.dur, { kind: "meal", label: meal.label, availability: "online", place: "cozinha" });
+      t = push(t, meal.dur, { kind: "meal", label: meal.label, availability: "partial", place: "cozinha" });
       continue;
     }
     if (!showerDone && t >= 21 * 60) {
@@ -265,12 +286,15 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
       .flatMap(([k, w]) => Array(w).fill(k));
     const kind = t >= bed - 90 || !kinds.length ? "leisure" : rng.pick(kinds);
     // Mesma coisa duas vezes no dia (fora lazer) não: ninguém toma sorvete às 15h e às 19h.
-    const options = POOLS[kind].filter((o) => fits(o.hours, t) && fillFriends(o.label) !== prev?.label && (kind === "leisure" || !usedTemplates.has(o.label)));
-    const template = rng.pick(options.length ? options : POOLS.leisure);
+    const options = pools[kind].filter((o) => fits(o.hours, t) && fillFriends(o.label) !== prev?.label && (kind === "leisure" || !usedTemplates.has(o.label)));
+    const template = rng.pick(options.length ? options : pools.leisure);
     usedTemplates.add(template.label);
-    const entry = materialize(rng, template, options.length ? kind : "leisure");
+    const { maxDur, ...entry } = materialize(rng, template, options.length ? kind : "leisure");
     const [dmin, dmax] = durations[entry.kind];
-    t = push(t, Math.max(15, Math.min(nextFixed - t, rng.int(dmin, dmax))), entry);
+    let dur = Math.max(15, Math.min(nextFixed - t, rng.int(dmin, dmax)));
+    // Tempo livre no celular é de minutinhos, não de horas.
+    if (maxDur && ymd >= PHONE_TIME_FROM) dur = Math.min(dur, maxDur);
+    t = push(t, dur, entry);
   }
   if (!showerDone && bed - t > 15) t = push(t, 20, { kind: "selfcare", label: "tomando banho", availability: "busy", place: "banheiro" });
   if (bed - t > 10) push(t, bed - t, { kind: "winddown", label: "deitada mexendo no celular antes de dormir", availability: "online", place: "quarto" });
@@ -291,7 +315,7 @@ export function planDay(ymd, { weekday, prevBed = null } = {}) {
   events.sort((a, b) => a.at - b.at);
 
   // Semente própria: as pausas não mudam o resto do dia já sorteado.
-  return { date: ymd, weekday, wake, bed, blocks: addBreaks(blocks, seededRandom(`pausas:${ymd}`)), events };
+  return { date: ymd, weekday, wake, bed, blocks: addBreaks(blocks, seededRandom(`pausas:${ymd}`), seededRandom(`pausas-lazer:${ymd}`)), events };
 }
 
 export const fmtClock = (min) => {
