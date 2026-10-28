@@ -17,7 +17,6 @@ export class DiscordStateStore {
       this.data.channels[id] ??= { mode: "livre", ...DEFAULT_RATE, by: row.by ?? null, guildId: row.guildId ?? null, name: row.name ?? null, at: row.at ?? null };
     }
     delete this.data.freeChat;
-    this.counts = new Map();
   }
 
   save() {
@@ -38,21 +37,24 @@ export class DiscordStateStore {
     const key = String(channelId);
     const next = { ...this.channel(key), ...meta, at: new Date(this.now()).toISOString() };
     if (patch.mode && CHANNEL_MODES.includes(patch.mode)) next.mode = patch.mode;
-    if (Number.isFinite(patch.replies)) next.replies = Math.max(1, Math.min(20, Math.round(patch.replies)));
-    if (Number.isFinite(patch.every)) next.every = Math.max(1, Math.min(100, Math.round(patch.every)));
-    if (next.replies > next.every) next.replies = next.every;
+    const int = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(v)));
+    if (Number.isFinite(patch.replies)) next.replies = int(patch.replies, 1, 100);
+    if (Number.isFinite(patch.every)) next.every = int(patch.every, 1, 100);
+    if (Number.isFinite(patch.tagReplies)) next.tagReplies = int(patch.tagReplies, 1, 100);
+    if (Number.isFinite(patch.tagEvery)) next.tagEvery = int(patch.tagEvery, 1, 100);
+    // "3 a cada 2" não existe: vira sempre.
+    next.replies = Math.min(next.replies, next.every);
+    next.tagReplies = Math.min(next.tagReplies, next.tagEvery);
     this.data.channels[key] = next;
-    this.counts.delete(key);
     this.save();
     return next;
   }
 
-  /** Mais uma mensagem no canal (conversa livre): devolve o número dela desde a última configuração. */
-  countMessage(channelId) {
-    const key = String(channelId);
-    const n = (this.counts.get(key) ?? 0) + 1;
-    this.counts.set(key, n);
-    return n;
+  /** Volta o canal pro padrão (modo padrão, chances padrão). */
+  reset(channelId) {
+    delete this.data.channels[String(channelId)];
+    this.save();
+    return this.channel(channelId);
   }
 
   /** Quieta até `ms` a partir de agora. Escopo "discord" = todos os canais. */

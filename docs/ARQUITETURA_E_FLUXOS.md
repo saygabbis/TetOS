@@ -761,8 +761,10 @@ Arquivos: `src/integrations/discord/` (bot, conversa, comandos, mídia, texto, e
   - `off` (`/teto desligar`): só responde a comando (`/perguntar`, `.tetos`).
   - `padrao` (sem configurar; `/teto padrao`): igual grupo ativado no zap. Responde quando marcam (@Teto ou o cargo
     dela), dão reply nela ou chamam pelo nome, e segue o papo com quem falou com ela por 2 min.
-  - `livre` (`/teto conversar`): além disso entra no papo sozinha no ritmo de `/configurar resposta:X mensagem:Y`
-    (X respostas a cada Y mensagens, espalhadas; padrão 1 a cada 4), só quando está livre de verdade (não guarda).
+  - `livre` (`/teto conversar`): além disso entra no papo sozinha, só quando está livre de verdade (não guarda).
+  - Chances (`/configurar`, sorteadas mensagem a mensagem — "1 a cada 10" = 10% em cada uma, em média 1 a cada 10):
+    `respostas:X mensagem:Y` = conversa livre (padrão 1 a cada 4); `respostas:X marcação:Y` = marcação/reply/nome no
+    servidor (padrão sempre). `reset:True` volta o canal pro padrão. Comando e DM não sorteiam.
 - **Ocupada**: marcação/reply/nome NÃO furam a rotina (guarda e responde quando der; no servidor, se demoraria > 15 min,
   deixa passar). Só comando chama na hora: `.tetos <msg>` ou `/perguntar`, e abre 30 s em que as próximas mensagens
   dessa pessoa naquele canal também são respondidas (`core/presence/summonWindow.js`; `.tetos` no PV do zap igual).

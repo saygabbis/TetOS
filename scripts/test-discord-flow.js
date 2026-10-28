@@ -71,7 +71,9 @@ const msg = (content, { channel = "c1", author = "u1", name = "Fulano", mentions
 
 const state = new DiscordStateStore(null);
 const inbox = new DeferredInbox(null);
-const conv = createDiscordConversation({ runtime, client, state, media: { inboxDir: "./data/media/discord", emojiDir: "./data/media/discord/emoji" }, inbox, log: { log() {}, warn() {}, error: console.error } });
+// Sorteios controlados: chance de entrar no papo / responder marcação.
+let rnd = 0;
+const conv = createDiscordConversation({ random: () => rnd, runtime, client, state, media: { inboxDir: "./data/media/discord", emojiDir: "./data/media/discord/emoji" }, inbox, log: { log() {}, warn() {}, error: console.error } });
 
 try {
   await conv.handleMessage(msg("bora jogar hoje?"));
@@ -87,13 +89,15 @@ try {
   assert(!/ZERO markdown/.test(prompt), "no Discord o markdown leve é liberado");
   assert(runtime.attention.switchDelayMs("whatsapp") > 0, "conversando no Discord: o zap espera uns segundos");
 
-  // Modo livre: 1 resposta a cada 2 mensagens de quem não chamou ela.
+  // Modo livre, 1 a cada 2 (50%): cada mensagem é um sorteio.
   state.configure("c1", { mode: "livre", replies: 1, every: 2 });
+  rnd = 0.7;
   await conv.handleMessage(msg("e aí, alguém viu o jogo ontem?", { author: "u2", name: "Ciclano" }));
   await sleep(3500);
-  assert(sent.length === 1, "livre: 1ª mensagem ainda não é a vez dela");
+  assert(sent.length === 1, "livre: sorteio não saiu, fica quieta");
+  rnd = 0.3;
   await conv.handleMessage(msg("foi muito bom", { author: "u6", name: "Beltrana" }));
-  assert((await sentCount(2)) === 2, "livre: na 2ª mensagem ela entra no papo");
+  assert((await sentCount(2)) === 2, "livre: sorteio saiu, ela entra no papo");
   assert(/Conversa livre: ninguém te chamou/.test(prompts.at(-1)), "prompt sabe que ela está entrando sozinha");
 
   await conv.handleMessage(msg("oi", { channel: "dm1", author: OWNER, name: "Gabbis" }));
@@ -135,6 +139,19 @@ try {
   await sleep(3500);
   assert(sent.length === n, "a janela é só de quem chamou");
   life.availability = realAvailability;
+
+  // Marcação com chance 1 a cada 3: sorteio não saiu → deixa passar; saiu → responde.
+  state.configure("c1", { mode: "padrao", tagReplies: 1, tagEvery: 3 });
+  runtime.summons.until.clear();
+  n = sent.length;
+  rnd = 0.9;
+  await conv.handleMessage(msg("<@bot> e aí", { author: "u8", name: "Sorteado", mentionsBot: true }));
+  await sleep(3500);
+  assert(sent.length === n, "marcação: sorteio não saiu, deixa passar");
+  rnd = 0.1;
+  await conv.handleMessage(msg("<@bot> e aí de novo", { author: "u8", name: "Sorteado", mentionsBot: true }));
+  assert((await sentCount(n + 1)) === n + 1, "marcação: sorteio saiu, responde");
+  state.reset("c1");
 
   // Off: marcação não adianta; comando sim.
   state.configure("c1", { mode: "off" });

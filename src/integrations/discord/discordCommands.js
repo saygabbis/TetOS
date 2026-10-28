@@ -11,7 +11,7 @@ import { detectPlatform } from "../../core/media/urlPlatformDetect.js";
 import { parseWhatsAppCommand } from "../whatsapp/commands/mediaCommandParser.js";
 import { downloadMediaItem, mediaItemsOf } from "./discordMedia.js";
 import { placeLabel, readableContent } from "./discordText.js";
-import { MODE_LABEL, polishDiscordActions } from "./discordPolicy.js";
+import { MODE_LABEL, formatRate, polishDiscordActions } from "./discordPolicy.js";
 
 /**
  * Comandos da Teto no Discord: os do zap portados (figurinha, remover fundo, downloads, gerar imagem,
@@ -42,14 +42,16 @@ export function buildCommandDefinitions() {
     new SlashCommandBuilder()
       .setName("configurar")
       .setDescription("Como a Teto se comporta neste canal")
-      .addIntegerOption((o) => o.setName("resposta").setDescription("Modo livre: quantas respostas…").setMinValue(1).setMaxValue(20))
-      .addIntegerOption((o) => o.setName("mensagem").setDescription("…a cada quantas mensagens (ex.: 1 resposta a cada 5)").setMinValue(1).setMaxValue(100))
+      .addIntegerOption((o) => o.setName("respostas").setDescription("Quantas respostas… (vale pra mensagem e/ou marcação)").setMinValue(1).setMaxValue(100))
+      .addIntegerOption((o) => o.setName("mensagem").setDescription("…a cada quantas mensagens (modo livre: chance de entrar no papo sozinha)").setMinValue(1).setMaxValue(100))
+      .addIntegerOption((o) => o.setName("marcação").setDescription("…a cada quantas marcações/replies/chamadas pelo nome").setMinValue(1).setMaxValue(100))
       .addStringOption((o) =>
         o
           .setName("modo")
           .setDescription("off = só comando · padrão = marcação/reply/nome · livre = entra no papo sozinha")
           .addChoices({ name: "livre", value: "livre" }, { name: "padrão", value: "padrao" }, { name: "off", value: "off" })
-      ),
+      )
+      .addBooleanOption((o) => o.setName("reset").setDescription("Volta este canal pro padrão (modo padrão, chances padrão)")),
     new SlashCommandBuilder()
       .setName("perguntar")
       .setDescription("Pergunta pontual pra Teto (responde mesmo se ela estiver ocupada)")
@@ -129,7 +131,8 @@ export function formatDiscordHelp(prefix = ".") {
     "• me marca (@Teto), responde uma mensagem minha ou me chama pelo nome — no privado é só falar. se eu tiver ocupada, respondo quando der",
     `• \`${prefix}tetos <mensagem>\` ou \`/perguntar\` me chama na hora, mesmo ocupada (e por 30 s sigo o papo contigo)`,
     "• modos do canal: `/teto conversar` (livre: entro no papo sozinha) · `/teto padrao` (marcação/reply/nome) · `/teto desligar` (só comando)",
-    "• `/configurar resposta:1 mensagem:5` = no modo livre, 1 resposta a cada 5 mensagens",
+    "• `/configurar respostas:1 mensagem:10` = no modo livre, 10% de chance de eu entrar no papo em cada mensagem",
+    "• `/configurar respostas:1 marcação:2` = 50% de chance de eu responder quando me marcam/dão reply/me chamam · `reset:True` volta pro padrão",
     "• \"fica quieta por 1h\" / \"some do discord por 12 horas\" eu respeito · `/teto calar` · `/teto voltar` · `/teto status`",
     "",
     "**Conta**",
@@ -144,6 +147,23 @@ export function formatDiscordHelp(prefix = ".") {
     "",
     "**Outros** · `/clima`"
   ].join("\n");
+}
+
+/** Resumo da configuração do canal (resposta do /configurar). */
+export function formatChannelConfig(cfg, { reset = false } = {}) {
+  const lines = [`${reset ? "voltei pro padrão! " : "configurado! "}modo: **${MODE_LABEL[cfg.mode]}**`];
+  if (cfg.mode === "off") {
+    lines.push("aqui eu só respondo com `/perguntar` ou `.tetos`");
+  } else {
+    lines.push(`• marcação/reply/nome: ${formatRate(cfg.tagReplies, cfg.tagEvery)}${cfg.tagReplies >= cfg.tagEvery ? " — respondo sempre (quando tô livre)" : " de chance em cada uma"}`);
+    lines.push(
+      cfg.mode === "livre"
+        ? `• conversa livre: ${formatRate(cfg.replies, cfg.every)} de chance em cada mensagem de entrar no papo sozinha`
+        : `• conversa livre: ${formatRate(cfg.replies, cfg.every)} (só vale no modo livre)`
+    );
+  }
+  lines.push("comando (`/perguntar`, `.tetos`) eu respondo sempre, mesmo ocupada");
+  return lines.join("\n");
 }
 
 const canManage = (interaction, ctx) =>
@@ -233,7 +253,8 @@ export async function handleInteraction(interaction, ctx) {
       const extra = [];
       if (interaction.guildId) {
         const cfg = state.channel(channelId);
-        extra.push(`neste canal: ${MODE_LABEL[cfg.mode]}${cfg.mode === "livre" ? ` · ${cfg.replies} resposta(s) a cada ${cfg.every} mensagens` : ""}`);
+        extra.push(`neste canal: ${MODE_LABEL[cfg.mode]}`);
+        if (cfg.mode !== "off") extra.push(`marcações: ${formatRate(cfg.tagReplies, cfg.tagEvery)}${cfg.mode === "livre" ? ` · mensagens: ${formatRate(cfg.replies, cfg.every)}` : ""}`);
       }
       if (state.mutedUntil(channelId)) extra.push(`quieta aqui até <t:${Math.round(state.mutedUntil(channelId) / 1000)}:t>`);
       return interaction.reply({
@@ -251,7 +272,7 @@ export async function handleInteraction(interaction, ctx) {
     if (sub === "conversar") {
       const cfg = state.configure(channelId, { mode: "livre" }, meta);
       state.unmute(channelId);
-      return interaction.reply(`oba, modo livre aqui! vou entrar no papo sozinha (${cfg.replies} resposta a cada ${cfg.every} mensagens, dá pra mudar no /configurar) 👀`);
+      return interaction.reply(`oba, modo livre aqui! vou entrar no papo sozinha (${formatRate(cfg.replies, cfg.every)} de chance em cada mensagem, dá pra mudar no /configurar) 👀`);
     }
     if (sub === "padrao") {
       state.configure(channelId, { mode: "padrao" }, meta);
@@ -275,12 +296,19 @@ export async function handleInteraction(interaction, ctx) {
   if (name === "configurar") {
     if (!interaction.guildId) return interaction.reply({ content: "isso é coisa de servidor — aqui no privado eu já converso normal", ...eph });
     if (!canManage(interaction, ctx)) return interaction.reply({ content: "só quem pode gerenciar o canal mexe nisso", ...eph });
-    const patch = { mode: opt.getString("modo") ?? undefined, replies: opt.getInteger("resposta") ?? undefined, every: opt.getInteger("mensagem") ?? undefined };
-    const cfg = state.configure(interaction.channelId, patch, { by: interaction.user.id, guildId: interaction.guildId, name: interaction.channel?.name ?? null });
-    const rate = `${cfg.replies} resposta${cfg.replies > 1 ? "s" : ""} a cada ${cfg.every} mensage${cfg.every > 1 ? "ns" : "m"}`;
-    const note = cfg.mode === "livre" ? `no modo livre eu entro no papo ${rate} (quando tô livre). marcação, reply e nome eu respondo sempre que der` : `ritmo do modo livre salvo (${rate}), mas o canal tá no modo ${MODE_LABEL[cfg.mode]}`;
-    return interaction.reply(`configurado! modo: **${MODE_LABEL[cfg.mode]}**
-${note}`);
+    const meta = { by: interaction.user.id, guildId: interaction.guildId, name: interaction.channel?.name ?? null };
+    if (opt.getBoolean("reset")) state.reset(interaction.channelId);
+    const replies = opt.getInteger("respostas") ?? 1;
+    const every = opt.getInteger("mensagem");
+    const tagEvery = opt.getInteger("marcação");
+    const patch = {
+      mode: opt.getString("modo") ?? undefined,
+      ...(every ? { replies, every } : {}),
+      ...(tagEvery ? { tagReplies: replies, tagEvery } : {})
+    };
+    const changed = patch.mode || every || tagEvery;
+    const cfg = changed ? state.configure(interaction.channelId, patch, meta) : state.channel(interaction.channelId);
+    return interaction.reply(formatChannelConfig(cfg, { reset: Boolean(opt.getBoolean("reset")) }));
   }
 
   if (name === "perguntar") {

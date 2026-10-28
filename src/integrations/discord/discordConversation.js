@@ -15,7 +15,7 @@ import { saveStickerToRepertoireWithVision } from "../whatsapp/media/stickerRepe
 import { detectTetoNameCall } from "../whatsapp/inbound/tetoNameDetect.js";
 import { applyOutgoingMentions, placeLabel, readableContent, speakerNameOf, splitForDiscord } from "./discordText.js";
 import { DISCORD_UPLOAD_LIMIT, downloadMediaItem, emojiSizedImage, mediaItemsOf } from "./discordMedia.js";
-import { formatDuration, parseHushRequest, polishDiscordActions, rateAllows } from "./discordPolicy.js";
+import { formatDuration, formatRate, parseHushRequest, polishDiscordActions, rollRate } from "./discordPolicy.js";
 import { createDiscordLog } from "./discordLog.js";
 import { parseTetosCommand } from "../whatsapp/commands/tetosCommand.js";
 
@@ -48,7 +48,7 @@ export function isNameCall(text = "") {
     /[\s,]teto\s*[?!.]*\s*$/i.test(t);
 }
 
-export function createDiscordConversation({ runtime, client, state, media, inbox, log = console }) {
+export function createDiscordConversation({ runtime, client, state, media, inbox, log = console, random = Math.random }) {
   const followUntil = new Map(); // "canal:pessoa" → até quando ela segue o papo com essa pessoa
   const lastStickerAt = new Map(); // canal → última figurinha que ela mandou
   const dlog = createDiscordLog({ echo: (line) => log.log?.(line) });
@@ -175,15 +175,19 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
 
     // Modo padrão: depois que ela responde alguém, segue o papo com essa pessoa por uns minutos.
     const following = !isDM && (followUntil.get(`${channelId}:${message.author.id}`) ?? 0) > Date.now();
+    const cfg = state.channel(channelId);
+    // Marcação/reply/nome no servidor: sorteia com a chance das marcações (padrão: sempre responde).
+    if (!isDM && direct && !summoned && !following && !rollRate(cfg, "marcacao", random)) {
+      dlog.decision(place, who, "deixou passar", `chance das marcações: ${formatRate(cfg.tagReplies, cfg.tagEvery)}`);
+      return;
+    }
     const addressed = direct || summoned || following;
+    // Conversa livre: cada mensagem é um sorteio com a chance das mensagens.
     let freeTurn = false;
-    if (mode === "livre") {
-      const n = state.countMessage(channelId);
-      if (!addressed) {
-        if (!rateAllows(n, state.channel(channelId))) return;
-        freeTurn = true;
-      }
-    } else if (!addressed) return;
+    if (!addressed) {
+      if (mode !== "livre" || !rollRate(cfg, "mensagem", random)) return;
+      freeTurn = true;
+    }
 
     const id = identityOf(message.author);
     const entry = {

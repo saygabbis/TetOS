@@ -185,12 +185,23 @@ describe("Discord: modos, ritmo, silêncio e acabamento", () => {
     expect(applyOutgoingMentions("oi @Neguinho tudo bem", people).text).toBe("oi <@7> tudo bem");
   });
 
-  it("ritmo da conversa livre: X respostas a cada Y mensagens, espalhadas", async () => {
-    const { rateAllows } = await import("../../src/integrations/discord/discordPolicy.js");
-    const pick = (cfg, n) => Array.from({ length: n }, (_, i) => i + 1).filter((c) => rateAllows(c, cfg));
-    expect(pick({ replies: 1, every: 5 }, 10)).toEqual([5, 10]);
-    expect(pick({ replies: 2, every: 5 }, 5)).toEqual([3, 5]);
-    expect(pick({ replies: 1, every: 1 }, 3)).toEqual([1, 2, 3]);
+  it("chance: X respostas a cada Y = X/Y em cada mensagem; marcação separada (padrão: sempre)", async () => {
+    const { rateChance, rollRate, formatRate } = await import("../../src/integrations/discord/discordPolicy.js");
+    expect(rateChance(1, 10)).toBe(0.1);
+    expect(rateChance(3, 2)).toBe(1);
+    const cfg = { replies: 1, every: 10, tagReplies: 1, tagEvery: 2 };
+    expect(rollRate(cfg, "mensagem", () => 0.05)).toBe(true);
+    expect(rollRate(cfg, "mensagem", () => 0.2)).toBe(false);
+    expect(rollRate(cfg, "marcacao", () => 0.4)).toBe(true);
+    expect(rollRate(cfg, "marcacao", () => 0.6)).toBe(false);
+    expect(rollRate({}, "marcacao", () => 0.999)).toBe(true);
+    expect(formatRate(1, 10)).toBe("1 a cada 10 (10%)");
+    // Em média dá a proporção configurada.
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const hits = Array.from({ length: 20000 }, () => rollRate(cfg, "mensagem", rnd)).filter(Boolean).length;
+    expect(hits / 20000).toBeGreaterThan(0.09);
+    expect(hits / 20000).toBeLessThan(0.11);
   });
 
   it("pedido de silêncio entende prazo e escopo", async () => {
@@ -224,6 +235,8 @@ describe("Discord: modos, ritmo, silêncio e acabamento", () => {
     expect(st.modeOf("9")).toBe("livre");
     expect(st.modeOf("8")).toBe("padrao");
     expect(st.configure("8", { mode: "off", replies: 9, every: 3 })).toMatchObject({ mode: "off", replies: 3, every: 3 });
+    expect(st.configure("8", { tagReplies: 1, tagEvery: 3 })).toMatchObject({ mode: "off", tagReplies: 1, tagEvery: 3, replies: 3 });
+    expect(st.reset("8")).toMatchObject({ mode: "padrao", replies: 1, every: 4, tagReplies: 1, tagEvery: 1 });
     st.mute("8", 60_000);
     expect(st.mutedUntil("8")).toBe(61_000);
     expect(st.mutedUntil("9")).toBe(0);

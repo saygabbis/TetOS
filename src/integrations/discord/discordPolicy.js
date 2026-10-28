@@ -8,21 +8,37 @@ import { detectHushRequest } from "../../core/channels/hushRequest.js";
  *   off    — só responde a comando (/perguntar, .tetos).
  *   padrao — igual grupo ativado no zap: responde quando marcam, dão reply ou chamam pelo nome, e segue
  *            o papo com quem falou com ela por uns minutos.
- *   livre  — além disso, entra no papo sozinha no ritmo configurado (X respostas a cada Y mensagens).
+ *   livre  — além disso, entra no papo sozinha com a chance configurada.
+ *
+ * Chances (por canal, em `/configurar`): "X respostas a cada Y" = X/Y de chance em CADA mensagem,
+ * sorteada uma a uma (1 a cada 10 = 10%: pode sair na 2ª, na 9ª, duas seguidas — em média 1 a cada 10).
+ *   mensagens  — conversa livre (quem não chamou ela). Padrão 1 a cada 4.
+ *   marcações  — marcação, reply nela ou chamar pelo nome, no servidor. Padrão 1 a cada 1 (sempre).
+ * Comando (/perguntar, .tetos) e DM não sorteiam.
  */
 
 export const CHANNEL_MODES = ["off", "padrao", "livre"];
 export const MODE_LABEL = { off: "desligada (só comando)", padrao: "padrão (marcação/reply/nome)", livre: "livre (entra no papo sozinha)" };
-export const DEFAULT_RATE = { replies: 1, every: 4 };
+export const DEFAULT_RATE = { replies: 1, every: 4, tagReplies: 1, tagEvery: 1 };
 
-/**
- * Conversa livre: com `replies` respostas a cada `every` mensagens, responde na mensagem n se aí
- * "completou" uma resposta (espalhado: 1 a cada 5 → 5ª, 10ª…; 2 a cada 5 → 3ª e 5ª).
- */
-export function rateAllows(count, { replies = DEFAULT_RATE.replies, every = DEFAULT_RATE.every } = {}) {
-  const r = Math.max(1, Math.min(replies, every));
-  const n = Math.max(1, every);
-  return Math.floor((count * r) / n) > Math.floor(((count - 1) * r) / n);
+/** Chance (0–1) de "X a cada Y". */
+export function rateChance(replies = 1, every = 1) {
+  const r = Math.max(0, Number(replies) || 0);
+  const n = Math.max(1, Number(every) || 1);
+  return Math.min(1, r / n);
+}
+
+/** Sorteio de uma mensagem: `kind` "mensagem" (conversa livre) ou "marcacao". */
+export function rollRate(cfg = {}, kind = "mensagem", random = Math.random) {
+  const c = { ...DEFAULT_RATE, ...cfg };
+  const chance = kind === "marcacao" ? rateChance(c.tagReplies, c.tagEvery) : rateChance(c.replies, c.every);
+  return chance >= 1 || random() < chance;
+}
+
+/** "1 a cada 10 (10%)". */
+export function formatRate(replies, every) {
+  const pct = Math.round(rateChance(replies, every) * 100);
+  return `${replies} a cada ${every} (${pct}%)`;
 }
 
 const UNIT_MS = { s: 1000, seg: 1000, segundo: 1000, m: 60_000, min: 60_000, minuto: 60_000, h: 3_600_000, hr: 3_600_000, hora: 3_600_000, d: 86_400_000, dia: 86_400_000 };
