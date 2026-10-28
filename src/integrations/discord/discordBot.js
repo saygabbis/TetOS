@@ -99,6 +99,7 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
   client.on(Events.ShardDisconnect, () => log.warn?.("[discord] desconectou — o discord.js reconecta sozinho"));
 
   /** Bolinha do Discord acompanha a vida dela: livre = online, entretida/na rua/dormindo = ausente, focada = não perturbe. */
+  let lastPresence = "";
   function updatePresence() {
     if (!client.user) return;
     try {
@@ -106,6 +107,9 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
       const avail = life?.availability?.({ isOwner: false });
       const status = AVAILABILITY_STATUS[avail?.mode] ?? "online";
       const activity = avail?.mode === "asleep" ? "dormindo 💤" : avail?.activity ?? null;
+      // Só manda pro Discord quando muda (checa todo minuto).
+      if (`${status}|${activity}` === lastPresence) return;
+      lastPresence = `${status}|${activity}`;
       client.user.setPresence({ status, activities: activity ? [{ name: activity, type: ActivityType.Custom, state: activity }] : [] });
     } catch (error) {
       log.warn?.(`[discord] presença falhou: ${error?.message ?? error}`);
@@ -113,7 +117,8 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
   }
 
   timers.push(setInterval(() => conversation.deliverDue(), 20_000));
-  timers.push(setInterval(updatePresence, 5 * 60_000));
+  // A cada minuto: pausa de 5 min na rotina não pode ficar aparecendo depois que acabou.
+  timers.push(setInterval(updatePresence, 60_000));
   timers.push(
     setInterval(() => {
       if (!api.ready) return;
