@@ -21,7 +21,7 @@ runtime.chatMessageIndex = new ChatMessageIndex({ maxPerChannel: 80 });
 const prompts = [];
 runtime.agent.brain.generate = async (prompt) => {
   prompts.push(String(typeof prompt === "string" ? prompt : JSON.stringify(prompt)));
-  const lines = ['mensagem("oii @fulano, tô aqui")', 'mensagem("vi sim, foi caótico kkk")', 'mensagem("fala gabbis")'];
+  const lines = ['mensagem("oii @fulano, tô aqui")', 'mensagem("vi sim, foi caótico kkk")', 'mensagem("fala gabbis")', 'mensagem("tava ensaiando mas vim")', 'mensagem("conta, o que foi?")', 'mensagem("ah sim entendi")'];
   return lines[(prompts.length - 1) % lines.length];
 };
 
@@ -107,6 +107,25 @@ try {
   assert(/\[VOCÊ SÓ VIU AGORA\][\s\S]*gravando um cover/.test(caughtPrompt), "prompt diz o que ela estava fazendo");
   assert(!/Enquanto você dormia/.test(caughtPrompt), "ocupada não é dormindo");
   assert(/tá aí\?\nresponde quando der/.test(caughtPrompt), "as duas mensagens viram um turno só");
+
+  // Ocupada, mas marcaram: vem na hora; a próxima msg da mesma pessoa (sem marcar) também, por 30 s.
+  life.availability = () => ({ mode: "busy", activity: "ensaiando vocal", delayMs: 5 * 60_000 });
+  state.setFreeChat("c1", false);
+  let n = sent.length;
+  await conv.handleMessage(msg("<@bot> vem cá", { author: "u4", name: "Fulana", mentionsBot: true }));
+  assert((await sentCount(n + 1)) === n + 1, "marcada: vem na hora mesmo ocupada");
+  n = sent.length;
+  await conv.handleMessage(msg("então, sobre aquilo", { author: "u4", name: "Fulana" }));
+  assert((await sentCount(n + 1)) === n + 1, "dentro de 30 s: responde sem precisar marcar");
+  n = sent.length;
+  await conv.handleMessage(msg("eu também quero falar", { author: "u5", name: "Outra" }));
+  await sleep(3500);
+  assert(sent.length === n, "a janela é só de quem chamou");
+  runtime.summons.until.clear();
+  await conv.handleMessage(msg("tá aí ainda?", { author: "u4", name: "Fulana" }));
+  await sleep(3500);
+  assert(sent.length === n, "janela fechou: sem marcar, não é chamada");
+  life.availability = realAvailability;
 
   const { code } = runtime.identityLinks.createCode({ discordId: "u1", discordName: "fulano" });
   runtime.identityLinks.redeem(code, { userId: "dm-5511999", name: "Fulano" });

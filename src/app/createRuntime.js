@@ -25,6 +25,7 @@ import { ViewOnceMirrorService } from "../integrations/whatsapp/media/viewOnceMi
 import { DeferredInbox } from "../integrations/whatsapp/conversation/deferredInbox.js";
 import { IdentityLinkStore } from "../core/identity/identityLinks.js";
 import { AttentionFocus } from "../core/presence/attentionFocus.js";
+import { SummonWindow } from "../core/presence/summonWindow.js";
 import { VisualKnowledgeStore } from "../core/media/visualKnowledgeStore.js";
 import { runMessagePipeline } from "../core/pipeline/messagePipeline.js";
 import { SearchAdapter } from "../modules/web/searchAdapter.js";
@@ -416,6 +417,7 @@ export function createRuntime() {
     deferredInbox: new DeferredInbox(DEFAULTS.deferredInboxPath),
     identityLinks: new IdentityLinkStore(DEFAULTS.identityLinksPath),
     attention: new AttentionFocus(),
+    summons: new SummonWindow(),
     defaults: DEFAULTS
   };
   viewOnceMirror.runtime = runtime;

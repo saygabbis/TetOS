@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { IdentityLinkStore, parseLinkCommand, resolveDiscordUserId } from "../../src/core/identity/identityLinks.js";
 import { AttentionFocus } from "../../src/core/presence/attentionFocus.js";
+import { SummonWindow } from "../../src/core/presence/summonWindow.js";
 import { buildPlatformBlock, markdownRuleLine } from "../../src/core/agent/platformPrompt.js";
 import { reminderChatId } from "../../src/core/pipeline/messagePipeline.js";
 import { isDiscordReminder, deliverDueReminders } from "../../src/modules/reminders/reminderDelivery.js";
@@ -69,6 +70,22 @@ describe("atenção: uma conversa por vez entre os apps", () => {
     expect(att.promptLine("whatsapp")).toMatch(/Discord \(#geral no servidor X\)/);
     now += 4 * 60_000;
     expect(att.switchDelayMs("whatsapp")).toBe(0);
+  });
+});
+
+describe("chamada direta (.tetos / marcar)", () => {
+  it("abre 30 s; cada mensagem dentro da janela renova; fora dela, não", () => {
+    let now = 0;
+    const w = new SummonWindow({ now: () => now });
+    expect(w.touch("a")).toBe(false);
+    w.summon("a");
+    now += 25_000;
+    expect(w.touch("a")).toBe(true);
+    now += 25_000;
+    expect(w.isActive("a")).toBe(true);
+    expect(w.isActive("b")).toBe(false);
+    now += 31_000;
+    expect(w.touch("a")).toBe(false);
   });
 });
 

@@ -2030,7 +2030,12 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         const wasTempAwakeBefore = Boolean(life?.tempAwakeFor?.(remoteJid));
         let sleepDisturbedWake = false;
 
-        if (life?.availability && !parsedCommand && !isTetosCommand && !isFromMe && !mainObserveOnly) {
+        // .tetos no PV chama ela na hora; por 30 s as próximas mensagens também (cada uma renova).
+        const summonKey = `wa:${remoteJid}`;
+        if (isTetosCommand && !isGroup && !isFromMe) runtime.summons?.summon?.(summonKey);
+        const summoned = !isGroup && !isFromMe && !isTetosCommand && !parsedCommand && Boolean(runtime.summons?.touch?.(summonKey));
+
+        if (life?.availability && !summoned && !parsedCommand && !isTetosCommand && !isFromMe && !mainObserveOnly) {
           const flood = trackSleepDisturbanceFlood(sessionId, effectiveMessage);
           const urgency = scoreSleepDisturbance(effectiveMessage, { floodCount: flood.count });
           let avail = life.availability({ chatId: remoteJid, isOwner, urgency });

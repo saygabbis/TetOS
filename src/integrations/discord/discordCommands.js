@@ -143,6 +143,8 @@ async function sendResult(interaction, result) {
 async function askOnce(runtime, ctx, interaction, question, { quoted = null } = {}) {
   const who = ctx.identityOf(interaction.user);
   const channelId = `discord:${interaction.channelId}`;
+  // Igual a marcar: depois da pergunta, as próximas mensagens dela/dele no canal são respondidas na hora.
+  runtime.summons?.summon?.(ctx.summonKeyOf(interaction.channelId, interaction.user.id));
   const isDM = !interaction.guildId;
   const out = await handleIncomingMessage(runtime, {
     message: question,

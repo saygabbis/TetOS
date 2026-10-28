@@ -127,7 +127,12 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     const reply = await isReplyToBot(message);
     const mentioned = addressedToBot(message);
     const nameCalled = !isDM && isNameCall(text);
-    const addressed = isDM || mentioned || reply.isReplyToBot || nameCalled;
+    // Marcar ela (ou dar reply nela) chama na hora, mesmo ocupada; por 30 s as próximas mensagens
+    // dessa pessoa nesse canal também contam como chamada (cada uma renova).
+    const summonKey = summonKeyOf(channelId, message.author.id);
+    if (mentioned || reply.isReplyToBot) runtime.summons?.summon?.(summonKey);
+    const summoned = mentioned || reply.isReplyToBot || Boolean(runtime.summons?.touch?.(summonKey));
+    const addressed = isDM || summoned || nameCalled;
     const engaged = !isDM && (engagedUntil.get(channelId) ?? 0) > Date.now();
     const freeChat = !isDM && state.isFreeChat(channelId);
 
@@ -156,13 +161,18 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
       mediaItems: items,
       addressed,
       mentioned: mentioned || nameCalled,
+      summoned,
       engaged,
       isReply: reply.isReply,
       isReplyToBot: reply.isReplyToBot,
       quoted: reply.quoted,
       ts: Date.now()
     };
-    if (holdIfUnavailable(entry)) return;
+    if (summoned) {
+      // Veio na hora: o que tinha ficado guardado dessa conversa entra junto.
+      const held = inbox.flush(sessionOf(entry));
+      if (held) enqueue({ ...held, text: held.message });
+    } else if (holdIfUnavailable(entry)) return;
     enqueue(entry);
   }
 
@@ -197,6 +207,7 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     return true;
   }
 
+  const summonKeyOf = (channelId, authorId) => `discord:${channelId}:${authorId}`;
   const sessionOf = (entry) => (entry.isDM ? `discord-dm:${entry.authorId}` : `discord-ch:${entry.channelId}`);
 
   function enqueue(entry) {
@@ -477,5 +488,5 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     }
   }
 
-  return { handleMessage, deliverDue, say, record, identityOf, isOwnerId };
+  return { handleMessage, deliverDue, say, record, identityOf, isOwnerId, summonKeyOf };
 }
