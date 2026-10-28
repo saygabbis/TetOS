@@ -1,4 +1,5 @@
 import { existsSync, statSync } from "node:fs";
+import { PermissionFlagsBits } from "discord.js";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { withGenerationSlot } from "../../infra/concurrency/generationSlot.js";
 import { resolveOutgoingActions, sanitizeOutgoingActions } from "../../modules/chat/chatService.js";
@@ -13,17 +14,23 @@ import { resolveStickerAsset } from "../whatsapp/media/stickerAssets.js";
 import { saveStickerToRepertoireWithVision } from "../whatsapp/media/stickerRepertoire.js";
 import { detectTetoNameCall } from "../whatsapp/inbound/tetoNameDetect.js";
 import { applyOutgoingMentions, placeLabel, readableContent, speakerNameOf, splitForDiscord } from "./discordText.js";
-import { DISCORD_UPLOAD_LIMIT, downloadMediaItem, mediaItemsOf } from "./discordMedia.js";
+import { DISCORD_UPLOAD_LIMIT, downloadMediaItem, emojiSizedImage, mediaItemsOf } from "./discordMedia.js";
+import { formatDuration, parseHushRequest, polishDiscordActions, rateAllows } from "./discordPolicy.js";
+import { createDiscordLog } from "./discordLog.js";
+import { parseTetosCommand } from "../whatsapp/commands/tetosCommand.js";
 
 /**
- * Conversa no Discord: quando ela responde (marcada, reply, chamada pelo nome, ou "conversa livre"
- * ligada no canal), quando segura pra depois (dormindo/ocupada/no zap), juntar mensagens seguidas,
- * gerar pelo mesmo pipeline do zap e executar as ações (texto, reação, figurinha, áudio, mídia).
+ * Conversa no Discord: quando ela responde (modo do canal, marcação, reply, nome, .tetos), quando segura
+ * pra depois (dormindo/ocupada/no zap), juntar mensagens seguidas, gerar pelo mesmo pipeline do zap e
+ * executar as ações (texto, reação, figurinha, áudio, mídia) com o acabamento do Discord.
  */
 
-const ENGAGEMENT_MS = 2 * 60_000;
-const FREE_CHAT_CHANCE = 0.3;
-const FREE_CHAT_COOLDOWN_MS = 90_000;
+// Modo padrão: depois de responder alguém, segue o papo com essa pessoa por esse tempo.
+const FOLLOW_MS = 2 * 60_000;
+// Figurinha no máximo uma a cada tanto, por canal.
+const STICKER_COOLDOWN_MS = 6 * 60_000;
+// Dona/moderação dizendo que ela pode voltar a falar.
+const RELEASE_RE = /(?<![\p{L}])(?:pode\s+(?:voltar|falar|aparecer)|volta(?:r)?\s+a\s+falar|t[aá]\s+liberada|pode\s+vir)(?![\p{L}])/iu;
 const DM_BATCH_MS = 1500;
 const GUILD_BATCH_MS = 2400;
 const MODEL_TIMEOUT_MS = Number(process.env.TETOS_MODEL_TIMEOUT_MS ?? 25000) * 2;
@@ -42,8 +49,10 @@ export function isNameCall(text = "") {
 }
 
 export function createDiscordConversation({ runtime, client, state, media, inbox, log = console }) {
-  const engagedUntil = new Map(); // canal → até quando o papo com ela está "quente"
-  const lastFreeReply = new Map(); // canal → última vez que entrou no papo sem ser chamada
+  const followUntil = new Map(); // "canal:pessoa" → até quando ela segue o papo com essa pessoa
+  const lastStickerAt = new Map(); // canal → última figurinha que ela mandou
+  const dlog = createDiscordLog({ echo: (line) => log.log?.(line) });
+  const clock = (ms) => new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }).format(new Date(ms));
   const batches = new Map(); // chave → { entries, timer }
   const running = new Map(); // chave → Promise do turno em andamento
   const seeded = new Set();
@@ -122,70 +131,126 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
   async function handleMessage(message) {
     if (message.author?.bot || message.system || message.webhookId) return;
     const isDM = message.channel?.isDMBased?.() ?? !message.guildId;
-    const text = readableContent(message, { botId: botId() });
+    let text = readableContent(message, { botId: botId() });
     const items = mediaItemsOf(message);
     if (!text && !items.length) return;
-    record(message, { text: text || (items.length ? `[${items.map((i) => i.name).join(", ")}]` : "") });
-
     const channelId = message.channelId;
-    if (!isDM && state.mutedUntil(channelId)) return;
+    const place = placeLabel(message.channel) ?? `#${channelId}`;
+    const who = speakerNameOf(message);
+    const mode = isDM ? "padrao" : state.modeOf(channelId);
+    record(message, { text: text || (items.length ? `[${items.map((i) => i.name).join(", ")}]` : "") });
+    if (isDM || mode !== "off") dlog.chat(place, who, text || `[${items.map((i) => i.name).join(", ")}]`);
+
+    // .tetos <mensagem>: chama ela na hora (igual ao zap), mesmo ocupada; por 30 s as próximas
+    // mensagens dessa pessoa nesse canal também (cada uma renova).
+    const tetosCmd = parseTetosCommand(text, runtime.defaults.commandPrefix);
+    if (tetosCmd) text = tetosCmd.prompt.replace(/^(teto|tetozinha)[,!?.\s]+/i, "").trim() || "oi";
+    const summonKey = summonKeyOf(channelId, message.author.id);
+    if (tetosCmd) runtime.summons?.summon?.(summonKey);
+    const summoned = Boolean(tetosCmd) || Boolean(runtime.summons?.touch?.(summonKey));
 
     const reply = await isReplyToBot(message);
     const mentioned = addressedToBot(message);
     const nameCalled = !isDM && isNameCall(text);
-    // Marcar ela (ou dar reply nela) chama na hora, mesmo ocupada; por 30 s as próximas mensagens
-    // dessa pessoa nesse canal também contam como chamada (cada uma renova).
-    const summonKey = summonKeyOf(channelId, message.author.id);
-    if (mentioned || reply.isReplyToBot) runtime.summons?.summon?.(summonKey);
-    const summoned = mentioned || reply.isReplyToBot || Boolean(runtime.summons?.touch?.(summonKey));
-    const addressed = isDM || summoned || nameCalled;
-    const engaged = !isDM && (engagedUntil.get(channelId) ?? 0) > Date.now();
-    const freeChat = !isDM && state.isFreeChat(channelId);
+    const direct = isDM || mentioned || reply.isReplyToBot || nameCalled;
+    const canModerate = isOwnerId(message.author.id) || Boolean(message.member?.permissions?.has?.(PermissionFlagsBits.ManageMessages));
 
-    if (!addressed) {
-      if (!freeChat) return;
-      // Conversa livre: entra no papo quando ele está "quente" com ela, ou de vez em quando.
-      const cooled = Date.now() - (lastFreeReply.get(channelId) ?? 0) > FREE_CHAT_COOLDOWN_MS;
-      if (!engaged && !(cooled && Math.random() < FREE_CHAT_CHANCE && text.length >= 6)) return;
+    // "fica quieta", "some do discord por 12h": respeita (dona/moderação: o tempo pedido; outros: até 10 min aqui).
+    if (direct || summoned) {
+      const hush = !tetosCmd ? parseHushRequest(text) : null;
+      if (hush) return applyHush(message, hush, { place, who, canModerate });
+    }
+    const mutedUntil = state.mutedUntil(channelId);
+    if (mutedUntil && direct && canModerate && RELEASE_RE.test(text)) {
+      state.unmute(channelId, { all: true });
+      dlog.decision(place, who, "voltou a falar", "liberaram");
+    } else if (mutedUntil && !summoned) {
+      if (direct) dlog.decision(place, who, "ficou quieta", `pediram silêncio até ${clock(mutedUntil)}`);
+      return;
+    }
+    if (mode === "off" && !summoned) {
+      if (direct) dlog.decision(place, who, "ignorou", "canal desligado — só comando (/perguntar, .tetos)");
+      return;
     }
 
-    const who = identityOf(message.author);
+    // Modo padrão: depois que ela responde alguém, segue o papo com essa pessoa por uns minutos.
+    const following = !isDM && (followUntil.get(`${channelId}:${message.author.id}`) ?? 0) > Date.now();
+    const addressed = direct || summoned || following;
+    let freeTurn = false;
+    if (mode === "livre") {
+      const n = state.countMessage(channelId);
+      if (!addressed) {
+        if (!rateAllows(n, state.channel(channelId))) return;
+        freeTurn = true;
+      }
+    } else if (!addressed) return;
+
+    const id = identityOf(message.author);
     const entry = {
       channelId,
       guildId: message.guildId ?? null,
       isDM,
+      place,
       messageId: message.id,
       authorId: message.author.id,
-      userId: who.userId,
-      linked: who.linked,
-      isOwner: who.isOwner,
-      speakerName: speakerNameOf(message),
+      userId: id.userId,
+      linked: id.linked,
+      isOwner: id.isOwner,
+      speakerName: who,
       // `message`/`pushName`: campos que a caixa de "pra depois" usa pra juntar a leva.
-      pushName: speakerNameOf(message),
+      pushName: who,
       text,
       message: text,
       mediaItems: items,
       addressed,
       mentioned: mentioned || nameCalled,
       summoned,
-      engaged,
+      tetosCommand: Boolean(tetosCmd),
+      freeTurn,
       isReply: reply.isReply,
       isReplyToBot: reply.isReplyToBot,
       quoted: reply.quoted,
       ts: Date.now()
     };
     if (summoned) {
-      // Veio na hora: o que tinha ficado guardado dessa conversa entra junto.
+      // Chamada por comando: vem na hora; o que tinha ficado guardado dessa conversa entra junto.
       const held = inbox.flush(sessionOf(entry));
       if (held) enqueue({ ...held, text: held.message });
+    } else if (freeTurn) {
+      // Conversa livre só quando ela está disponível de verdade (não guarda pra depois).
+      const avail = availabilityFor(entry);
+      if (avail.delayMs > 0) {
+        dlog.decision(place, who, "não entrou no papo", `${avail.mode}: ${avail.activity}`);
+        return;
+      }
     } else if (holdIfUnavailable(entry)) return;
     enqueue(entry);
   }
 
-  /** Dormindo, ocupada ou conversando no zap: guarda e responde quando "pegar o celular". */
-  function holdIfUnavailable(entry) {
+  /** Pedido de silêncio: fica quieta pelo tempo pedido e avisa uma vez, curtinho. */
+  async function applyHush(message, hush, { place, who, canModerate }) {
+    const ms = canModerate ? hush.ms : Math.min(hush.ms, 10 * 60_000);
+    const scope = canModerate ? hush.scope : "channel";
+    const until = state.mute(message.channelId, ms, { scope });
+    // O que estava guardado/na fila desse canal não sai mais.
+    inbox.flush(message.channel?.isDMBased?.() ? `discord-dm:${message.author.id}` : `discord-ch:${message.channelId}`);
+    for (const [key, batch] of batches) {
+      if (batch.entries.some((e) => e.channelId === message.channelId) || scope === "discord") {
+        clearTimeout(batch.timer);
+        batches.delete(key);
+      }
+    }
+    const when = ms >= 20 * 3_600_000 ? `<t:${Math.round(until / 1000)}:f>` : `<t:${Math.round(until / 1000)}:t>`;
+    const ack = scope === "discord" ? `tá bom, vou sumir do discord até ${when} 🤐` : `tá, fico quieta aqui até ${when} 🤐`;
+    dlog.decision(place, who, "ficou quieta", `${scope === "discord" ? "Discord todo" : "este canal"} por ${formatDuration(ms)}${canModerate ? "" : " (limite de quem não modera)"}`);
+    await message.reply({ content: ack, allowedMentions: { repliedUser: false } }).catch(() => {});
+    dlog.chat(place, "Teto", ack);
+  }
+
+  /** O que ela está fazendo e quanto demoraria pra ver (inclui trocar de app se está no zap). */
+  function availabilityFor(entry) {
     const life = runtime.brainOrchestrator?.life;
-    if (!life?.availability) return false;
+    if (!life?.availability) return { mode: "online", delayMs: 0 };
     life.tick?.();
     const sessionKey = sessionOf(entry);
     const urgency = scoreSleepDisturbance(entry.text, { floodCount: inbox.peekCount(sessionKey) });
@@ -200,16 +265,23 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
       const from = runtime.attention.active();
       avail = { ...avail, mode: "other_app", activity: `conversando no ${platformLabel(from?.platform)}`, delayMs: switchMs };
     }
+    return { ...avail, urgency };
+  }
+
+  /** Dormindo, ocupada ou conversando no zap: guarda e responde quando "pegar o celular". */
+  function holdIfUnavailable(entry) {
+    const avail = availabilityFor(entry);
+    const sessionKey = sessionOf(entry);
     const alreadyHeld = inbox.peekCount(sessionKey) > 0;
     if (avail.delayMs <= 0 && !alreadyHeld) return false;
     // Servidor: se ela só ia ver daqui a muito tempo, o papo já seguiu.
     if (!entry.isDM && (avail.mode === "asleep" || avail.delayMs > 15 * 60_000)) {
-      log.log?.(`[discord] não viu a tempo (${avail.mode}: ${avail.activity}) — #${entry.channelId}`);
+      dlog.decision(entry.place, entry.speakerName, "não viu a tempo", `${avail.mode}: ${avail.activity}`);
       return true;
     }
     inbox.append(sessionKey, entry, { dueAt: Date.now() + Math.max(0, avail.delayMs), reason: avail.mode, activity: avail.activity });
-    if (urgency >= 0.7) inbox.bringForward(sessionKey, Date.now() + 45_000);
-    log.log?.(`[discord] guardou pra depois (${avail.mode}: ${avail.activity}) — vê em ~${Math.round((inbox.dueAt(sessionKey) - Date.now()) / 60000)} min`);
+    if (avail.urgency >= 0.7) inbox.bringForward(sessionKey, Date.now() + 45_000);
+    dlog.decision(entry.place, entry.speakerName, "guardou pra depois", `${avail.mode}: ${avail.activity} — vê em ~${Math.max(1, Math.round((inbox.dueAt(sessionKey) - Date.now()) / 60000))} min`);
     return true;
   }
 
@@ -314,7 +386,7 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
                 isGroup: !last.isDM,
                 participants: participants.length ? participants : [last.userId],
                 isDirectMention: !last.isDM && entries.some((e) => e.mentioned),
-                groupEngagementActive: !last.isDM && (entries.some((e) => e.engaged) || addressed),
+                groupEngagementActive: !last.isDM && (addressed || last.freeTurn === true),
                 isReply: entries.some((e) => e.isReply),
                 isReplyToBot: entries.some((e) => e.isReplyToBot),
                 quotedMessage: last.quoted?.text ?? null,
@@ -331,9 +403,13 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
                 batchedCount: extra.batchedCount ?? entries.length,
                 sleepCatchUp: extra.sleepCatchUp === true,
                 deferredCatchUp: extra.deferredCatchUp ?? null,
-                closeDecision: addressed ? "open" : null,
+                closeDecision: addressed || last.freeTurn ? "open" : null,
+                tetosCommand: last.tetosCommand === true,
                 platform: "discord",
-                platformPlace: placeLabel(channel)
+                platformPlace: placeLabel(channel),
+                platformNote: last.freeTurn
+                  ? "Conversa livre: ninguém te chamou, você está entrando no papo do canal como mais uma pessoa do grupo. Comente o assunto do momento em UMA mensagem curta — não responda cada um, não puxe atenção pra você."
+                  : null
               })
             ),
             new Promise((_, reject) => setTimeout(() => reject(new Error("model timeout")), MODEL_TIMEOUT_MS))
@@ -362,13 +438,23 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     });
     const toRun = resolveOutgoingActions(sanitizeOutgoingActions(regulated, { messageKey: { id: last.messageId }, quotedMessageId: last.quoted?.id ?? null, isReply: last.isReply }));
 
+    // Acabamento: uma mensagem só, sem marcar quem ela está respondendo, figurinha rara.
+    const replyToNames = [...new Set(entries.flatMap((e) => [e.speakerName, ...namesFor(e.authorId)]))];
+    const polished = polishDiscordActions(toRun, {
+      replyToNames,
+      maxLines: last.isDM ? 3 : 2,
+      stickerAllowed: Date.now() - (lastStickerAt.get(last.channelId) ?? 0) > STICKER_COOLDOWN_MS
+    });
+    if (!polished.length) return;
+
     if (!last.isDM) {
-      engagedUntil.set(last.channelId, Date.now() + ENGAGEMENT_MS);
-      if (!addressed) lastFreeReply.set(last.channelId, Date.now());
+      for (const e of entries) followUntil.set(`${e.channelId}:${e.authorId}`, Date.now() + FOLLOW_MS);
     }
-    // Servidor movimentado: a 1ª bolha responde a mensagem certa (sem pingar a pessoa).
+    const reason = last.tetosCommand ? ".tetos" : extra.deferredCatchUp ? `respondeu o que guardou (${extra.deferredCatchUp.activity ?? extra.deferredCatchUp.reason})` : last.freeTurn ? "conversa livre (ritmo do canal)" : last.isDM ? "DM" : entries.some((e) => e.mentioned) ? "marcaram/chamaram" : entries.some((e) => e.isReplyToBot) ? "reply nela" : "seguindo o papo";
+    dlog.decision(last.place ?? placeLabel(channel), last.speakerName, last.freeTurn ? "entrou no papo" : "respondeu", reason);
+    // Servidor movimentado: responde a mensagem certa (sem pingar a pessoa).
     const autoReplyTo = !last.isDM && (multi || channel.lastMessageId !== last.messageId) ? last.messageId : null;
-    await executeActions(channel, toRun, { last, entries, autoReplyTo, chatKey });
+    await executeActions(channel, polished, { last, entries, autoReplyTo, chatKey });
 
     if (!last.isDM) {
       runtime.groupMemory?.append?.({ id: last.messageId, channelId: chatKey, userId: last.userId, speakerName: last.speakerName, text: message, addressedToTeto: addressed, quotedMessageId: last.quoted?.id ?? null });
@@ -433,15 +519,23 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
               allowedMentions: { parse: [], users: userIds, repliedUser: false }
             });
             record(sent, { text: action.text, isFromBot: true });
+            if (j === 0) dlog.chat(last.place ?? placeLabel(channel), "Teto", text.replace(/<@(\d+)>/g, "@$1"));
           }
           sentTexts.push(action.text);
           replyTo = null;
         } else if (action.type === "react" && action.emoji) {
           const target = await channel.messages.fetch(last.messageId).catch(() => null);
           await target?.react?.(action.emoji).catch(() => {});
+          dlog.chat(last.place ?? placeLabel(channel), "Teto", `[reagiu ${action.emoji}]`);
         } else if (action.type === "sticker" && action.key) {
+          // Figurinha no tamanho de emoji (48 px), não uma imagem gigante.
           const asset = resolveStickerAsset(action.key, runtime.defaults.stickersPath);
-          if (asset?.url) await sendFile(channel, asset.url, `${asset.key}.webp`, replyTo);
+          if (asset?.url) {
+            const small = await emojiSizedImage(asset.url, media.emojiDir);
+            await sendFile(channel, small.path, `${asset.key}.${small.ext}`, replyTo);
+            lastStickerAt.set(last.channelId, Date.now());
+            dlog.chat(last.place ?? placeLabel(channel), "Teto", `[figurinha ${asset.key}]`);
+          }
           replyTo = null;
         } else if (action.type === "voice" && action.text) {
           const requested = /(?<!\p{L})([aá]udio|voz|fala comigo|grava)(?!\p{L})/iu.test(last.text ?? "");
@@ -509,5 +603,5 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     }
   }
 
-  return { handleMessage, deliverDue, say, record, identityOf, isOwnerId, summonKeyOf };
+  return { handleMessage, deliverDue, say, record, identityOf, isOwnerId, summonKeyOf, namesFor, dlog };
 }

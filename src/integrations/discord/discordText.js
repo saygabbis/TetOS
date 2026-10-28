@@ -39,20 +39,47 @@ const normalizeName = (s) =>
 export function applyOutgoingMentions(text, people = []) {
   const ids = new Set();
   const index = people.flatMap((p) => (p.names ?? []).filter(Boolean).map((n) => ({ id: p.id, key: normalizeName(n) }))).filter((x) => x.key);
-  const out = String(text ?? "").replace(/(^|[\s(])@([\p{L}\p{N}_.\-]{2,32})/gu, (all, lead, raw) => {
+  // Nome com espaço ("Neguinho mais malandro"): a menção vale pelo nome inteiro — senão sobrava
+  // "<@id> mais malandro" (o resto do nome escrito depois da marcação).
+  const words = (n) => String(n ?? "").trim().split(/\s+/).filter(Boolean);
+  const restPattern = (rest) => new RegExp(`^\\s+${rest.map(escapeRe).join("\\s+")}(?![\\p{L}\\p{N}])`, "iu");
+  const multiWord = people.flatMap((p) => (p.names ?? []).filter((n) => words(n).length > 1).map((n) => ({ id: p.id, words: words(n) })));
+
+  const src = String(text ?? "");
+  const re = /(^|[\s(])@([\p{L}\p{N}_.\-]{2,32})/gu;
+  let out = "";
+  let pos = 0;
+  for (let m = re.exec(src); m; m = re.exec(src)) {
+    const [all, lead, raw] = m;
     const key = normalizeName(raw);
-    if (!key || key === "everyone" || key === "here") return all;
+    if (!key || key === "everyone" || key === "here") continue;
     const exact = [...new Set(index.filter((x) => x.key === key).map((x) => x.id))];
+    const byFirstWord = () => [...new Set(multiWord.filter((x) => normalizeName(x.words[0]) === key).map((x) => x.id))];
     const byPrefix = () => [...new Set(index.filter((x) => x.key.startsWith(key)).map((x) => x.id))];
     // Parte do nome ("@gabbis" → "saygabbis"), só com 4+ letras e se for uma pessoa só.
     const byPart = () => (key.length >= 4 ? [...new Set(index.filter((x) => x.key.includes(key)).map((x) => x.id))] : []);
-    const found = [exact, byPrefix(), byPart()].find((list) => list.length > 0) ?? [];
-    if (found.length !== 1) return all;
-    ids.add(found[0]);
-    return `${lead}<@${found[0]}>`;
-  });
+    const found = [exact, byFirstWord(), byPrefix(), byPart()].find((list) => list.length > 0) ?? [];
+    if (found.length !== 1) continue;
+    const id = found[0];
+    let end = m.index + all.length;
+    // "@Neguinho mais malandro": come o resto do nome que veio escrito depois.
+    for (const name of multiWord.filter((x) => x.id === id && normalizeName(x.words[0]) === key)) {
+      const tail = src.slice(end).match(restPattern(name.words.slice(1)));
+      if (tail) {
+        end += tail[0].length;
+        break;
+      }
+    }
+    ids.add(id);
+    out += `${src.slice(pos, m.index)}${lead}<@${id}>`;
+    pos = end;
+    re.lastIndex = end;
+  }
+  out += src.slice(pos);
   return { text: out, userIds: [...ids] };
 }
+
+const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Quebra textos longos (limite do Discord é 2000) sem cortar palavra no meio quando dá. */
 export function splitForDiscord(text, max = MAX_LEN) {

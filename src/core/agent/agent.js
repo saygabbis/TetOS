@@ -237,7 +237,9 @@ export class Agent {
       "- STICKERS EM GRUPO: Em grupos, quando quiser reagir visualmente com humor, prefira sticker(...). Em PV ou quando só um emoji basta, reagir(...) é válido.",
       "- MÍDIA SEM LEGENDA: figurinha/imagem/GIF sem texto ainda pede reação — comentário curto, reagir() ou figurinha; não fique em silêncio.",
       "- reagir() cita automaticamente a mensagem recebida — não precisa passar ID.",
-      "- MENÇÕES REAIS: Para marcar alguém no WhatsApp (notificação azul), use @nome dentro de mensagem(...). Aceita @Gabbis ou @gabbis; prefixo parcial único também (@Kzer → Kzer0). Apelidos do [GRUPO — QUEM ESTÁ AQUI] valem. Sem @ é só texto.",
+      meta?.platform === "discord"
+        ? "- MENÇÕES: no Discord, @nome dentro de mensagem(...) vira marcação de verdade — use pouco (veja [ONDE VOCÊ ESTÁ — DISCORD]). Sem @ é só texto."
+        : "- MENÇÕES REAIS: Para marcar alguém no WhatsApp (notificação azul), use @nome dentro de mensagem(...). Aceita @Gabbis ou @gabbis; prefixo parcial único também (@Kzer → Kzer0). Apelidos do [GRUPO — QUEM ESTÁ AQUI] valem. Sem @ é só texto.",
       '- Se a conversa acabou e não há o que falar, pode usar só reagir("...") ou silêncio.',
       "Exemplo — resposta à última msg + comentário em msg antiga:",
       'sticker("teto-linguinha")',

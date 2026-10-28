@@ -1,5 +1,6 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-import { extname, join } from "node:path";
+import { existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
+import { basename, extname, join } from "node:path";
+import sharp from "sharp";
 import { MediaProcessor } from "../../core/media/mediaProcessor.js";
 import { UrlDownloadService } from "../../core/media/urlDownloadService.js";
 import { convertMedia, normalizeConvertFormat } from "../../core/media/mediaConverter.js";
@@ -60,6 +61,27 @@ export async function downloadMediaItem(item, dir) {
   return { path, type, mimetype: item.contentType || null, fileName: item.name, isAnimated: type === "gif", discordSticker: Boolean(item.discordSticker) };
 }
 
+/** Tamanho de emoji grande do Discord: figurinha aparece pequenininha, não como imagem gigante. */
+export const EMOJI_PX = 48;
+
+/**
+ * Versão "emoji" de uma figurinha/imagem: 48 px, fundo transparente; animada vira GIF (o Discord não
+ * anima webp de anexo). Fica em cache por arquivo + data de modificação.
+ */
+export async function emojiSizedImage(sourcePath, dir = "./data/media/discord/emoji", size = EMOJI_PX) {
+  const meta = await sharp(sourcePath, { animated: true }).metadata();
+  const animated = Number(meta.pages ?? 1) > 1;
+  const ext = animated ? "gif" : "png";
+  const stamp = Math.round(statSync(sourcePath).mtimeMs);
+  const out = join(dir, `${basename(sourcePath, extname(sourcePath))}-${stamp}-${size}.${ext}`);
+  if (!existsSync(out)) {
+    mkdirSync(dir, { recursive: true });
+    const img = sharp(sourcePath, { animated }).resize(size, size, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } });
+    await (animated ? img.gif({ loop: 0 }) : img.png()).toFile(out);
+  }
+  return { path: out, ext };
+}
+
 export function createDiscordMediaTools(runtime) {
   const defaults = runtime?.defaults ?? {};
   const outputDir = defaults.commandMediaDerivedPath ?? "./data/media/derived";
@@ -74,12 +96,13 @@ export function createDiscordMediaTools(runtime) {
     ytDlpTimeoutMs: defaults.ytDlpTimeoutMs ?? 120000
   });
   const inboxDir = defaults.discordMediaPath ?? "./data/media/discord";
+  const emojiDir = join(inboxDir, "emoji");
 
   /**
    * Roda um comando de mídia. `input` = mídia já baixada (pode ser null p/ downloads e .gerar).
    * Retorna { files: [{ path, name }], text } ou { error }.
    */
-  async function run(command, args = [], { input = null, userId = "default" } = {}) {
+  async function run(command, args = [], { input = null, userId = "default", big = false } = {}) {
     const cmd = String(command ?? "").toLowerCase();
 
     if (cmd === "gerar") {
@@ -106,6 +129,11 @@ export function createDiscordMediaTools(runtime) {
       if (!["image", "gif", "video", "sticker"].includes(input.type)) return { error: "figurinha só sai de imagem, gif ou vídeo" };
       const mode = cmd === "fsticker" ? "contain" : cmd === "csticker" ? "crop" : "stretch";
       const out = await processor.toSticker(input, mode, { maxDurationMs: duration.maxDurationMs });
+      // No Discord a figurinha vai no tamanho de emoji; `grande` manda o webp inteiro (pra salvar).
+      if (!big) {
+        const small = await emojiSizedImage(out.path, emojiDir);
+        return { files: [{ path: small.path, name: `figurinha.${small.ext}` }] };
+      }
       return { files: [{ path: out.path, name: "figurinha.webp" }] };
     }
     if (cmd === "optimize") {
@@ -134,5 +162,5 @@ export function createDiscordMediaTools(runtime) {
     return { error: `não conheço o comando ${cmd}` };
   }
 
-  return { processor, downloader, run, inboxDir };
+  return { processor, downloader, run, inboxDir, emojiDir };
 }

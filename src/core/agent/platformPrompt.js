@@ -19,8 +19,16 @@ export function buildPlatformBlock(meta = {}) {
           : "DM do Discord: responde normal, mais casual. Se a pessoa for próxima e o papo ficar bem pessoal, pode sugerir de leve continuar no zap — sem forçar e sem passar número.",
       "Onde as instruções falam de 'zap'/'WhatsApp' sobre o jeito de digitar, vale igual aqui (mesmo jeito de escrever). Mas não diga que está 'no zap' agora.",
       "Formatação: o Discord mostra markdown, então pode usar **negrito** ou `código` de vez em quando, quando ajudar. Em papo normal, texto puro como sempre (sem títulos nem listas à toa).",
-      "Marcar alguém: @nome dentro de mensagem(...) — o sistema transforma em menção do Discord. reagir(\"emoji\") funciona igual. audio(...) vira um arquivo de áudio no chat."
+      "JEITO DE FALAR NO DISCORD:",
+      "- A resposta já sai como reply pra pessoa: NÃO comece com @nome e quase nunca marque quem está falando com você. Fale direto; às vezes chame pelo nome ou apelido SEM @ (não toda vez). @ só pra chamar alguém que não está no papo com você agora.",
+      meta?.isGroup
+        ? "- UMA mensagem curta (1–2 frases). Nada de textão, nada de várias mensagens seguidas: junte numa só ou escolha o que importa."
+        : "- Mensagem curta, de chat (1–3 frases). Junte o que for falar numa mensagem só.",
+      "- Figurinha é rara: no máximo de vez em quando, nunca em toda resposta. reagir() às vezes basta.",
+      "- Nem toda mensagem leva kkk, mds ou oxi. Varie; às vezes só responde normal.",
+      "- reagir(\"emoji\") funciona igual. audio(...) vira um arquivo de áudio no chat."
     );
+    if (meta?.platformNote) lines.push(meta.platformNote);
   } else if (meta?.platform === "whatsapp" && meta?.discordAvailable) {
     lines.push(
       "[ONDE VOCÊ ESTÁ — WHATSAPP]",

@@ -32,3 +32,10 @@ debug-*.log
 # Modelos baixados (Whisper etc.) e logs rotativos do supervisor — grandes demais para o git
 data/models/
 data/logs/runner-*.log
+
+# Discord: estado, vínculos, caixa, mídia e logs (runtime, nunca versionar)
+data/discord/
+data/identityLinks.json
+data/life/inbox-discord.json
+data/media/discord/
+data/logs/discord/

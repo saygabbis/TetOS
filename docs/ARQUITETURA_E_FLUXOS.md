@@ -757,10 +757,24 @@ Arquivos: `src/integrations/discord/` (bot, conversa, comandos, mídia, texto, e
 - **Mesmo processo do WhatsApp**: `runner.js` chama `startDiscordBot(runtime)` depois de criar o runtime. Memória, vida e
   atenção são as mesmas (dois processos gravando os mesmos JSONs corromperiam os dados). Sem `DISCORD_BOT_TOKEN`, ou com
   `DISCORD_ENABLED=false`, não sobe; falha no Discord nunca derruba o zap.
-- **Quando ela responde**: DM sempre; no servidor quando marcam (@Teto ou o cargo dela), dão reply numa mensagem dela ou
-  chamam pelo nome ("teto, …"). `/teto conversar` liga a *conversa livre* no canal: ela entra no papo sem ser marcada
-  enquanto ele está "quente" (2 min depois da última fala dela) e, de vez em quando, puxa conversa (30%, com intervalo).
-  `/teto calar` / `calar()` deixa ela quieta no canal.
+- **Modo do canal** (`discordPolicy.js`, `discordState.js` → `data/discord/state.json`):
+  - `off` (`/teto desligar`): só responde a comando (`/perguntar`, `.tetos`).
+  - `padrao` (sem configurar; `/teto padrao`): igual grupo ativado no zap. Responde quando marcam (@Teto ou o cargo
+    dela), dão reply nela ou chamam pelo nome, e segue o papo com quem falou com ela por 2 min.
+  - `livre` (`/teto conversar`): além disso entra no papo sozinha no ritmo de `/configurar resposta:X mensagem:Y`
+    (X respostas a cada Y mensagens, espalhadas; padrão 1 a cada 4), só quando está livre de verdade (não guarda).
+- **Ocupada**: marcação/reply/nome NÃO furam a rotina (guarda e responde quando der; no servidor, se demoraria > 15 min,
+  deixa passar). Só comando chama na hora: `.tetos <msg>` ou `/perguntar`, e abre 30 s em que as próximas mensagens
+  dessa pessoa naquele canal também são respondidas (`core/presence/summonWindow.js`; `.tetos` no PV do zap igual).
+- **Silêncio**: "fica quieta por 1h", "some do discord pelas próximas 12 horas" (`parseHushRequest`) → quieta pelo
+  prazo (sem prazo: 10 min), no canal ou no Discord todo; dona/moderação pedem o tempo que quiserem, os outros até
+  10 min só no canal. Avisa uma vez com o horário. "pode voltar a falar" (dona/moderação) ou `/teto voltar` liberam.
+- **Acabamento** (`polishDiscordActions`): as bolhas viram uma mensagem só (2 linhas no servidor, 3 no DM), sem @ em
+  quem ela está respondendo (vira só o nome), no máximo uma marcação real, figurinha no máximo 1 a cada 6 min por
+  canal, no tamanho de emoji (48 px; animada vira GIF — `emojiSizedImage`). Nome com espaço marca inteiro
+  ("@Neguinho mais malandro"). O prompt do Discord pede o mesmo (curto, pouco @, pouca figurinha, menos kkk).
+- **Logs** (`data/logs/discord/`, fora do git): `chat-AAAA-MM-DD.log` (o que foi dito, por canal) e
+  `decisoes-AAAA-MM-DD.log` (respondeu/ignorou/guardou/ficou quieta e por quê); as decisões também saem no log do runner.
 - **Mesmo pipeline**: `runMessagePipeline` com `platform: "discord"`, `channelId: "discord:<canal>"`, `platformPlace`
   ("#geral no servidor X"). O prompt ganha `[ONDE VOCÊ ESTÁ — DISCORD]` (`core/agent/platformPrompt.js`): Discord é o canto
   de servidor; papo pessoal é no zap; markdown leve liberado. Ações (`mensagem`, `reagir`, `sticker`, `audio`, mídia,
@@ -776,10 +790,10 @@ Arquivos: `src/integrations/discord/` (bot, conversa, comandos, mídia, texto, e
   a pessoa manda `.vincular CÓDIGO` no PV do zap. A partir daí, no Discord ela usa o mesmo userId do PV (`dm-<id>`):
   mesmo caderno de memória, perfil e confiança. A dona (`TETOS_OWNER_DISCORD_IDS`) é reconhecida mesmo sem vincular.
   Quem não vinculou é `discord:<id>`, separado.
-- **Comandos**: `/teto conversar|parar|calar|voltar|status`, `/perguntar`, `/vincular`, `/desvincular`, `/memoria`,
+- **Comandos**: `/teto conversar|padrao|desligar|calar|voltar|status`, `/configurar`, `/perguntar`, `/vincular`, `/desvincular`, `/memoria`,
   `/lembretes`, `/figurinha`, `/removerfundo`, `/paraimagem`, `/converter`, `/baixar`, `/thumb`, `/gerar`, `/falar`, `/clima`,
   `/ajuda` e, no clique direito de uma mensagem, *Fazer figurinha*, *Remover fundo* e *Perguntar pra Teto*. Os comandos de
-  ponto do zap (`.sticker`, `.removebg`, `.yt`…) também funcionam.
+  ponto do zap (`.sticker`, `.removebg`, `.yt`…) e o `.tetos` também funcionam.
 - **Lembretes**: pedido no Discord grava `chatJid: "discord:<canal>"` e é entregue pelo bot do Discord
   (`deliverDueReminders(..., { platform: "discord", send })`); o loop do zap ignora esses.
 

@@ -6,6 +6,7 @@ import { ChatMessageIndex } from "../src/integrations/whatsapp/inbound/chatMessa
 import { DeferredInbox } from "../src/integrations/whatsapp/conversation/deferredInbox.js";
 import { DiscordStateStore } from "../src/integrations/discord/discordState.js";
 import { createDiscordConversation } from "../src/integrations/discord/discordConversation.js";
+import sharp from "sharp";
 import { assert, ok } from "./test-helpers.js";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -19,10 +20,14 @@ runtime.defaults.replyEnabled = true;
 runtime.brainOrchestrator.life.realism = "off";
 runtime.chatMessageIndex = new ChatMessageIndex({ maxPerChannel: 80 });
 const prompts = [];
+const forced = [];
 runtime.agent.brain.generate = async (prompt) => {
   prompts.push(String(typeof prompt === "string" ? prompt : JSON.stringify(prompt)));
-  const lines = ['mensagem("oii @fulano, tô aqui")', 'mensagem("vi sim, foi caótico kkk")', 'mensagem("fala gabbis")', 'mensagem("tava ensaiando mas vim")', 'mensagem("conta, o que foi?")', 'mensagem("ah sim entendi")'];
-  return lines[(prompts.length - 1) % lines.length];
+  if (forced.length) return forced.shift();
+  // Textos sempre diferentes: o filtro anti-repetição descartaria resposta igual.
+  const topics = ["jogo", "pão", "música", "anime", "gato", "chuva", "sorvete", "karaokê", "live", "série", "cover", "baguete"];
+  if (prompts.length === 1) return 'mensagem("oii @fulano, tô aqui")';
+  return `mensagem("falando de ${topics[prompts.length % topics.length]} agora, rodada ${prompts.length}")`;
 };
 
 const OWNER = "333644956453568512";
@@ -66,7 +71,7 @@ const msg = (content, { channel = "c1", author = "u1", name = "Fulano", mentions
 
 const state = new DiscordStateStore(null);
 const inbox = new DeferredInbox(null);
-const conv = createDiscordConversation({ runtime, client, state, media: { inboxDir: "./data/media/discord" }, inbox, log: { log() {}, warn() {}, error: console.error } });
+const conv = createDiscordConversation({ runtime, client, state, media: { inboxDir: "./data/media/discord", emojiDir: "./data/media/discord/emoji" }, inbox, log: { log() {}, warn() {}, error: console.error } });
 
 try {
   await conv.handleMessage(msg("bora jogar hoje?"));
@@ -82,9 +87,14 @@ try {
   assert(!/ZERO markdown/.test(prompt), "no Discord o markdown leve é liberado");
   assert(runtime.attention.switchDelayMs("whatsapp") > 0, "conversando no Discord: o zap espera uns segundos");
 
-  state.setFreeChat("c1", true);
+  // Modo livre: 1 resposta a cada 2 mensagens de quem não chamou ela.
+  state.configure("c1", { mode: "livre", replies: 1, every: 2 });
   await conv.handleMessage(msg("e aí, alguém viu o jogo ontem?", { author: "u2", name: "Ciclano" }));
-  assert((await sentCount(2)) === 2, "conversa livre com papo quente: entra sem ser marcada");
+  await sleep(3500);
+  assert(sent.length === 1, "livre: 1ª mensagem ainda não é a vez dela");
+  await conv.handleMessage(msg("foi muito bom", { author: "u6", name: "Beltrana" }));
+  assert((await sentCount(2)) === 2, "livre: na 2ª mensagem ela entra no papo");
+  assert(/Conversa livre: ninguém te chamou/.test(prompts.at(-1)), "prompt sabe que ela está entrando sozinha");
 
   await conv.handleMessage(msg("oi", { channel: "dm1", author: OWNER, name: "Gabbis" }));
   await sentCount(3);
@@ -108,24 +118,59 @@ try {
   assert(!/Enquanto você dormia/.test(caughtPrompt), "ocupada não é dormindo");
   assert(/tá aí\?\nresponde quando der/.test(caughtPrompt), "as duas mensagens viram um turno só");
 
-  // Ocupada, mas marcaram: vem na hora; a próxima msg da mesma pessoa (sem marcar) também, por 30 s.
+  // Ocupada e marcaram: NÃO vem na hora (guarda). Só o comando (.tetos) chama; aí 30 s de papo aberto.
   life.availability = () => ({ mode: "busy", activity: "ensaiando vocal", delayMs: 5 * 60_000 });
-  state.setFreeChat("c1", false);
+  state.configure("c1", { mode: "padrao" });
   let n = sent.length;
   await conv.handleMessage(msg("<@bot> vem cá", { author: "u4", name: "Fulana", mentionsBot: true }));
-  assert((await sentCount(n + 1)) === n + 1, "marcada: vem na hora mesmo ocupada");
+  await sleep(3500);
+  assert(sent.length === n, "marcada ocupada: espera (igual ao zap)");
+  await conv.handleMessage(msg(".tetos vem cá agora", { author: "u4", name: "Fulana" }));
+  assert((await sentCount(n + 1)) === n + 1, ".tetos: vem na hora mesmo ocupada");
   n = sent.length;
   await conv.handleMessage(msg("então, sobre aquilo", { author: "u4", name: "Fulana" }));
-  assert((await sentCount(n + 1)) === n + 1, "dentro de 30 s: responde sem precisar marcar");
+  assert((await sentCount(n + 1)) === n + 1, "dentro de 30 s do .tetos: responde sem chamar de novo");
   n = sent.length;
   await conv.handleMessage(msg("eu também quero falar", { author: "u5", name: "Outra" }));
   await sleep(3500);
   assert(sent.length === n, "a janela é só de quem chamou");
-  runtime.summons.until.clear();
-  await conv.handleMessage(msg("tá aí ainda?", { author: "u4", name: "Fulana" }));
-  await sleep(3500);
-  assert(sent.length === n, "janela fechou: sem marcar, não é chamada");
   life.availability = realAvailability;
+
+  // Off: marcação não adianta; comando sim.
+  state.configure("c1", { mode: "off" });
+  runtime.summons.until.clear();
+  n = sent.length;
+  await conv.handleMessage(msg("<@bot> oi", { author: "u7", name: "Alguém", mentionsBot: true }));
+  await sleep(3500);
+  assert(sent.length === n, "off: ignora marcação");
+  await conv.handleMessage(msg(".tetos oi", { author: "u7", name: "Alguém" }));
+  assert((await sentCount(n + 1)) === n + 1, "off: .tetos funciona");
+
+  // "Fica quieta por 1 hora": respeita e avisa uma vez; "pode voltar" libera.
+  state.configure("c1", { mode: "padrao" });
+  runtime.summons.until.clear();
+  n = sent.length;
+  const replies = [];
+  const hushMsg = msg("<@bot> fica quieta por 1 hora", { author: OWNER, name: "Gabbis", mentionsBot: true });
+  hushMsg.reply = async (p) => replies.push(p.content);
+  await conv.handleMessage(hushMsg);
+  assert(/fico quieta aqui até <t:\d+:t>/.test(replies[0] ?? ""), "avisa até quando fica quieta");
+  assert(state.mutedUntil("c1") - Date.now() > 59 * 60_000, "1 hora de silêncio");
+  await conv.handleMessage(msg("<@bot> e aí?", { author: "u2", name: "Ciclano", mentionsBot: true }));
+  await sleep(3500);
+  assert(sent.length === n, "quieta: não responde marcação");
+  await conv.handleMessage(msg("<@bot> pode voltar a falar", { author: OWNER, name: "Gabbis", mentionsBot: true }));
+  assert((await sentCount(n + 1)) === n + 1 && !state.mutedUntil("c1"), "a dona libera e ela volta");
+
+  // Figurinha sai do tamanho de um emoji.
+  forced.push('sticker("teto-linguinha")\nmensagem("olha eu")');
+  n = sent.length;
+  await conv.handleMessage(msg("oi de novo", { channel: "dm1", author: OWNER, name: "Gabbis" }));
+  await sentCount(n + 2);
+  const file = sent.slice(n).find((s) => s.files)?.files?.[0];
+  assert(file && /\.(png|gif)$/.test(file.name), "figurinha vai como imagem pequena");
+  const meta = await sharp(file.attachment, { animated: true }).metadata();
+  assert(meta.width === 48, `figurinha com 48 px (veio ${meta.width})`);
 
   const { code } = runtime.identityLinks.createCode({ discordId: "u1", discordName: "fulano" });
   runtime.identityLinks.redeem(code, { userId: "dm-5511999", name: "Fulano" });

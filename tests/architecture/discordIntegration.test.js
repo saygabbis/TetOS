@@ -175,3 +175,62 @@ describe("texto no Discord", () => {
     expect(new Set(names).size).toBe(names.length);
   });
 });
+
+describe("Discord: modos, ritmo, silêncio e acabamento", () => {
+  it("nome com espaço vira uma marcação só (sem sobrar 'mais malandro')", async () => {
+    const { applyOutgoingMentions } = await import("../../src/integrations/discord/discordText.js");
+    const people = [{ id: "7", names: ["Neguinho mais malandro"] }];
+    expect(applyOutgoingMentions("@Neguinho mais malandro para com isso", people).text).toBe("<@7> para com isso");
+    expect(applyOutgoingMentions("ah pronto @Neguinho mais malandro, para", people).text).toBe("ah pronto <@7>, para");
+    expect(applyOutgoingMentions("oi @Neguinho tudo bem", people).text).toBe("oi <@7> tudo bem");
+  });
+
+  it("ritmo da conversa livre: X respostas a cada Y mensagens, espalhadas", async () => {
+    const { rateAllows } = await import("../../src/integrations/discord/discordPolicy.js");
+    const pick = (cfg, n) => Array.from({ length: n }, (_, i) => i + 1).filter((c) => rateAllows(c, cfg));
+    expect(pick({ replies: 1, every: 5 }, 10)).toEqual([5, 10]);
+    expect(pick({ replies: 2, every: 5 }, 5)).toEqual([3, 5]);
+    expect(pick({ replies: 1, every: 1 }, 3)).toEqual([1, 2, 3]);
+  });
+
+  it("pedido de silêncio entende prazo e escopo", async () => {
+    const { parseHushRequest } = await import("../../src/integrations/discord/discordPolicy.js");
+    expect(parseHushRequest("se ausente do discord pelas próximas 12 horas")).toEqual({ ms: 12 * 3_600_000, scope: "discord" });
+    expect(parseHushRequest("fica quieta por meia hora")).toEqual({ ms: 30 * 60_000, scope: "channel" });
+    expect(parseHushRequest("cala a boca")).toEqual({ ms: 10 * 60_000, scope: "channel" });
+    expect(parseHushRequest("some daqui por 2h")).toEqual({ ms: 2 * 3_600_000, scope: "channel" });
+    expect(parseHushRequest("bora jogar")).toBeNull();
+    expect(parseHushRequest("não precisa ficar quieta")).toBeNull();
+  });
+
+  it("acabamento: uma mensagem, sem @ em quem ela responde, uma marcação no máximo, figurinha com intervalo", async () => {
+    const { polishDiscordActions } = await import("../../src/integrations/discord/discordPolicy.js");
+    const out = polishDiscordActions(
+      [{ type: "sticker", key: "x" }, { type: "message", text: "@Lucas mds vc é obcecado kkk" }, { type: "message", text: "sonha alto @Lucas" }, { type: "message", text: "e @Ana e @Bia?" }],
+      { replyToNames: ["Lucas"], maxLines: 2 }
+    );
+    expect(out).toEqual([{ type: "sticker", key: "x" }, { type: "message", text: "mds vc é obcecado kkk\nsonha alto e @Ana e Bia?", quoteId: null }]);
+    expect(polishDiscordActions([{ type: "sticker", key: "x" }, { type: "message", text: "oi" }], { stickerAllowed: false })).toEqual([{ type: "message", text: "oi", quoteId: null }]);
+    expect(polishDiscordActions([{ type: "message", text: "uai @Neguinho mais malandro, sério?" }], { replyToNames: ["Neguinho mais malandro"] })[0].text).toBe("uai Neguinho mais malandro, sério?");
+  });
+
+  it("estado do canal: modo, ritmo, silêncio do canal e do Discord todo; migra a conversa livre antiga", async () => {
+    const { DiscordStateStore } = await import("../../src/integrations/discord/discordState.js");
+    const dir = mkdtempSync(join(tmpdir(), "dstate-"));
+    const { writeFileSync } = await import("node:fs");
+    writeFileSync(join(dir, "s.json"), JSON.stringify({ freeChat: { 9: { by: "1" } }, muted: {} }));
+    let now = 1_000;
+    const st = new DiscordStateStore(join(dir, "s.json"), { now: () => now });
+    expect(st.modeOf("9")).toBe("livre");
+    expect(st.modeOf("8")).toBe("padrao");
+    expect(st.configure("8", { mode: "off", replies: 9, every: 3 })).toMatchObject({ mode: "off", replies: 3, every: 3 });
+    st.mute("8", 60_000);
+    expect(st.mutedUntil("8")).toBe(61_000);
+    expect(st.mutedUntil("9")).toBe(0);
+    st.mute("8", 3_600_000, { scope: "discord" });
+    expect(st.mutedUntil("9")).toBe(3_601_000);
+    now += 2 * 3_600_000;
+    expect(st.mutedUntil("9")).toBe(0);
+    rmSync(dir, { recursive: true, force: true });
+  });
+});

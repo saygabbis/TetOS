@@ -275,7 +275,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
     hubContext = null,
     // De onde veio: "whatsapp" (padrão), "discord" ou o app. `platformPlace` = "#geral do servidor X", "DM".
     platform = safePlatformFromChannel(payload.channelId),
-    platformPlace = null
+    platformPlace = null,
+    // Recado do canal pro prompt (ex.: Discord, conversa livre: "ninguém te chamou").
+    platformNote = null
   } = payload;
   const isTetosBypass = Boolean(tetosCommand);
   const effectiveCloseDecision = isTetosBypass ? "open" : (closeDecision ?? null);
@@ -1023,6 +1025,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
       automateFromWhatsApp: platform === "whatsapp" ? automatePcOnline : null,
       platform,
       platformPlace,
+      platformNote,
       discordAvailable: Boolean(runtime.discord?.ready),
       attentionLine: runtime.attention?.promptLine?.(platform) ?? null,
       peopleMemoryLines:
@@ -1094,7 +1097,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
     sessionId: safeSessionId
   });
 
-  if (!isGroup && safeUserId) {
+  // Só o PV do zap: a iniciativa usa essa sessão pra puxar assunto no WhatsApp (DM do Discord
+  // aqui fazia o "bom dia" do zap sair com o histórico do Discord).
+  if (!isGroup && safeUserId && platform === "whatsapp") {
     runtime.longTerm.updateProfile(
       safeUserId,
       { facts: { lastDmSessionId: safeSessionId } },

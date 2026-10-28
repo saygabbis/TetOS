@@ -40,7 +40,7 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
   const inbox = new DeferredInbox(defaults.discordInboxPath);
   const media = createDiscordMediaTools(runtime);
   const conversation = createDiscordConversation({ runtime, client, state, media, inbox, log });
-  const ctx = { runtime, client, state, media, inbox, identityOf: conversation.identityOf, isOwnerId: conversation.isOwnerId, summonKeyOf: conversation.summonKeyOf };
+  const ctx = { runtime, client, state, media, inbox, identityOf: conversation.identityOf, isOwnerId: conversation.isOwnerId, summonKeyOf: conversation.summonKeyOf, namesFor: conversation.namesFor, dlog: conversation.dlog };
   const timers = [];
 
   const api = {

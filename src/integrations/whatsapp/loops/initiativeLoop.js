@@ -79,7 +79,8 @@ export async function runPresence(runtime, socket) {
 
       const remoteJid = resolveNudgeRemoteJid(runtime, userId);
       if (!remoteJid || remoteJid.endsWith("@g.us")) continue;
-      const sessionId = facts.lastDmSessionId ?? `wa-dm:${remoteJid}`;
+      // Só sessão do PV do zap (uma sessão do Discord gravada antes fazia o "bom dia" sair com o histórico de lá).
+      const sessionId = String(facts.lastDmSessionId ?? "").startsWith("wa-dm:") ? facts.lastDmSessionId : `wa-dm:${remoteJid}`;
       const isOwner = isOwnerContact(runtime, remoteJid, userId);
       const lastUser = Date.parse(runtime.timeStore?.getLastUserMessage?.(userId, sessionId) ?? "") || 0;
       const lastAny = Date.parse(runtime.timeStore?.getLastMessage?.(userId, sessionId) ?? "") || 0;

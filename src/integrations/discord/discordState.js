@@ -1,57 +1,84 @@
 import { readJson, writeJsonDeferred } from "../../infra/utils/fileStore.js";
+import { CHANNEL_MODES, DEFAULT_RATE } from "./discordPolicy.js";
 
 /**
- * Estado do Discord que sobrevive a reinício: canais com "conversa livre" ligada (ela participa do
- * papo sem precisar ser marcada) e canais em que mandaram ela ficar quieta.
+ * Estado do Discord que sobrevive a reinício: modo de cada canal (off / padrão / livre) com o ritmo da
+ * conversa livre, canais em que mandaram ela ficar quieta e o "some do Discord" geral.
  */
 export class DiscordStateStore {
   constructor(path = "./data/discord/state.json", { now = () => Date.now() } = {}) {
     this.path = path;
     this.now = now;
-    this.data = readJson(path, { freeChat: {}, muted: {} });
-    this.data.freeChat ??= {};
+    this.data = readJson(path, { channels: {}, muted: {}, mutedAll: 0 });
+    this.data.channels ??= {};
     this.data.muted ??= {};
+    // Versão antiga: { freeChat: { canal: {...} } } → modo livre.
+    for (const [id, row] of Object.entries(this.data.freeChat ?? {})) {
+      this.data.channels[id] ??= { mode: "livre", ...DEFAULT_RATE, by: row.by ?? null, guildId: row.guildId ?? null, name: row.name ?? null, at: row.at ?? null };
+    }
+    delete this.data.freeChat;
+    this.counts = new Map();
   }
 
   save() {
     if (this.path) writeJsonDeferred(this.path, this.data);
   }
 
-  isFreeChat(channelId) {
-    return Boolean(this.data.freeChat[String(channelId)]);
+  /** Configuração do canal (sem nada salvo: modo padrão). */
+  channel(channelId) {
+    const row = this.data.channels[String(channelId)];
+    return { mode: "padrao", ...DEFAULT_RATE, ...(row ?? {}) };
   }
 
-  setFreeChat(channelId, on, { by = null, guildId = null, name = null } = {}) {
+  modeOf(channelId) {
+    return this.channel(channelId).mode;
+  }
+
+  configure(channelId, patch = {}, meta = {}) {
     const key = String(channelId);
-    if (on) this.data.freeChat[key] = { by, guildId, name, at: new Date(this.now()).toISOString() };
-    else delete this.data.freeChat[key];
+    const next = { ...this.channel(key), ...meta, at: new Date(this.now()).toISOString() };
+    if (patch.mode && CHANNEL_MODES.includes(patch.mode)) next.mode = patch.mode;
+    if (Number.isFinite(patch.replies)) next.replies = Math.max(1, Math.min(20, Math.round(patch.replies)));
+    if (Number.isFinite(patch.every)) next.every = Math.max(1, Math.min(100, Math.round(patch.every)));
+    if (next.replies > next.every) next.replies = next.every;
+    this.data.channels[key] = next;
+    this.counts.delete(key);
     this.save();
+    return next;
   }
 
-  freeChatChannels(guildId = null) {
-    return Object.entries(this.data.freeChat)
-      .filter(([, row]) => !guildId || row.guildId === guildId)
-      .map(([id, row]) => ({ id, ...row }));
+  /** Mais uma mensagem no canal (conversa livre): devolve o número dela desde a última configuração. */
+  countMessage(channelId) {
+    const key = String(channelId);
+    const n = (this.counts.get(key) ?? 0) + 1;
+    this.counts.set(key, n);
+    return n;
   }
 
-  /** Quieta até `until` (ms). */
-  mute(channelId, ms) {
-    this.data.muted[String(channelId)] = this.now() + Math.max(0, ms);
+  /** Quieta até `ms` a partir de agora. Escopo "discord" = todos os canais. */
+  mute(channelId, ms, { scope = "channel" } = {}) {
+    const until = this.now() + Math.max(0, ms);
+    if (scope === "discord") this.data.mutedAll = until;
+    else this.data.muted[String(channelId)] = until;
     this.save();
+    return until;
   }
 
-  unmute(channelId) {
+  unmute(channelId, { all = false } = {}) {
     delete this.data.muted[String(channelId)];
+    if (all) this.data.mutedAll = 0;
     this.save();
   }
 
+  /** Até quando está quieta nesse canal (0 = não está). Leva em conta o "some do Discord". */
   mutedUntil(channelId) {
-    const until = this.data.muted[String(channelId)] ?? 0;
-    if (until && until <= this.now()) {
+    const now = this.now();
+    const local = this.data.muted[String(channelId)] ?? 0;
+    if (local && local <= now) {
       delete this.data.muted[String(channelId)];
       this.save();
-      return 0;
     }
-    return until;
+    const all = this.data.mutedAll ?? 0;
+    return Math.max(local > now ? local : 0, all > now ? all : 0);
   }
 }

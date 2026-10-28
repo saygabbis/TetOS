@@ -11,6 +11,7 @@ import { detectPlatform } from "../../core/media/urlPlatformDetect.js";
 import { parseWhatsAppCommand } from "../whatsapp/commands/mediaCommandParser.js";
 import { downloadMediaItem, mediaItemsOf } from "./discordMedia.js";
 import { placeLabel, readableContent } from "./discordText.js";
+import { MODE_LABEL, polishDiscordActions } from "./discordPolicy.js";
 
 /**
  * Comandos da Teto no Discord: os do zap portados (figurinha, remover fundo, downloads, gerar imagem,
@@ -27,8 +28,9 @@ export function buildCommandDefinitions() {
     new SlashCommandBuilder()
       .setName("teto")
       .setDescription("Coisas da Teto neste canal")
-      .addSubcommand((s) => s.setName("conversar").setDescription("Liga a conversa livre: ela participa do papo do canal sem precisar ser marcada"))
-      .addSubcommand((s) => s.setName("parar").setDescription("Desliga a conversa livre (volta a responder só quando marcam ou dão reply)"))
+      .addSubcommand((s) => s.setName("conversar").setDescription("Modo livre: ela entra no papo do canal sozinha, no ritmo do /configurar"))
+      .addSubcommand((s) => s.setName("padrao").setDescription("Modo padrão: responde quando marcam, dão reply ou chamam pelo nome"))
+      .addSubcommand((s) => s.setName("desligar").setDescription("Desliga: neste canal ela só responde a comando (/perguntar, .tetos)"))
       .addSubcommand((s) =>
         s
           .setName("calar")
@@ -37,6 +39,17 @@ export function buildCommandDefinitions() {
       )
       .addSubcommand((s) => s.setName("voltar").setDescription("Ela volta a falar neste canal"))
       .addSubcommand((s) => s.setName("status").setDescription("O que a Teto está fazendo agora")),
+    new SlashCommandBuilder()
+      .setName("configurar")
+      .setDescription("Como a Teto se comporta neste canal")
+      .addIntegerOption((o) => o.setName("resposta").setDescription("Modo livre: quantas respostas…").setMinValue(1).setMaxValue(20))
+      .addIntegerOption((o) => o.setName("mensagem").setDescription("…a cada quantas mensagens (ex.: 1 resposta a cada 5)").setMinValue(1).setMaxValue(100))
+      .addStringOption((o) =>
+        o
+          .setName("modo")
+          .setDescription("off = só comando · padrão = marcação/reply/nome · livre = entra no papo sozinha")
+          .addChoices({ name: "livre", value: "livre" }, { name: "padrão", value: "padrao" }, { name: "off", value: "off" })
+      ),
     new SlashCommandBuilder()
       .setName("perguntar")
       .setDescription("Pergunta pontual pra Teto (responde mesmo se ela estiver ocupada)")
@@ -55,7 +68,10 @@ export function buildCommandDefinitions() {
           .setDescription("Como encaixar")
           .addChoices({ name: "esticar (padrão)", value: "sticker" }, { name: "inteira, sem cortar", value: "fsticker" }, { name: "recortar o centro", value: "csticker" })
       )
-      .addStringOption((o) => o.setName("duracao").setDescription("Gif/vídeo: até quantos segundos (ex.: 5s)")),
+      .addStringOption((o) => o.setName("duracao").setDescription("Gif/vídeo: até quantos segundos (ex.: 5s)"))
+      .addStringOption((o) =>
+        o.setName("tamanho").setDescription("emoji (padrão) ou grande, pra salvar o arquivo").addChoices({ name: "emoji", value: "emoji" }, { name: "grande", value: "grande" })
+      ),
     new SlashCommandBuilder()
       .setName("removerfundo")
       .setDescription("Remove o fundo de uma imagem")
@@ -110,10 +126,11 @@ export function buildCommandDefinitions() {
 export function formatDiscordHelp(prefix = ".") {
   return [
     "**Conversar comigo**",
-    "• me marca (@Teto) ou responde uma mensagem minha — no privado é só falar",
-    "• `/teto conversar` liga a conversa livre no canal (eu entro no papo sem ser marcada); `/teto parar` desliga",
-    "• `/teto calar` me deixa quieta um tempo; `/teto voltar` · `/teto status` mostra o que tô fazendo",
-    "• `/perguntar` pergunta pontual, respondo mesmo ocupada",
+    "• me marca (@Teto), responde uma mensagem minha ou me chama pelo nome — no privado é só falar. se eu tiver ocupada, respondo quando der",
+    `• \`${prefix}tetos <mensagem>\` ou \`/perguntar\` me chama na hora, mesmo ocupada (e por 30 s sigo o papo contigo)`,
+    "• modos do canal: `/teto conversar` (livre: entro no papo sozinha) · `/teto padrao` (marcação/reply/nome) · `/teto desligar` (só comando)",
+    "• `/configurar resposta:1 mensagem:5` = no modo livre, 1 resposta a cada 5 mensagens",
+    "• \"fica quieta por 1h\" / \"some do discord por 12 horas\" eu respeito · `/teto calar` · `/teto voltar` · `/teto status`",
     "",
     "**Conta**",
     "• `/vincular` liga teu discord ao teu zap (lembro de você nos dois) · `/desvincular`",
@@ -164,8 +181,17 @@ async function askOnce(runtime, ctx, interaction, question, { quoted = null } = 
     platform: "discord",
     platformPlace: placeLabel(interaction.channel)
   });
-  const texts = (out?.replies?.actions ?? []).filter((a) => a.type === "message").map((a) => a.text);
-  return (texts.length ? texts : out?.replies ?? []).join("\n").trim() || "…não sei o que dizer kkk";
+  const actions = out?.replies?.actions ?? (out?.replies ?? []).map((text) => ({ type: "message", text }));
+  // Mesmo acabamento das outras respostas: uma mensagem só e sem marcar quem perguntou.
+  const replyToNames = [interaction.member?.displayName, interaction.user.globalName, interaction.user.username, ...(ctx.namesFor?.(interaction.user.id) ?? [])];
+  const polished = polishDiscordActions(actions, { replyToNames, maxLines: 3, stickerAllowed: false });
+  const answer = polished.find((a) => a.type === "message")?.text?.trim() || "…não sei o que dizer kkk";
+  const place = placeLabel(interaction.channel) ?? "DM";
+  const asker = interaction.member?.displayName ?? interaction.user.globalName ?? interaction.user.username;
+  ctx.dlog?.chat(place, asker, `/perguntar ${question}`);
+  ctx.dlog?.decision(place, asker, "respondeu", "/perguntar");
+  ctx.dlog?.chat(place, "Teto", answer);
+  return answer;
 }
 
 export async function handleInteraction(interaction, ctx) {
@@ -205,7 +231,10 @@ export async function handleInteraction(interaction, ctx) {
       const lines = life?.promptLines?.({ isGroup: true }) ?? [];
       const agora = lines.find((l) => l.startsWith("Agora:")) ?? (snap ? `Agora: ${snap.currentActivity}` : "não sei kkk");
       const extra = [];
-      if (state.isFreeChat(channelId)) extra.push("conversa livre ligada neste canal");
+      if (interaction.guildId) {
+        const cfg = state.channel(channelId);
+        extra.push(`neste canal: ${MODE_LABEL[cfg.mode]}${cfg.mode === "livre" ? ` · ${cfg.replies} resposta(s) a cada ${cfg.every} mensagens` : ""}`);
+      }
       if (state.mutedUntil(channelId)) extra.push(`quieta aqui até <t:${Math.round(state.mutedUntil(channelId) / 1000)}:t>`);
       return interaction.reply({
         embeds: [
@@ -218,14 +247,19 @@ export async function handleInteraction(interaction, ctx) {
     }
     if (!interaction.guildId) return interaction.reply({ content: "isso é coisa de servidor — aqui no privado eu já converso normal", ...eph });
     if (!canManage(interaction, ctx)) return interaction.reply({ content: "só quem pode gerenciar o canal mexe nisso", ...eph });
+    const meta = { by: interaction.user.id, guildId: interaction.guildId, name: interaction.channel?.name ?? null };
     if (sub === "conversar") {
-      state.setFreeChat(channelId, true, { by: interaction.user.id, guildId: interaction.guildId, name: interaction.channel?.name ?? null });
+      const cfg = state.configure(channelId, { mode: "livre" }, meta);
       state.unmute(channelId);
-      return interaction.reply("oba, conversa livre ligada aqui! vou entrar no papo de vez em quando sem precisar me marcar 👀");
+      return interaction.reply(`oba, modo livre aqui! vou entrar no papo sozinha (${cfg.replies} resposta a cada ${cfg.every} mensagens, dá pra mudar no /configurar) 👀`);
     }
-    if (sub === "parar") {
-      state.setFreeChat(channelId, false);
-      return interaction.reply("tá bom, aqui eu só respondo quando me marcarem ou derem reply");
+    if (sub === "padrao") {
+      state.configure(channelId, { mode: "padrao" }, meta);
+      return interaction.reply("tá bom, aqui eu respondo quando me marcarem, derem reply ou me chamarem");
+    }
+    if (sub === "desligar") {
+      state.configure(channelId, { mode: "off" }, meta);
+      return interaction.reply(`ok, desligada aqui. só respondo com \`/perguntar\` ou \`${runtime.defaults.commandPrefix}tetos\``);
     }
     if (sub === "calar") {
       const minutes = opt.getInteger("minutos") ?? 10;
@@ -236,6 +270,17 @@ export async function handleInteraction(interaction, ctx) {
       state.unmute(channelId);
       return interaction.reply("voltei!!");
     }
+  }
+
+  if (name === "configurar") {
+    if (!interaction.guildId) return interaction.reply({ content: "isso é coisa de servidor — aqui no privado eu já converso normal", ...eph });
+    if (!canManage(interaction, ctx)) return interaction.reply({ content: "só quem pode gerenciar o canal mexe nisso", ...eph });
+    const patch = { mode: opt.getString("modo") ?? undefined, replies: opt.getInteger("resposta") ?? undefined, every: opt.getInteger("mensagem") ?? undefined };
+    const cfg = state.configure(interaction.channelId, patch, { by: interaction.user.id, guildId: interaction.guildId, name: interaction.channel?.name ?? null });
+    const rate = `${cfg.replies} resposta${cfg.replies > 1 ? "s" : ""} a cada ${cfg.every} mensage${cfg.every > 1 ? "ns" : "m"}`;
+    const note = cfg.mode === "livre" ? `no modo livre eu entro no papo ${rate} (quando tô livre). marcação, reply e nome eu respondo sempre que der` : `ritmo do modo livre salvo (${rate}), mas o canal tá no modo ${MODE_LABEL[cfg.mode]}`;
+    return interaction.reply(`configurado! modo: **${MODE_LABEL[cfg.mode]}**
+${note}`);
   }
 
   if (name === "perguntar") {
@@ -315,7 +360,7 @@ export async function handleInteraction(interaction, ctx) {
     await interaction.deferReply();
     const input = await downloadMediaItem({ id: attachment.id, url: attachment.url, name: attachment.name, contentType: attachment.contentType, size: attachment.size }, media.inboxDir);
     if (name === "figurinha") {
-      return sendResult(interaction, await media.run(opt.getString("modo") ?? "sticker", [opt.getString("duracao")].filter(Boolean), { input, userId }));
+      return sendResult(interaction, await media.run(opt.getString("modo") ?? "sticker", [opt.getString("duracao")].filter(Boolean), { input, userId, big: opt.getString("tamanho") === "grande" }));
     }
     if (name === "removerfundo") {
       return sendResult(interaction, await media.run("removebg", [opt.getString("cor"), opt.getString("forca")].filter(Boolean), { input, userId }));
