@@ -124,13 +124,16 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
   );
   for (const t of timers) t.unref?.();
 
-  try {
-    await client.login(defaults.discordToken);
-  } catch (error) {
-    log.error?.(`[discord] login falhou: ${error?.message ?? error}`);
-    for (const t of timers) clearInterval(t);
-    runtime.discord = null;
-    return null;
-  }
+  // Login recusado (ex.: intent desligado no portal, token trocado): tenta de novo sozinha a cada minuto,
+  // sem precisar reiniciar o zap depois de arrumar.
+  const login = async (attempt = 1) => {
+    try {
+      await client.login(defaults.discordToken);
+    } catch (error) {
+      if (attempt === 1 || attempt % 30 === 0) log.error?.(`[discord] login falhou (tentativa ${attempt}): ${error?.message ?? error} — tento de novo a cada minuto`);
+      setTimeout(() => void login(attempt + 1), 60_000).unref?.();
+    }
+  };
+  await login();
   return api;
 }
