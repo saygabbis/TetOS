@@ -47,6 +47,7 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
   const batches = new Map(); // chave → { entries, timer }
   const running = new Map(); // chave → Promise do turno em andamento
   const seeded = new Set();
+  const knownNames = new Map(); // autor → nomes com que já apareceu (apelido no servidor, usuário, nome global)
 
   const botId = () => client.user?.id ?? null;
   const index = () => runtime.chatMessageIndex ?? null;
@@ -63,6 +64,11 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
   }
 
   function record(message, { text = null, isFromBot = false } = {}) {
+    if (!isFromBot && message?.author?.id) {
+      const names = knownNames.get(message.author.id) ?? new Set();
+      for (const n of [speakerNameOf(message), message.author.username, message.author.globalName]) if (n) names.add(n);
+      knownNames.set(message.author.id, names);
+    }
     const idx = index();
     if (!idx || !message?.id) return;
     idx.append({
@@ -369,6 +375,21 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     }
   }
 
+  /**
+   * Nomes com que ela conhece a pessoa: os do Discord + os do zap (vínculo/perfil). A dona é "Gabbis"
+   * pra ela, mesmo que no Discord apareça com outro apelido.
+   */
+  function namesFor(discordId) {
+    const names = [...(knownNames.get(discordId) ?? [])];
+    if (isOwnerId(discordId)) names.push("Gabbis");
+    const { userId, linked } = identityOf({ id: discordId });
+    if (linked) {
+      const facts = runtime.longTerm?.getProfile?.(userId, "direct")?.facts ?? {};
+      names.push(runtime.identityLinks?.get?.(discordId)?.name, facts.preferredName, facts.displayName, facts.name);
+    }
+    return names.filter(Boolean);
+  }
+
   /** Quem pode ser marcado com @ na resposta: quem falou no canal recentemente. */
   function mentionPeople(channel, chatKey) {
     const rows = index()?.getThread?.(chatKey, 60) ?? [];
@@ -376,7 +397,7 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     for (const r of rows) {
       if (r.isFromBot || !r.actorId) continue;
       const member = channel.guild?.members?.cache?.get?.(r.actorId);
-      people.set(r.actorId, { id: r.actorId, names: [r.speakerName, member?.user?.username, member?.user?.globalName].filter(Boolean) });
+      people.set(r.actorId, { id: r.actorId, names: [r.speakerName, member?.user?.username, member?.user?.globalName, ...namesFor(r.actorId)].filter(Boolean) });
     }
     return [...people.values()];
   }

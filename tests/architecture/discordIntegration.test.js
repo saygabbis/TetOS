@@ -142,6 +142,8 @@ describe("texto no Discord", () => {
     const people = [{ id: "9", names: ["Gabbis", "saygabbis"] }, { id: "8", names: ["Kzer0"] }];
     expect(applyOutgoingMentions("oi @gabbis e @kzer!", people)).toEqual({ text: "oi <@9> e <@8>!", userIds: ["9", "8"] });
     expect(applyOutgoingMentions("@everyone olha", people).text).toBe("@everyone olha");
+    expect(applyOutgoingMentions("boa noite @Gabbis", [{ id: "1", names: ["Gabbrielly ♡", "saygabbis"] }]).text).toBe("boa noite <@1>");
+    expect(applyOutgoingMentions("oi @ana", [{ id: "1", names: ["Mariana"] }, { id: "2", names: ["Ana Clara"] }]).text).toBe("oi <@2>");
     expect(applyOutgoingMentions("email a@b.com", people).text).toBe("email a@b.com");
   });
 

@@ -34,7 +34,7 @@ const normalizeName = (s) =>
 
 /**
  * "@Gabbis" → "<@id>" usando quem está no papo (`people`: [{ id, names: [...] }]). Aceita prefixo
- * único ("@gab" → Gabbis). Retorna o texto e os ids marcados (pro allowedMentions).
+ * único ("@gab" → Gabbis) ou parte do nome ("@gabbis" → saygabbis). Retorna o texto e os ids marcados (pro allowedMentions).
  */
 export function applyOutgoingMentions(text, people = []) {
   const ids = new Set();
@@ -43,10 +43,13 @@ export function applyOutgoingMentions(text, people = []) {
     const key = normalizeName(raw);
     if (!key || key === "everyone" || key === "here") return all;
     const exact = [...new Set(index.filter((x) => x.key === key).map((x) => x.id))];
-    const prefix = exact.length ? exact : [...new Set(index.filter((x) => x.key.startsWith(key)).map((x) => x.id))];
-    if (prefix.length !== 1) return all;
-    ids.add(prefix[0]);
-    return `${lead}<@${prefix[0]}>`;
+    const byPrefix = () => [...new Set(index.filter((x) => x.key.startsWith(key)).map((x) => x.id))];
+    // Parte do nome ("@gabbis" → "saygabbis"), só com 4+ letras e se for uma pessoa só.
+    const byPart = () => (key.length >= 4 ? [...new Set(index.filter((x) => x.key.includes(key)).map((x) => x.id))] : []);
+    const found = [exact, byPrefix(), byPart()].find((list) => list.length > 0) ?? [];
+    if (found.length !== 1) return all;
+    ids.add(found[0]);
+    return `${lead}<@${found[0]}>`;
   });
   return { text: out, userIds: [...ids] };
 }
