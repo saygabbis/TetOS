@@ -61,6 +61,19 @@ export function buildCommandDefinitions() {
     new SlashCommandBuilder().setName("memoria").setDescription("O que a Teto lembra de você (só você vê)"),
     new SlashCommandBuilder().setName("lembretes").setDescription("Seus lembretes pendentes (só você vê)"),
     new SlashCommandBuilder()
+      .setName("mente")
+      .setDescription("O que a Teto estudou, aprendeu e mudou nela mesma (comandos só da dona)")
+      .addStringOption((o) =>
+        o
+          .setName("comando")
+          .setDescription("status, estudar, licoes, pedidos, autorizar <id>, recusar <id>, ver <id>, aplicar, desfazer <id>…")
+          .setMaxLength(200)
+      ),
+    new SlashCommandBuilder()
+      .setName("sentimentos")
+      .setDescription("Como a Teto está se sentindo agora, por quê, e como reagiu a algo (só você vê)")
+      .addStringOption((o) => o.setName("sobre").setDescription('"historico" (mudanças de humor) ou um assunto/pessoa').setMaxLength(100)),
+    new SlashCommandBuilder()
       .setName("figurinha")
       .setDescription("Transforma imagem, gif ou vídeo em figurinha")
       .addAttachmentOption((o) => attachmentOpt(o))
@@ -337,6 +350,22 @@ export async function handleInteraction(interaction, ctx) {
     const body = lines.slice(1, -1).join("\n").trim();
     const hint = who.linked ? "" : "\n\n(essa conta não tá vinculada ao zap — `/vincular` junta as memórias)";
     return interaction.reply({ content: `${body || "ainda não tenho muita coisa anotada sobre você kkk"}${hint}`.slice(0, 1990), ...eph });
+  }
+
+  if (name === "mente") {
+    if (!runtime.mind) return interaction.reply({ content: "minha mente tá desligada por aqui", ...eph });
+    await interaction.deferReply(eph);
+    const text = await runtime.mind.command(interaction.options.getString("comando") ?? "", { isOwner: ctx.isOwnerId(interaction.user.id), userId: ctx.identityOf(interaction.user).userId });
+    return interaction.editReply({ content: String(text).slice(0, 1990) });
+  }
+
+  if (name === "sentimentos") {
+    if (!runtime.mind?.feelings) return interaction.reply({ content: "não tô conseguindo olhar pra dentro agora", ...eph });
+    const text = runtime.mind.feelings.report(interaction.options.getString("sobre") ?? "", {
+      viewerUserId: ctx.identityOf(interaction.user).userId,
+      isOwner: ctx.isOwnerId(interaction.user.id)
+    });
+    return interaction.reply({ content: String(text).slice(0, 1990), ...eph });
   }
 
   if (name === "lembretes") {

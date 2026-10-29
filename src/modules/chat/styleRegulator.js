@@ -1,5 +1,6 @@
 import { isLaughterOrNoiseToken } from "../../core/channels/profileFacts.js";
 import { scanCommandArgs } from "./commandArgScanner.js";
+import { hasLaughter, stripLaughter } from "../../core/mind/toneReader.js";
 
 /**
  * Último filtro de estilo antes do WhatsApp: segura os vícios que deixam a Teto com cara de bot
@@ -123,6 +124,25 @@ function messageTextsFromRaw(raw = "") {
   return out;
 }
 
+const THINK_COMMAND_RE = /\b(?:pensar|pensamento|think)\s*\(/gi;
+
+/** Tira os `pensar("…")` (rascunho interno) da resposta crua — não vão pro histórico nem pro chat. */
+export function stripThinkCommands(raw = "") {
+  let text = String(raw ?? "").replace(/[“”„‟]/g, '"');
+  for (let guard = 0; guard < 5; guard += 1) {
+    THINK_COMMAND_RE.lastIndex = 0;
+    const m = THINK_COMMAND_RE.exec(text);
+    if (!m) break;
+    const scanned = scanCommandArgs(text, m.index + m[0].length);
+    const end = scanned?.end ?? text.indexOf(")", m.index);
+    if (end < 0) break;
+    let stop = end;
+    while (stop < text.length && /[)\s]/.test(text[stop]) && text[stop] !== "\n") stop += 1;
+    text = (text.slice(0, m.index) + text.slice(stop)).replace(/^\s*\n/, "");
+  }
+  return text.trim();
+}
+
 /** Bolhas que a Teto mandou nos últimos turnos, do mais recente ao mais antigo. */
 export function recentAssistantTurns(history = [], max = 4) {
   const turns = [];
@@ -194,7 +214,19 @@ export function regulateBubbles(texts = [], { isGroup = false, recentTurns = [],
     if (runs.length && capsBudget > 0 && runs[0].words <= MAX_CAPS_RUN_WORDS) capsBudget -= 1;
   }
 
-  // 4) Anti-flood: poucas bolhas; o excesso vai junto na última (quebra de linha, como gente faz).
+  // 4) Risada: no máximo UMA por resposta (até 6 k), em qualquer canal. Bolha que era só risada some.
+  let laughLeft = 1;
+  for (const r of rows) {
+    const before = r.text;
+    r.text = stripLaughter(before, { keep: laughLeft, maxLen: 6 });
+    if (hasLaughter(r.text)) laughLeft = 0;
+  }
+  if (structural) {
+    const withText = rows.filter((r) => /[\p{L}\p{N}]/u.test(r.text));
+    if (withText.length) rows = withText;
+  }
+
+  // 5) Anti-flood: poucas bolhas; o excesso vai junto na última (quebra de linha, como gente faz).
   const cap = Math.max(1, Math.min(isGroup ? GROUP_MAX_BUBBLES : DM_MAX_BUBBLES, maxParts || Infinity));
   if (structural && rows.length > cap) {
     const head = rows.slice(0, cap - 1);
@@ -243,11 +275,13 @@ export function regulateMessageActions(actions = [], ctx = {}) {
  * Versão para o histórico: mesmas correções de texto (CAPS, pontuação, abertura repetida) direto na
  * resposta crua, para a IA não "aprender" consigo mesma os vícios que o filtro tirou do envio.
  */
-export function tameRawReply(raw = "", { recentTurns = [] } = {}) {
+export function tameRawReply(raw = "", { recentTurns = [], tone = null } = {}) {
   const text = String(raw ?? "");
   const originals = messageTextsFromRaw(text);
   if (!originals.length) return text;
-  const { texts } = regulateBubbles(originals, { recentTurns, structural: false });
+  let { texts } = regulateBubbles(originals, { recentTurns, structural: false });
+  // Tom do turno (ex.: assunto sério → sem risada): o histórico guarda o que de fato saiu.
+  if (tone?.laugh === "none") texts = texts.map((t) => stripLaughter(t, { keep: 0 }));
   let out = text.replace(/[\u201c\u201d\u201e\u201f]/g, '"');
   let from = 0;
   originals.forEach((orig, i) => {

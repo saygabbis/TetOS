@@ -565,6 +565,8 @@ async function main() {
   const runtime = createRuntime();
   // Deixa o Whisper local baixado/carregado antes do 1º áudio chegar.
   setTimeout(() => void runtime.audioTranscriber?.warmup?.().catch(() => {}), 20_000).unref();
+  // Mente: estudo sozinha, revisão das próprias conversas, habilidades e mudanças no próprio código.
+  runtime.mind?.start?.();
   // Discord no mesmo processo (mesma memória/vida); se falhar, o zap segue normal.
   void startDiscordBot(runtime).catch((error) => console.error("[discord] não subiu:", error?.message ?? error));
 

@@ -34,7 +34,8 @@ import { ORGANIZER_COMMANDS } from "../../integrations/automate-hub/hubOrganizer
 import { PROJECT_COMMANDS } from "../../integrations/automate-hub/hubProjects.js";
 
 /** Comandos cujo texto é livre (pode ter Markdown, parênteses e apóstrofos): lidos com o leitor robusto. */
-const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", ...Object.keys(ORGANIZER_COMMANDS), ...Object.keys(PROJECT_COMMANDS)]);
+// pensar("…") é rascunho interno: o texto é pulado inteiro (nada dentro dele vira comando) e não gera ação.
+const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", "pensar", "pensamento", "think", ...Object.keys(ORGANIZER_COMMANDS), ...Object.keys(PROJECT_COMMANDS)]);
 
 function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")

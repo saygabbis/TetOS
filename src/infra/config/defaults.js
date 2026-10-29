@@ -238,6 +238,20 @@ export const DEFAULTS = {
   discordMediaPath: process.env.TETOS_DISCORD_MEDIA_PATH ?? "./data/media/discord",
   /** Contas vinculadas entre apps (Discord ↔ WhatsApp). */
   identityLinksPath: process.env.TETOS_IDENTITY_LINKS_PATH ?? "./data/identityLinks.json",
+  // Mente: estudo sozinha, lições que ela tira de si, julgamento de pedidos, pesquisa automática.
+  mindEnabled: String(process.env.TETOS_MIND_ENABLED ?? "true").toLowerCase() !== "false",
+  mindPath: process.env.TETOS_MIND_PATH ?? "./data/mind",
+  /** Modelo das tarefas da mente (estudo, revisão, julgamento). Vazio = TETOS_WORKER_LLM_MODEL ou TETOS_MODEL. */
+  mindModel: process.env.TETOS_MIND_MODEL ?? "",
+  mindStudyPerDay: Number(process.env.TETOS_MIND_STUDY_PER_DAY ?? 10),
+  mindLookupsPerDay: Number(process.env.TETOS_MIND_LOOKUPS_PER_DAY ?? 80),
+  // Autoevolução: habilidades novas e mudanças no próprio código (com backup, testes e rollback).
+  evolutionEnabled: String(process.env.TETOS_EVOLUTION_ENABLED ?? "true").toLowerCase() !== "false",
+  evolutionCodeEnabled: String(process.env.TETOS_EVOLUTION_CODE ?? "true").toLowerCase() !== "false",
+  evolutionPath: process.env.TETOS_EVOLUTION_PATH ?? "./data/evolution",
+  /** Modelo que escreve código (ex.: um modelo de código da nuvem). Vazio = o da mente. */
+  evolutionModel: process.env.TETOS_EVOLUTION_MODEL ?? "",
+  evolutionMaxCodePerDay: Number(process.env.TETOS_EVOLUTION_MAX_PER_DAY ?? 3),
   learningLedgerPath: process.env.LEARNING_LEDGER_PATH ?? "./data/learning-ledger",
   learningFocusPath: process.env.LEARNING_FOCUS_PATH ?? "./data/learningFocus.json",
   behaviorProfilesPath: process.env.BEHAVIOR_PROFILES_PATH ?? "./data/behaviorProfiles.json",

@@ -54,6 +54,11 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
     say: (channelId, text) => conversation.say(channelId, text)
   };
   runtime.discord = api;
+  // A mente avisa no Discord quem pediu algo pra ela (canal onde pediram: "discord:<id>").
+  runtime.mind?.registerSender?.("discord", async ({ chatId, text }) => {
+    if (!api.ready) throw new Error("discord offline");
+    await conversation.say(String(chatId ?? "").replace(/^discord:/, ""), text);
+  });
 
   client.once(Events.ClientReady, async (c) => {
     api.ready = true;

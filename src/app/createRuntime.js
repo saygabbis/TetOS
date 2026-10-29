@@ -56,6 +56,15 @@ import { Logger } from "../infra/observability/logger.js";
 import { MetricsStore } from "../infra/observability/metricsStore.js";
 import { loadCharacter, loadPersonality } from "../core/personality/index.js";
 import { PrivacyAnonymizer } from "../core/privacy/anonymizer.js";
+import { Mind } from "../core/mind/mind.js";
+import { EvolutionEngine } from "../core/evolution/evolutionEngine.js";
+import { OverlayStore } from "../core/evolution/overlayStore.js";
+import { ChangeVerifier } from "../core/evolution/changeVerifier.js";
+import { SkillManager } from "../core/evolution/skillManager.js";
+import { publicFetch } from "../core/evolution/webTool.js";
+import { enqueueOutbox } from "../integrations/whatsapp/conversation/outbox.js";
+import { fileURLToPath } from "node:url";
+import { resolve as resolvePath } from "node:path";
 import { EventLedger } from "../core/learning/eventLedger.js";
 import { BehaviorProfiler } from "../core/learning/behaviorProfiler.js";
 import { FocusConfigStore } from "../core/learning/focusConfigStore.js";
@@ -63,7 +72,7 @@ import { DailyReportGenerator } from "../core/learning/dailyReportGenerator.js";
 import { RelationshipCommitmentStore } from "../core/social/RelationshipCommitmentStore.js";
 import { repairProfileContamination } from "../core/channels/botIdentity.js";
 
-function createLlmClient({ model, temperature, numPredict, worker = false } = {}) {
+function createLlmClient({ model, temperature, numPredict, worker = false, timeoutMs = DEFAULTS.modelTimeoutMs } = {}) {
   if (DEFAULTS.llmProvider === "minimax") {
     return new MiniMaxClient({
       baseUrl: DEFAULTS.minimaxBaseUrl,
@@ -71,7 +80,7 @@ function createLlmClient({ model, temperature, numPredict, worker = false } = {}
       apiKey: DEFAULTS.minimaxApiKey || undefined,
       temperature,
       numPredict,
-      timeoutMs: DEFAULTS.modelTimeoutMs,
+      timeoutMs,
       thinking: worker ? { type: "disabled" } : { type: "disabled" }
     });
   }
@@ -81,7 +90,7 @@ function createLlmClient({ model, temperature, numPredict, worker = false } = {}
     apiKey: DEFAULTS.ollamaApiKey || undefined,
     temperature,
     numPredict,
-    timeoutMs: DEFAULTS.modelTimeoutMs
+    timeoutMs
   });
 }
 
@@ -421,7 +430,76 @@ export function createRuntime() {
     defaults: DEFAULTS
   };
   viewOnceMirror.runtime = runtime;
+  runtime.mind = DEFAULTS.mindEnabled ? createMind(runtime, { searchAdapter, linkReader }) : null;
   return runtime;
+}
+
+/**
+ * Mente + autoevolução. Os ciclos só começam com `runtime.mind.start()` (o runner chama; testes e a
+ * API não), então criar aqui não gasta nada.
+ */
+function createMind(runtime, { searchAdapter, linkReader }) {
+  const mindModel = DEFAULTS.mindModel || (DEFAULTS.llmProvider === "minimax" ? DEFAULTS.minimaxWorkerModel : DEFAULTS.workerLlmModel || DEFAULTS.model);
+  const mindLlm = createLlmClient({ model: mindModel, temperature: 0.3, numPredict: 1800, worker: true, timeoutMs: 120_000 });
+  const search = (q) => searchAdapter.search(q);
+  const notifyOwner = async (text) => {
+    enqueueOutbox(DEFAULTS.whatsappOutboxPath, { to: "dona", text, by: "mente" });
+  };
+  let evolution = null;
+  if (DEFAULTS.evolutionEnabled) {
+    const root = fileURLToPath(new URL("../../", import.meta.url));
+    const evolutionDir = resolvePath(DEFAULTS.evolutionPath);
+    const store = new OverlayStore(root, { dir: evolutionDir });
+    const skills = new SkillManager({
+      dir: resolvePath(evolutionDir, "skills"),
+      tools: {
+        pesquisar: async (q) => (await search(q)).map((r) => ({ titulo: r.title, trecho: r.snippet ?? "", url: r.url })),
+        ler: async (url) => {
+          if (!/^https?:\/\//i.test(String(url))) throw new Error("url inválida");
+          const page = await linkReader?.read?.(String(url));
+          return String(page?.body ?? page?.text ?? page?.title ?? "").slice(0, 3000);
+        },
+        // Qualquer API/página pública (GET/POST com JSON), sem segredo nosso; bloqueia endereço interno.
+        web: (url, opcoes) => publicFetch(url, opcoes)
+      }
+    });
+    const codeLlm = createLlmClient({
+      model: DEFAULTS.evolutionModel || mindModel,
+      temperature: 0.15,
+      numPredict: 6000,
+      worker: true,
+      timeoutMs: 240_000
+    });
+    evolution = new EvolutionEngine({
+      root,
+      dir: evolutionDir,
+      store,
+      verifier: new ChangeVerifier({ root, store, evolutionDir }),
+      skills,
+      llm: codeLlm,
+      notifyOwner,
+      isAsleep: () => runtime.brainOrchestrator?.life?.availability?.()?.mode === "asleep",
+      lastActivityAt: () => runtime.mind?.lastActivityAt ?? 0,
+      codeEnabled: DEFAULTS.evolutionCodeEnabled,
+      maxCodePerDay: DEFAULTS.evolutionMaxCodePerDay
+    });
+  }
+  const mind = new Mind({
+    dir: DEFAULTS.mindPath,
+    llm: mindLlm,
+    search,
+    reader: linkReader,
+    evolution,
+    life: runtime.brainOrchestrator?.life ?? null,
+    notifyOwner,
+    limits: { studyPerDay: DEFAULTS.mindStudyPerDay, lookupsPerDay: DEFAULTS.mindLookupsPerDay }
+  });
+  if (evolution) {
+    evolution.journal = mind.journal;
+    evolution.feel = (feeling, delta, cause) => mind.feelings.feel(feeling, delta, { cause });
+  }
+  if (runtime.brainOrchestrator) runtime.brainOrchestrator.feelings = mind.feelings;
+  return mind;
 }
 
 export async function handleIncomingMessage(runtime, payload = {}) {

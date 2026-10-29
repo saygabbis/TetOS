@@ -1,4 +1,6 @@
 import { detectTone } from "../memory/toneDetector.js";
+import { governActions, governLaughter, readTone } from "../mind/toneReader.js";
+import { recentAssistantTurns } from "../../modules/chat/styleRegulator.js";
 import { extractFacts, extractStyle, isMeaningful, isMessyLaughterMessage, maxConsecutiveKRun } from "../memory/extractor.js";
 import { analyzeInformalTyping } from "../memory/informalTyping.js";
 import { formatLearnedStyleForPrompt, updateLearnedStyle } from "../memory/userStyleLearner.js";
@@ -32,6 +34,7 @@ import {
 } from "../channels/channelTimeline.js";
 import { buildGroupRoster } from "../channels/groupRoster.js";
 import { extractLinks, formatLinksForPrompt } from "../../modules/web/linkReader.js";
+import { formatSearchResults } from "../../modules/web/searchAdapter.js";
 import { detectWeatherQuestion, formatWeatherForPrompt } from "../../modules/web/weather.js";
 import {
   addProfileNicknames,
@@ -125,6 +128,29 @@ function shortTermToHistory(rows, safeUserId, safeSessionId, maxHistory, maxCont
     maxHistory,
     maxContentLength
   );
+}
+
+/** Contexto do tom: mensagens anteriores da pessoa (no grupo, só as dela) e as últimas bolhas da Teto. */
+function toneContextFrom(history, { userId = null, isGroup = false } = {}) {
+  const rows = Array.isArray(history) ? history : [];
+  const recentUserTexts = rows
+    .filter((r) => r?.role === "user" && (!isGroup || !r?.meta?.userId || r.meta.userId === userId))
+    .slice(-12)
+    .map((r) => ({ text: String(r.content ?? ""), ts: Date.parse(r.ts ?? r.meta?.ts ?? r.createdAt ?? "") || null }));
+  const recentAssistantTexts = recentAssistantTurns(rows, 4).map((turn) => turn.join(" "));
+  return { recentUserTexts, recentAssistantTexts };
+}
+
+/** Aplica o tom às respostas (lista de textos com `.actions` opcional). */
+function applyToneToReplies(replies, toneRead) {
+  if (!toneRead) return replies;
+  if (Array.isArray(replies.actions) && replies.actions.length) {
+    const actions = governActions(replies.actions, toneRead);
+    const texts = actions.filter((a) => a?.type === "message").map((a) => a.text);
+    texts.actions = actions;
+    return texts;
+  }
+  return governLaughter(replies, toneRead);
 }
 
 function buildStyleHint(input, tone, existingProfile, normalizedHistory, runtime, safeSessionId) {
@@ -351,6 +377,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
   }
 
   const tone = detectTone(input);
+  // Tom de verdade (crise/triste/irritado/sério/carinho/brincadeira/normal): decide risada e figurinha no código.
+  const toneRead = readTone(input, toneContextFrom(normalizedHistory, { userId: safeUserId, isGroup }));
   const existingProfile = runtime.longTerm.getProfile(safeUserId ?? "default", channelScope);
   const learnedStyle = updateLearnedStyle(existingProfile?.style ?? {}, input);
   const profileWithLearned = { ...existingProfile, style: learnedStyle };
@@ -614,11 +642,38 @@ export async function runMessagePipeline(runtime, payload = {}) {
     };
   }
 
+  // Mente: lições dela, o que estudou, habilidades que criou, decisão sobre pedido pra ela, pesquisa sozinha.
+  let mindTurn = null;
+  if (runtime.mind && !isUiDesktopChannel) {
+    try {
+      mindTurn = await runtime.mind.prepareTurn({
+        input,
+        userId: safeUserId,
+        chatId: safeChannelId,
+        platform,
+        isGroup,
+        isOwner,
+        speakerName: pushName || null,
+        directed: !isGroup || isDirectMention || isReplyToBot || groupAddressKind === "contextual" || isTetosBypass,
+        tone: toneRead,
+        gapMs: gapSinceLastMs,
+        recent: (normalizedHistory ?? []).slice(-6).map((r) => `${r.role === "assistant" ? "Teto" : "pessoa"}: ${String(r.content ?? "").slice(0, 160)}`).join("\n")
+      });
+    } catch (error) {
+      console.warn(`[mente] preparo do turno falhou: ${error?.message ?? error}`);
+    }
+  }
+
   // Busca fora do ar (ex.: 503 do buscador) não derruba a resposta: segue sem resultados e avisa o modelo.
   let searchResult = null;
   let searchFailed = false;
   try {
     searchResult = await runtime.searchModule?.handle?.(input);
+    // Pergunta de fato que ela não sabe: pesquisa sozinha antes de responder.
+    if (!searchResult?.results?.length && mindTurn?.lookup && runtime.searchModule?.isEnabled?.()) {
+      const results = await runtime.searchModule.adapter.search(mindTurn.lookup);
+      if (results?.length) searchResult = { query: mindTurn.lookup, results, auto: true };
+    }
   } catch (error) {
     searchFailed = true;
     runtime.metrics?.increment?.("search.failed");
@@ -630,9 +685,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
   const searchMeta = searchResult?.results?.length
     ? {
         searchQuery: searchResult.query,
-        searchResults: searchResult.results
-          .map((item, index) => `${index + 1}. ${item.title} — ${item.url}`)
-          .join("\n")
+        searchResults: formatSearchResults(searchResult.results)
       }
     : searchFailed
       ? {
@@ -1028,6 +1081,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
       platformNote,
       discordAvailable: Boolean(runtime.discord?.ready),
       attentionLine: runtime.attention?.promptLine?.(platform) ?? null,
+      toneRead,
+      allowThinking: toneRead.kind === "serio" || (isDirectQuestion && String(input).length > 90),
+      mindLines: mindTurn?.lines ?? [],
       peopleMemoryLines:
         runtime.peopleMemory?.promptLines?.(isGroup ? `group:${safeChannelId}` : safeUserId ?? "default", channelScope, {
           name: isGroup ? null : partnerDisplayName,
@@ -1038,6 +1094,21 @@ export async function runMessagePipeline(runtime, payload = {}) {
     normalizedHistory,
     tone
   );
+
+  // Tom no código: assunto sério/triste/crise → sem risada nem figurinha, mesmo que o modelo tenha escapado.
+  if (Array.isArray(replies) && (replies.length || replies.actions?.length)) replies = applyToneToReplies(replies, toneRead);
+  if (runtime.mind && !isUiDesktopChannel) {
+    runtime.mind.recordTurn({
+      chatId: safeChannelId,
+      platform,
+      isGroup,
+      who: pushName || null,
+      input,
+      replies: Array.isArray(replies) ? replies : [],
+      actions: replies?.actions ?? [],
+      toneRead
+    });
+  }
 
   if (!isGroup && Array.isArray(replies) && replies.length) {
     const interlocutorName =
@@ -1266,6 +1337,7 @@ export async function runMessagePipeline(runtime, payload = {}) {
     channelId: safeChannelId,
     input,
     tone,
+    toneRead,
     policy,
     timingPlan,
     groupRoster

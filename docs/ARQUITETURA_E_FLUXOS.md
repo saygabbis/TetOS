@@ -799,6 +799,80 @@ Arquivos: `src/integrations/discord/` (bot, conversa, comandos, mídia, texto, e
 - **Lembretes**: pedido no Discord grava `chatJid: "discord:<canal>"` e é entregue pelo bot do Discord
   (`deliverDueReminders(..., { platform: "discord", send })`); o loop do zap ignora esses.
 
+## Mente e autoevolução
+
+A Teto aprende e muda sozinha. Tudo vive em `src/core/mind/` (mente) e `src/core/evolution/` (código próprio);
+o estado fica em `data/mind/` e `data/evolution/` (fora do git).
+
+- **Tom de cada turno** (`toneReader.js`): crise (falar em se machucar/se matar), triste, irritado, sério, carinho,
+  brincadeira ou normal. Decide **no código** quanto ela pode rir (`none`/`light`/`mirror`) e se pode mandar figurinha;
+  o bloco `[TOM DESTA RESPOSTA]` vai no fim do prompt (antes ia "pode brincar e rir" sempre). Crise gruda por 6 h,
+  tristeza por 45 min. Em crise o prompt pede acolhimento e cita o CVV (188 / cvv.org.br). Depois da resposta,
+  `governActions` tira risada/figurinha que escapou; o regulador de estilo limita a 1 risada por resposta em qualquer canal.
+- **Pensar antes**: em pergunta séria/longa ela pode escrever `pensar("…")` antes de responder — rascunho que não vai pro
+  chat nem pro histórico (`stripThinkCommands`).
+- **Pesquisa**: o buscador agora traz o trecho de cada resultado e o link real. Pergunta de fato (lançamento, preço,
+  quem/quando/onde, nome próprio…) que não é sobre ela nem sobre a pessoa → ela pesquisa sozinha antes de responder
+  (`research.js#lookupQuery`, até 80/dia, 1 a cada 90 s por chat).
+- **Estudo sozinha** (`Mind.studyNext`): a cada ~40 min acordada, pega o próximo tema da agenda (pedido de alguém,
+  revisão dela ou curiosidade própria), busca, lê até 2 páginas e guarda resumo + fatos + fonte em
+  `data/mind/knowledge.json`. Quando a conversa toca no tema, entra `[O QUE VOCÊ JÁ ESTUDOU]` no prompt.
+- **Autorrevisão** (`reflection.js`, a cada ~4 h com 15+ trocas): mede risada, risada em assunto sério, figurinha,
+  tamanho, pergunta no fim e reclamações ("para de rir", "não entendeu"…) e pede ao modelo, como ela mesma, os defeitos
+  com evidência → viram **lições** (`data/mind/lessons.json`, entram como `[SUAS LIÇÕES]`), temas pra estudar e,
+  às vezes, uma habilidade pra criar. Lição reforçada fica mais forte; esquecida enfraquece e se aposenta.
+- **Pedidos pra ela** (`requestJudge.js`): "para de rir tanto", "aprende sobre X", "cria um comando que…" → ela julga
+  (pode recusar) e o que aceita **acontece**: lição na hora, estudo/habilidade/código na agenda. Quem pediu é avisado
+  quando ela termina (PV na hora; em grupo, quando a pessoa falar com ela de novo). Só a dona pode pedir mudança de código.
+- **Habilidades** (`skillManager.js`): programinhas que ela escreve (`habilidade({ nome, async rodar(msg, f) })`)
+  com gatilho regex. Rodam num processo filho com `node --permission` (sem ler/escrever arquivo, sem abrir processo,
+  sem variáveis de ambiente) e só usam as ferramentas que ela entrega (`pesquisar`, `ler`, `lembrar`, `agora`).
+  Só entram no ar se o exemplo rodar isolado; versão anterior fica em `skills/.versions/`; habilidade que falha muito
+  se desliga sozinha.
+- **Código próprio** (`evolutionEngine.js`): erro repetido do sistema (com pilha em arquivo dela) ou pedido da dona →
+  ela escolhe o arquivo, escreve blocos BUSCAR/TROCAR pequenos (máx. 2 arquivos / 140 linhas), passa nas regras de
+  `safety.js` (nada de processo, rede nova, arquivo, `process.env`, segredo, dona, `eval`, import de pacote; arquivos
+  protegidos: evolução, tom/crise, julgamento, config, identidade, runner, conexão, supervisor, testes) e no
+  `changeVerifier.js` (sintaxe, carregar o módulo, bateria `test:brain:all` com e sem a mudança).
+  Aprovada → avisa a dona no zap → aplica quando ela está dormindo e ninguém falou com ela há 10 min (ou `.mente aplicar`).
+- **Camada de cima** (`overlayStore.js` + `overlayHooks.js`, carregada pelo supervisor com `--import overlayRegister.js`):
+  a versão dela de um arquivo fica em `data/evolution/overlay/src/…` e é carregada no lugar da original — o `src/` do
+  repo nunca é tocado, então `git pull`/deploy não conflita. Cada mudança guarda o que valia antes em
+  `data/evolution/backups/<id>/`. Se o deploy muda o original, a versão dela sai do ar sozinha (fica em `stale/`).
+- **Rollback automático**: caiu 2x seguidas (< 2 min) com código próprio no ar → o supervisor sobe em modo seguro
+  (`TETOS_EVOLUTION_SAFE=1`, só código original), ela desfaz a última mudança, avisa e volta. Erro repetido (3x) num
+  arquivo que ela mudou nas últimas 24 h → desfaz e reinicia. Reinício pedido por ela usa `data/evolution/restart.json`.
+- **Sentimentos** (`feelings.js`): o que chega mexe com ela antes de responder — crise da dona → preocupada; xingamento →
+  magoada; reclamação → envergonhada; carinho/elogio → feliz/orgulhosa; zoeira → se divertindo; também orgulho quando
+  aprende/cria algo, frustração quando uma mudança dela falha, tédio sem conversa e saudade quando a dona some. Cada
+  sentimento tem intensidade, motivo e meia-vida; o humor do momento é o da rotina puxado pelos sentimentos fortes
+  (a linha "Humor:" da vida e o `[STATE]` usam esse humor). Toda mudança de humor é registrada com o motivo
+  (`data/mind/feelings.json`). No prompt entra `[COMO VOCÊ ESTÁ SE SENTINDO AGORA]`; motivo vindo do privado de alguém
+  só aparece pra essa pessoa (pros outros: "uma coisa pessoal que me contaram").
+  Ver: `.sentimentos` (PV do zap, qualquer um) / `/sentimentos` — agora, `historico` (mudanças de humor e por quê) ou
+  `<assunto/pessoa>` (como ela reagiu àquilo).
+- **Partes restritas com autorização**: se a melhoria certa mexe em arquivo protegido ou precisa de algo que ela não pode
+  sozinha (rede, processo, segredo…), ela prepara a mudança mesmo assim e manda pra dona no zap o que quer e por quê;
+  nada é testado nem aplicado até `.mente autorizar <id>` (aí passa pelos mesmos testes/backup/rollback). `.mente ver
+  <id>` mostra o que sai/entra; `.mente recusar <id> [motivo]`. O que nem com autorização dá (fora de `src/`, pacote novo,
+  chave de API, arquivo que carrega antes da camada) vira **pedido** explicado pra dona fazer na mão; quando ela autoriza
+  o pedido, a tarefa volta pra agenda. A autorrevisão também pode propor 1 melhoria de código e 1 pedido por vez.
+- **Conexões**: habilidades têm `f.web(url, { metodo, corpo, cabecalhos })` — qualquer API/página pública (GET/POST JSON),
+  sem segredo nosso, bloqueando endereço interno (inclusive em redirecionamento), até 300 KB / 10 s (`webTool.js`).
+  A dona é avisada de cada habilidade nova e de onde ela se conecta.
+- **Pelo servidor**: `node scripts/evolucao.js <comando>` (status, pedidos, autorizar, testar, aplicar, desfazer…) fala
+  com a Teto no ar via `data/evolution/inbox/` — vale como comando da dona.
+- **Teste do ciclo**: `npm run test:evolution:cycle` sobe o supervisor de verdade com um runner de mentira (sem zap):
+  mudança aprovada → reinício pedido por ela → versão dela carregada → mudança que quebra → 2 quedas → modo seguro →
+  ela desfaz e volta com a boa. Em produção: `node scripts/evolucao.js testar` (mudança de verdade com linha de log) →
+  aplica quando ela dormir (ou `aplicar`) → procurar "teste de ciclo" no log → `desfazer <id>`.
+- **Comandos da dona**: `.mente` no PV do zap ou `/mente` no Discord — `status`, `estudar <tema>`, `licoes`,
+  `esquecer <id>`, `refletir`, `humor`, `pedidos`, `ver <id>`, `autorizar <id>`, `recusar <id>`, `aplicar`,
+  `desfazer <id>` (mudança ou habilidade), `testar`, `pausar`, `retomar`.
+- **Variáveis**: `TETOS_MIND_ENABLED`, `TETOS_MIND_MODEL`, `TETOS_MIND_STUDY_PER_DAY`, `TETOS_MIND_LOOKUPS_PER_DAY`,
+  `TETOS_EVOLUTION_ENABLED`, `TETOS_EVOLUTION_CODE`, `TETOS_EVOLUTION_MODEL` (ex.: um modelo de código da nuvem),
+  `TETOS_EVOLUTION_MAX_PER_DAY`.
+
 ## Resumo das Decisões Mais Importantes
 
 | Pergunta | Quem decide | Resultado |

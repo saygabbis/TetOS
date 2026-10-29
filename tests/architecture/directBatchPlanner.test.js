@@ -152,31 +152,30 @@ describe("formatMediaInputText", () => {
 });
 
 describe("timingChecks media hint", () => {
-  it("does not add +1200 read delay when the turn has no media", () => {
+  // A semente dos sorteios (micro_pause etc.) muda com o dia: compara com o mesmo turno sem a dica,
+  // em vez de um número fixo (o teste falhava nos dias em que o sorteio saía).
+  const readDelay = (ctx) => {
     const plan = { readDelayMs: 400, thinkDelayMs: 1200, typingProfile: "normal" };
     const reasons = [];
-    applyExtendedChecks(
-      plan,
-      { hourOfDay: 10, mediaTimingHint: { readDelayBoost: 1200, note: "media_timing_hint" } },
-      reasons
-    );
-    expect(plan.readDelayMs).toBe(400);
-    expect(reasons).not.toContain("media_timing_hint");
+    applyExtendedChecks(plan, ctx, reasons);
+    return { readDelayMs: plan.readDelayMs, reasons };
+  };
+
+  it("does not add +1200 read delay when the turn has no media", () => {
+    const base = readDelay({ hourOfDay: 10 });
+    const withHint = readDelay({ hourOfDay: 10, mediaTimingHint: { readDelayBoost: 1200, note: "media_timing_hint" } });
+    expect(withHint.readDelayMs).toBe(base.readDelayMs);
+    expect(withHint.reasons).not.toContain("media_timing_hint");
   });
 
   it("adds the hint only when ctx.media is present", () => {
-    const plan = { readDelayMs: 400, thinkDelayMs: 1200, typingProfile: "normal" };
-    const reasons = [];
-    applyExtendedChecks(
-      plan,
-      {
-        hourOfDay: 10,
-        media: { type: "image" },
-        mediaTimingHint: { readDelayBoost: 1200, note: "media_timing_hint" }
-      },
-      reasons
-    );
-    expect(plan.readDelayMs).toBe(1600);
-    expect(reasons).toContain("media_timing_hint");
+    const base = readDelay({ hourOfDay: 10, media: { type: "image" } });
+    const withHint = readDelay({
+      hourOfDay: 10,
+      media: { type: "image" },
+      mediaTimingHint: { readDelayBoost: 1200, note: "media_timing_hint" }
+    });
+    expect(withHint.readDelayMs).toBe(base.readDelayMs + 1200);
+    expect(withHint.reasons).toContain("media_timing_hint");
   });
 });

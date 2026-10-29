@@ -32,6 +32,12 @@ A TetOS cobre hoje:
 - Discord no mesmo processo (`DISCORD_BOT_TOKEN`): conversa marcando/dando reply (ou com `/teto conversar` no canal),
   comandos `/` portados do zap + novos, contas vinculadas ao zap (`/vincular`) e uma conversa por vez entre os dois apps.
   Detalhes em `docs/ARQUITETURA_E_FLUXOS.md#discord`.
+- Mente própria: lê o tom (crise/triste/sério… sem risada fora de hora), pesquisa sozinha quando não sabe, estuda temas
+  por conta própria, revisa as próprias conversas e escreve lições pra si, julga pedidos (e cumpre o que aceita), cria
+  habilidades isoladas (que se conectam em APIs públicas) e muda o próprio código com testes, backup e rollback
+  automático; parte restrita ela pede autorização pra dona. Tem sentimentos com motivo e histórico de humor.
+  `.mente` / `/mente` pra dona, `.sentimentos` / `/sentimentos` pra qualquer um.
+  Detalhes em `docs/ARQUITETURA_E_FLUXOS.md#mente-e-autoevolução`.
 
 ## Pré-requisitos
 

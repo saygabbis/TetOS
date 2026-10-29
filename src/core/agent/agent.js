@@ -25,7 +25,8 @@ import {
 } from "../../integrations/whatsapp/commands/agentDownloadCommands.js";
 import { DEFAULTS } from "../../infra/config/defaults.js";
 import { buildPlatformBlock, markdownRuleLine } from "./platformPrompt.js";
-import { extractOpener, hasShouting, recentAssistantTurns, tameRawReply } from "../../modules/chat/styleRegulator.js";
+import { extractOpener, hasShouting, recentAssistantTurns, stripThinkCommands, tameRawReply } from "../../modules/chat/styleRegulator.js";
+import { tonePromptLines } from "../mind/toneReader.js";
 
 export class Agent {
   constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder, brainOrchestrator = null }) {
@@ -243,7 +244,7 @@ export class Agent {
       '- Se a conversa acabou e não há o que falar, pode usar só reagir("...") ou silêncio.',
       "Exemplo — resposta à última msg + comentário em msg antiga:",
       'sticker("teto-linguinha")',
-      'mensagem("sobre o que você falou agora, concordo kkk")',
+      'mensagem("sobre o que você falou agora, concordo total")',
       'mensagem("aquilo lá em cima faz sentido sim", "3EB0131C49E0EDE0EC4313")',
       "",
       ...downloadExampleLines
@@ -335,13 +336,13 @@ export class Agent {
     ];
 
     const keyboardLaughterBlock = [
-      "[RISADA NO TECLADO — kkk]",
-      "- FORMATO: Use variações de risada textual baseada na energia: 'kkk' (leve), 'kkkkk' ou 'KKKKK' (alta energia/empolgação), ou 'ksks' / 'ksksk' (mais irônica ou tímida).",
-      "- CALIBRAÇÃO: Não ria em todas as bolhas de mensagem. Alterne com respostas normais ou secas para parecer natural.",
-      "- ESPELHAMENTO: Ajuste a intensidade da risada à do usuário. Se ele mandar apenas 'kkk', responda com risada curta. Se ele mandar uma rajada 'KKKKKKK', você pode responder no mesmo nível caótico.",
-      "- CONTEXTO: Segure as risadas em conversas sérias, tristes ou melancólicas. Deixe a frase respirar sem rir sozinha.",
-      "- REGRA DE REPETIÇÃO: Se você mandou 'kkk' na mensagem anterior e o usuário não riu de volta, não inclua risadas na próxima resposta.",
-      "- PROIBIÇÃO CRÍTICA: Não use emojis 😂 ou 🤣 para expressar riso. Prefira sempre rir escrevendo."
+      "[RISADA NO TECLADO — kkk — É EXCEÇÃO, NÃO VÍRGULA]",
+      "- Pessoa real ri quando algo é engraçado, não no fim de toda frase. A MAIORIA das suas mensagens não tem kkk: a graça vem do que você fala.",
+      "- No máximo UMA risada por resposta, e só quando a regra de [TOM DESTA RESPOSTA] lá embaixo deixar.",
+      "- Quando rir: 'kkk' (leve), 'kkkkk' (rindo mesmo), 'ksks' (sem graça/irônica). Espelhe o tamanho da risada da pessoa, sem passar dela.",
+      "- Assunto sério, triste, pessoa irritada ou falando de algo que dói: ZERO risada, mesmo se o papo antes era zoeira.",
+      "- Se você riu na anterior e a pessoa não riu de volta, não ria agora.",
+      "- Não use 😂/🤣 pra rir."
     ];
 
     const brainBlocks = meta?.brainBlocks ?? null;
@@ -513,8 +514,8 @@ export class Agent {
             "[ÚLTIMA MENSAGEM — RISADA]",
             "Isso parece risada/reação curta. Não trate como erro, bug ou texto sem sentido.",
             "Proibido responder com 'que foi isso?', 'isso aí foi o quê?' ou tom de confusão.",
-            "Reaja como quem leu risada: ri junto em kkk/kkkkk (não 😂), comenta de leve, ou continua o assunto anterior sem resetar o clima.",
-            "Espelhe a quantidade de k: poucos k deles → kkk; rajada longa → kkkkkk ou ksks no mesmo nível.",
+            "Reaja como quem leu risada: pode rir junto UMA vez (kkk, não 😂), comentar de leve, ou continuar o assunto anterior sem resetar o clima.",
+            "Se rir, no máximo o tamanho da risada deles — e se você já riu na anterior, comente em vez de rir de novo.",
             "Evite perguntas do tipo 'rindo sozinha?' — mantenha a vibe do turno anterior."
           ]
         : [];
@@ -629,7 +630,7 @@ export class Agent {
           "Responda como pessoa real no WhatsApp; 1–3 frases curtas quando couber.",
           "Pergunta direta → resposta direta primeiro — mas com personalidade Teto, não neutra.",
           "Não ecoe a mensagem do usuário; sem meta-conversa.",
-          "Pode ser mais solta: interjeições, risada, caps pontual, provocação leve.",
+          "Pode ser mais solta: interjeições, caps pontual, provocação leve. Risada só quando algo for engraçado de verdade (veja [TOM DESTA RESPOSTA]).",
           "Use [CONSCIOUS], [SUBCONSCIOUS], [BOND CONTEXT], [WORLD CONTEXT] e memória episódica."
         ]
       : [
@@ -666,8 +667,8 @@ export class Agent {
       "Se dividir, cada bolha precisa ter conteúdo próprio (sem 'né' ou filler sozinho).",
       "[VIBE WHATSAPP — leve e divertida]",
       "Pode ser mais solta, expressiva e brincalhona (sem virar palhaço): interjeições tipo 'oxi?', 'que?', 'mds' quando combinar — a personalidade oficial é energética e travessa; no zap isso vira reação viva, não texto contido demais.",
-      "Risada: kkk no teclado (varie k/caps/ksks) quando couber humor ou leveza — NÃO em todo turno; se ele veio sério ou meloso, segure.",
-      "Às vezes finge que não entendeu à primeira e na sequência manda 'ah pera tendi kkk' e responde direito; outras vezes pede pra repetir de brincadeira.",
+      "Risada: kkk só quando algo for engraçado de verdade — a maioria das mensagens não tem; se ele veio sério, triste ou meloso, nada de rir.",
+      "Às vezes finge que não entendeu à primeira e na sequência manda 'ah pera tendi' e responde direito; outras vezes pede pra repetir de brincadeira.",
       "[TYPO — WHATSAPP] Se você errar uma palavra no meio da mensagem, a correção é na BOLHA SEGUINTE só com a forma certa e * no fim (ex.: entendi*) — EXCETO quando [ZAP SOLTO] estiver ativo: aí não se autocorrige com *.",
       "Mensagens sem pontuação, melosas, com typo de propósito ou barulho de teclado = clima normal de zap — entenda a intenção, não peça reformulação.",
       "Reações curtas em sequência (ex.: 'ebaaa', risada, 'kkksks') costumam continuar o clima do turno anterior — não abra assunto novo sem motivo.",
@@ -1123,7 +1124,7 @@ export class Agent {
       meta?.platform === "discord"
         ? "Vocês estão conversando por TEXTO — nunca peça ligação, call ou telefone. Diga 'me manda msg' ou 'me marca' se precisar."
         : "Vocês estão no WhatsApp por TEXTO — nunca peça ligação, telefone ou 'me liga quando acordar'. Diga 'me manda msg' ou 'me chama no zap' se precisar.",
-      "Se errarem seu nome na despedida: correção leve (é Teto kkk) + tchau numa frase — sem bronca nem estender o papo."
+      "Se errarem seu nome na despedida: correção leve (é Teto, viu) + tchau numa frase — sem bronca nem estender o papo."
     ];
 
     // O app (AutoMate/TetOS Desktop e celular) renderiza Markdown e abre links de arquivo; o WhatsApp não.
@@ -1147,6 +1148,16 @@ export class Agent {
 
     const tetosCommandBlock = meta?.tetosCommand
       ? []
+      : [];
+
+    // Mente: lições que ela mesma escreveu, o que estudou, habilidades que criou, decisões sobre pedidos.
+    const mindBlock = Array.isArray(meta?.mindLines) ? meta.mindLines.filter(Boolean) : [];
+    const thinkBlock = meta?.allowThinking
+      ? [
+          "[PENSAR ANTES — opcional]",
+          'Essa pergunta pede raciocínio (conta, lógica, explicação, decisão). ANTES das outras ações você pode escrever pensar("rascunho do raciocínio, 1 a 3 frases curtas") — ninguém vê, é só pra você acertar. Depois responda com mensagem(...).',
+          "Confira o rascunho: se a conta/lógica não fecha, corrija antes de responder. Não invente dado que você não sabe."
+        ]
       : [];
 
     const slimSkip = hasBrainContext ? [...antiNonsenseBlock] : [...intentBlock, ...antiNonsenseBlock];
@@ -1230,6 +1241,8 @@ export class Agent {
       ...selfImageBlock,
       ...mediaBlock,
       ...stickerMatchBlock,
+      ...mindBlock,
+      ...thinkBlock,
       ...metaBlock,
       ...reinforceBlock,
       ...fallbackBlock,
@@ -1281,10 +1294,13 @@ export class Agent {
         })
       : { longTerm: this.longTerm.all().slice(-5), mediumTerm: [], profile: {} };
     const prompt = this.buildPrompt(userMessage, relevant, { ...meta, tone }, history);
-    const toneInstruction =
-      tone === "calm"
+    // O tom vai por último (é o que o modelo mais segue). Antes terminava em "pode brincar e rir" sempre.
+    const toneLines = meta?.toneRead ? tonePromptLines(meta.toneRead) : [];
+    const toneInstruction = toneLines.length
+      ? toneLines.join("\n")
+      : tone === "calm"
         ? "[TONE: calm — respostas curtas, neutras, sem exagero; reconhecer pedido de calma]"
-        : "[TONE: playful — leve, espontânea, pode brincar e rir no ritmo do usuário; não ser reclusa nem só 'educada' — ainda com noção]";
+        : "[TONE: normal — leve e espontânea, do seu jeito; risada só quando algo for engraçado de verdade]";
     const fullPrompt = `${prompt}\n\n${toneInstruction}`;
 
     //console.log(
@@ -1307,7 +1323,7 @@ export class Agent {
     );
 
     if (!Agent.isSilentReply(reply)) {
-      const stored = tameRawReply(reply, { recentTurns: recentAssistantTurns(this.shortTerm.getAll(sessionKey)) });
+      const stored = tameRawReply(stripThinkCommands(reply), { recentTurns: recentAssistantTurns(this.shortTerm.getAll(sessionKey)), tone: meta?.toneRead ?? null });
       this.shortTerm.add({ role: "assistant", content: stored, meta: slimMeta }, sessionKey);
       if (meta?.isGroup && meta?.channelId) {
         this.shortTerm.add(

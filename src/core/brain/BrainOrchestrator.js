@@ -98,12 +98,15 @@ export class BrainOrchestrator {
   emotionSnapshot() {
     const base = this.emotion.getSnapshot();
     const day = this.life.mood();
+    // Sentimentos das conversas (mente) puxam o humor da rotina: preocupada, magoada, orgulhosa…
+    const felt = this.feelings?.mood?.() ?? null;
     return {
       ...base,
-      mood: day.mood,
+      mood: felt?.label ?? day.mood,
       energy: day.energy,
       social: day.social,
-      valence: day.valence,
+      valence: felt?.valence ?? day.valence,
+      feelings: felt?.feelings?.slice(0, 3).map((f) => ({ name: f.name, level: Math.round(f.level * 100) / 100 })) ?? [],
       body: undefined
     };
   }
@@ -270,8 +273,13 @@ export class BrainOrchestrator {
 
     // Narrador determinístico: a vida vem do plano do dia (o narrador por LLM inventava coisas que
     // não ficavam salvas e custava uma chamada extra por mensagem).
+    // A linha "Humor:" da rotina passa a ser o humor sentido (motivos vêm no bloco da mente).
+    const felt = this.feelings?.mood?.() ?? null;
+    const lifeLines = this.life
+      .promptLines({ isGroup: Boolean(turnContext.isGroup) })
+      .map((line) => (felt?.fromFeeling && line.startsWith("Humor:") ? `Humor: ${felt.label}.` : line));
     const blocks = {
-      conscious: this.life.promptLines({ isGroup: Boolean(turnContext.isGroup) }).join("\n"),
+      conscious: lifeLines.join("\n"),
       subconscious: this.narrator.buildSubconscious(snapshot),
       source: "daily_life_v2"
     };

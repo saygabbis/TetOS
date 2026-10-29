@@ -39,3 +39,7 @@ data/identityLinks.json
 data/life/inbox-discord.json
 data/media/discord/
 data/logs/discord/
+
+# Mente e autoevolução da Teto (estudos, lições, agenda, código próprio, backups) — runtime, nunca versionar
+data/mind/
+data/evolution/

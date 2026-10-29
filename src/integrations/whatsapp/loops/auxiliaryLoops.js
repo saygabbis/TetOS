@@ -48,6 +48,15 @@ async function deliverOutbox(runtime) {
 }
 
 export function scheduleAuxiliaryLoops(runtime, getSocket, getConnected) {
+  // A mente avisa no PV quem pediu algo pra ela (estudo/habilidade pronta).
+  runtime.mind?.registerSender?.("whatsapp", async ({ chatId, userId, text }) => {
+    if (!getConnected() || !runtime.waOrchestrator?.sendProactive || !String(chatId ?? "").includes("@")) throw new Error("zap offline");
+    const sessionId = `wa-dm:${chatId}`;
+    const ok = await runtime.waOrchestrator.sendProactive({ remoteJid: chatId, userId: userId ?? dmUserId(chatId), sessionId, texts: [text] });
+    if (!ok) throw new Error("envio interrompido");
+    runtime.shortTerm?.add?.({ role: "assistant", content: `mensagem(${JSON.stringify(text)})` }, sessionId);
+  });
+
   // Vida: avisa quando ela acorda/volta (entrega o que ficou pra depois). Barato — só consulta o plano do dia.
   if (runtime.brainOrchestrator?.life?.tick) {
     setInterval(() => {

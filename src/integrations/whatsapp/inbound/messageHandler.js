@@ -1010,6 +1010,25 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           continue;
         }
 
+        // Mente dela (só a dona, no PV): .mente, .mente estudar X, .mente desfazer <id>, .mente pausar…
+        const prefixRe = new RegExp(`^\\${commandPrefix}mente(?:\\s+([\\s\\S]*))?$`, "i");
+        const mindCmd = !isFromMe && !isGroup && (role !== "media" || botChatRole) && runtime.mind ? String(text ?? "").trim().match(prefixRe) : null;
+        if (mindCmd) {
+          const reply = await runtime.mind.command(mindCmd[1] ?? "", { isOwner: isOwnerContact(runtime, remoteJid, userId), userId });
+          await safeSendMessage(remoteJid, { text: reply });
+          finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+          continue;
+        }
+        // Como ela tá se sentindo (qualquer um, no PV): .sentimentos, .sentimentos historico, .sentimentos <assunto>
+        const feelRe = new RegExp(`^\\${commandPrefix}sentimentos?(?:\\s+([\\s\\S]*))?$`, "i");
+        const feelCmd = !isFromMe && !isGroup && (role !== "media" || botChatRole) && runtime.mind?.feelings ? String(text ?? "").trim().match(feelRe) : null;
+        if (feelCmd) {
+          const reply = runtime.mind.feelings.report(feelCmd[1] ?? "", { viewerUserId: userId, isOwner: isOwnerContact(runtime, remoteJid, userId) });
+          await safeSendMessage(remoteJid, { text: reply });
+          finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+          continue;
+        }
+
         if (parsedCommand?.command === "help") {
           if (role === "media" || role === "full") {
             await socket.sendMessage(remoteJid, {

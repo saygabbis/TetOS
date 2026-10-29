@@ -16,12 +16,12 @@ describe("regulador de estilo", () => {
   });
 
   it("deixa só um trecho curto em CAPS por resposta", () => {
-    expect(run(["MENTIRA!! KKKKKKK", "MEU DEUS GABBIS!!!", "conta"])).toEqual(["MENTIRA!! KKKKKKK", "meu deus gabbis!!", "conta"]);
+    expect(run(["MENTIRA!! KKKKKKK", "MEU DEUS GABBIS!!!", "conta"])).toEqual(["MENTIRA!! KKKKKK", "meu deus gabbis!!", "conta"]);
   });
 
   it("frase inteira gritando vira minúscula; risada e sigla ficam", () => {
     expect(run(["EU TO MUITO FELIZ HOJE kkkk"])).toEqual(["eu to muito feliz hoje kkkk"]);
-    expect(run(["KKKKKKKKKKK"])).toEqual(["KKKKKKKKKKK"]);
+    expect(run(["KKKKKKKKKKK"])).toEqual(["KKKKKK"]); // risada longa é cortada em 6
     expect(run(["vou no evento de UTAU com a Miku"])).toEqual(["vou no evento de UTAU com a Miku"]);
   });
 
