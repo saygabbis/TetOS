@@ -12,7 +12,8 @@ const speakerLabel = (e = {}) => e.pushName || e.userId || "alguém";
 /** Só o que dá pra salvar em JSON (promessas e buffers ficam de fora). */
 function serializable(entry = {}) {
   const { mediaVisionPromise, ...rest } = entry;
-  return JSON.parse(JSON.stringify(rest, (k, v) => (v && v.type === "Buffer" ? undefined : v)));
+  // Promessa vira "{}" no JSON — e depois era esperada como se fosse a descrição da figurinha ("[object Object]").
+  return JSON.parse(JSON.stringify(rest, (k, v) => (v && (v.type === "Buffer" || typeof v.then === "function") ? undefined : v)));
 }
 
 export class DeferredInbox {
@@ -35,6 +36,23 @@ export class DeferredInbox {
     if (row.entries.length > MAX_PER_SESSION) row.entries = row.entries.slice(-MAX_PER_SESSION);
     this.save();
     return row.entries.length;
+  }
+
+  /**
+   * A descrição da mídia (visão) chegou enquanto a mensagem estava guardada: atualiza a mensagem
+   * guardada ("[sticker]" vira a descrição) pra ela ver a figurinha quando pegar o celular.
+   */
+  updateMedia(messageId, description) {
+    if (!messageId || typeof description !== "string" || !description.trim()) return false;
+    for (const row of Object.values(this.data.sessions)) {
+      const entry = row.entries?.find((e) => e?.messageKey?.id === messageId);
+      if (!entry?.media) continue;
+      entry.media = { ...entry.media, transcript: description, visionAttempted: true, visionStatus: "ok" };
+      if (/^\[[^\]]+\]$/.test(String(entry.message ?? "").trim())) entry.message = description;
+      this.save();
+      return true;
+    }
+    return false;
   }
 
   peekCount(sessionId) {

@@ -129,6 +129,31 @@ export function checkSkillCode(code = "") {
   return { ok: problems.length === 0, problems };
 }
 
+// Frases de crise: habilidade nenhuma pode disparar nelas (quem cuida disso é o tom/acolhimento).
+const CRISIS_SAMPLES = ["quero me matar", "vou me matar", "tô morrendo", "estou morrendo", "socorro", "socorro me ajuda", "me ajuda por favor", "não aguento mais", "quero morrer", "me cortei", "me tira daqui"];
+// Papo comum: gatilho que pega qualquer uma dessas é genérico demais (rodaria em qualquer conversa).
+const ORDINARY_SAMPLES = [
+  "oi", "oi teto tudo bem?", "bom dia", "boa noite", "olha isso", "kkkkkk", "me ajuda com uma coisa", "o que você tá fazendo?",
+  "tô com fome", "vamos jogar?", "que fofa", "manda uma figurinha", "você viu isso?", "tô cansada", "hoje foi um dia longo",
+  "alguém aí?", "e aí, beleza?", "que isso mds", "tá bom", "obrigada", "te amo", "qual seu nome?", "vou dormir", "acordei agora",
+  "saudade de você", "ajuda aqui", "não entendi", "olha essa foto", "vamos conversar", "sério isso?"
+];
+
+/**
+ * Problemas de um gatilho de habilidade (vazio = ok). `corpus` = mensagens reais recentes: gatilho que
+ * pegaria mais de 5% delas é genérico demais.
+ */
+export function triggerProblems(pattern = "", corpus = []) {
+  const re = safeTrigger(pattern);
+  if (!re) return ["gatilho inválido ou que pode travar"];
+  if (String(pattern).replace(/\\[a-z]/gi, "").replace(/[^\p{L}\p{N}]/gu, "").length < 4) return ["gatilho curto demais"];
+  if (CRISIS_SAMPLES.some((s) => re.test(s))) return ["gatilho pega mensagem de crise (isso é do acolhimento, não de habilidade)"];
+  if (ORDINARY_SAMPLES.some((s) => re.test(s))) return ["gatilho genérico demais (pega papo comum)"];
+  const sample = corpus.filter((s) => typeof s === "string" && s.trim()).slice(-200);
+  if (sample.length >= 30 && sample.filter((s) => re.test(s)).length / sample.length > 0.05) return ["gatilho genérico demais (pegaria muitas conversas reais)"];
+  return [];
+}
+
 /** Gatilho (regex em texto) seguro: curto e sem quantificador aninhado (evita travar a Teto). */
 export function safeTrigger(pattern = "") {
   const p = String(pattern ?? "");

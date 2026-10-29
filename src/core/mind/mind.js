@@ -9,6 +9,9 @@ import { askModel, clip, parseJsonLoose } from "./mindText.js";
 import { appraise, FeelingEngine } from "./feelings.js";
 import { stackFiles } from "../evolution/codePatcher.js";
 import { isEditablePath } from "../evolution/safety.js";
+import { readJson, writeJsonDeferred } from "../../infra/utils/fileStore.js";
+
+const NOTICE_LEVELS = { tudo: "tudo", todos: "tudo", on: "tudo", ligar: "tudo", importante: "importante", importantes: "importante", nada: "nada", off: "nada", desligar: "nada" };
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
@@ -64,6 +67,21 @@ export class Mind {
     this.errors = new Map();
     this.busy = false;
     this.timer = null;
+    // Preferências da dona. avisos: "tudo" (conta tudo que cria/muda), "importante" (só o que precisa
+    // dela ou deu problema) ou "nada" (fica tudo em .mente / diário).
+    this.settingsPath = p("settings.json");
+    this.settings = { avisos: "importante", ...(this.settingsPath ? readJson(this.settingsPath, {}) : {}) };
+  }
+
+  setSetting(key, value) {
+    this.settings[key] = value;
+    if (this.settingsPath) writeJsonDeferred(this.settingsPath, this.settings);
+  }
+
+  /** Esse tipo de aviso pra dona deve sair? kind: "info" | "decisao" | "alerta". */
+  shouldNotify(kind = "info") {
+    const level = this.settings.avisos ?? "importante";
+    return level === "tudo" || (level === "importante" && kind !== "info");
   }
 
   registerSender(platform, fn) {
@@ -446,13 +464,13 @@ export class Mind {
       if (waiting.length) lines.push(`🙋 esperando você (${waiting.length}): ${waiting.map((p) => `${p.id} ${clip(p.title, 50)}`).join(" | ")}`);
       lines.push(
         `habilidades: ${evo.skills.length ? evo.skills.map((s) => `${s.name}${s.enabled ? "" : " (desligada)"}`).join(", ") : "nenhuma ainda"}`,
-        `código: ${evo.paused ? "PAUSADO" : evo.codeEnabled ? "liberado" : "desligado"}${evo.active.length ? ` · ${evo.active.length} arquivo(s) meus no ar` : ""}`,
+        `código: ${evo.paused ? "PAUSADO" : evo.codeEnabled ? "liberado" : "desligado"}${evo.active.length ? ` · ${evo.active.length} arquivo(s) meus no ar` : ""} · avisos: ${this.settings.avisos}`,
         ...evo.changes.slice(0, 5).map((c) => `  • ${c.id} [${c.status}] ${clip(c.reason, 80)}`)
       );
     }
     const last = this.journal.tail(4);
     if (last.length) lines.push("últimas coisas:", ...last.map((r) => `  • ${clip(r.text, 110)}`));
-    lines.push("comandos: .sentimentos · .mente estudar <tema> · licoes · esquecer <id> · refletir · pedidos · ver <id> · autorizar <id> · recusar <id> · aplicar · desfazer <id> · testar · pausar · retomar");
+    lines.push("comandos: .sentimentos · .mente estudar <tema> · licoes · esquecer <id> · refletir · pedidos · ver <id> · autorizar <id> · recusar <id> · aplicar · desfazer <id> · testar · avisos · pausar · retomar");
     return lines.join("\n");
   }
 
@@ -526,6 +544,13 @@ export class Mind {
           .then((r) => this.journal.write("teste-ciclo", r.ok ? `teste do ciclo aprovado (${r.changeId}) — aplico no próximo reinício` : `teste do ciclo falhou: ${r.error}`))
           .catch((e) => this.journal.write("teste-ciclo", `teste do ciclo deu erro: ${e?.message ?? e}`));
         return "começando o teste do ciclo: preparo uma mudança de verdade, rodo os testes (uns minutos) e ela entra no próximo reinício (quando eu dormir, ou .mente aplicar)";
+      }
+      case "avisos": {
+        const level = NOTICE_LEVELS[arg.toLowerCase()];
+        if (!arg) return `avisos agora: ${this.settings.avisos} — tudo = conto tudo que crio/mudo · importante = só o que precisa de você ou deu problema · nada = fico quieta (tá tudo em .mente)`;
+        if (!level) return "use: .mente avisos tudo | importante | nada";
+        this.setSetting("avisos", level);
+        return `ok — avisos: ${level}${level === "nada" ? " (o que eu precisar de você fica em .mente pedidos)" : ""}`;
       }
       case "pausar":
         this.evolution?.setPaused?.(true);

@@ -127,6 +127,7 @@ export function buildReflectionPrompt({ metrics, sample = [], lessons = [], erro
     ' "pedir_dona":{"o_que":"algo que só a Gabbis pode fazer (chave de API, conta, instalar algo, configuração)","porque":"..."} ou null,',
     ' "humor":"uma frase sua sobre como você se sente com isso"}',
     "Regras: no máximo 4 defeitos (só os reais, com evidência), no máximo 3 temas, no máximo 1 habilidade, 1 melhoria de código e 1 pedido. Lição é comportamento concreto (ex.: 'Em desabafo, não ria nem mande figurinha'), não frase vaga ('seja melhor'). Nunca coloque dado pessoal de ninguém.",
+    "Habilidade: só pra algo que precisa de dado atual, cálculo ou API (cotação, clima, conversão…) — nunca pra ler tom/sentimento/intenção (isso você já faz).",
     "Melhoria de código: só se você viu um defeito que é do sistema (erro, algo que você não consegue fazer, lentidão), não de jeito de falar (isso é lição). Se mexer em parte protegida, você vai pedir autorização pra Gabbis."
   ]
     .filter((l) => l !== "")

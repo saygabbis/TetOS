@@ -118,7 +118,8 @@ try {
   conv.deliverDue();
   assert((await sentCount(before + 1)) === before + 1, "pegou o celular: responde o que ficou guardado");
   const caughtPrompt = prompts.at(-1);
-  assert(/\[VOCÊ SÓ VIU AGORA\][\s\S]*gravando um cover/.test(caughtPrompt), "prompt diz o que ela estava fazendo");
+  // Guardou só uns segundos: não teve demora, então nada de "vi agora, tava gravando".
+  assert(/\[RESPONDENDO NA HORA\][\s\S]*gravando um cover[\s\S]*NÃO houve demora/.test(caughtPrompt), "prompt sabe que ela viu logo (sem desculpa por demora)");
   assert(!/Enquanto você dormia/.test(caughtPrompt), "ocupada não é dormindo");
   assert(/tá aí\?\nresponde quando der/.test(caughtPrompt), "as duas mensagens viram um turno só");
 

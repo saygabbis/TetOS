@@ -2,7 +2,7 @@ import { fork } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkSkillCode, safeTrigger } from "./safety.js";
+import { checkSkillCode, safeTrigger, triggerProblems } from "./safety.js";
 
 const RUNNER = fileURLToPath(new URL("./skillRunner.js", import.meta.url));
 const RUN_TIMEOUT_MS = 12_000;
@@ -29,11 +29,12 @@ function writeAtomic(p, text) {
  * no prompt. Entram no ar sem reiniciar; cada versão anterior fica guardada.
  */
 export class SkillManager {
-  constructor({ dir = "./data/evolution/skills", tools = {}, now = () => Date.now(), log = console } = {}) {
+  constructor({ dir = "./data/evolution/skills", tools = {}, now = () => Date.now(), log = console, corpus = () => [] } = {}) {
     this.dir = dir;
     this.tools = tools; // { pesquisar(q), ler(url) }
     this.now = now;
     this.log = log;
+    this.corpus = corpus; // mensagens reais recentes (pra recusar gatilho genérico demais)
     this.indexPath = join(dir, "index.json");
     this.index = this.readIndex();
   }
@@ -182,8 +183,10 @@ export class SkillManager {
     const slug = slugify(name);
     const check = checkSkillCode(code);
     const problems = [...check.problems];
-    const okTriggers = triggers.map(String).filter((p) => safeTrigger(p));
-    if (!okTriggers.length) problems.push("nenhum gatilho válido");
+    const corpus = this.corpus?.() ?? [];
+    const checked = triggers.map(String).map((p) => ({ p, issues: triggerProblems(p, corpus) }));
+    const okTriggers = checked.filter((c) => !c.issues.length).map((c) => c.p);
+    if (!okTriggers.length) problems.push(`nenhum gatilho bom: ${[...new Set(checked.flatMap((c) => c.issues))].join("; ") || "nenhum gatilho"}`);
     if (example && okTriggers.length && !okTriggers.some((p) => safeTrigger(p).test(example))) problems.push("o exemplo não aciona o gatilho");
     if (problems.length) return { ok: false, slug, problems };
     const trial = await this.run(slug, { texto: example || name, plataforma: "teste", grupo: false, quem: "teste" }, { code });
@@ -211,6 +214,29 @@ export class SkillManager {
     };
     this.saveIndex();
     return { ok: true, slug, sample: String(trial.text).slice(0, 300) };
+  }
+
+  /**
+   * Revisão das habilidades que já existem com as regras atuais: gatilho ruim sai; sem gatilho bom,
+   * a habilidade é desligada. Devolve o que mudou.
+   */
+  audit() {
+    const corpus = this.corpus?.() ?? [];
+    const changes = [];
+    for (const [slug, s] of Object.entries(this.index.skills)) {
+      if (!s.enabled) continue;
+      const bad = (s.triggers ?? []).map((p) => ({ p, issues: triggerProblems(p, corpus) })).filter((c) => c.issues.length);
+      if (!bad.length) continue;
+      s.triggers = (s.triggers ?? []).filter((p) => !bad.some((b) => b.p === p));
+      const why = [...new Set(bad.flatMap((b) => b.issues))].join("; ");
+      if (!s.triggers.length) {
+        s.enabled = false;
+        s.note = `desligada na revisão: ${why}`.slice(0, 200);
+      }
+      changes.push({ slug, name: s.name, disabled: !s.enabled, removed: bad.map((b) => b.p), why });
+    }
+    if (changes.length) this.saveIndex();
+    return changes;
   }
 
   setEnabled(slug, enabled, reason = "") {

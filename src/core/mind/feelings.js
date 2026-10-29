@@ -161,7 +161,10 @@ export class FeelingEngine {
     let valence = Number(base.valence ?? 0.58);
     for (const f of feelings) valence += (FEELINGS[f.name]?.valence ?? 0) * f.level * 0.35;
     valence = Math.max(0, Math.min(1, valence));
-    const top = feelings[0];
+    // Histerese: o humor atual só troca por outro sentimento se ele passar com folga (antes ficava
+    // pulando triste ↔ preocupada a cada mensagem do mesmo desabafo).
+    const current = feelings.find((f) => f.label === this.data.lastMood && f.level >= 0.3);
+    const top = current && feelings[0] !== current && feelings[0].level - current.level < 0.15 ? current : feelings[0];
     // Sentimento forte manda no humor (mesmo acordada no susto: uma crise de madrugada preocupa).
     const fromFeeling = Boolean(top && top.level >= 0.3);
     return { label: fromFeeling ? top.label : base.mood, base: base.mood, valence, energy: base.energy, top, feelings, fromFeeling };

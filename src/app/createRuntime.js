@@ -442,7 +442,9 @@ function createMind(runtime, { searchAdapter, linkReader }) {
   const mindModel = DEFAULTS.mindModel || (DEFAULTS.llmProvider === "minimax" ? DEFAULTS.minimaxWorkerModel : DEFAULTS.workerLlmModel || DEFAULTS.model);
   const mindLlm = createLlmClient({ model: mindModel, temperature: 0.3, numPredict: 1800, worker: true, timeoutMs: 120_000 });
   const search = (q) => searchAdapter.search(q);
-  const notifyOwner = async (text) => {
+  // Avisos pra dona no zap, filtrados pelo nível que ela escolheu (.mente avisos tudo|importante|nada).
+  const notifyOwner = async (text, { kind = "info" } = {}) => {
+    if (runtime.mind && !runtime.mind.shouldNotify(kind)) return;
     enqueueOutbox(DEFAULTS.whatsappOutboxPath, { to: "dona", text, by: "mente" });
   };
   let evolution = null;
@@ -452,6 +454,7 @@ function createMind(runtime, { searchAdapter, linkReader }) {
     const store = new OverlayStore(root, { dir: evolutionDir });
     const skills = new SkillManager({
       dir: resolvePath(evolutionDir, "skills"),
+      corpus: () => runtime.mind?.turns?.turns?.map((t) => t.input) ?? [],
       tools: {
         pesquisar: async (q) => (await search(q)).map((r) => ({ titulo: r.title, trecho: r.snippet ?? "", url: r.url })),
         ler: async (url) => {

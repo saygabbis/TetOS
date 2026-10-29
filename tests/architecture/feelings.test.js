@@ -56,11 +56,22 @@ describe("sentimentos e humor", () => {
   it("relatórios: agora, histórico de humor e como reagiu a algo", () => {
     const f = new FeelingEngine(null, { baseMood: () => ({ mood: "animada", valence: 0.8 }) });
     f.feel("orgulho", 0.5, { cause: "aprendi sobre UTAU" });
-    f.feel("magoa", 0.6, { cause: "o Zé me xingou: «burra»", who: "Zé", private: false });
+    f.feel("magoa", 0.8, { cause: "o Zé me xingou: «burra»", who: "Zé", private: false });
     expect(f.report("")).toMatch(/como eu tô agora:\* magoada/);
     expect(f.report("historico")).toMatch(/→ \*magoada\*: o Zé me xingou/);
     expect(f.report("utau")).toMatch(/orgulhosa \+50%: aprendi sobre UTAU/);
     expect(f.report("zé")).toMatch(/magoada/);
+  });
+
+  it("humor não fica pulando entre sentimentos parecidos do mesmo desabafo", () => {
+    const f = new FeelingEngine(null, { baseMood: () => ({ mood: "de boa", valence: 0.6 }) });
+    f.feel("tristeza", 0.5, { cause: "a Gabbis tava triste" });
+    expect(f.mood().label).toBe("triste");
+    f.feel("preocupacao", 0.55, { cause: "a Gabbis tava mal" });
+    expect(f.mood().label).toBe("triste"); // diferença pequena: mantém
+    f.feel("preocupacao", 0.5, { cause: "a Gabbis tava mal de novo" });
+    expect(f.mood().label).toBe("preocupada"); // passou com folga: troca
+    expect(f.data.moods.filter((m) => m.to === "preocupada")).toHaveLength(1);
   });
 
   it("saudade quando a dona some; passa quando ela volta", () => {
@@ -72,6 +83,22 @@ describe("sentimentos e humor", () => {
     expect(f.level("saudade")).toBeGreaterThan(0);
     f.noteOwner();
     expect(f.level("saudade")).toBeLessThan(0.05);
+  });
+});
+
+describe("avisos pra dona", () => {
+  it("tudo / importante / nada", async () => {
+    const mind = new Mind({ dir: null });
+    expect(mind.settings.avisos).toBe("importante");
+    expect(mind.shouldNotify("info")).toBe(false);
+    expect(mind.shouldNotify("decisao")).toBe(true);
+    expect(mind.shouldNotify("alerta")).toBe(true);
+    expect(await mind.command("avisos tudo", { isOwner: true })).toMatch(/avisos: tudo/);
+    expect(mind.shouldNotify("info")).toBe(true);
+    await mind.command("avisos off", { isOwner: true });
+    expect(mind.shouldNotify("alerta")).toBe(false);
+    expect(await mind.command("avisos talvez", { isOwner: true })).toMatch(/use:/);
+    expect(await mind.command("avisos", { isOwner: false })).toMatch(/Gabbis/);
   });
 });
 

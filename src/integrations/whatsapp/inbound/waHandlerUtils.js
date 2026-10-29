@@ -42,7 +42,7 @@ export function applyVisionFields(media, visualDescription, { skipVision = false
   const attempted = !skipVision && Boolean(media.path);
   return {
     ...media,
-    transcript: visualDescription ?? media.transcript ?? null,
+    transcript: (typeof visualDescription === "string" && visualDescription) || (typeof media.transcript === "string" ? media.transcript : null),
     visionAttempted: attempted,
     visionStatus: !attempted ? undefined : visualDescription ? "ok" : "failed"
   };

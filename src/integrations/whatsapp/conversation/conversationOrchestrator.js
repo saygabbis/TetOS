@@ -30,13 +30,14 @@ const PRE_SEND_TYPING_WAIT_MS = 12_000;
 
 async function settleMediaVision(item, timeoutMs = 8000) {
   const promise = item.mediaVisionPromise ?? item.media?.visionPromise;
-  if (!promise || !item.media) return item.media;
+  // Item que voltou do disco (mensagem guardada) não tem promessa de verdade — só "{}".
+  if (typeof promise?.then !== "function" || !item.media) return item.media;
   try {
     const visualDescription = await Promise.race([
       promise,
       new Promise((_, reject) => setTimeout(() => reject(new Error("vision-timeout")), timeoutMs))
     ]);
-    item.media = applyVisionFields(item.media, visualDescription ?? null, { skipVision: false });
+    item.media = applyVisionFields(item.media, typeof visualDescription === "string" ? visualDescription : null, { skipVision: false });
   } catch {
     if (!item.media.visionAttempted) {
       item.media = applyVisionFields(item.media, item.media.transcript ?? null, { skipVision: false });

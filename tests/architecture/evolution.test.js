@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkAddedCode, checkSkillCode, isEditablePath, safeTrigger } from "../../src/core/evolution/safety.js";
+import { checkAddedCode, checkSkillCode, isEditablePath, safeTrigger, triggerProblems } from "../../src/core/evolution/safety.js";
 import { applyBlocks, parseBlocks, reviewPatch, stackFiles } from "../../src/core/evolution/codePatcher.js";
 import { OverlayStore } from "../../src/core/evolution/overlayStore.js";
 import { SkillManager } from "../../src/core/evolution/skillManager.js";
@@ -86,6 +86,33 @@ describe("segurança da autoevolução", () => {
     await expect(publicFetch("file:///etc/passwd")).rejects.toThrow(/http/);
     await expect(publicFetch("https://example.com:8443/")).rejects.toThrow(/portas/);
     expect(domainsIn('await f.web("https://api.frankfurter.app/latest?from=USD")')).toEqual(["api.frankfurter.app"]);
+  });
+
+  it("gatilho de habilidade: nada de crise, nada genérico", () => {
+    expect(triggerProblems("socorro").join()).toMatch(/crise/);
+    expect(triggerProblems("estou morrendo").join()).toMatch(/crise/);
+    expect(triggerProblems("ajuda").join()).toMatch(/genérico|crise/);
+    expect(triggerProblems("olha").join()).toMatch(/genérico/);
+    expect(triggerProblems("oi").join()).toMatch(/curto/);
+    expect(triggerProblems(String.raw`cota[çc][ãa]o do d[óo]lar`)).toEqual([]);
+    // pegaria muitas conversas reais
+    const corpus = [...Array(40)].map((_, i) => (i % 4 ? `papo qualquer ${i}` : `bora jogar ${i}`));
+    expect(triggerProblems("bora", corpus).join()).toMatch(/muitas conversas/);
+  });
+
+  it("revisão desliga habilidade antiga com gatilho de crise/genérico", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "tetos-skills-audit-"));
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "index.json"), JSON.stringify({ skills: {
+      "leitura-subtexto": { name: "leitura-subtexto", enabled: true, triggers: ["socorro", "ajuda", "olha isso", "estou morrendo"] },
+      "dolar": { name: "dolar", enabled: true, triggers: [String.raw`cota[çc][ãa]o do d[óo]lar`, "olha isso"] }
+    } }));
+    const sm = new SkillManager({ dir });
+    const changes = sm.audit();
+    expect(changes.find((c) => c.slug === "leitura-subtexto").disabled).toBe(true);
+    expect(sm.index.skills.dolar.enabled).toBe(true);
+    expect(sm.index.skills.dolar.triggers).toEqual([String.raw`cota[çc][ãa]o do d[óo]lar`]);
+    expect(sm.match("socorro, alguém?")).toEqual([]);
   });
 
   it("habilidade: código e gatilho seguros", () => {

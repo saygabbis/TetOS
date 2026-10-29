@@ -42,10 +42,21 @@ describe("leitura de tom", () => {
     expect(readTone("bom dia", { recentUserTexts: [{ text: "quero me matar", ts: now - 8 * 3_600_000 }], now }).kind).toBe("normal");
   });
 
-  it("risada: papo normal não ri; brincadeira espelha; rindo demais recente segura", () => {
-    expect(readTone("oi, tudo bem?").laugh).toBe("none");
+  it("risada: papo leve pode rir, mas nunca duas seguidas e no máx. 2 a cada 4", () => {
+    // figurinha fofa / papo descontraído: liberado (antes ficava proibido e ela parou de rir em 94% das trocas)
+    expect(readTone("oi, tudo bem?").laugh).toBe("light");
+    expect(readTone("[sticker] personagem fofa cobrindo a boca").laugh).toBe("light");
+    expect(readTone("te amo teto").laugh).toBe("light");
     expect(readTone("KKKKKK mentira").laugh).toBe("mirror");
+    // riu na anterior e a pessoa não riu: segura
+    expect(readTone("e aí, o que vc tá fazendo?", { recentAssistantTexts: ["aff kkk", "tô vendo anime"] }).laugh).toBe("none");
+    // 2 das 4 últimas com risada: segura (mesmo papo leve)
+    expect(readTone("olha isso", { recentAssistantTexts: ["tô de boa", "kkk sério", "nada", "mds kkkk"] }).laugh).toBe("none");
+    // a pessoa rindo libera até 3 de 4 — mais que isso segura
+    expect(readTone("kkkkk", { recentAssistantTexts: ["oi", "kkk", "aff kkk"] }).laugh).toBe("mirror");
     expect(readTone("kkkkk", { recentAssistantTexts: ["kkk", "aff kkk", "mds kkkk"] }).laugh).toBe("none");
+    // sério nunca
+    expect(readTone("como funciona o enem?").laugh).toBe("none");
   });
 
   it("bloco do prompt da crise fala do CVV e proíbe risada", () => {

@@ -809,6 +809,8 @@ o estado fica em `data/mind/` e `data/evolution/` (fora do git).
   o bloco `[TOM DESTA RESPOSTA]` vai no fim do prompt (antes ia "pode brincar e rir" sempre). Crise gruda por 6 h,
   tristeza por 45 min. Em crise o prompt pede acolhimento e cita o CVV (188 / cvv.org.br). Depois da resposta,
   `governActions` tira risada/figurinha que escapou; o regulador de estilo limita a 1 risada por resposta em qualquer canal.
+  Papo leve (normal/carinho/brincadeira) pode rir quando tiver graça, mas nunca duas respostas seguidas e no máximo 2 a
+  cada 4 (3 se a pessoa estiver rindo) — com a regra antiga (só se a pessoa riu) ela parou de rir em 94% das trocas.
 - **Pensar antes**: em pergunta séria/longa ela pode escrever `pensar("…")` antes de responder — rascunho que não vai pro
   chat nem pro histórico (`stripThinkCommands`).
 - **Pesquisa**: o buscador agora traz o trecho de cada resultado e o link real. Pergunta de fato (lançamento, preço,
@@ -828,7 +830,8 @@ o estado fica em `data/mind/` e `data/evolution/` (fora do git).
   com gatilho regex. Rodam num processo filho com `node --permission` (sem ler/escrever arquivo, sem abrir processo,
   sem variáveis de ambiente) e só usam as ferramentas que ela entrega (`pesquisar`, `ler`, `lembrar`, `agora`).
   Só entram no ar se o exemplo rodar isolado; versão anterior fica em `skills/.versions/`; habilidade que falha muito
-  se desliga sozinha.
+  se desliga sozinha. Gatilho não pode pegar frase de crise nem papo comum (nem >5% das conversas reais recentes), e
+  habilidade não serve pra "ler tom/sentimento" (isso é da mente); na subida ela revisa as que já existem e desliga as ruins.
 - **Código próprio** (`evolutionEngine.js`): erro repetido do sistema (com pilha em arquivo dela) ou pedido da dona →
   ela escolhe o arquivo, escreve blocos BUSCAR/TROCAR pequenos (máx. 2 arquivos / 140 linhas), passa nas regras de
   `safety.js` (nada de processo, rede nova, arquivo, `process.env`, segredo, dona, `eval`, import de pacote; arquivos
@@ -866,6 +869,8 @@ o estado fica em `data/mind/` e `data/evolution/` (fora do git).
   mudança aprovada → reinício pedido por ela → versão dela carregada → mudança que quebra → 2 quedas → modo seguro →
   ela desfaz e volta com a boa. Em produção: `node scripts/evolucao.js testar` (mudança de verdade com linha de log) →
   aplica quando ela dormir (ou `aplicar`) → procurar "teste de ciclo" no log → `desfazer <id>`.
+- **Avisos pra dona** (`.mente avisos tudo|importante|nada`, padrão `importante`): `tudo` conta cada habilidade/mudança;
+  `importante` só o que precisa dela (autorização, pedido) ou deu problema (rollback); `nada` deixa tudo em `.mente`.
 - **Comandos da dona**: `.mente` no PV do zap ou `/mente` no Discord — `status`, `estudar <tema>`, `licoes`,
   `esquecer <id>`, `refletir`, `humor`, `pedidos`, `ver <id>`, `autorizar <id>`, `recusar <id>`, `aplicar`,
   `desfazer <id>` (mudança ou habilidade), `testar`, `pausar`, `retomar`.

@@ -7,9 +7,9 @@
  *   triste     → desabafo, luto, ansiedade: acolhe, sem risada/figurinha/provocação.
  *   irritado   → bravo com ela ou pedindo pra parar: sem deboche, ajusta.
  *   sério      → pergunta de verdade/pedido de ajuda: responde direito, sem kkk.
- *   carinho    → afeto: retribui, risada só se a pessoa riu.
+ *   carinho    → afeto: retribui; pode rir de leve se for fofo.
  *   brincadeira→ zoeira: pode rir (uma vez), espelhando a pessoa.
- *   normal     → papo comum: sem kkk à toa.
+ *   normal     → papo leve: pode rir se tiver graça (nunca duas seguidas, no máx. 2 a cada 4).
  * O tom "gruda": depois de crise/tristeza, as próximas mensagens continuam no cuidado por um tempo
  * (um "desculpa" ou "se cuida" logo depois não volta pro modo zoeira).
  */
@@ -159,12 +159,14 @@ export function readTone(text = "", { recentUserTexts = [], recentAssistantTexts
   const recentLaughs = recentAssistantTexts.slice(0, 4).filter(hasLaughter).length;
 
   /** none = nenhuma; light = no máximo um "kkk" curto; mirror = uma risada no tamanho da pessoa. */
+  // Papo leve pode ter risada (é o jeito dela), mas não em seguida nem em quase todo turno: com a regra
+  // antiga (só se a pessoa riu) ela parou de rir até em figurinha fofa/zoeira — 6% das trocas.
   let laugh = "none";
-  if (kind === "brincadeira") laugh = userLaughed ? "mirror" : assistantLaughedLast ? "none" : "light";
-  else if (kind === "carinho") laugh = userLaughed ? "light" : "none";
-  else if (kind === "normal") laugh = userLaughed ? "light" : "none";
-  // Rindo em quase todo turno recente: segura mesmo que a pessoa tenha rido.
-  if (laugh !== "none" && recentLaughs >= 3) laugh = "none";
+  const light = ["brincadeira", "carinho", "normal"].includes(kind);
+  if (light) laugh = kind === "brincadeira" && userLaughed ? "mirror" : "light";
+  if (laugh !== "none" && !userLaughed && assistantLaughedLast) laugh = "none";
+  // Rindo demais nos últimos turnos: segura (mesmo que a pessoa tenha rido, no máximo 2 de 4).
+  if (laugh !== "none" && recentLaughs >= (userLaughed ? 3 : 2)) laugh = "none";
 
   const stickers = kind === "brincadeira" || kind === "normal" || kind === "carinho";
   return {
@@ -210,14 +212,14 @@ const TONE_LINES = {
     "Pode zoar junto e ser travessa. A graça vem do que você fala, não do kkk."
   ],
   normal: [
-    "[TOM DESTA RESPOSTA — PAPO NORMAL]",
-    "Conversa comum: seja você, mas sem kkk à toa. A maioria das suas mensagens NÃO tem risada."
+    "[TOM DESTA RESPOSTA — PAPO LEVE]",
+    "Conversa comum e descontraída: seja você. Pode rir quando algo tiver graça ou for fofo, sem rir em toda mensagem."
   ]
 };
 
 const LAUGH_LINES = {
   none: "RISADA NESTA RESPOSTA: proibida (nada de kkk, rs, haha, ksks nem 😂).",
-  light: "RISADA NESTA RESPOSTA: opcional e no máximo UMA, curta (kkk), só se algo for engraçado de verdade.",
+  light: "RISADA NESTA RESPOSTA: liberada se tiver graça ou for fofo (uma, curta: kkk, kkkk, ksks) — no papo leve você ri mais ou menos 1 a cada 3 mensagens, não em toda.",
   mirror: "RISADA NESTA RESPOSTA: pode rir UMA vez, no mesmo tamanho da pessoa — não em toda bolha."
 };
 

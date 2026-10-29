@@ -1594,6 +1594,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                   chatMessageIndex,
                   isGroup
                 });
+                // Se a mensagem ficou guardada (ela ocupada), a descrição entra nela também.
+                if (typeof visualDescription === "string") runtime.deferredInbox?.updateMedia?.(incoming.key.id, visualDescription);
               })
               .catch((err) => {
                 console.warn(`${waLogPrefix} vision background:`, err?.message ?? err);

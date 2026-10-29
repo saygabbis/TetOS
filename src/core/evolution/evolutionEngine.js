@@ -80,6 +80,8 @@ export class EvolutionEngine {
       "});",
       "Proibido usar: require, import, process, fetch, eval, Function, constructor, prototype, globalThis, Buffer, setInterval, while(true). Só JavaScript puro (Math, Date, JSON, String, RegExp, Intl).",
       "Se não der pra resolver, devolva um texto dizendo o que faltou (não invente resultado).",
+      "Habilidade é pra fazer o que você NÃO consegue só pensando: buscar dado atual (cotação, clima, placar, lançamento), calcular, converter, consultar uma API. NÃO crie habilidade pra ler tom, sentimento, intenção ou subtexto — isso você já faz sozinha, e melhor.",
+      "Gatilhos: específicos do assunto (ex.: 'cota[çc][ãa]o do d[óo]lar', 'converte .* (d[óo]lar|euro)'), nunca palavra solta do dia a dia ('ajuda', 'olha isso', 'socorro') nem nada de crise.",
       problems.length ? `A tentativa anterior falhou por: ${problems.join("; ")}. Corrija.` : "",
       "Responda SÓ com JSON:",
       '{"nome":"...","descricao":"o que faz","gatilhos":["regex JavaScript sem barras, específica"],"exemplo":"uma mensagem que aciona o gatilho","codigo":"habilidade({...})"}',
@@ -116,7 +118,8 @@ export class EvolutionEngine {
             `pra desligar: .mente desfazer ${result.slug}`
           ]
             .filter(Boolean)
-            .join("\n")
+            .join("\n"),
+          { kind: "info" }
         ).catch(() => {});
         return { ok: true, summary: `habilidade "${json.nome}" pronta — teste: ${clip(result.sample, 160)}`, slug: result.slug };
       }
@@ -203,7 +206,8 @@ export class EvolutionEngine {
           `ver: .mente ver ${id} · deixar: .mente autorizar ${id} · não: .mente recusar ${id}`
         ]
           .filter(Boolean)
-          .join("\n")
+          .join("\n"),
+        { kind: "decisao" }
       ).catch(() => {});
       return { ok: true, summary: `pedi autorização pra Gabbis (${id})`, changeId: id };
     }
@@ -211,7 +215,7 @@ export class EvolutionEngine {
   }
 
   /** Testa uma mudança preparada; aprovada → avisa a dona e espera o reinício. */
-  async verifyAndApprove(id, { title = "", explanation = "", authorized = false } = {}) {
+  async verifyAndApprove(id, { title = "", explanation = "", authorized = false, kind = authorized ? "decisao" : "info" } = {}) {
     const change = this.store.change(id);
     this.log("codigo-teste", `testando mudança ${id} em ${change?.files?.join(", ")}`, { id });
     const result = await this.verifier.verify(id).catch((e) => ({ ok: false, stage: "verificador", details: e.message }));
@@ -219,14 +223,15 @@ export class EvolutionEngine {
       this.store.setStatus(id, "reprovado", { verify: `${result.stage}: ${clip(result.details, 600)}` });
       this.log("codigo-reprovado", `mudança ${id} reprovada no teste (${result.stage})`, { id });
       this.feel?.("frustracao", 0.2, `minha mudança "${clip(title, 60)}" não passou nos testes`);
-      if (authorized) await this.notifyOwner(`😕 a mudança ${id} que você autorizou não passou nos testes (${result.stage}). descartei, nada mudou.`).catch(() => {});
+      if (authorized) await this.notifyOwner(`😕 a mudança ${id} que você autorizou não passou nos testes (${result.stage}). descartei, nada mudou.`, { kind: "alerta" }).catch(() => {});
       return { ok: false, error: `reprovada no teste (${result.stage})`, changeId: id };
     }
     this.store.setStatus(id, "aprovado", { verify: result.details });
     this.log("codigo-aprovado", `mudança ${id} aprovada (${result.details}) — entra no próximo reinício`, { id });
     this.feel?.("orgulho", 0.3, `consegui melhorar meu próprio código: ${clip(title, 60)}`);
     await this.notifyOwner(
-      `🧬 ${authorized ? "a mudança que você autorizou passou" : "mudei um pedacinho de mim"}: ${clip(title, 120)}\n${explanation ? `${clip(explanation, 200)}\n` : ""}arquivos: ${change?.files?.join(", ")} · passou nos testes · aplico quando eu for dormir (ou .mente aplicar)\npra desfazer: .mente desfazer ${id}`
+      `🧬 ${authorized ? "a mudança que você autorizou passou" : "mudei um pedacinho de mim"}: ${clip(title, 120)}\n${explanation ? `${clip(explanation, 200)}\n` : ""}arquivos: ${change?.files?.join(", ")} · passou nos testes · aplico quando eu for dormir (ou .mente aplicar)\npra desfazer: .mente desfazer ${id}`,
+      { kind }
     ).catch(() => {});
     return { ok: true, summary: `mudança ${id} aprovada nos testes; aplico no próximo reinício`, changeId: id };
   }
@@ -290,7 +295,8 @@ export class EvolutionEngine {
     this.store.save();
     this.log("pedido", `pedi pra Gabbis: ${req.title}`, { id: req.id });
     await this.notifyOwner(
-      `🙋 Gabbis, queria te pedir uma coisa: ${req.title}\n${req.why ? `${req.why}\n` : ""}${req.needs ? `(${req.needs})\n` : ""}quando fizer: .mente autorizar ${req.id} · se não: .mente recusar ${req.id}`
+      `🙋 Gabbis, queria te pedir uma coisa: ${req.title}\n${req.why ? `${req.why}\n` : ""}${req.needs ? `(${req.needs})\n` : ""}quando fizer: .mente autorizar ${req.id} · se não: .mente recusar ${req.id}`,
+      { kind: "decisao" }
     ).catch(() => {});
     return req;
   }
@@ -337,7 +343,7 @@ export class EvolutionEngine {
     this.store.stage(id, { [rel]: `${marker}\n${current}` }, { reason: "teste do ciclo completo (testar, aplicar, reiniciar)", explanation: "uma linha de log no começo do módulo pra provar que a minha versão carregou", by: "teste", selfTest: true });
     this.busy = true;
     try {
-      return await this.verifyAndApprove(id, { title: "teste do ciclo completo", explanation: `procure no log: teste de ciclo ${id}` });
+      return await this.verifyAndApprove(id, { title: "teste do ciclo completo", explanation: `procure no log: teste de ciclo ${id}`, kind: "decisao" });
     } finally {
       this.busy = false;
     }
@@ -426,6 +432,10 @@ export class EvolutionEngine {
   async onBoot() {
     const restartFlag = this.restartFlagPath();
     if (existsSync(restartFlag)) rmSync(restartFlag, { force: true });
+    // Habilidades antigas passam pelas regras atuais (gatilho genérico/de crise sai; sem gatilho bom, desliga).
+    for (const c of this.skills?.audit?.() ?? []) {
+      this.log("habilidade-revisada", `revisei a habilidade "${c.name}": ${c.disabled ? "desliguei" : `tirei ${c.removed.length} gatilho(s)`} (${clip(c.why, 120)})`, { slug: c.slug });
+    }
     const notes = this.store.manifest.notes.filter((n) => !n.seen);
     for (const n of notes) {
       n.seen = true;
@@ -433,7 +443,7 @@ export class EvolutionEngine {
     }
     if (notes.length) {
       this.store.save();
-      await this.notifyOwner(`🧬 ${notes.map((n) => n.text).join("\n")}`).catch(() => {});
+      await this.notifyOwner(`🧬 ${notes.map((n) => n.text).join("\n")}`, { kind: "info" }).catch(() => {});
     }
     if (process.env.TETOS_EVOLUTION_SAFE === "1") {
       const culprit = this.store.latestActive();
@@ -441,7 +451,7 @@ export class EvolutionEngine {
         this.store.revert(culprit.id, "caí seguido depois dessa mudança (modo seguro)");
         this.log("rollback", `caí seguido depois de ${culprit.id} — desfiz sozinha`, { id: culprit.id });
         this.feel?.("frustracao", 0.35, `caí depois de mudar meu código (${culprit.id}) e tive que desfazer`);
-        await this.notifyOwner(`⚠️ caí duas vezes seguidas depois de mudar "${clip(culprit.reason, 100)}" (${culprit.id}). desfiz sozinha e tô voltando normal.`).catch(() => {});
+        await this.notifyOwner(`⚠️ caí duas vezes seguidas depois de mudar "${clip(culprit.reason, 100)}" (${culprit.id}). desfiz sozinha e tô voltando normal.`, { kind: "alerta" }).catch(() => {});
         // Volta com as outras mudanças que estavam boas.
         this.restart("sair do modo seguro");
       }
@@ -468,7 +478,7 @@ export class EvolutionEngine {
         this.errorCounts.delete(key);
         this.log("rollback", `erro repetido depois de ${change.id} (${clip(signature, 100)}) — desfazendo`, { id: change.id });
         this.feel?.("vergonha", 0.3, `uma mudança minha (${change.id}) deu erro e tive que desfazer`);
-        void this.notifyOwner(`⚠️ a mudança ${change.id} ("${clip(change.reason, 80)}") começou a dar erro. desfiz sozinha.`).catch(() => {});
+        void this.notifyOwner(`⚠️ a mudança ${change.id} ("${clip(change.reason, 80)}") começou a dar erro. desfiz sozinha.`, { kind: "alerta" }).catch(() => {});
         this.revert(change.id, `erro repetido: ${clip(signature, 120)}`);
         return true;
       }

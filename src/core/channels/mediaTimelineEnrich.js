@@ -81,7 +81,8 @@ export function enrichTimelineEntryText(entry = {}, visionByMessageId = null) {
 
 export function formatMediaInputText({ text = "", media = null } = {}) {
   const caption = String(text ?? "").trim();
-  const rawVision = String(media?.transcript ?? media?.caption ?? "").trim();
+  // Só texto conta (objeto aqui virava "[object Object]" na mensagem).
+  const rawVision = [media?.transcript, media?.caption].find((v) => typeof v === "string" && v.trim())?.trim() ?? "";
   const kind = media?.type ?? "mídia";
   const vision =
     media?.type === "audio" && rawVision

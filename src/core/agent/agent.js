@@ -337,7 +337,7 @@ export class Agent {
 
     const keyboardLaughterBlock = [
       "[RISADA NO TECLADO — kkk — É EXCEÇÃO, NÃO VÍRGULA]",
-      "- Pessoa real ri quando algo é engraçado, não no fim de toda frase. A MAIORIA das suas mensagens não tem kkk: a graça vem do que você fala.",
+      "- Pessoa real ri quando algo é engraçado ou fofo, não no fim de toda frase. No papo leve você ri mais ou menos 1 a cada 3 mensagens; a graça também vem do que você fala.",
       "- No máximo UMA risada por resposta, e só quando a regra de [TOM DESTA RESPOSTA] lá embaixo deixar.",
       "- Quando rir: 'kkk' (leve), 'kkkkk' (rindo mesmo), 'ksks' (sem graça/irônica). Espelhe o tamanho da risada da pessoa, sem passar dela.",
       "- Assunto sério, triste, pessoa irritada ou falando de algo que dói: ZERO risada, mesmo se o papo antes era zoeira.",
@@ -921,14 +921,29 @@ export class Agent {
           ]
         : [];
 
+    // Demora de verdade é que pede comentário: antes ela dizia "vi agora, tava almoçando" com a mensagem
+    // guardada por segundos (~0 min), como se tivesse sumido.
     const deferred = meta?.deferredCatchUp;
+    const heldMin = Number(deferred?.heldMinutes) || 0;
     const deferredBlock =
       deferred && deferred.reason !== "asleep"
-        ? [
-            "[VOCÊ SÓ VIU AGORA]",
-            `Essas mensagens chegaram enquanto você estava ${deferred.activity ?? "ocupada"} e você só pegou o celular agora${deferred.heldMinutes ? ` (~${deferred.heldMinutes} min depois)` : ""}.`,
-            "Responda o conteúdo normalmente. Se encaixar, comente de leve que estava no meio de algo (tipo 'tava gravando, vi agora') — sem pedir desculpa demais nem explicar a vida."
-          ]
+        ? heldMin < 5
+          ? [
+              "[RESPONDENDO NA HORA]",
+              `Você estava ${deferred.activity ?? "fazendo outra coisa"} mas viu a mensagem em menos de 5 minutos — NÃO houve demora.`,
+              "Proibido: 'vi agora', 'desculpa a demora', 'tava fazendo X por isso não vi'. Responda o conteúdo normal, como quem estava com o celular na mão."
+            ]
+          : heldMin < 30
+            ? [
+                "[VIU UNS MINUTOS DEPOIS]",
+                `A mensagem chegou ~${heldMin} min atrás, enquanto você estava ${deferred.activity ?? "ocupada"}.`,
+                "Responda o conteúdo normal. Pode citar o que estava fazendo de passagem SE encaixar, sem pedir desculpa (uns minutos não é sumiço)."
+              ]
+            : [
+                "[VOCÊ SÓ VIU AGORA]",
+                `Essas mensagens chegaram enquanto você estava ${deferred.activity ?? "ocupada"} e você só pegou o celular agora (~${heldMin} min depois).`,
+                "Responda o conteúdo normalmente. Se encaixar, comente de leve que estava no meio de algo (tipo 'tava gravando, vi agora') — sem pedir desculpa demais nem explicar a vida."
+              ]
         : [];
 
     // Guardada porque estava ocupada/na rua (não dormindo) não é "enquanto você dormia".
