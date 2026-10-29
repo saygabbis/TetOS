@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
+import { flushJsonWrites } from "../src/infra/utils/fileStore.js";
 
 const repo = fileURLToPath(new URL("..", import.meta.url));
 dotenv.config({ path: join(repo, ".env"), quiet: true });
@@ -18,5 +19,9 @@ for (const f of ["character.json", "personality.json", "tetoLife.json", "tetoDis
 }
 process.chdir(dir);
 process.on("exit", () => {
+  // Grava o que ficou pendente ANTES de apagar a pasta: no Linux, gravar depois (com o diretório atual
+  // apagado) deixava o mkdirSync recursivo num laço infinito a 100% de CPU, imune a SIGTERM.
+  try { flushJsonWrites(); } catch {}
+  try { process.chdir(tmpdir()); } catch {}
   try { rmSync(dir, { recursive: true, force: true }); } catch {}
 });
