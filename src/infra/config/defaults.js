@@ -1,4 +1,5 @@
 import { parseRemoveBgApiKeys } from "../../core/media/removeBgKeyPool.js";
+import { parseOllamaApiKeys } from "../../core/brain/ollamaKeyPool.js";
 
 const llmProviderRaw = (process.env.TETOS_LLM_PROVIDER ?? "ollama").toLowerCase();
 const llmProvider = llmProviderRaw === "minimax" ? "minimax" : "ollama";
@@ -25,8 +26,9 @@ const minimaxModel = process.env.TETOS_MINIMAX_MODEL ?? "MiniMax-M2.7";
 const minimaxWorkerModel =
   process.env.TETOS_MINIMAX_WORKER_MODEL ?? "MiniMax-M2.7-highspeed";
 
-const ollamaApiKey =
-  process.env.TETOS_OLLAMA_API_KEY ?? process.env.OLLAMA_API_KEY ?? "";
+// Várias contas da Ollama Cloud: a principal + TETOS_OLLAMA_API_KEYS (troca sozinha quando uma esgota).
+const ollamaApiKeys = parseOllamaApiKeys(process.env);
+const ollamaApiKey = ollamaApiKeys[0] ?? "";
 
 const ollamaTempEnv = process.env.TETOS_OLLAMA_TEMPERATURE;
 const parsedTemp =
@@ -84,6 +86,9 @@ export const DEFAULTS = {
   model,
   ollamaBaseUrl,
   ollamaApiKey,
+  ollamaApiKeys,
+  /** Qual conta da Ollama esgotou e até quando (só hash, sem a chave). */
+  ollamaKeyStatePath: process.env.TETOS_OLLAMA_KEY_STATE_PATH ?? "./data/ollamaKeys.json",
   ollamaTemperature,
   /** @type {number | null} null = sem limite (pode ser mais lento em respostas longas) */
   ollamaNumPredict,

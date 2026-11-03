@@ -7,6 +7,7 @@ import { SelectiveMemoryStore } from "../core/memory/selectiveMemory.js";
 import { GroupMemoryStore } from "../core/memory/GroupMemoryStore.js";
 import { EpisodicMemoryStore } from "../core/memory/EpisodicMemoryStore.js";
 import { OllamaClient } from "../core/brain/ollamaClient.js";
+import { OllamaKeyPool } from "../core/brain/ollamaKeyPool.js";
 import { MiniMaxClient } from "../core/brain/minimaxClient.js";
 import { BrainOrchestrator } from "../core/brain/BrainOrchestrator.js";
 import { Agent } from "../core/agent/agent.js";
@@ -74,6 +75,14 @@ import { DailyReportGenerator } from "../core/learning/dailyReportGenerator.js";
 import { RelationshipCommitmentStore } from "../core/social/RelationshipCommitmentStore.js";
 import { repairProfileContamination } from "../core/channels/botIdentity.js";
 
+let ollamaKeyPool = null;
+/** Uma piscina só pra conversa, mente e visão: quando uma conta esgota, todas trocam juntas. */
+function sharedOllamaKeyPool() {
+  if (DEFAULTS.ollamaMode !== "cloud" || DEFAULTS.ollamaApiKeys.length < 2) return null;
+  ollamaKeyPool ??= new OllamaKeyPool({ keys: DEFAULTS.ollamaApiKeys, statePath: DEFAULTS.ollamaKeyStatePath });
+  return ollamaKeyPool;
+}
+
 function createLlmClient({ model, temperature, numPredict, worker = false, timeoutMs = DEFAULTS.modelTimeoutMs } = {}) {
   if (DEFAULTS.llmProvider === "minimax") {
     return new MiniMaxClient({
@@ -90,6 +99,7 @@ function createLlmClient({ model, temperature, numPredict, worker = false, timeo
     baseUrl: DEFAULTS.ollamaBaseUrl,
     model: model ?? DEFAULTS.model,
     apiKey: DEFAULTS.ollamaApiKey || undefined,
+    keyPool: sharedOllamaKeyPool(),
     temperature,
     numPredict,
     timeoutMs
@@ -177,6 +187,7 @@ export function createRuntime() {
       baseUrl: DEFAULTS.ollamaBaseUrl,
       model: visionModel,
       apiKey: DEFAULTS.ollamaApiKey || undefined,
+      keyPool: sharedOllamaKeyPool(),
       temperature: DEFAULTS.ollamaTemperature,
       numPredict: 120,
       timeoutMs: DEFAULTS.visionTimeoutMs

@@ -5,6 +5,7 @@ export class OllamaClient {
     baseUrl,
     model,
     apiKey,
+    keyPool = null,
     temperature = 0.65,
     numPredict = null,
     timeoutMs = 25000
@@ -12,6 +13,8 @@ export class OllamaClient {
     this.baseUrl = String(baseUrl ?? "").replace(/\/$/, "");
     this.model = model;
     this.apiKey = apiKey;
+    /** Várias contas (OllamaKeyPool): troca sozinha quando uma bate o limite. */
+    this.keyPool = keyPool?.size ? keyPool : null;
     const t = Number(temperature);
     this.temperature = Number.isFinite(t) ? Math.min(2, Math.max(0, t)) : 0.65;
     const np = numPredict == null ? null : Number(numPredict);
@@ -21,12 +24,38 @@ export class OllamaClient {
     this.timeoutMs = Number.isFinite(tm) && tm > 0 ? Math.floor(tm) : 25000;
   }
 
-  _headers() {
+  _headers(apiKey = this.apiKey) {
     const headers = { "Content-Type": "application/json" };
-    if (this.apiKey) {
-      headers.Authorization = `Bearer ${this.apiKey}`;
+    if (apiKey) {
+      headers.Authorization = `Bearer ${apiKey}`;
     }
     return headers;
+  }
+
+  /**
+   * POST na Ollama. Com várias contas: se a resposta for de limite (429 "usage limit" etc.), marca a
+   * conta e repete com a próxima; devolve a última resposta quando não tem mais pra onde ir.
+   */
+  async _post(path, body, signal) {
+    const tried = [];
+    for (;;) {
+      const key = this.keyPool ? this.keyPool.current(tried) : this.apiKey;
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: this._headers(key),
+        body: JSON.stringify(body),
+        signal
+      });
+      if (response.ok || !this.keyPool || !key) return response;
+      const text = await response.text();
+      tried.push(key);
+      const marked = this.keyPool.noteFailure(key, response.status, text);
+      const next = this.keyPool.current(tried);
+      // Todas esgotadas: não fica batendo uma por uma a cada mensagem.
+      if (!marked || !next || !this.keyPool.isAvailable(next)) {
+        return { ok: false, status: response.status, text: async () => text };
+      }
+    }
   }
 
   async generate(prompt) {
@@ -58,10 +87,9 @@ export class OllamaClient {
   async _generateOnce(prompt, numPredict) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
-    const response = await fetch(`${this.baseUrl}/api/generate`, {
-      method: "POST",
-      headers: this._headers(),
-      body: JSON.stringify({
+    const response = await this._post(
+      "/api/generate",
+      {
         model: this.model,
         prompt,
         stream: false,
@@ -69,9 +97,9 @@ export class OllamaClient {
           temperature: this.temperature,
           ...(numPredict != null ? { num_predict: numPredict } : {})
         }
-      }),
-      signal: controller.signal
-    }).finally(() => clearTimeout(timeout));
+      },
+      controller.signal
+    ).finally(() => clearTimeout(timeout));
 
     if (!response.ok) {
       const text = await response.text();
@@ -100,10 +128,9 @@ export class OllamaClient {
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
     let full = "";
     try {
-      const response = await fetch(`${this.baseUrl}/api/generate`, {
-        method: "POST",
-        headers: this._headers(),
-        body: JSON.stringify({
+      const response = await this._post(
+        "/api/generate",
+        {
           model: this.model,
           prompt,
           stream: true,
@@ -111,9 +138,9 @@ export class OllamaClient {
             temperature: this.temperature,
             ...(this.numPredict != null ? { num_predict: this.numPredict } : {}),
           },
-        }),
-        signal: controller.signal,
-      });
+        },
+        controller.signal
+      );
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Ollama error: ${response.status} ${errText}`);
@@ -177,10 +204,9 @@ export class OllamaClient {
     const tm = Number(timeoutMs);
     const waitMs = Number.isFinite(tm) && tm > 0 ? Math.floor(tm) : this.timeoutMs;
     const timeout = setTimeout(() => controller.abort(), waitMs);
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
-      method: "POST",
-      headers: this._headers(),
-      body: JSON.stringify({
+    const response = await this._post(
+      "/api/chat",
+      {
         model: this.model,
         messages: payloadMessages,
         stream: false,
@@ -188,9 +214,9 @@ export class OllamaClient {
           temperature: this.temperature,
           ...(this.numPredict != null ? { num_predict: this.numPredict } : {})
         }
-      }),
-      signal: controller.signal
-    }).finally(() => clearTimeout(timeout));
+      },
+      controller.signal
+    ).finally(() => clearTimeout(timeout));
 
     if (!response.ok) {
       const text = await response.text();
