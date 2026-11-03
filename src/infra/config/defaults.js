@@ -288,6 +288,12 @@ export const DEFAULTS = {
   dailyLifeStatePath: process.env.TETOS_DAILY_LIFE_PATH ?? "./data/life/state.json",
   initiativeStatePath: process.env.TETOS_INITIATIVE_PATH ?? "./data/life/initiative.json",
   whatsappOutboxPath: process.env.TETOS_WHATSAPP_OUTBOX_PATH ?? "./data/whatsapp-outbox.json",
+  // Monitor de preço (.monitorarpreco): de quanto em quanto tempo ela olha, hora do resumo (-1 = sem resumo).
+  priceWatchPath: process.env.TETOS_PRICE_WATCH_PATH ?? "./data/priceWatch.json",
+  priceWatchIntervalMin: Number(process.env.TETOS_PRICE_WATCH_INTERVAL_MIN ?? 180),
+  priceWatchDigestHour: Number(process.env.TETOS_PRICE_WATCH_DIGEST_HOUR ?? 10),
+  /** Avisa quando o preço muda pelo menos isso (%). */
+  priceWatchChangePct: Number(process.env.TETOS_PRICE_WATCH_CHANGE_PCT ?? 1),
   mindLogPath: process.env.TETOS_MIND_LOG_PATH ?? "./data/mind-log",
   mindLogEnabled: String(process.env.TETOS_MIND_LOG_ENABLED ?? "true").toLowerCase() === "true",
   /** slim = snapshot leve (VPS 24/7); full = dump completo (debug). */

@@ -38,6 +38,7 @@ import { isGroupPriorityEntry } from "../conversation/groupTurnPlanner.js";
 import { scoreSleepDisturbance, sleepDisturbanceFloodWindowMs } from "../../../core/life/sleepDisturbanceDetect.js";
 import { applyVisionFields, extractPhone, isWaConnectionError, logThinking } from "./waHandlerUtils.js";
 import { createConversationOrchestrator } from "../conversation/conversationOrchestrator.js";
+import { parsePriceWatchCommand } from "../../../modules/priceWatch/priceWatch.js";
 
 /** Alinha ao Baileys: documento com legenda vem em `documentWithCaptionMessage`, não só em `documentMessage`. */
 function unwrapMessage(message = {}) {
@@ -1027,6 +1028,32 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           await safeSendMessage(remoteJid, { text: reply });
           finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
           continue;
+        }
+
+        // Monitor de preço (PV ou grupo): .monitorarpreco <produto> → opções; depois "1 3 5"/"todos" escolhe.
+        if (!isFromMe && type !== "append" && !mainObserveOnly && (role !== "media" || botChatRole) && runtime.priceWatch) {
+          const priceArgs = parsePriceWatchCommand(text, commandPrefix);
+          const priceCtx = {
+            platform: "whatsapp",
+            chatId: remoteJid,
+            userId,
+            isGroup,
+            say: (msg) => safeSendMessage(remoteJid, { text: msg })
+          };
+          let priceReply = null;
+          try {
+            priceReply = priceArgs !== null
+              ? await runtime.priceWatch.command(priceArgs, priceCtx)
+              : await runtime.priceWatch.handleSelection(text, priceCtx);
+          } catch (error) {
+            console.warn(`${waLogPrefix} monitor de preço:`, error?.message ?? error);
+            if (priceArgs !== null) priceReply = "deu ruim pra olhar os preços agora, tenta de novo daqui a pouco";
+          }
+          if (priceReply) {
+            await safeSendMessage(remoteJid, { text: priceReply });
+            finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+            continue;
+          }
         }
 
         if (parsedCommand?.command === "help") {

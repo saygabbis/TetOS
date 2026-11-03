@@ -57,6 +57,13 @@ export function scheduleAuxiliaryLoops(runtime, getSocket, getConnected) {
     runtime.shortTerm?.add?.({ role: "assistant", content: `mensagem(${JSON.stringify(text)})` }, sessionId);
   });
 
+  // Monitor de preço: aviso direto no chat onde pediram (PV ou grupo), sem passar pela conversa.
+  runtime.priceWatch?.registerSender?.("whatsapp", async ({ chatId, text }) => {
+    const socket = getSocket();
+    if (!getConnected() || !socket) throw new Error("zap offline");
+    await socket.sendMessage(chatId, { text });
+  });
+
   // Vida: avisa quando ela acorda/volta (entrega o que ficou pra depois). Barato — só consulta o plano do dia.
   if (runtime.brainOrchestrator?.life?.tick) {
     setInterval(() => {

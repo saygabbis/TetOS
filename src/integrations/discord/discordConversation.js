@@ -18,6 +18,7 @@ import { DISCORD_UPLOAD_LIMIT, downloadMediaItem, emojiSizedImage, mediaItemsOf 
 import { formatDuration, formatRate, parseHushRequest, polishDiscordActions, rollRate } from "./discordPolicy.js";
 import { createDiscordLog } from "./discordLog.js";
 import { parseTetosCommand } from "../whatsapp/commands/tetosCommand.js";
+import { parsePriceWatchCommand } from "../../modules/priceWatch/priceWatch.js";
 
 /**
  * Conversa no Discord: quando ela responde (modo do canal, marcação, reply, nome, .tetos), quando segura
@@ -140,6 +141,31 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     const mode = isDM ? "padrao" : state.modeOf(channelId);
     record(message, { text: text || (items.length ? `[${items.map((i) => i.name).join(", ")}]` : "") });
     if (isDM || mode !== "off") dlog.chat(place, who, text || `[${items.map((i) => i.name).join(", ")}]`);
+
+    // Monitor de preço (igual ao zap): .monitorarpreco <produto>, depois os números das opções.
+    if (runtime.priceWatch && text) {
+      const priceArgs = parsePriceWatchCommand(text, runtime.defaults.commandPrefix);
+      const priceCtx = {
+        platform: "discord",
+        chatId: channelId,
+        userId: message.author.id,
+        isGroup: !isDM,
+        say: (msg) => say(channelId, msg)
+      };
+      let priceReply = null;
+      try {
+        priceReply = priceArgs !== null
+          ? await runtime.priceWatch.command(priceArgs, priceCtx)
+          : await runtime.priceWatch.handleSelection(text, priceCtx);
+      } catch (error) {
+        log.warn?.(`[discord] monitor de preço: ${error?.message ?? error}`);
+        if (priceArgs !== null) priceReply = "deu ruim pra olhar os preços agora, tenta de novo daqui a pouco";
+      }
+      if (priceReply) {
+        dlog.decision(place, who, "monitor de preço", priceArgs !== null ? `comando: ${priceArgs || "ajuda"}` : "escolheu opções");
+        return say(channelId, priceReply);
+      }
+    }
 
     // .tetos <mensagem>: chama ela na hora (igual ao zap), mesmo ocupada; por 30 s as próximas
     // mensagens dessa pessoa nesse canal também (cada uma renova).

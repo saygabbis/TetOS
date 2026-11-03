@@ -60,6 +60,12 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
     await conversation.say(String(chatId ?? "").replace(/^discord:/, ""), text);
   });
 
+  // Monitor de preço: avisos no canal onde pediram.
+  runtime.priceWatch?.registerSender?.("discord", async ({ chatId, text }) => {
+    if (!api.ready) throw new Error("discord offline");
+    await conversation.say(String(chatId), text);
+  });
+
   client.once(Events.ClientReady, async (c) => {
     api.ready = true;
     log.log?.(`[discord] conectada como ${c.user.tag} em ${c.guilds.cache.size} servidor(es)`);

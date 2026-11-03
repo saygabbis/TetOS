@@ -567,6 +567,8 @@ async function main() {
   setTimeout(() => void runtime.audioTranscriber?.warmup?.().catch(() => {}), 20_000).unref();
   // Mente: estudo sozinha, revisão das próprias conversas, habilidades e mudanças no próprio código.
   runtime.mind?.start?.();
+  // Monitor de preço (.monitorarpreco): olha os produtos marcados e avisa no chat de quem pediu.
+  runtime.priceWatch?.start?.();
   // Discord no mesmo processo (mesma memória/vida); se falhar, o zap segue normal.
   void startDiscordBot(runtime).catch((error) => console.error("[discord] não subiu:", error?.message ?? error));
 

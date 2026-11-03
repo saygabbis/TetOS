@@ -119,6 +119,7 @@ export function formatWhatsAppHelpText(prefix = ".") {
     `${dot} *${c("tetos")}* \`<mensagem>\` — pergunta pontual à IA (sem conversa contínua)`,
     `${dot} ${c("repertorio")} on|off — auto-salva figurinhas recebidas`,
     `${dot} ${c("repertorio")} remover — tira do repertório (marque a figurinha com reply antes)`,
+    `${dot} *${c("monitorarpreco")}* \`<produto>\` — monitora preço em vários sites (${c("monitorarpreco")} ajuda)`,
     "",
     `⚡ *Ativar / desativar a Teto*`,
     `${dot} *${c("teto-ativar")}* — ativa no privado (PV)`,

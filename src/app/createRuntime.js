@@ -38,6 +38,8 @@ import { ChatCommandRouter } from "../core/operations/chatCommandRouter.js";
 import { PendingConfirmationStore } from "../core/operations/pendingConfirmations.js";
 import { ReminderStore } from "../modules/reminders/reminderStore.js";
 import { ReminderScheduler } from "../modules/reminders/reminderScheduler.js";
+import { PriceWatch } from "../modules/priceWatch/priceWatch.js";
+import { PriceSources } from "../modules/priceWatch/priceSources.js";
 import { MultimodalMemoryStore } from "../core/memory/multimodalMemory.js";
 import { AudioTranscriptionStore } from "../modules/audio/audioTranscriptionStore.js";
 import { AudioTranscriber } from "../modules/audio/audioTranscriber.js";
@@ -427,6 +429,16 @@ export function createRuntime() {
     identityLinks: new IdentityLinkStore(DEFAULTS.identityLinksPath),
     attention: new AttentionFocus(),
     summons: new SummonWindow(),
+    // Os ciclos só começam com `priceWatch.start()` (o runner chama).
+    priceWatch: new PriceWatch({
+      path: DEFAULTS.priceWatchPath,
+      sources: new PriceSources(),
+      timeZone: DEFAULTS.dailyReportTz,
+      intervalMs: Math.max(30, DEFAULTS.priceWatchIntervalMin || 180) * 60_000,
+      digestHour: DEFAULTS.priceWatchDigestHour,
+      changeAlertPct: DEFAULTS.priceWatchChangePct,
+      commandPrefix: DEFAULTS.commandPrefix
+    }),
     defaults: DEFAULTS
   };
   viewOnceMirror.runtime = runtime;

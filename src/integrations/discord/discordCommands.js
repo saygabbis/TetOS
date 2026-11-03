@@ -158,7 +158,7 @@ export function formatDiscordHelp(prefix = ".") {
     "• clique direito numa mensagem → Apps → **Fazer figurinha** / **Remover fundo** / **Perguntar pra Teto**",
     `• os comandos do zap também valem: \`${prefix}sticker\`, \`${prefix}removebg\`, \`${prefix}toimg\`, \`${prefix}yt <link> mp3\`… (com anexo ou em reply)`,
     "",
-    "**Outros** · `/clima`"
+    `**Outros** · \`/clima\` · \`${prefix}monitorarpreco <produto>\` monitoro preço em vários sites e aviso aqui quando muda (\`${prefix}monitorarpreco ajuda\`)`
   ].join("\n");
 }
 
