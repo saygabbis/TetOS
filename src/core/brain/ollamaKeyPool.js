@@ -35,7 +35,9 @@ export function exhaustionCooldown(status, text, now = Date.now()) {
   const t = String(text ?? "").toLowerCase();
   // 403 também vem de "modelo pede assinatura" — aí trocar de conta não muda nada.
   if (status === 401 || (status === 403 && /unauthori[sz]ed|invalid|api key/.test(t))) return { until: now + 24 * HOUR, reason: "chave recusada" };
-  if (status !== 429 && status !== 402 && !/usage limit|quota/.test(t)) return null;
+  // 402 "Add usage credits to use cloud models": a conta não tem nuvem (sem plano/créditos).
+  if (status === 402 || /usage credits|add credits/.test(t)) return { until: now + 6 * HOUR, reason: "conta sem créditos de nuvem" };
+  if (status !== 429 && !/usage limit|quota/.test(t)) return null;
   if (/month/.test(t)) {
     const d = new Date(now);
     return { until: Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1), reason: "limite mensal" };

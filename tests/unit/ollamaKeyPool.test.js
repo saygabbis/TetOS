@@ -38,6 +38,7 @@ describe("contas da Ollama", () => {
     expect(exhaustionCooldown(429, "weekly usage limit", now).until).toBe(now + 7 * 86_400_000);
     expect(exhaustionCooldown(429, "too many requests", now).until).toBe(now + 60_000);
     expect(exhaustionCooldown(401, "unauthorized", now).reason).toBe("chave recusada");
+    expect(exhaustionCooldown(402, '{"error":"Add usage credits to use cloud models"}', now)).toEqual({ until: now + 6 * 3_600_000, reason: "conta sem créditos de nuvem" });
     expect(exhaustionCooldown(403, "this model requires a subscription", now)).toBeNull();
     expect(exhaustionCooldown(500, "internal error", now)).toBeNull();
   });
