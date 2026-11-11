@@ -123,7 +123,7 @@ class WhisperWorker {
   }
 }
 
-async function transcribeViaApi({ filePath, mimetype, url, key, model, language }) {
+async function transcribeViaApi({ filePath, mimetype, url, key, model, language, onUsage }) {
   const form = new FormData();
   const bytes = await readFile(filePath);
   form.append("file", new Blob([bytes], { type: mimetype || "audio/ogg" }), basename(filePath).replace(/\.\w+$/, "") + ".ogg");
@@ -139,6 +139,8 @@ async function transcribeViaApi({ filePath, mimetype, url, key, model, language 
   });
   if (!res.ok) throw new Error(`STT API ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const json = await res.json();
+  // Sem duração na resposta: estima pelo tamanho do ogg/opus de zap (~2 KB por segundo).
+  onUsage?.(Number(json?.duration) || Math.max(1, bytes.byteLength / 2000));
   return String(json?.text ?? "");
 }
 

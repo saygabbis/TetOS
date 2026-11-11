@@ -46,12 +46,41 @@ export function parseSearchHtml(html = "", max = 5) {
 }
 
 export class SearchAdapter {
-  constructor({ timeoutMs = 12000, maxResults = 5 } = {}) {
+  /**
+   * backend: duckduckgo (grátis) | openai (web_search da OpenAI, pago) | auto (DuckDuckGo; se falhar
+   * ou vier vazio, OpenAI).
+   */
+  constructor({ timeoutMs = 12000, maxResults = 5, backend = "duckduckgo", openai = null } = {}) {
     this.timeoutMs = timeoutMs;
     this.maxResults = maxResults;
+    this.openai = openai?.webSearch ? openai : null;
+    this.backend = this.openai && ["openai", "auto"].includes(backend) ? backend : "duckduckgo";
   }
 
   async search(query) {
+    if (this.backend === "openai") return this.searchOpenAI(query);
+    if (this.backend === "auto") {
+      let results = [];
+      try {
+        results = await this.searchDuckDuckGo(query);
+      } catch (error) {
+        console.warn(`[busca] DuckDuckGo falhou, usando OpenAI: ${error?.message ?? error}`);
+      }
+      if (results.length) return results;
+      return this.searchOpenAI(query);
+    }
+    return this.searchDuckDuckGo(query);
+  }
+
+  async searchOpenAI(query) {
+    const q = String(query ?? "").trim();
+    if (!q) return [];
+    const { text, results } = await this.openai.webSearch(q, { maxResults: this.maxResults });
+    if (results.length) return results;
+    return text ? [{ url: "https://openai.com", title: `Resumo da busca: ${q}`, snippet: text.slice(0, 600) }] : [];
+  }
+
+  async searchDuckDuckGo(query) {
     try {
       return await this.searchOnce(query);
     } catch (error) {

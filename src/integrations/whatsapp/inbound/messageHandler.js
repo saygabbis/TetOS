@@ -1020,6 +1020,14 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
           continue;
         }
+        // Gasto da API da OpenAI (só a dona, no PV): .gastos
+        const costRe = new RegExp(`^\\${commandPrefix}gastos?$`, "i");
+        if (!isFromMe && !isGroup && (role !== "media" || botChatRole) && runtime.openaiUsage && costRe.test(String(text ?? "").trim())) {
+          const reply = isOwnerContact(runtime, remoteJid, userId) ? runtime.openaiUsage.summary() : "isso aí é só pra Gabbis 😛";
+          await safeSendMessage(remoteJid, { text: reply });
+          finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+          continue;
+        }
         // Como ela tá se sentindo (qualquer um, no PV): .sentimentos, .sentimentos historico, .sentimentos <assunto>
         const feelRe = new RegExp(`^\\${commandPrefix}sentimentos?(?:\\s+([\\s\\S]*))?$`, "i");
         const feelCmd = !isFromMe && !isGroup && (role !== "media" || botChatRole) && runtime.mind?.feelings ? String(text ?? "").trim().match(feelRe) : null;

@@ -9,6 +9,8 @@ import { EpisodicMemoryStore } from "../core/memory/EpisodicMemoryStore.js";
 import { OllamaClient } from "../core/brain/ollamaClient.js";
 import { OllamaKeyPool } from "../core/brain/ollamaKeyPool.js";
 import { MiniMaxClient } from "../core/brain/minimaxClient.js";
+import { OpenAIClient } from "../core/brain/openaiClient.js";
+import { OpenAIUsageMeter } from "../core/brain/openaiUsage.js";
 import { BrainOrchestrator } from "../core/brain/BrainOrchestrator.js";
 import { Agent } from "../core/agent/agent.js";
 import { ChatService } from "../modules/chat/chatService.js";
@@ -83,7 +85,49 @@ function sharedOllamaKeyPool() {
   return ollamaKeyPool;
 }
 
-function createLlmClient({ model, temperature, numPredict, worker = false, timeoutMs = DEFAULTS.modelTimeoutMs } = {}) {
+let openaiUsage = null;
+/** Um contador de gasto só pra tudo que usa a OpenAI (conversa, mente, visão, voz, imagem, busca). */
+export function sharedOpenAIUsage() {
+  openaiUsage ??= new OpenAIUsageMeter({
+    path: DEFAULTS.openaiUsagePath,
+    dailyBudgetUsd: DEFAULTS.openaiDailyBudgetUsd,
+    timeZone: DEFAULTS.dailyReportTz ?? "America/Sao_Paulo"
+  });
+  return openaiUsage;
+}
+
+/** Nome de modelo que veio de config antiga da Ollama (gemma, llama…) não serve na OpenAI: usa o padrão. */
+function openaiModelFor(model, fallback) {
+  const m = String(model ?? "").trim();
+  return /^(gpt-|o\d|chatgpt-)/i.test(m) ? m : fallback;
+}
+
+/**
+ * kind: chat (conversa, nunca barrada pelo teto) | worker (fundo, barato) | code (autoevolução).
+ */
+function createOpenAIClient({ model, temperature, numPredict, kind = "chat", timeoutMs = DEFAULTS.modelTimeoutMs, purpose } = {}) {
+  const fallback = kind === "chat" ? DEFAULTS.openaiModel : DEFAULTS.openaiWorkerModel;
+  return new OpenAIClient({
+    baseUrl: DEFAULTS.openaiBaseUrl,
+    apiKey: DEFAULTS.openaiApiKey,
+    model: openaiModelFor(model, fallback),
+    temperature,
+    numPredict,
+    // Raciocínio conta como saída: dá mais tempo pra resposta não cortar.
+    timeoutMs: Math.max(timeoutMs, kind === "chat" ? 45_000 : 90_000),
+    reasoningEffort:
+      kind === "chat" ? DEFAULTS.openaiReasoning : kind === "code" ? DEFAULTS.openaiCodeReasoning : DEFAULTS.openaiWorkerReasoning,
+    serviceTier: kind === "chat" ? "" : DEFAULTS.openaiWorkerServiceTier,
+    usage: sharedOpenAIUsage(),
+    critical: kind === "chat",
+    purpose: purpose ?? kind
+  });
+}
+
+function createLlmClient({ model, temperature, numPredict, worker = false, timeoutMs = DEFAULTS.modelTimeoutMs, kind, purpose } = {}) {
+  if (DEFAULTS.llmProvider === "openai") {
+    return createOpenAIClient({ model, temperature, numPredict, timeoutMs, kind: kind ?? (worker ? "worker" : "chat"), purpose });
+  }
   if (DEFAULTS.llmProvider === "minimax") {
     return new MiniMaxClient({
       baseUrl: DEFAULTS.minimaxBaseUrl,
@@ -107,7 +151,13 @@ function createLlmClient({ model, temperature, numPredict, worker = false, timeo
 }
 
 export function createRuntime() {
-  if (DEFAULTS.llmProvider === "minimax") {
+  if (DEFAULTS.llmProvider === "openai") {
+    if (!DEFAULTS.openaiApiKey) {
+      throw new Error(
+        "TETOS_LLM_PROVIDER=openai requer TETOS_OPENAI_API_KEY no .env. Crie uma chave em https://platform.openai.com/api-keys"
+      );
+    }
+  } else if (DEFAULTS.llmProvider === "minimax") {
     if (!DEFAULTS.minimaxApiKey) {
       throw new Error(
         "TETOS_LLM_PROVIDER=minimax requer TETOS_MINIMAX_API_KEY. Crie uma chave em https://platform.minimax.io"
@@ -153,7 +203,11 @@ export function createRuntime() {
     numPredict: DEFAULTS.ollamaNumPredict
   });
   const searchAdapter = new SearchAdapter({
-    maxResults: DEFAULTS.searchMaxResults
+    maxResults: DEFAULTS.searchMaxResults,
+    backend: DEFAULTS.openaiApiKey ? DEFAULTS.searchBackend : "duckduckgo",
+    openai: DEFAULTS.openaiApiKey
+      ? createOpenAIClient({ temperature: 0.2, kind: "worker", purpose: "busca", timeoutMs: 60_000 })
+      : null
   });
   const searchModule = new SearchModule({
     adapter: searchAdapter,
@@ -172,6 +226,17 @@ export function createRuntime() {
   const audioTranscriptions = new AudioTranscriptionStore(DEFAULTS.audioTranscriptionsPath);
   const audioTranscriber = new AudioTranscriber({
     enabled: DEFAULTS.audioTranscribeEnabled,
+    // Sem Groq configurado e com chave da OpenAI: transcreve pela OpenAI (o Whisper local fica de reserva).
+    ...(!process.env.TETOS_STT_API_KEY && DEFAULTS.openaiApiKey
+      ? {
+          api: {
+            url: `${DEFAULTS.openaiBaseUrl}/audio/transcriptions`,
+            key: DEFAULTS.openaiApiKey,
+            model: DEFAULTS.openaiSttModel,
+            onUsage: (seconds) => sharedOpenAIUsage().add((seconds / 60) * 0.003, "áudio")
+          }
+        }
+      : {}),
     model: DEFAULTS.whisperModel,
     language: DEFAULTS.whisperLanguage,
     modelsDir: DEFAULTS.modelsDir
@@ -182,8 +247,18 @@ export function createRuntime() {
   const visualAnalyzer = new VisualAnalyzer();
   const semanticVisionAnalyzer = new SemanticVisionAnalyzer();
   const visionModel = DEFAULTS.visionModel || DEFAULTS.model;
+  const useOpenAIVision = DEFAULTS.visionProvider === "openai" && Boolean(DEFAULTS.openaiApiKey);
   const ollamaVisionAnalyzer = new OllamaVisionAnalyzer({
-    client: new OllamaClient({
+    client: useOpenAIVision
+      ? createOpenAIClient({
+          model: DEFAULTS.visionModel,
+          temperature: DEFAULTS.ollamaTemperature,
+          numPredict: 160,
+          kind: "worker",
+          timeoutMs: DEFAULTS.visionTimeoutMs,
+          purpose: "visão"
+        })
+      : new OllamaClient({
       baseUrl: DEFAULTS.ollamaBaseUrl,
       model: visionModel,
       apiKey: DEFAULTS.ollamaApiKey || undefined,
@@ -209,6 +284,7 @@ export function createRuntime() {
     DEFAULTS.visionAdapter === "ollama" &&
     DEFAULTS.visionEnabled &&
     DEFAULTS.mediaEnrichEnabled &&
+    !useOpenAIVision &&
     !DEFAULTS.visionModel &&
     !MULTIMODAL_MODEL_RE.test(String(DEFAULTS.model ?? ""))
   ) {
@@ -222,6 +298,15 @@ export function createRuntime() {
     enabled: DEFAULTS.imageGenEnabled,
     provider: DEFAULTS.imageGenProvider,
     hfToken: DEFAULTS.hfToken,
+    openai: DEFAULTS.openaiApiKey
+      ? {
+          apiKey: DEFAULTS.openaiApiKey,
+          baseUrl: DEFAULTS.openaiBaseUrl,
+          model: DEFAULTS.openaiImageModel,
+          quality: DEFAULTS.openaiImageQuality,
+          usage: sharedOpenAIUsage()
+        }
+      : null,
     outputDir: DEFAULTS.imageGenOutputDir,
     maxPer10Min: DEFAULTS.imageGenMaxPer10Min
   });
@@ -263,7 +348,7 @@ export function createRuntime() {
   const userPatterns = new UserPatternsStore(DEFAULTS.userPatternsPath);
 
   const workerLlm =
-    DEFAULTS.llmProvider === "minimax" || DEFAULTS.workerLlmUrl
+    DEFAULTS.llmProvider === "minimax" || DEFAULTS.llmProvider === "openai" || DEFAULTS.workerLlmUrl
       ? createLlmClient({
           model:
             DEFAULTS.llmProvider === "minimax"
@@ -413,7 +498,22 @@ export function createRuntime() {
     weather: new WeatherService(),
     automateBridge: new AutomateApiClient(),
     peopleMemory,
-    voiceNotes: new VoiceNotes(),
+    voiceNotes: new VoiceNotes(
+      DEFAULTS.ttsProvider === "openai" && DEFAULTS.openaiApiKey
+        ? {
+            provider: "openai",
+            openai: {
+              apiKey: DEFAULTS.openaiApiKey,
+              baseUrl: DEFAULTS.openaiBaseUrl,
+              model: DEFAULTS.openaiTtsModel,
+              voice: DEFAULTS.openaiTtsVoice,
+              instructions: DEFAULTS.openaiTtsInstructions,
+              usage: sharedOpenAIUsage()
+            }
+          }
+        : {}
+    ),
+    openaiUsage: DEFAULTS.llmProvider === "openai" || DEFAULTS.openaiApiKey ? sharedOpenAIUsage() : null,
     initiativeState: new InitiativeState(DEFAULTS.initiativeStatePath),
     imageGenerationService,
     visualAnalyses,
@@ -463,7 +563,7 @@ export function createRuntime() {
  */
 function createMind(runtime, { searchAdapter, linkReader }) {
   const mindModel = DEFAULTS.mindModel || (DEFAULTS.llmProvider === "minimax" ? DEFAULTS.minimaxWorkerModel : DEFAULTS.workerLlmModel || DEFAULTS.model);
-  const mindLlm = createLlmClient({ model: mindModel, temperature: 0.3, numPredict: 1800, worker: true, timeoutMs: 120_000 });
+  const mindLlm = createLlmClient({ model: mindModel, temperature: 0.3, numPredict: 1800, worker: true, timeoutMs: 120_000, purpose: "mente" });
   const search = (q) => searchAdapter.search(q);
   // Avisos pra dona no zap, filtrados pelo nível que ela escolheu (.mente avisos tudo|importante|nada).
   const notifyOwner = async (text, { kind = "info" } = {}) => {
@@ -494,6 +594,8 @@ function createMind(runtime, { searchAdapter, linkReader }) {
       temperature: 0.15,
       numPredict: 6000,
       worker: true,
+      kind: "code",
+      purpose: "autoevolução",
       timeoutMs: 240_000
     });
     evolution = new EvolutionEngine({

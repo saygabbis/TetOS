@@ -15,6 +15,7 @@ import { LongTermMemory } from "../../src/core/memory/longTerm.js";
 import { ContextBuilder } from "../../src/core/memory/contextBuilder.js";
 import { DEFAULTS } from "../../src/infra/config/defaults.js";
 import { MiniMaxClient } from "../../src/core/brain/minimaxClient.js";
+import { OpenAIClient } from "../../src/core/brain/openaiClient.js";
 import { OllamaClient } from "../../src/core/brain/ollamaClient.js";
 import { loadCharacter, loadPersonality } from "../../src/core/personality/index.js";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -30,6 +31,15 @@ function makeTempDir() {
 }
 
 function createBrain() {
+  if (DEFAULTS.llmProvider === "openai") {
+    return new OpenAIClient({
+      baseUrl: DEFAULTS.openaiBaseUrl,
+      model: DEFAULTS.openaiModel,
+      apiKey: DEFAULTS.openaiApiKey,
+      numPredict: DEFAULTS.ollamaNumPredict,
+      reasoningEffort: DEFAULTS.openaiReasoning
+    });
+  }
   if (DEFAULTS.llmProvider === "minimax") {
     if (!DEFAULTS.minimaxApiKey) {
       throw new Error("TETOS_MINIMAX_API_KEY não configurada. Verifique o .env.");
@@ -57,6 +67,7 @@ function createBrain() {
 
 // Pula também quando a LLM configurada não está alcançável (sem Ollama local / sem chave MiniMax).
 async function llmReachable() {
+  if (DEFAULTS.llmProvider === "openai") return Boolean(DEFAULTS.openaiApiKey);
   if (DEFAULTS.llmProvider === "minimax") return Boolean(DEFAULTS.minimaxApiKey);
   try {
     const res = await fetch(`${String(DEFAULTS.ollamaBaseUrl).replace(/\/$/, "")}/api/tags`, {

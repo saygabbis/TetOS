@@ -2,7 +2,16 @@ import { parseRemoveBgApiKeys } from "../../core/media/removeBgKeyPool.js";
 import { parseOllamaApiKeys } from "../../core/brain/ollamaKeyPool.js";
 
 const llmProviderRaw = (process.env.TETOS_LLM_PROVIDER ?? "ollama").toLowerCase();
-const llmProvider = llmProviderRaw === "minimax" ? "minimax" : "ollama";
+// --- OpenAI (TETOS_LLM_PROVIDER=openai) ---
+const openaiApiKey = String(process.env.TETOS_OPENAI_API_KEY || process.env.OPENAI_API_KEY || "").trim();
+/** openai sem chave colada ainda: segue no provedor antigo em vez de não subir. */
+const llmFallbackRaw = String(process.env.TETOS_LLM_FALLBACK_PROVIDER ?? "ollama").toLowerCase();
+let llmProvider = ["minimax", "openai"].includes(llmProviderRaw) ? llmProviderRaw : "ollama";
+if (llmProvider === "openai" && !openaiApiKey) {
+  llmProvider = llmFallbackRaw === "minimax" ? "minimax" : "ollama";
+  console.warn(`[tetos:llm] TETOS_LLM_PROVIDER=openai mas TETOS_OPENAI_API_KEY está vazio — usando ${llmProvider} até colar a chave.`);
+}
+const openaiModel = String(process.env.TETOS_OPENAI_MODEL || "gpt-6-luna").trim();
 
 const ollamaModeRaw = (process.env.TETOS_OLLAMA_MODE ?? "local").toLowerCase();
 const ollamaMode = ollamaModeRaw === "cloud" ? "cloud" : "local";
@@ -13,7 +22,9 @@ const ollamaBaseUrl =
     : (process.env.TETOS_OLLAMA_URL ?? "http://localhost:11434");
 
 const model =
-  process.env.TETOS_MODEL ??
+  llmProvider === "openai"
+    ? openaiModel
+    : process.env.TETOS_MODEL ??
   (llmProvider === "minimax"
     ? (process.env.TETOS_MINIMAX_MODEL ?? "MiniMax-M2.7")
     : ollamaMode === "cloud"
@@ -78,6 +89,34 @@ const responseMaxParts =
 
 export const DEFAULTS = {
   llmProvider,
+  openaiApiKey,
+  openaiModel,
+  /** Modelo das tarefas de fundo (mente, memória, worker). Vazio = o mesmo do chat. */
+  openaiWorkerModel: String(process.env.TETOS_OPENAI_WORKER_MODEL || openaiModel).trim(),
+  openaiBaseUrl: String(process.env.TETOS_OPENAI_BASE_URL || "https://api.openai.com/v1").trim().replace(/\/$/, ""),
+  /** none | low | medium | high: quanto o modelo "pensa" antes de responder (mais = mais caro e lento). */
+  openaiReasoning: String(process.env.TETOS_OPENAI_REASONING || "low").trim().toLowerCase(),
+  openaiWorkerReasoning: String(process.env.TETOS_OPENAI_WORKER_REASONING || "none").trim().toLowerCase(),
+  openaiCodeReasoning: String(process.env.TETOS_OPENAI_CODE_REASONING || "medium").trim().toLowerCase(),
+  /** flex = metade do preço nas tarefas de fundo (mais lento); vazio = normal. */
+  openaiWorkerServiceTier: String(process.env.TETOS_OPENAI_WORKER_SERVICE_TIER ?? "flex").trim(),
+  /** Teto de gasto por dia (US$) das tarefas de fundo; 0 = sem teto. A conversa nunca é barrada. */
+  openaiDailyBudgetUsd: Number(process.env.TETOS_OPENAI_DAILY_BUDGET_USD ?? 0.3),
+  openaiUsagePath: process.env.TETOS_OPENAI_USAGE_PATH ?? "./data/openaiUsage.json",
+  /** Busca na web: duckduckgo (grátis) | openai (pago, ~US$0,01/busca) | auto (DuckDuckGo e OpenAI se falhar). */
+  searchBackend: String(process.env.TETOS_SEARCH_BACKEND || (openaiApiKey ? "auto" : "duckduckgo")).trim().toLowerCase(),
+  /** Voz da Teto: edge (grátis) | openai (gpt-4o-mini-tts). */
+  ttsProvider: String(process.env.TETOS_TTS_PROVIDER || "edge").trim().toLowerCase(),
+  openaiTtsModel: String(process.env.TETOS_OPENAI_TTS_MODEL || "gpt-4o-mini-tts").trim(),
+  openaiTtsVoice: String(process.env.TETOS_OPENAI_TTS_VOICE || "nova").trim(),
+  openaiTtsInstructions: String(
+    process.env.TETOS_OPENAI_TTS_INSTRUCTIONS ||
+      "Fale em português do Brasil, com voz jovem, animada e fofa, num tom casual de áudio de WhatsApp."
+  ).trim(),
+  openaiImageModel: String(process.env.TETOS_OPENAI_IMAGE_MODEL || "gpt-image-1-mini").trim(),
+  /** low | medium | high — low custa centavos por imagem. */
+  openaiImageQuality: String(process.env.TETOS_OPENAI_IMAGE_QUALITY || "low").trim().toLowerCase(),
+  openaiSttModel: String(process.env.TETOS_OPENAI_STT_MODEL || "gpt-4o-mini-transcribe").trim(),
   minimaxApiKey,
   minimaxBaseUrl,
   minimaxModel,
@@ -335,6 +374,10 @@ export const DEFAULTS = {
   visionAdapter: String(process.env.TETOS_VISION_ADAPTER ?? "ollama").trim().toLowerCase() === "blip"
     ? "blip"
     : "ollama",
+  /** Com TETOS_LLM_PROVIDER=openai a visão usa a OpenAI também (ollama = força a Ollama). */
+  visionProvider: String(process.env.TETOS_VISION_PROVIDER || (llmProvider === "openai" ? "openai" : "ollama"))
+    .trim()
+    .toLowerCase(),
   visionEnabled: String(process.env.TETOS_VISION_ENABLED ?? "true").toLowerCase() === "true",
   /** Modelo com visão (ex.: llava, llama3.2-vision). Vazio = TETOS_MODEL. */
   visionModel: String(process.env.TETOS_VISION_MODEL ?? "").trim(),
@@ -347,7 +390,7 @@ export const DEFAULTS = {
   whisperLanguage: String(process.env.TETOS_WHISPER_LANGUAGE ?? "pt").trim() || "pt",
   modelsDir: String(process.env.TETOS_MODELS_DIR ?? "./data/models").trim() || "./data/models",
   imageGenEnabled: String(process.env.TETOS_IMAGE_GEN_ENABLED ?? "true").toLowerCase() === "true",
-  imageGenProvider: String(process.env.TETOS_IMAGE_GEN_PROVIDER ?? "pollinations")
+  imageGenProvider: String(process.env.TETOS_IMAGE_GEN_PROVIDER || (openaiApiKey ? "openai" : "pollinations"))
     .trim()
     .toLowerCase(),
   hfToken: String(process.env.TETOS_HF_TOKEN ?? "").trim(),

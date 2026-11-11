@@ -30,6 +30,26 @@ async function fetchPollinations(prompt) {
   return buffer;
 }
 
+async function fetchOpenAI(prompt, { apiKey, baseUrl = "https://api.openai.com/v1", model = "gpt-image-1-mini", quality = "low" }) {
+  const res = await fetch(`${baseUrl}/images/generations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ model, prompt, size: "1024x1024", quality, n: 1 }),
+    signal: AbortSignal.timeout(120_000)
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`openai image HTTP ${res.status}: ${body.slice(0, 160)}`);
+  }
+  const json = await res.json();
+  const b64 = json?.data?.[0]?.b64_json;
+  if (!b64) throw new Error("openai image: resposta sem imagem");
+  return Buffer.from(b64, "base64");
+}
+
+/** Preço aproximado do gpt-image-1-mini por imagem 1024x1024. */
+const OPENAI_IMAGE_USD = { low: 0.006, medium: 0.015, high: 0.052 };
+
 async function fetchHuggingFace(prompt, token, model) {
   const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
     method: "POST",
@@ -56,11 +76,14 @@ export class ImageGenerationService {
     provider = "pollinations",
     hfToken = "",
     hfModel = "black-forest-labs/FLUX.1-schnell",
+    openai = null,
     outputDir = "./data/media/generated",
     maxPer10Min = 3
   } = {}) {
     this.enabled = enabled !== false;
-    this.provider = provider === "huggingface" ? "huggingface" : "pollinations";
+    this.openai = openai?.apiKey ? openai : null;
+    this.provider =
+      provider === "huggingface" ? "huggingface" : provider === "openai" && this.openai ? "openai" : "pollinations";
     this.hfToken = String(hfToken ?? "").trim();
     this.hfModel = hfModel;
     this.outputDir = outputDir;
@@ -93,7 +116,16 @@ export class ImageGenerationService {
 
     let buffer;
     try {
-      if (this.provider === "huggingface") {
+      if (this.provider === "openai") {
+        try {
+          buffer = await fetchOpenAI(cleanPrompt, this.openai);
+          this.openai.usage?.add(OPENAI_IMAGE_USD[this.openai.quality] ?? OPENAI_IMAGE_USD.low, "imagem");
+        } catch (error) {
+          // Recusa de conteúdo ou falha da OpenAI: tenta o gerador grátis.
+          console.warn(`[imagem] OpenAI falhou, usando pollinations: ${error?.message ?? error}`);
+          buffer = await fetchPollinations(cleanPrompt);
+        }
+      } else if (this.provider === "huggingface") {
         buffer = await fetchHuggingFace(cleanPrompt, this.hfToken, this.hfModel);
       } else {
         buffer = await fetchPollinations(cleanPrompt);

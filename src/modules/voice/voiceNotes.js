@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
@@ -46,8 +46,13 @@ export class VoiceNotes {
     pitch = process.env.TETOS_TTS_PITCH || "+22%",
     rate = process.env.TETOS_TTS_RATE || "+6%",
     ffmpegPath = process.env.TETOS_FFMPEG_PATH || ffmpegInstaller.path,
-    now = () => Date.now()
+    now = () => Date.now(),
+    /** edge (grátis) | openai (gpt-4o-mini-tts; se falhar, cai pro Edge). */
+    provider = "edge",
+    openai = null
   } = {}) {
+    this.provider = provider === "openai" && openai?.apiKey ? "openai" : "edge";
+    this.openai = openai;
     this.enabled = enabled;
     this.voice = voice;
     this.pitch = pitch;
@@ -68,13 +73,23 @@ export class VoiceNotes {
   async synthesize(text) {
     const spoken = prepareSpokenText(text);
     if (!spoken || !/[\p{L}\p{N}]/u.test(spoken)) throw new Error("nada para falar");
-    const { MsEdgeTTS, OUTPUT_FORMAT } = await import("msedge-tts");
     const dir = mkdtempSync(join(tmpdir(), "tetos-voz-"));
     try {
-      const tts = new MsEdgeTTS();
-      await tts.setMetadata(this.voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-      const { audioFilePath } = await tts.toFile(dir, spoken, { pitch: this.pitch, rate: this.rate });
-      tts.close?.();
+      let audioFilePath = null;
+      if (this.provider === "openai") {
+        try {
+          audioFilePath = await this.synthesizeOpenAI(spoken, dir);
+        } catch (error) {
+          console.warn(`[voz] OpenAI TTS falhou, usando Edge: ${error?.message ?? error}`);
+        }
+      }
+      if (!audioFilePath) {
+        const { MsEdgeTTS, OUTPUT_FORMAT } = await import("msedge-tts");
+        const tts = new MsEdgeTTS();
+        await tts.setMetadata(this.voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+        ({ audioFilePath } = await tts.toFile(dir, spoken, { pitch: this.pitch, rate: this.rate }));
+        tts.close?.();
+      }
       const ogg = await toOggOpus(audioFilePath, this.ffmpegPath);
       // ~13 caracteres por segundo de fala: dá pra estimar a duração (e o tempo "gravando…").
       const seconds = Math.max(1, Math.round(spoken.length / 13));
@@ -82,6 +97,28 @@ export class VoiceNotes {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  }
+
+  async synthesizeOpenAI(spoken, dir) {
+    const o = this.openai;
+    const res = await fetch(`${o.baseUrl ?? "https://api.openai.com/v1"}/audio/speech`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${o.apiKey}` },
+      body: JSON.stringify({
+        model: o.model ?? "gpt-4o-mini-tts",
+        voice: o.voice ?? "nova",
+        input: spoken,
+        ...(o.instructions ? { instructions: o.instructions } : {}),
+        response_format: "mp3"
+      }),
+      signal: AbortSignal.timeout(45_000)
+    });
+    if (!res.ok) throw new Error(`OpenAI TTS ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const file = join(dir, "voz.mp3");
+    writeFileSync(file, Buffer.from(await res.arrayBuffer()));
+    // ~US$ 0,015 por minuto de fala; ~13 caracteres por segundo.
+    o.usage?.add((spoken.length / 13 / 60) * 0.015, "voz");
+    return file;
   }
 
   markSent(chatId) {
