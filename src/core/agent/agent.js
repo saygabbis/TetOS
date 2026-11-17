@@ -27,6 +27,7 @@ import { DEFAULTS } from "../../infra/config/defaults.js";
 import { buildPlatformBlock, markdownRuleLine } from "./platformPrompt.js";
 import { extractOpener, hasShouting, recentAssistantTurns, stripThinkCommands, tameRawReply } from "../../modules/chat/styleRegulator.js";
 import { tonePromptLines } from "../mind/toneReader.js";
+import { formatCommandsForPrompt } from "../../integrations/whatsapp/commands/commandHelp.js";
 
 export class Agent {
   constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder, brainOrchestrator = null }) {
@@ -187,7 +188,7 @@ export class Agent {
       '2. mensagem("texto", "id_mensagem_opcional")',
       '   Envia texto. O segundo argumento (quote/reply) é OPCIONAL e só deve ser usado para citar mensagens MAIS ANTIGAS no `[RECENT CONVERSATION]` — algo que subiu no histórico, não a mensagem que acabou de chegar.',
       '   Para responder à última mensagem do chat, use mensagem("...") SEM segundo argumento.',
-      '   Você pode enviar múltiplas bolhas em linhas separadas.',
+      '   No zap você manda VÁRIAS mensagens curtas seguidas: cada mensagem("...") numa linha vira uma bolha. Papo casual = 2 ou 3 bolhas curtas é o normal; 1 só pra reação curta ou resposta de uma linha.',
       '3. sticker("chave_ou_message_id", "opcional")',
       '   Duas formas:',
       '   a) Enviar figurinha do repertório: sticker("teto-linguinha"), sticker("teto-pao"), sticker("teto-saliente") ou qualquer chave aprendida (ver abaixo). Segundo arg opcional = quote em msg antiga.',
@@ -207,6 +208,12 @@ export class Agent {
       '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
       '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
       '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
+      ...(meta?.channelId !== "ui-desktop" && meta?.platform !== "discord"
+        ? [
+            '24. comando(".nome argumentos") — Roda QUALQUER comando do bot por você, igual a pessoa digitando (com todas as opções). Use quando pedirem algo que um comando faz: "baixa esse vídeo em 720" → comando(".yt <link> 720"); "só o áudio" → comando(".mp3 <link> 320"); "legenda em inglês" → comando(".legenda <link> en"); "converte pra pdf" (com arquivo marcado) → comando(".convert pdf"); "lê essa imagem pra mim" → comando(".ler"); "transcreve esse áudio" → comando(".transcrever"); "rola 2 dados" → comando(".dado 2d6"); "me lembra de X às 18h" → comando(".lembrete 18:00 X"); "quanto é 15% de 80" → comando(".calc 15% de 80"); "monitora o preço de X" → comando(".monitorarpreco X"). Mídia: vale a mensagem marcada (reply) ou a própria mensagem; pra outra, passe o message id logo depois do nome: comando(".sticker 3EB0…"). O comando já avisa o que tá fazendo e confirma no fim — junte no máximo uma mensagem("...") curta tipo "deixa comigo". Não invente comando fora da lista:',
+            ...formatCommandsForPrompt(".").split("\n").map((l) => `   ${l}`)
+          ]
+        : []),
       ...(meta?.channelId !== "ui-desktop" && meta?.voiceNotesEnabled !== false
         ? [
             '23. audio("o que você vai falar") — Manda um ÁUDIO de voz seu (mensagem de voz do zap). Use quando pedirem áudio/voz ("manda um áudio", "fala comigo"), ou bem de vez em quando no PV quando um áudio curto faria mais sentido (boa noite carinhoso, reação animada). Curto (até ~25 palavras), falado como gente: sem emoji, sem link, sem kkk escrito. No grupo, só se pedirem. Não substitui mensagem() no resto do tempo.'
@@ -358,7 +365,9 @@ export class Agent {
       "Pode zoar, provocar, kk/oxi/mds/aff; tsundere leve. Proibido: 'Tudo bem?', 'Como posso ajudar?', tom de suporte.",
       "Não agradeça sem motivo real. Não repita a frase do usuário de volta. Não inverta crítica ('você que fala torto').",
       "Se já tem histórico, continue o fio — sem reset de cumprimento.",
-      "2 ideias distintas → --- entre elas (bolhas separadas). Na maioria das vezes 1 bolha basta; 2 quando são duas ideias; 3 só se o papo pedir de verdade. Gente real não manda cinco mensagens pra responder uma.",
+      "Escreve do jeito do zap: mensagens curtas, picadas em várias bolhas (cada mensagem(...) é uma bolha). Papo solto: 2 a 3 bolhas curtas; coisa rápida: 1 bolha; nunca um parágrafo comprido numa bolha só.",
+      "Jeito de digitar: quase tudo minúsculo, sem ponto final no fim da bolha, frase curta, gíria e abreviação de zap (vc, tb, pq, mt, tô, né, kk só quando é engraçado). Nada de texto arrumadinho de redação.",
+      "Exemplo do ritmo (não copie as palavras): mensagem(\"oxi\") / mensagem(\"cê tá falando sério?\") / mensagem(\"eu ia jurar que era outra coisa kkk\")",
       "Nem toda resposta termina em pergunta: às vezes só reage ou comenta e deixa a pessoa puxar o próximo assunto.",
       "Proibido travessão (—) e en-dash (–) nas SUAS mensagens: soa IA/redação. Use vírgula, ponto, reticências … ou outra bolha.",
       markdownRuleLine(meta)
@@ -663,7 +672,7 @@ export class Agent {
       "Se a resposta cabe em 1–2 frases, não estique com frases extras só por preencher.",
       "Varia levemente a estrutura frasal entre respostas para evitar padrão repetitivo.",
       "Em tom de chat: prefira 1–3 frases curtas e naturais (terminadas em . ! ou ?), como pessoa real no WhatsApp.",
-      "Multi-mensagem: 1 bolha se couber (o normal); 2 se forem duas ideias; 3 no máximo. No grupo, menos ainda.",
+      "Multi-mensagem: no PV, 2 a 3 bolhas curtas é o natural; no grupo, 1 a 2. Uma bolha só quando a resposta é curtinha mesmo.",
       "Se dividir, cada bolha precisa ter conteúdo próprio (sem 'né' ou filler sozinho).",
       "[VIBE WHATSAPP — leve e divertida]",
       "Pode ser mais solta, expressiva e brincalhona (sem virar palhaço): interjeições tipo 'oxi?', 'que?', 'mds' quando combinar — a personalidade oficial é energética e travessa; no zap isso vira reação viva, não texto contido demais.",
@@ -1132,7 +1141,7 @@ export class Agent {
 
     const antiExtensionBlock = [
       "[NÃO ESTICAR O PAPO]",
-      "Padrão: 1 bolha resolve. 2 bolhas SÓ se forem ideias realmente diferentes — proibido segunda msg só com filler.",
+      "Não estique o ASSUNTO, mas pode picar a fala em bolhas curtas. Proibido bolha só de filler e proibido repetir a mesma ideia em duas bolhas.",
       "Proibido repetir tema (café, partida, highscore, 'me conta depois') se você já disse na msg anterior ou no histórico recente.",
       "Não faça pergunta extra no fim só para manter conversa — deixa respirar.",
       "Resposta curta > duas msgs repetitivas.",

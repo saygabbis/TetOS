@@ -26,6 +26,7 @@ import {
   parseAgentCommandArgs
 } from "../../integrations/whatsapp/commands/agentDownloadCommands.js";
 import { detectAgentUrlDownloadIntent } from "../../core/media/agentUrlDownloadIntent.js";
+import { resolveAgentCommandText } from "../../integrations/whatsapp/commands/agentRunCommand.js";
 import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/inbound/messageContext.js";
 import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
 import { thinkDelaySleepMs } from "../../integrations/whatsapp/conversation/directBatchPlanner.js";
@@ -35,7 +36,7 @@ import { PROJECT_COMMANDS } from "../../integrations/automate-hub/hubProjects.js
 
 /** Comandos cujo texto é livre (pode ter Markdown, parênteses e apóstrofos): lidos com o leitor robusto. */
 // pensar("…") é rascunho interno: o texto é pulado inteiro (nada dentro dele vira comando) e não gera ação.
-const FREE_TEXT_COMMANDS = new Set(["mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", "pensar", "pensamento", "think", ...Object.keys(ORGANIZER_COMMANDS), ...Object.keys(PROJECT_COMMANDS)]);
+const FREE_TEXT_COMMANDS = new Set(["comando", "executar", "mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", "pensar", "pensamento", "think", ...Object.keys(ORGANIZER_COMMANDS), ...Object.keys(PROJECT_COMMANDS)]);
 
 function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -65,7 +66,11 @@ export function parseActionCommands(rawText) {
       }
     }
     
-    if (cmd === "reagir" || cmd === "react") {
+    if (cmd === "comando" || cmd === "executar") {
+      // Qualquer comando do bot pela conversa: comando(".dado 2d6"), comando(".mp3 <link> 320").
+      const cmdText = args.join(" ").trim();
+      if (cmdText) actions.push({ type: "run_command", text: cmdText });
+    } else if (cmd === "reagir" || cmd === "react") {
       if (args[0]) {
         actions.push({ type: "react", emoji: args[0] });
       }
@@ -149,7 +154,7 @@ function returnWithActions(actions) {
 
 /** Expande ações cujo text ainda contém comando cru (fallback do processor). */
 const EMBEDDED_COMMAND_RE = new RegExp(
-  `^(mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|${Object.keys(PROJECT_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
+  `^(comando|executar|mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|${Object.keys(PROJECT_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
   "i"
 );
 
@@ -215,7 +220,13 @@ function applyDefaultQuoteToActions(actions = [], defaultQuoteId) {
 function enrichParsedActions(actions, trimmed, meta) {
   let out = actions;
 
-  const hasMediaAction = out.some((a) => a.type === "media" || a.type === "toimage");
+  // comando(".x …") da IA conta como a ação do mesmo tipo (não injeta outra igual por cima).
+  const runNames = out
+    .filter((a) => a.type === "run_command")
+    .map((a) => ({ name: resolveAgentCommandText(a.text)?.cmd?.name ?? null, hasUrl: String(a.text ?? "").includes("http") }));
+  const hasMediaAction =
+    out.some((a) => a.type === "media" || a.type === "toimage") ||
+    runNames.some((r) => AGENT_MEDIA_COMMANDS.includes(r.name) || ["formatos", "transcrever", "ler"].includes(r.name));
   if (!hasMediaAction) {
     const replyIntent = detectAgentMediaReplyIntent(trimmed, meta);
     if (replyIntent?.messageId) {
@@ -224,7 +235,13 @@ function enrichParsedActions(actions, trimmed, meta) {
     }
   }
 
-  const hasUrlDownload = out.some((a) => a.type === "url_download");
+  // Pediu imagem e o modelo só falou ("vou fazer!") sem chamar gerarImagem: gera mesmo assim.
+  const imageIntent = meta?.imageGenIntent;
+  if (imageIntent?.prompt && imageIntent.strong && !out.some((a) => a.type === "generate_image") && !runNames.some((r) => r.name === "gerar")) {
+    out = [...out, { type: "generate_image", prompt: imageIntent.prompt, caption: null, injected: true }];
+  }
+
+  const hasUrlDownload = out.some((a) => a.type === "url_download") || runNames.some((r) => r.hasUrl);
   if (!hasUrlDownload) {
     const urlIntent = detectAgentUrlDownloadIntent(trimmed, meta);
     if (urlIntent?.url) {
@@ -277,6 +294,7 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
       a.type === "media" ||
       a.type === "toimage" ||
       a.type === "url_download" ||
+      a.type === "run_command" ||
       a.type === "save_sticker" ||
       a.type === "repertoire_mode" ||
       a.type === "generate_image"

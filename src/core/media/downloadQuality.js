@@ -23,6 +23,11 @@ export function normalizeDownloadQuality(value, { defaultQuality = "full" } = {}
 
 /** Seletor yt-dlp para vídeo por nível de qualidade. */
 export function videoFormatSelector(quality = "full") {
+  // Altura pedida (".yt <link> 720"): melhor vídeo até essa altura.
+  const h = /^\d{3,4}$/.test(String(quality)) ? Number(quality) : 0;
+  if (h >= 144) {
+    return `bestvideo[height<=${h}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=${h}]+bestaudio/best[height<=${h}]/best`;
+  }
   const q = normalizeDownloadQuality(quality) ?? "full";
   if (q === "low") {
     return "worstvideo[ext=mp4]+worstaudio[ext=m4a]/worstvideo+worstaudio/worst[ext=mp4]/worst";
@@ -35,6 +40,8 @@ export function videoFormatSelector(quality = "full") {
 
 /** 0 = melhor, 9 = pior (VBR do ffmpeg no yt-dlp). */
 export function audioQualityValue(quality = "full") {
+  // kbps pedido (".mp3 <link> 192"): o yt-dlp aceita "192K".
+  if (/^(128|192|256|320)$/.test(String(quality))) return `${quality}K`;
   const q = normalizeDownloadQuality(quality) ?? "full";
   if (q === "low") return "9";
   if (q === "mid") return "5";

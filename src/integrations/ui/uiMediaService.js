@@ -63,7 +63,8 @@ export class UiMediaService {
       this._downloader = new UrlDownloadService({
         outputDir: this.defaults.commandMediaDerivedPath ?? "./data/media/derived",
         ytDlpPath: this.defaults.ytDlpPath ?? null,
-        ytDlpTimeoutMs: this.defaults.ytDlpTimeoutMs ?? 120000
+        ytDlpTimeoutMs: this.defaults.ytDlpTimeoutMs ?? 120000,
+        convenus: this.runtime?.convenus ?? null
       });
     }
     return this._downloader;

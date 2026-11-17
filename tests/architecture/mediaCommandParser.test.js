@@ -81,9 +81,12 @@ describe("media command parser", () => {
     expect(help).toMatch(/\.youtube/);
     expect(help).toMatch(/\.thumb/);
     expect(help).toMatch(/\.convert/);
-    expect(help).toMatch(/\*Comandos TetOS\*/);
-    expect(help).toMatch(/Download de links/);
-    expect(help).toMatch(/Ativar \/ desativar a Teto/);
+    expect(help).toMatch(/TETO — comandos/);
+    expect(help).toMatch(/BAIXAR DE LINKS/);
+    expect(help).toMatch(/LIGAR E DESLIGAR A TETO/);
+    expect(help).toMatch(/\.transcrever/);
+    expect(help).toMatch(/\.monitorarpreco/);
+    expect(help).not.toMatch(/\.gastos/); // comando da dona não aparece pra todo mundo
     expect(help).not.toMatch(/última mídia/);
     expect(help).not.toMatch(/Comandos da IA/);
     expect(help).not.toMatch(/youtube\("url"/);
@@ -98,8 +101,16 @@ describe("media command parser", () => {
   });
 
   it("asks to reply or use a caption when the command has no media", () => {
-    expect(formatMissingMediaCommandHint("sticker", ".")).toMatch(/reply/);
+    expect(formatMissingMediaCommandHint("sticker", ".")).toMatch(/Responde/);
     expect(formatMissingMediaCommandHint("sticker", ".")).toMatch(/\.sticker/);
-    expect(formatMissingMediaCommandHint("convert", ".")).toMatch(/\.convert mp4/);
+    expect(formatMissingMediaCommandHint("convert", ".")).toMatch(/\.convert mp3/);
+  });
+
+  it("corrige erro de digitação e entende os apelidos novos", () => {
+    expect(parseWhatsAppCommand(".sticksr")).toEqual({ command: "sticker", args: [], correctedFrom: "sticksr" });
+    expect(parseWhatsAppCommand(".s 5s")).toEqual({ command: "sticker", args: ["5s"] });
+    expect(parseWhatsAppCommand(".audio https://youtu.be/a")).toEqual({ command: "mp3", args: ["https://youtu.be/a"] });
+    expect(parseWhatsAppCommand(".transcreve")).toEqual({ command: "transcrever", args: [] });
+    expect(parseWhatsAppCommand(".dado")).toBeNull(); // comando de texto: não é do serviço de mídia
   });
 });

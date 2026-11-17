@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { OpenAIClient, OpenAIBudgetError, extractOutputText } from "../../src/core/brain/openaiClient.js";
+import { OpenAIClient, OpenAIBudgetError, extractOutputText, splitPrompt } from "../../src/core/brain/openaiClient.js";
 import { OpenAIUsageMeter, costOf } from "../../src/core/brain/openaiUsage.js";
 import { SearchAdapter } from "../../src/modules/web/searchAdapter.js";
 
@@ -120,5 +120,36 @@ describe("custo", () => {
   it("calcula pelo preço do gpt-6-luna", () => {
     expect(costOf("gpt-6-luna", { input_tokens: 1_000_000, output_tokens: 1_000_000 })).toBeCloseTo(0.6, 5);
     expect(extractOutputText({ output_text: "a" })).toBe("a");
+  });
+});
+
+describe("prompt da conversa", () => {
+  it("regras vão como instructions e só o turno vai como input", async () => {
+    const bodies = [];
+    vi.stubGlobal("fetch", vi.fn(async (_u, init) => { bodies.push(JSON.parse(init.body)); return okResponse("oi"); }));
+    const rules = "[PERSONA]\n" + "regra ".repeat(60);
+    await new OpenAIClient({ apiKey: "k" }).generate(`${rules}\n\n[INPUT]\n\nUser: e aí\n\n[OUTPUT]\n\nReply`);
+    expect(bodies[0].instructions).toContain("[PERSONA]");
+    expect(bodies[0].input).toMatch(/^User: e aí/);
+    expect(bodies[0].prompt_cache_key).toBe("tetos-chat");
+    expect(splitPrompt("sem marcador").input).toBe("sem marcador");
+  });
+
+  it("busca grátis primeiro (Wikipédia) e cache: a paga não é chamada", async () => {
+    const calls = [];
+    vi.stubGlobal("fetch", vi.fn(async (url) => {
+      calls.push(String(url));
+      if (String(url).includes("duckduckgo")) return { ok: true, status: 202, text: async () => "<html>anomaly</html>" };
+      if (String(url).includes("wikipedia")) return { ok: true, status: 200, json: async () => ({ query: { search: [{ title: "Copa do Mundo FIFA de 2022", snippet: "a <span>final</span> foi" }] } }) };
+      return okResponse("pago");
+    }));
+    const adapter = new SearchAdapter({ backend: "auto", openai: new OpenAIClient({ apiKey: "k" }) });
+    const r = await adapter.search("copa 2022");
+    expect(r[0].title).toContain("Copa do Mundo");
+    expect(r[0].snippet).toBe("a final foi");
+    await adapter.search("Copa  2022");
+    expect(calls.filter((u) => u.includes("openai")).length).toBe(0);
+    expect(calls.filter((u) => u.includes("wikipedia")).length).toBe(1);
+    expect(adapter.freeOnly().openai).toBeNull();
   });
 });

@@ -61,6 +61,10 @@ export function fileExtFromDocumentMessage(doc) {
   if (mime === "video/x-matroska") return "mkv";
   if (mime === "video/x-m4v" || mime === "video/mp4") return "mp4";
   if (mime.startsWith("video/")) return "mp4";
+  if (mime === "audio/mpeg") return "mp3";
+  if (mime === "application/pdf") return "pdf";
+  // Outros documentos (docx, zip, mp3…): mantém a extensão do nome.
+  if (fromName && /^[a-z0-9]{1,5}$/i.test(fromName[1])) return fromName[1].toLowerCase();
   return null;
 }
 
@@ -89,7 +93,9 @@ export async function persistMedia({
   let ext = defaultExt;
   if (preferredExt) {
     const cleaned = String(preferredExt).replace(/^\./, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (DOC_EXT_ALLOW.has(cleaned)) ext = cleaned === "jpeg" ? "jpg" : cleaned;
+    if (DOC_EXT_ALLOW.has(cleaned) || ((type === "document" || type === "audio") && /^[a-z0-9]{1,5}$/.test(cleaned))) {
+      ext = cleaned === "jpeg" ? "jpg" : cleaned;
+    }
   }
   const streamType =
     decryptMediaAs ||

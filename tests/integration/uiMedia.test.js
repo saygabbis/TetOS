@@ -278,7 +278,7 @@ describe("comandos com prefixo digitados na UI", () => {
     const service = { setRepertoireMode, isRepertoireModeOn: () => false };
     const { ctx, thread } = makeCtx(service);
     expect(await tryHandleUiCommand(ctx, ".help")).toBe(true);
-    expect(thread.messages.at(-1).text).toContain("Comandos TetOS");
+    expect(thread.messages.at(-1).text).toContain("TETO — comandos");
     expect(await tryHandleUiCommand(ctx, ".repertorio on")).toBe(true);
     expect(setRepertoireMode).toHaveBeenCalledWith("u1", true);
     expect(await tryHandleUiCommand(ctx, ".repertorio off")).toBe(true);

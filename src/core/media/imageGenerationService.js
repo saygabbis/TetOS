@@ -47,6 +47,15 @@ async function fetchOpenAI(prompt, { apiKey, baseUrl = "https://api.openai.com/v
   return Buffer.from(b64, "base64");
 }
 
+function friendlyOpenAIImageError(error) {
+  const msg = String(error?.message ?? error ?? "");
+  if (/insufficient_quota|billing/i.test(msg)) return "acabou o saldo da OpenAI";
+  if (/HTTP 429/.test(msg)) return "a OpenAI tá no limite de imagens por minuto, tenta de novo daqui a pouco";
+  if (/moderation|safety|content_policy|rejected/i.test(msg)) return "a OpenAI recusou esse pedido (regra de conteúdo)";
+  if (/HTTP 40[13]/.test(msg)) return "a chave da OpenAI não tem acesso a imagens";
+  return "a OpenAI não conseguiu gerar agora";
+}
+
 /** Preço aproximado do gpt-image-1-mini por imagem 1024x1024. */
 const OPENAI_IMAGE_USD = { low: 0.006, medium: 0.015, high: 0.052 };
 
@@ -118,12 +127,23 @@ export class ImageGenerationService {
     try {
       if (this.provider === "openai") {
         try {
-          buffer = await fetchOpenAI(cleanPrompt, this.openai);
+          try {
+            buffer = await fetchOpenAI(cleanPrompt, this.openai);
+          } catch (error) {
+            // 429 = limite por minuto da conta: espera um pouco e tenta mais uma vez.
+            if (!/HTTP 429/.test(String(error?.message))) throw error;
+            await new Promise((r) => setTimeout(r, 8000));
+            buffer = await fetchOpenAI(cleanPrompt, this.openai);
+          }
           this.openai.usage?.add(OPENAI_IMAGE_USD[this.openai.quality] ?? OPENAI_IMAGE_USD.low, "imagem");
         } catch (error) {
           // Recusa de conteúdo ou falha da OpenAI: tenta o gerador grátis.
           console.warn(`[imagem] OpenAI falhou, usando pollinations: ${error?.message ?? error}`);
-          buffer = await fetchPollinations(cleanPrompt);
+          try {
+            buffer = await fetchPollinations(cleanPrompt);
+          } catch {
+            return { ok: false, error: friendlyOpenAIImageError(error) };
+          }
         }
       } else if (this.provider === "huggingface") {
         buffer = await fetchHuggingFace(cleanPrompt, this.hfToken, this.hfModel);

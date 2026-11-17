@@ -31,9 +31,19 @@ describe("url download args parser", () => {
     expect(parsed.command).toBe("download");
   });
 
-  it("rejects platform mismatch", () => {
+  it("platform mismatch vira download genérico (o conversor baixa de qualquer site)", () => {
     const parsed = parseUrlDownloadArgs("reddit", ["https://youtube.com/watch?v=abc"]);
-    expect(parsed.error).toMatch(/YouTube/i);
+    expect(parsed.error).toBeNull();
+    expect(parsed.command).toBe("download");
+    expect(parsed.platformNote).toMatch(/YouTube/i);
+  });
+
+  it("mp3, legenda e qualidade numérica", () => {
+    expect(parseUrlDownloadArgs("mp3", ["https://youtu.be/a", "192"])).toMatchObject({ command: "mp3", mode: "mp3", quality: "192" });
+    expect(parseUrlDownloadArgs("legenda", ["https://youtu.be/a", "en"])).toMatchObject({ command: "legenda", mode: "srt", lang: "en" });
+    expect(parseUrlDownloadArgs("yt", ["https://youtu.be/a", "720p"])).toMatchObject({ mode: "mp4", quality: "720" });
+    expect(parseUrlDownloadArgs("yt", ["https://youtu.be/a", "audio"])).toMatchObject({ mode: "mp3" });
+    expect(parseUrlDownloadArgs("dl", ["<https://youtu.be/a>"]).url).toBe("https://youtu.be/a");
   });
 
   it("requires url", () => {

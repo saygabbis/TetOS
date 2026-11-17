@@ -221,6 +221,11 @@ export const DEFAULTS = {
   commandMediaDerivedPath: process.env.COMMAND_MEDIA_DERIVED_PATH ?? "./data/media/derived",
   /** Caminho opcional do binário yt-dlp; vazio = youtube-dl-exec / PATH */
   ytDlpPath: String(process.env.TETOS_YT_DLP_PATH ?? "").trim() || null,
+  // Conversor da Gabbis (Convenus): local na VPS primeiro, site público de reserva. "off" desliga.
+  convenusUrls: String(process.env.TETOS_CONVENUS_URL ?? "http://127.0.0.1:5180,https://convert.saygabbis.cloud")
+    .split(",")
+    .map((u) => u.trim())
+    .filter((u) => u && u.toLowerCase() !== "off"),
   ytDlpTimeoutMs: Number(process.env.TETOS_YT_DLP_TIMEOUT_MS ?? 120000),
   /**
    * Teto em KiB para figurinha no WhatsApp.

@@ -93,7 +93,8 @@ export function createDiscordMediaTools(runtime) {
   const downloader = new UrlDownloadService({
     outputDir,
     ytDlpPath: defaults.ytDlpPath ?? null,
-    ytDlpTimeoutMs: defaults.ytDlpTimeoutMs ?? 120000
+    ytDlpTimeoutMs: defaults.ytDlpTimeoutMs ?? 120000,
+    convenus: runtime?.convenus ?? null
   });
   const inboxDir = defaults.discordMediaPath ?? "./data/media/discord";
   const emojiDir = join(inboxDir, "emoji");

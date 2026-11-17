@@ -1,30 +1,46 @@
 const IMAGE_GEN_RE =
-  /\b(?:gera|gerar|cria|criar|desenha|desenhar|faz|faça|fazer|manda|monta|produz)\s+(?:uma?\s+)?(?:imagem|figura|arte|desenho|foto|picture|image)\b/i;
+  /\b(?:gera|gere|gerar|cria|crie|criar|desenha|desenhe|desenhar|faz|faça|fazer|manda|monta|produz)\s+(?:(?:pra|para)\s+mim\s+|me\s+)?(?:uma?\s+)?(?:imagem|figura|arte|desenho|foto|ilustra[cç][aã]o|pintura|fanart|wallpaper|picture|image)\b/i;
 
 const IMAGE_GEN_OF_RE =
-  /\b(?:imagem|arte|desenho|foto)\s+(?:de|do|da|com)\s+(.+)/i;
+  /\b(?:imagem|arte|desenho|foto|ilustra[cç][aã]o|pintura|fanart|wallpaper)\s+(?:de|do|da|dos|das|com)\s+(.+)/i;
 
+/** "desenha um gato de chapéu" (sem a palavra imagem). */
+const DRAW_RE = /\b(?:desenha|desenhe|ilustra|pinta)\s+(?:(?:pra|para)\s+mim\s+|me\s+)?(.{3,})/i;
+
+/** Verbo de CRIAR (não "manda uma foto") e não é foto dela: dá pra gerar mesmo se o modelo esquecer. */
+const STRONG_RE =
+  /\b(?:gera|gere|gerar|cria|crie|criar|desenha|desenhe|desenhar|ilustra|pinta)\b|\b(?:faz|fa[cç]a|fazer)\s+(?:(?:pra|para)\s+mim\s+|me\s+)?(?:uma?\s+)?(?:desenho|imagem|arte|ilustra|pintura|fanart|wallpaper)/i;
+const SELF_PHOTO_RE = /\b(?:sua|seu|tua|teu|de voc[eê]|selfie)\b/i;
+
+function isStrong(text) {
+  return STRONG_RE.test(text) && !SELF_PHOTO_RE.test(text);
+}
+
+function promptFrom(text) {
+  const ofMatch = text.match(IMAGE_GEN_OF_RE);
+  const fromOf = ofMatch?.[1]?.trim();
+  const fromReplace = text.replace(IMAGE_GEN_RE, "").trim();
+  return (fromOf || fromReplace || text).replace(/[?!.]+$/, "").trim();
+}
+
+/**
+ * Pedido de gerar imagem na conversa. `strong` = pedido claro de criar (gera/cria/desenha), que
+ * vira geração mesmo se o modelo só responder "vou fazer!" sem chamar gerarImagem.
+ */
 export function detectImageGenerationIntent(text = "") {
   const raw = String(text ?? "").trim();
   if (!raw || raw.startsWith(".")) return null;
+  const body = raw.replace(/^(?:teto|tetos|tetozinha|hey teto|ei teto)[,\s]+/i, "");
 
-  if (IMAGE_GEN_RE.test(raw)) {
-    const ofMatch = raw.match(IMAGE_GEN_OF_RE);
-    const fromOf = ofMatch?.[1]?.trim();
-    const fromReplace = raw.replace(IMAGE_GEN_RE, "").trim();
-    const prompt = (fromOf || fromReplace || raw).trim();
-    if (prompt.length >= 3) return { prompt, source: "natural" };
+  if (IMAGE_GEN_RE.test(body)) {
+    const prompt = promptFrom(body);
+    if (prompt.length >= 3) return { prompt, source: "natural", strong: isStrong(body) };
   }
 
-  const tetoPrefix =
-    /^(?:teto|tetos|tetozinha|hey teto|ei teto)[,\s]+(.+)/i.exec(raw);
-  if (tetoPrefix) {
-    const rest = tetoPrefix[1];
-    if (IMAGE_GEN_RE.test(rest) || IMAGE_GEN_OF_RE.test(rest)) {
-      const ofMatch = rest.match(IMAGE_GEN_OF_RE);
-      const prompt = (ofMatch?.[1] ?? rest).replace(IMAGE_GEN_RE, "").trim();
-      if (prompt.length >= 3) return { prompt, source: "natural" };
-    }
+  const draw = body.match(DRAW_RE);
+  if (draw && !SELF_PHOTO_RE.test(body)) {
+    const prompt = draw[1].replace(/[?!.]+$/, "").trim();
+    if (prompt.length >= 3) return { prompt, source: "natural", strong: true };
   }
 
   return null;

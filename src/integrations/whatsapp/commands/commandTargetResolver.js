@@ -25,8 +25,20 @@ function detectMediaType(message = {}) {
     if (/^image\//.test(mime) || /\.(png|jpe?g|webp|gif)$/.test(name)) return "image";
     if (/^video\//.test(mime) || /\.(mp4|webm|mov|m4v|mkv)$/.test(name)) return "video";
     if (/gif/.test(mime) || /\.gif$/.test(name)) return "gif";
+    if (/^audio\//.test(mime) || /\.(mp3|m4a|ogg|opus|wav|flac|aac)$/.test(name)) return "audio";
+    // pdf, docx, zip…: vale pro .convert / .formatos.
+    return "document";
   }
   return null;
+}
+
+/** Conteúdo a baixar pro tipo detectado (documento serve de reserva pra qualquer tipo). */
+function contentForType(type, unwrapped = {}) {
+  if (type === "image") return unwrapped.imageMessage ?? unwrapped.documentMessage;
+  if (type === "video" || type === "gif") return unwrapped.videoMessage ?? unwrapped.documentMessage;
+  if (type === "audio") return unwrapped.audioMessage ?? unwrapped.documentMessage;
+  if (type === "document") return unwrapped.documentMessage;
+  return unwrapped.stickerMessage;
 }
 
 function persistIdForIncoming(messageId, mediaType, fromDocument) {
@@ -46,14 +58,7 @@ async function persistProtoMedia({
   if (!mediaType || !persistId || typeof persistMedia !== "function") return null;
 
   const unwrapped = unwrapMessage(message);
-  const content =
-    mediaType === "image"
-      ? (unwrapped.imageMessage ?? unwrapped.documentMessage)
-      : mediaType === "video" || mediaType === "gif"
-        ? (unwrapped.videoMessage ?? unwrapped.documentMessage)
-        : mediaType === "audio"
-          ? unwrapped.audioMessage
-          : unwrapped.stickerMessage;
+  const content = contentForType(mediaType, unwrapped);
   if (!content) return null;
 
   const fromDocument = Boolean(unwrapped.documentMessage && content === unwrapped.documentMessage);
@@ -156,14 +161,7 @@ export async function resolveCommandTarget({
   const quotedType = detectMediaType(quotedMessage);
   if (quotedMessage && quotedType && incoming?.key?.id) {
     const quotedContent = unwrapMessage(quotedMessage);
-    const content =
-      quotedType === "image"
-        ? (quotedContent.imageMessage ?? quotedContent.documentMessage)
-        : quotedType === "video" || quotedType === "gif"
-          ? (quotedContent.videoMessage ?? quotedContent.documentMessage)
-          : quotedType === "audio"
-            ? quotedContent.audioMessage
-            : quotedContent.stickerMessage;
+    const content = contentForType(quotedType, quotedContent);
     try {
       const stickerMsg = quotedContent?.stickerMessage;
       const fromDocument =

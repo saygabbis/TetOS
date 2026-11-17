@@ -81,10 +81,16 @@ export class OpenAIClient {
   }
 
   _body(input, { stream = false, maxTokens = this.numPredict, tools = null } = {}) {
+    // Prompt de texto: a persona/regras vão como instructions (papel de sistema) e só o turno vai
+    // como fala do usuário. Antes ia tudo como mensagem do usuário e o modelo respondia "ao
+    // documento", formal e numa bolha só. O prefixo fixo também entra no cache de prompt.
+    const split = typeof input === "string" ? splitPrompt(input) : null;
     const body = {
       model: this.model,
-      input,
+      ...(split?.instructions ? { instructions: split.instructions } : {}),
+      input: split ? split.input : input,
       store: false,
+      prompt_cache_key: `tetos-${this.purpose}`,
       ...(stream ? { stream: true } : {})
     };
     if (this.reasoningEffort && this.reasoningEffort !== "default") {
@@ -113,6 +119,10 @@ export class OpenAIClient {
       if (response.status === 400 && /temperature/i.test(text) && "temperature" in body) {
         this._noTemperature = true;
         delete body.temperature;
+        continue;
+      }
+      if (response.status === 400 && /prompt_cache_key/i.test(text) && "prompt_cache_key" in body) {
+        delete body.prompt_cache_key;
         continue;
       }
       if (response.status === 400 && /service_tier/i.test(text) && "service_tier" in body) {
@@ -220,7 +230,7 @@ export class OpenAIClient {
    * Chat multimodal. Imagens locais vão na última mensagem do usuário.
    * @param {{ role: string, content: string }[]} messages
    */
-  async chat(messages = [], { imagePaths = [], timeoutMs = this.timeoutMs } = {}) {
+  async chat(messages = [], { imagePaths = [], timeoutMs = this.timeoutMs, detail = "low", maxTokens = undefined } = {}) {
     const images = encodeLocalImages(imagePaths);
     const input = (messages ?? []).map((m) => {
       const role = m.role === "assistant" ? "assistant" : m.role === "system" ? "developer" : "user";
@@ -230,9 +240,9 @@ export class OpenAIClient {
     const lastUser = [...input].reverse().find((m) => m.role === "user");
     if (images.length) {
       const target = lastUser ?? (input.push({ role: "user", content: [] }), input[input.length - 1]);
-      for (const url of images) target.content.push({ type: "input_image", image_url: url, detail: "low" });
+      for (const url of images) target.content.push({ type: "input_image", image_url: url, detail });
     }
-    const { text } = await this._respond(input, { timeoutMs });
+    const { text } = await this._respond(input, { timeoutMs, ...(maxTokens ? { maxTokens } : {}) });
     return text;
   }
 
@@ -256,6 +266,22 @@ export class OpenAIClient {
     if (results.length) results[0].snippet = text.slice(0, 600);
     return { text, results };
   }
+}
+
+const INPUT_MARK = /\n\s*\[INPUT\]\s*\n/;
+
+/**
+ * Separa o prompt montado pelo Agent em { instructions, input }: tudo antes de [INPUT] é regra e
+ * contexto (sistema); dali pra frente é o turno. Prompt sem marcador vai inteiro como input.
+ */
+export function splitPrompt(prompt) {
+  const text = String(prompt ?? "");
+  const m = INPUT_MARK.exec(text);
+  if (!m || m.index < 200) return { instructions: "", input: text };
+  return {
+    instructions: text.slice(0, m.index).trim(),
+    input: text.slice(m.index + m[0].length).trim()
+  };
 }
 
 export function extractOutputText(data) {

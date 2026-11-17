@@ -94,10 +94,10 @@ export function buildMultiBubbleRhythmBlock(meta = {}) {
       "Pode parecer que pensou enquanto digitava — sem contar bolhas, conte pensamentos fechados."
     ],
     compact: [
-      "Ritmo AGORA: econômico — 1 bolha se a resposta cabe inteira; mais bolhas só se forem ideias realmente distintas."
+      "Ritmo AGORA: econômico — poucas bolhas curtas (1 ou 2); sem parágrafo."
     ],
     moderate: [
-      "Ritmo AGORA: você decide — 1 bolha ou quantas precisar; não conte bolhas, conte ideias completas."
+      "Ritmo AGORA: zap normal — 2 ou 3 bolhas curtas, cada uma um pedaço fechado da fala."
     ]
   };
 
@@ -108,7 +108,7 @@ export function buildMultiBubbleRhythmBlock(meta = {}) {
     subconscious ? `Subconsciente (não copie literal): ${String(subconscious).slice(0, 220)}` : null,
     "Cada bolha = pensamento FECHADO. Proibido cortar frase, «citação» ou ideia no meio.",
     "Typo com * na bolha seguinte só em clima neutro — no zap solto/íntimo, não se autocorrige.",
-    "Quantidade de mensagens: 1 é o padrão; várias só se ideias distintas — nunca 2 por hábito."
+    "Quantidade: picar a fala em bolhas curtas é o normal do zap; só não repita ideia nem mande bolha vazia de filler."
   ].filter(Boolean);
 }
 

@@ -16,7 +16,7 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const AUDIO_EXTS = new Set([".mp3", ".m4a", ".opus", ".ogg", ".wav", ".flac", ".aac"]);
 const VIDEO_EXTS = new Set([".mp4", ".webm", ".mkv", ".mov", ".m4v", ".avi"]);
-const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".gif", ".bmp"]);
+const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"]);
 
 const MIME_BY_EXT = {
   ".mp3": "audio/mpeg",
@@ -36,7 +36,10 @@ const MIME_BY_EXT = {
   ".jpeg": "image/jpeg",
   ".png": "image/png",
   ".gif": "image/gif",
-  ".bmp": "image/bmp"
+  ".bmp": "image/bmp",
+  ".webp": "image/webp",
+  ".srt": "application/x-subrip",
+  ".vtt": "text/vtt"
 };
 
 function runFfmpeg(command) {
@@ -67,6 +70,18 @@ function buildOutput(filePath, fileName = null) {
     mimetype: MIME_BY_EXT[ext] ?? "application/octet-stream",
     fileName: finalName
   };
+}
+
+function niceName(title, finalPath, file = {}) {
+  const ext = extOf(finalPath);
+  const stem = String(title ?? "")
+    .replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+  if (file.kind === "document" && file.subLang) return `${stem || "legenda"}.${file.subLang}${ext}`;
+  return `${stem || (kindFromExt(ext) === "audio" ? "audio" : kindFromExt(ext) === "video" ? "video" : "arquivo")}${ext}`;
 }
 
 export function inferDownloadMode(url, mode) {
@@ -252,11 +267,77 @@ async function runDownload(
   return buildOutput(finalPath, `${label}${ext}`);
 }
 
+/** Comando de download → formato pedido ao Convenus. */
+function convenusKindFor(cmd, mode) {
+  if (mode === "mp3" || mode === "wav") return mode;
+  if (mode === "mp4") return "mp4";
+  if (["youtube", "yt", "tiktok", "tk", "ttok"].includes(cmd)) return "mp4";
+  return "post";
+}
+
 export class UrlDownloadService {
-  constructor({ outputDir = "./data/media/derived", ytDlpPath = null, ytDlpTimeoutMs = 120000 } = {}) {
+  /**
+   * convenus: cliente do conversor da Gabbis (primeira opção pra tudo). yt-dlp local fica de
+   * reserva quando ele não responde ou não suporta o link.
+   */
+  constructor({ outputDir = "./data/media/derived", ytDlpPath = null, ytDlpTimeoutMs = 120000, convenus = null } = {}) {
     this.outputDir = outputDir;
     this.ytDlpPath = ytDlpPath;
     this.ytDlpTimeoutMs = ytDlpTimeoutMs;
+    this.convenus = convenus;
+  }
+
+  /** Converte o resultado do Convenus pro formato que o envio do zap espera. */
+  async _fromConvenus(result, mode) {
+    const outputs = [];
+    for (const file of result.files ?? []) {
+      let finalPath = file.path;
+      if (file.kind !== "document") {
+        finalPath = await normalizeDownloadFile(file.path, this.outputDir, file.kind === "audio" ? "mp3" : mode);
+      }
+      if (!existsSync(finalPath) || statSync(finalPath).size < 1) continue;
+      const out = buildOutput(finalPath, niceName(result.title, finalPath, file));
+      outputs.push({ ...out, title: result.title ?? null, platform: result.platform ?? "", sizeBytes: statSync(finalPath).size, subLang: file.subLang ?? null });
+    }
+    if (!outputs.length) throw new Error("download gerou arquivo vazio ou invalido");
+    if (outputs.length === 1) return outputs[0];
+    return { outputs, ...outputs[0] };
+  }
+
+  /** Tenta pelo Convenus; null = não deu (aí cai no yt-dlp local). Erro "de verdade" sobe. */
+  async _tryConvenus(cmd, url, mode, quality, extra = {}) {
+    if (!this.convenus?.isConfigured?.()) return null;
+    if (mode === "user" || mode === "banner") return null;
+    try {
+      const result =
+        cmd === "thumbnail" || cmd === "thumb"
+          ? await this.convenus.downloadThumbnail(url)
+          : await this.convenus.downloadLink(url, { kind: extra.kind ?? convenusKindFor(cmd, mode), quality, subsLang: extra.subsLang ?? null, onProgress: extra.onProgress ?? null });
+      return await this._fromConvenus(result, mode);
+    } catch (error) {
+      if (error?.unreachable) {
+        console.warn(`[download] Convenus fora do ar, usando yt-dlp local: ${error.message}`);
+        return null;
+      }
+      // Erro claro do conversor (link privado, sem vídeo, legenda inexistente…): reserva local tenta.
+      console.warn(`[download] Convenus recusou (${error?.message ?? error}); tentando yt-dlp local`);
+      if (extra.kind === "srt") throw error;
+      return null;
+    }
+  }
+
+  /** Legenda (.srt) de um vídeo — só pelo Convenus. */
+  async downloadSubtitles(url, lang = null) {
+    if (!this.convenus?.isConfigured?.()) throw new Error("conversor indisponível");
+    const result = await this.convenus.downloadLink(url, { kind: "srt", subsLang: lang });
+    return this._fromConvenus(result, "post");
+  }
+
+  /** Só o áudio, de qualquer site (inclusive Spotify/Deezer/Apple Music via YouTube Music). */
+  async downloadAudio(url, quality = "full", { onProgress = null } = {}) {
+    const viaConvenus = await this._tryConvenus("download", url, "mp3", quality, { onProgress });
+    if (viaConvenus) return viaConvenus;
+    return runDownload(url, "mp3", { ...this.opts(), audioOnly: true, quality });
   }
 
   opts() {
@@ -384,8 +465,10 @@ export class UrlDownloadService {
     throw lastErr ?? new Error("Nao achei thumbnail para esse video");
   }
 
-  async downloadByCommand(command, url, mode = "post", quality = "full") {
+  async downloadByCommand(command, url, mode = "post", quality = "full", { onProgress = null } = {}) {
     const cmd = String(command ?? "").toLowerCase();
+    const viaConvenus = await this._tryConvenus(cmd, url, mode, quality, { onProgress });
+    if (viaConvenus) return viaConvenus;
     switch (cmd) {
       case "youtube":
       case "yt":
@@ -410,6 +493,8 @@ export class UrlDownloadService {
       case "thumbnail":
       case "thumb":
         return this.downloadYoutubeThumbnail(url);
+      case "mp3":
+        return runDownload(url, "mp3", { ...this.opts(), audioOnly: true, quality });
       case "download":
       case "dl":
       case "baixar":

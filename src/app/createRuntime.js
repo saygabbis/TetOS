@@ -32,6 +32,7 @@ import { SummonWindow } from "../core/presence/summonWindow.js";
 import { VisualKnowledgeStore } from "../core/media/visualKnowledgeStore.js";
 import { runMessagePipeline } from "../core/pipeline/messagePipeline.js";
 import { SearchAdapter } from "../modules/web/searchAdapter.js";
+import { ConvenusClient } from "../core/media/convenusClient.js";
 import { SearchModule } from "../modules/web/searchModule.js";
 import { DocumentStore } from "../modules/documents/documentStore.js";
 import { DocumentWriter } from "../modules/documents/documentWriter.js";
@@ -415,11 +416,11 @@ export function createRuntime() {
         backgroundTickMs: DEFAULTS.brainBackgroundTickMs,
         musicResearchIntervalMs: DEFAULTS.musicResearchIntervalMs,
         soloThoughtIntervalMs: DEFAULTS.soloThoughtIntervalMs,
-        searchAdapter,
+        searchAdapter: searchAdapter.freeOnly(),
         workerLlm,
         visionAdapter: primaryVisionAnalyzer,
         adapters: {
-          web: searchAdapter,
+          web: searchAdapter.freeOnly(),
           worker: workerLlm,
           vision: primaryVisionAnalyzer
         }
@@ -516,6 +517,7 @@ export function createRuntime() {
     openaiUsage: DEFAULTS.llmProvider === "openai" || DEFAULTS.openaiApiKey ? sharedOpenAIUsage() : null,
     initiativeState: new InitiativeState(DEFAULTS.initiativeStatePath),
     imageGenerationService,
+    convenus: DEFAULTS.convenusUrls.length ? new ConvenusClient({ baseUrls: DEFAULTS.convenusUrls, outputDir: DEFAULTS.commandMediaDerivedPath }) : null,
     visualAnalyses,
     visualAnalyzer,
     semanticVisionAnalyzer,
@@ -528,6 +530,7 @@ export function createRuntime() {
     dailyReportGenerator,
     reminderScheduler,
     brain,
+    workerLlm,
     brainOrchestrator,
     relationshipStore,
     agent,
@@ -553,7 +556,8 @@ export function createRuntime() {
     defaults: DEFAULTS
   };
   viewOnceMirror.runtime = runtime;
-  runtime.mind = DEFAULTS.mindEnabled ? createMind(runtime, { searchAdapter, linkReader }) : null;
+  // Mente/autoevolução só usam busca grátis: era ela que gastava a maior parte da API.
+  runtime.mind = DEFAULTS.mindEnabled ? createMind(runtime, { searchAdapter: searchAdapter.freeOnly(), linkReader }) : null;
   return runtime;
 }
 

@@ -14,6 +14,7 @@ import { awaitSendOnce, claimOutboundDedupe, createOutboundMessageId, releaseOut
 import { applyQuotedContextToPayload, buildOutgoingQuoteKey, resolveOutgoingQuoteId, buildQuoteKeyFromMessageId } from "../inbound/messageContext.js";
 import { resolveVerifiedQuoteKey } from "../inbound/quoteMessageResolver.js";
 import { resolveMediaByMessageId } from "../commands/agentMediaResolver.js";
+import { runAgentChatCommand } from "../commands/agentRunCommand.js";
 import { saveStickerToRepertoireWithVision, logRepertoireVision } from "../media/stickerRepertoire.js";
 import { buildGroupRoster } from "../../../core/channels/groupRoster.js";
 import { translateAtMentions } from "../inbound/mentionResolver.js";
@@ -833,6 +834,7 @@ export function createConversationOrchestrator(
               a.type === "media" ||
               a.type === "toimage" ||
               a.type === "url_download" ||
+              a.type === "run_command" ||
               a.type === "generate_image"
           );
           const immediateActions = sortImmediateActions(
@@ -841,6 +843,7 @@ export function createConversationOrchestrator(
                 a.type !== "media" &&
                 a.type !== "toimage" &&
                 a.type !== "url_download" &&
+                a.type !== "run_command" &&
                 a.type !== "generate_image"
             )
           );
@@ -1062,6 +1065,37 @@ export function createConversationOrchestrator(
                     groupRoster: item.groupRoster ?? null
                   });
                 }
+              } else if (action.type === "run_command") {
+                // A IA pediu um comando do bot conversando (comando(".dado 2d6"), comando(".mp3 <link>")…).
+                const quoted = item.quotedMessage;
+                const outcome = await runAgentChatCommand({
+                  text: action.text,
+                  runtime,
+                  mediaCommands: mediaCommands(),
+                  item: {
+                    remoteJid: item.remoteJid,
+                    userId: item.userId,
+                    isGroup: Boolean(item.isGroup),
+                    isOwner: Boolean(item.isOwner),
+                    messageId: item.messageKey?.id ?? null,
+                    quotedMessageId: item.quotedMessageId ?? null,
+                    quotedText: typeof quoted === "string" ? quoted : quoted?.text ?? null
+                  },
+                  send: (payload) => sendRaw(item.remoteJid, payload),
+                  resolveMedia: (messageId) =>
+                    resolveMediaByMessageId({
+                      messageId: chatMessageIndex?.resolveQuoteMessageId?.(item.remoteJid, messageId) ?? messageId,
+                      chatId: item.remoteJid,
+                      mediaHistoryStore,
+                      basePath: runtime.defaults.whatsappMediaPath,
+                      visualAnalyses: runtime.visualAnalyses,
+                      getWaMessageById,
+                      triggerMessageId: item.messageKey?.id ?? null,
+                      downloadContentFromMessage
+                    })
+                }).catch((err) => ({ ok: false, reason: err?.message ?? String(err) }));
+                console.log(`${logPrefix} comando da IA "${action.text}": ${outcome.ok ? "ok" : outcome.reason}`);
+                outputKind = RESPONSE_OUTPUTS.COMMAND;
               } else if (action.type === "url_download") {
                 console.log(
                   `${logPrefix} executing url_download ${action.command}: ${action.url}`

@@ -210,9 +210,10 @@ export function collapseForShortUserPrompt(parts = [], userMessage = "") {
   const hasDistinctThoughts = list.length >= 2 && list.some((p) => String(p).split(/\s+/).filter(Boolean).length >= 4);
   if (hasDistinctThoughts) return list.map(normalizeInformalEnding);
 
+  // Só junta fragmento de verdade (1–2 palavras). "oxi" + "cê tá falando sério?" é ritmo de zap, não erro.
   const microOnly = list.every((p) => {
     const words = String(p).split(/\s+/).filter(Boolean).length;
-    return words <= 6 && String(p).length <= 48;
+    return words <= 2 && String(p).length <= 16;
   });
   if (!microOnly) return list.map(normalizeInformalEnding);
 

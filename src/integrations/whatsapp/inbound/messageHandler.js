@@ -23,7 +23,7 @@ import { parseTetoSlashCommand, handleTetoSlashCommand, formatTetoActivationComm
 import { parseLinkCommand } from "../../../core/identity/identityLinks.js";
 import { platformLabel } from "../../../core/presence/attentionFocus.js";
 import { parseTetosCommand, resolveTetosMessage, formatTetosUsage, isQuotedTetosOneShot } from "../commands/tetosCommand.js";
-import { formatWhatsAppHelpText as formatMediaCommandHelpText, parseWhatsAppCommand as parseMediaCommand } from "../commands/mediaCommandParser.js";
+import { parseWhatsAppCommand as parseMediaCommand } from "../commands/mediaCommandParser.js";
 import { buildWhatsappIdentitySnapshot } from "../connection/whatsappIdentityContract.js";
 import { MediaCommandService } from "../commands/mediaCommandService.js";
 import { tryAutoSaveIncomingSticker, isForwardedMessage, logRepertoireVision, findRepertoireEntryByMessageId, removeStickerFromRepertoire, isBuiltinRepertoireKey } from "../media/stickerRepertoire.js";
@@ -39,6 +39,9 @@ import { scoreSleepDisturbance, sleepDisturbanceFloodWindowMs } from "../../../c
 import { applyVisionFields, extractPhone, isWaConnectionError, logThinking } from "./waHandlerUtils.js";
 import { createConversationOrchestrator } from "../conversation/conversationOrchestrator.js";
 import { parsePriceWatchCommand } from "../../../modules/priceWatch/priceWatch.js";
+import { resolveCommand } from "../commands/commandCatalog.js";
+import { formatHelp } from "../commands/commandHelp.js";
+import { GENERAL_COMMANDS, runGeneralCommand } from "../commands/generalCommands.js";
 
 /** Alinha ao Baileys: documento com legenda vem em `documentWithCaptionMessage`, não só em `documentMessage`. */
 function unwrapMessage(message = {}) {
@@ -822,6 +825,15 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         let text = extractText(unwrappedMessage).trim();
         const links = extractLinks(text);
         const commandPrefix = runtime.defaults.commandPrefix;
+        // Catálogo: apelido ou erro de digitação vira o nome oficial (os leitores abaixo só entendem o oficial).
+        // No grupo, ".ativar"/".desativar" liga/desliga o grupo.
+        const resolvedCmd = resolveCommand(text, commandPrefix);
+        if (resolvedCmd?.cmd && !resolvedCmd.viaSlash && (resolvedCmd.kind === "known" || resolvedCmd.kind === "corrected")) {
+          let officialName = resolvedCmd.cmd.name;
+          if (isGroup && officialName === "teto-ativar") officialName = "teto-grupo-ativar";
+          if (isGroup && officialName === "teto-desativar") officialName = "teto-grupo-desativar";
+          text = `${commandPrefix}${officialName}${resolvedCmd.rest ? ` ${resolvedCmd.rest}` : ""}`;
+        }
         let parsedCommand = parseMediaCommand(text, commandPrefix);
         const tetoSlash = parseTetoSlashCommand(text, commandPrefix);
         const tetosCmd = parseTetosCommand(text, commandPrefix);
@@ -989,6 +1001,56 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           }
         }
 
+        // Comandos do catálogo: escopo (só PV / só a dona), "quis dizer…?" e os comandos de texto
+        // (ping, dado, calc, clima, lembrete, falar, traduzir…). Antes daqui, no grupo, comando que
+        // não era de mídia caía no filtro de conversa e era ignorado calado.
+        if (resolvedCmd && !isFromMe && !mainObserveOnly && (role !== "media" || botChatRole) && !isStaleHistoryReplay(type, incoming)) {
+          const p = commandPrefix;
+          const cmd = resolvedCmd.cmd;
+          const sendCmdReply = (payload) =>
+            isGroup ? mediaCommandService.sendCommandReply(remoteJid, incoming, payload) : safeSendMessage(remoteJid, payload);
+          let reply = null;
+          let voice = null;
+          if (resolvedCmd.kind === "suggest") {
+            reply = `hm, não conheço *${p}${resolvedCmd.token}* 🤔 quis dizer *${p}${resolvedCmd.suggestion.name}*?\n(${p}help mostra tudo)`;
+          } else if (resolvedCmd.kind === "unknown") {
+            if (!isGroup) reply = `não conheço *${p}${resolvedCmd.token}* 🤔 manda *${p}help* pra ver tudo que eu sei fazer`;
+          } else if (cmd.scope === "owner" && !isOwnerContact(runtime, remoteJid, userId)) {
+            reply = "isso aí é só pra Gabbis 😛";
+          } else if (cmd.scope === "pv" && isGroup) {
+            reply = `esse é só no meu PV 🙈 me chama lá e manda *${p}${cmd.name}*`;
+          } else if (GENERAL_COMMANDS.has(cmd.name) && processedCommandDeduper.claim(messageKeyId)) {
+            try {
+              const out = await runGeneralCommand(resolvedCmd, {
+                runtime,
+                prefix: p,
+                isGroup,
+                isOwner: isOwnerContact(runtime, remoteJid, userId),
+                userId,
+                chatId: remoteJid,
+                quotedText: extractQuotedText(extractContextInfo(unwrappedMessage)?.quotedMessage) || "",
+                receivedAt: Number(incoming.messageTimestamp ?? 0) * 1000 || Date.now()
+              });
+              reply = out?.text ?? null;
+              voice = out?.voice ?? null;
+            } catch (error) {
+              console.warn(`${waLogPrefix} comando ${cmd.name} falhou:`, error?.message ?? error);
+              reply = `deu ruim no ${p}${cmd.name}: ${error?.message ?? error}`;
+            }
+          }
+          if (reply || voice?.audio) {
+            if (voice?.audio) await sendCmdReply({ audio: voice.audio, mimetype: "audio/ogg; codecs=opus", ptt: true });
+            if (reply) await sendCmdReply({ text: reply });
+            finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+            continue;
+          }
+          if (GENERAL_COMMANDS.has(cmd?.name)) {
+            // Já respondido (mensagem repetida do Baileys).
+            finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.IGNORED });
+            continue;
+          }
+        }
+
         // Vincular a conta do Discord: o código vem de /vincular lá e só vale no PV daqui.
         const linkCmd = !isFromMe && !isGroup && (role !== "media" || botChatRole) ? parseLinkCommand(text, commandPrefix) : null;
         if (linkCmd && runtime.identityLinks) {
@@ -1011,18 +1073,18 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           continue;
         }
 
-        // Mente dela (só a dona, no PV): .mente, .mente estudar X, .mente desfazer <id>, .mente pausar…
+        // Mente dela (só a dona; no PV ou grupo): .mente, .mente estudar X, .mente desfazer <id>, .mente pausar…
         const prefixRe = new RegExp(`^\\${commandPrefix}mente(?:\\s+([\\s\\S]*))?$`, "i");
-        const mindCmd = !isFromMe && !isGroup && (role !== "media" || botChatRole) && runtime.mind ? String(text ?? "").trim().match(prefixRe) : null;
+        const mindCmd = !isFromMe && (role !== "media" || botChatRole) && runtime.mind ? String(text ?? "").trim().match(prefixRe) : null;
         if (mindCmd) {
           const reply = await runtime.mind.command(mindCmd[1] ?? "", { isOwner: isOwnerContact(runtime, remoteJid, userId), userId });
           await safeSendMessage(remoteJid, { text: reply });
           finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
           continue;
         }
-        // Gasto da API da OpenAI (só a dona, no PV): .gastos
+        // Gasto da API da OpenAI (só a dona; no PV ou grupo): .gastos
         const costRe = new RegExp(`^\\${commandPrefix}gastos?$`, "i");
-        if (!isFromMe && !isGroup && (role !== "media" || botChatRole) && runtime.openaiUsage && costRe.test(String(text ?? "").trim())) {
+        if (!isFromMe && (role !== "media" || botChatRole) && runtime.openaiUsage && costRe.test(String(text ?? "").trim())) {
           const reply = isOwnerContact(runtime, remoteJid, userId) ? runtime.openaiUsage.summary() : "isso aí é só pra Gabbis 😛";
           await safeSendMessage(remoteJid, { text: reply });
           finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
@@ -1066,8 +1128,11 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
 
         if (parsedCommand?.command === "help") {
           if (role === "media" || role === "full") {
-            await socket.sendMessage(remoteJid, {
-              text: formatMediaCommandHelpText(runtime.defaults.commandPrefix)
+            await safeSendMessage(remoteJid, {
+              text: formatHelp(parsedCommand.args ?? [], commandPrefix, {
+                isOwner: isOwnerContact(runtime, remoteJid, userId),
+                isGroup
+              })
             });
           }
           finalizeDecisionTrace(runtime, decisionTrace, {
