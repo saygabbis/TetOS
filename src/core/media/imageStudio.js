@@ -188,12 +188,23 @@ export function estimateImage({ model, quality = "low", size = "1024x1024", prom
 let usdBrlCache = { at: 0, rate: null };
 export async function usdToBrlRate({ fetchImpl = globalThis.fetch } = {}) {
   if (usdBrlCache.rate && Date.now() - usdBrlCache.at < 6 * 3600_000) return usdBrlCache.rate;
-  try {
-    const res = await fetchImpl("https://economia.awesomeapi.com.br/json/last/USD-BRL", { signal: AbortSignal.timeout(3000) });
-    const rate = Number((await res.json())?.USDBRL?.bid);
-    if (rate > 1 && rate < 20) usdBrlCache = { at: Date.now(), rate };
-  } catch {
-    /* sem cotação: só US$ */
+  // AwesomeAPI às vezes devolve 429 pro IP da VPS; open.er-api.com fica de reserva.
+  const sources = [
+    ["https://economia.awesomeapi.com.br/json/last/USD-BRL", (j) => j?.USDBRL?.bid],
+    ["https://open.er-api.com/v6/latest/USD", (j) => j?.rates?.BRL]
+  ];
+  for (const [url, pick] of sources) {
+    try {
+      const res = await fetchImpl(url, { signal: AbortSignal.timeout(3000) });
+      if (!res.ok) continue;
+      const rate = Number(pick(await res.json()));
+      if (rate > 1 && rate < 20) {
+        usdBrlCache = { at: Date.now(), rate };
+        break;
+      }
+    } catch {
+      /* tenta a próxima; sem nenhuma: só US$ */
+    }
   }
   return usdBrlCache.rate;
 }

@@ -43,6 +43,13 @@ describe("imagem: opções, custo e estimativa", () => {
     expect(after.outputTokens).toBe(2000);
   });
 
+  it("cotação cai pra segunda fonte quando a AwesomeAPI dá 429", async () => {
+    const { usdToBrlRate } = await import("../../src/core/media/imageStudio.js");
+    const fetchImpl = async (url) =>
+      /awesomeapi/.test(url) ? { ok: false, status: 429, json: async () => ({}) } : { ok: true, json: async () => ({ rates: { BRL: 5.81 } }) };
+    expect(await usdToBrlRate({ fetchImpl })).toBe(5.81);
+  });
+
   it("texto da estimativa pede sim e mostra US$/R$", () => {
     const plan = { edit: false, modelLabel: "GPT Image 2.6 Sunburst", quality: "high", size: "1024x1024", inputImages: 0, estimate: { outputTokens: 1756, inputTokens: 30, usd: 0.053, seconds: 34, learned: true } };
     const text = formatImageEstimate(plan, { brlRate: 5.5 });
