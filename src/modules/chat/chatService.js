@@ -26,6 +26,7 @@ import {
   parseAgentCommandArgs
 } from "../../integrations/whatsapp/commands/agentDownloadCommands.js";
 import { detectAgentUrlDownloadIntent } from "../../core/media/agentUrlDownloadIntent.js";
+import { stripHdWords, wantsHdImage } from "../../core/media/imageGenerationIntent.js";
 import { resolveAgentCommandText } from "../../integrations/whatsapp/commands/agentRunCommand.js";
 import { resolveOutgoingQuoteId } from "../../integrations/whatsapp/inbound/messageContext.js";
 import { detectAgentMediaReplyIntent } from "../../core/media/agentMediaReplyIntent.js";
@@ -70,6 +71,19 @@ export function parseActionCommands(rawText) {
       // Qualquer comando do bot pela conversa: comando(".dado 2d6"), comando(".mp3 <link> 320").
       const cmdText = args.join(" ").trim();
       if (cmdText) actions.push({ type: "run_command", text: cmdText });
+    } else if (cmd === "gerarimagemhd" || cmd === "gerarhd" || cmd === "imagemhd") {
+      // Modo bom: o comando mostra o custo e espera o "sim" da pessoa (não gera direto).
+      const [prompt, ...opts] = args;
+      if (prompt) actions.push({ type: "run_command", text: [".gerarhd", ...opts.filter(Boolean), prompt].join(" ") });
+    } else if (cmd === "editarimagem" || cmd === "editimage" || cmd === "editar") {
+      // editarImagem("message_id", "o que mudar", "hd|alta|ultra|max")
+      const [id, prompt, mode] = args;
+      if (prompt) {
+        const m = String(mode ?? "").toLowerCase().trim();
+        const hd = Boolean(m) && m !== "eco" && m !== "economico" && m !== "baixa";
+        const quality = ["alta", "ultra", "max", "maxima", "máxima"].includes(m) ? m : null;
+        actions.push({ type: "run_command", text: [hd ? ".editarhd" : ".editar", id, quality, prompt].filter(Boolean).join(" ") });
+      }
     } else if (cmd === "reagir" || cmd === "react") {
       if (args[0]) {
         actions.push({ type: "react", emoji: args[0] });
@@ -226,7 +240,7 @@ function enrichParsedActions(actions, trimmed, meta) {
     .map((a) => ({ name: resolveAgentCommandText(a.text)?.cmd?.name ?? null, hasUrl: String(a.text ?? "").includes("http") }));
   const hasMediaAction =
     out.some((a) => a.type === "media" || a.type === "toimage") ||
-    runNames.some((r) => AGENT_MEDIA_COMMANDS.includes(r.name) || ["formatos", "transcrever", "ler"].includes(r.name));
+    runNames.some((r) => AGENT_MEDIA_COMMANDS.includes(r.name) || ["formatos", "transcrever", "ler", "convert", "cortar", "gif", "comprimir", "editar", "editarhd"].includes(r.name));
   if (!hasMediaAction) {
     const replyIntent = detectAgentMediaReplyIntent(trimmed, meta);
     if (replyIntent?.messageId) {
@@ -237,8 +251,10 @@ function enrichParsedActions(actions, trimmed, meta) {
 
   // Pediu imagem e o modelo só falou ("vou fazer!") sem chamar gerarImagem: gera mesmo assim.
   const imageIntent = meta?.imageGenIntent;
-  if (imageIntent?.prompt && imageIntent.strong && !out.some((a) => a.type === "generate_image") && !runNames.some((r) => r.name === "gerar")) {
-    out = [...out, { type: "generate_image", prompt: imageIntent.prompt, caption: null, injected: true }];
+  if (imageIntent?.prompt && imageIntent.strong && !out.some((a) => a.type === "generate_image") && !runNames.some((r) => ["gerar", "gerarhd", "editar", "editarhd"].includes(r.name))) {
+    out = wantsHdImage(imageIntent.prompt)
+      ? [...out, { type: "run_command", text: `.gerarhd ${stripHdWords(imageIntent.prompt) || imageIntent.prompt}`, injected: true }]
+      : [...out, { type: "generate_image", prompt: imageIntent.prompt, caption: null, injected: true }];
   }
 
   const hasUrlDownload = out.some((a) => a.type === "url_download") || runNames.some((r) => r.hasUrl);
@@ -253,9 +269,33 @@ function enrichParsedActions(actions, trimmed, meta) {
   return out;
 }
 
+/** Frase de moderadora/sermão que o modelo às vezes solta em zoeira ("não vou entrar nessa insinuação sexual"). */
+const MODERATOR_TONE_RE =
+  /insinua[cç][aã]o|conte[uú]do (?:impr[oó]prio|sexual|adulto|expl[ií]cito)|teor sexual|cunho sexual|n[aã]o vou (?:entrar|participar|continuar) (?:nesse|nessa|neste|nesta|com esse|com essa)|j[aá] chega desse assunto|vamos mudar de assunto|(?:esse|isso) (?:[eé]|foi) inapropriad|n[aã]o (?:[eé]|acho) (?:apropriad|adequad)|manter o respeito|limites? (?:claros?|saud[aá]veis)/i;
+
+const PLAYFUL_DEFLECTIONS = ["sai pra lá kkkkk", "oxi 😳 que isso", "vou fingir que não li isso kkkk", "comporte-se 🙄", "credo kkkkk"];
+
+/** Troca bolha com tom de moderadora por desvio de amiga (a regra do prompt é a 1ª barreira; isto é a rede). */
+export function softenModeratorTone(actions = []) {
+  let swapped = false;
+  const out = [];
+  for (const a of actions) {
+    if (a?.type === "message" && MODERATOR_TONE_RE.test(String(a.text ?? ""))) {
+      if (!swapped) {
+        out.push({ ...a, text: PLAYFUL_DEFLECTIONS[Math.floor(Math.random() * PLAYFUL_DEFLECTIONS.length)] });
+        swapped = true;
+      }
+      continue;
+    }
+    out.push(a);
+  }
+  return out;
+}
+
 /** Evita reply na msg que acabou de chegar, excesso de reagir e prioriza stickers. */
 export function sanitizeOutgoingActions(actions = [], meta = {}) {
   if (!Array.isArray(actions) || !actions.length) return actions;
+  actions = softenModeratorTone(actions);
 
   const explicitReact = actions.some((a) => a.type === "react");
   const triggerId = normActionMessageId(meta?.messageKey?.id ?? meta?.messageId ?? null);

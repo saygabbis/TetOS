@@ -153,17 +153,46 @@ export class ConvenusClient {
   }
 
   /**
-   * Baixa um link. kind: mp4 | mp3 | wav | srt | post (o que o post tiver: vídeo e/ou fotos).
+   * Baixa um link. kind: mp4 | mp3 | wav | gif | srt | post (o que o post tiver: vídeo e/ou fotos).
    * quality: full | mid | low (ou número: altura do vídeo / kbps do mp3).
+   * clip: { start, end } em segundos (trecho) · gif: { fps, width } · embedSubs: idioma da legenda
+   * gravada dentro do MP4 ("pt", ou true = a melhor que tiver).
    * Devolve { title, platform, files: [{ path, fileName, size, kind }] }.
    */
-  async downloadLink(url, { kind = "post", quality = "full", subsLang = null, maxItems = 10, onProgress = null } = {}) {
-    const info = await this.info(url);
+  async downloadLink(url, { kind = "post", quality = "full", subsLang = null, embedSubs = null, clip = null, gif = null, maxItems = 10, onProgress = null, info: preInfo = null } = {}) {
+    const info = preInfo ?? (await this.info(url));
+    if (info?.type === "profile") {
+      throw new ConvenusError("isso é um perfil, não um post. use .perfil <link> pra ver/baixar dele", { status: 400 });
+    }
     const items = Array.isArray(info?.items) ? info.items : [];
     if (!items.length) throw new ConvenusError("não achei nada pra baixar nesse link");
+    // Playlist/álbum/seção de perfil num comando comum: baixa só o 1º e avisa (lista inteira é no .playlist).
+    if (info.playlist && items.length > 1 && !items.some((it) => it.kind === "image")) {
+      throw new ConvenusError(`esse link é uma lista com ${info.total || items.length} itens. use .playlist <link> pra escolher quais baixar`, { status: 400 });
+    }
+    // Item de seção de perfil/galeria ("post" com link próprio): abre o post de verdade.
+    if (items.every((it) => it.kind === "post" && it.entryUrl)) {
+      return this.downloadLink(items[0].entryUrl, { kind, quality, subsLang, embedSubs, clip, gif, maxItems, onProgress });
+    }
     const title = info.title || "arquivo";
     const files = [];
     const wantAudio = kind === "mp3" || kind === "wav";
+
+    if (kind === "gif" || clip) {
+      const index = items.findIndex((it) => it.kind === "video" || (wantAudio && it.kind === "audio"));
+      const item = items[index];
+      if (!item) throw new ConvenusError(kind === "gif" ? "esse link não tem vídeo pra virar GIF" : "esse link não tem vídeo/áudio pra cortar");
+      const jobKind = kind === "gif" ? "gif" : wantAudio ? kind : item.kind === "audio" ? "mp3" : "mp4";
+      const payload = { url, kind: jobKind, item: index, title, clip: { ...(clip ?? {}), ...(gif ? { gif } : {}) } };
+      if (jobKind === "mp4") payload.quality = pickHeight(item.heights, quality);
+      if (jobKind === "mp3") payload.quality = pickBitrate(quality);
+      if (jobKind === "mp4" && embedSubs && item.subs?.length) payload.subs = { lang: pickSub(item.subs, embedSubs === true ? null : embedSubs).lang, embed: true };
+      const job = await this.createJob(payload);
+      const done = await this.waitJob(job.id, { onProgress });
+      const file = await this.downloadJobFile(done);
+      files.push({ ...file, kind: jobKind === "gif" ? "gif" : jobKind === "mp4" ? "video" : "audio", clip: payload.clip });
+      return { title, platform: info.platform || "", duration: info.duration || item.duration || 0, files };
+    }
 
     if (kind === "srt") {
       const idx = items.findIndex((it) => it.subs?.length);
@@ -201,13 +230,98 @@ export class ConvenusClient {
       const payload = { url, kind: jobKind, item: index, title };
       if (jobKind === "mp4") payload.quality = pickHeight(item.heights, quality);
       if (jobKind === "mp3") payload.quality = pickBitrate(quality);
+      if (jobKind === "mp4" && embedSubs) {
+        if (!item.subs?.length) throw new ConvenusError("esse vídeo não tem legenda pra colocar dentro");
+        payload.subs = { lang: pickSub(item.subs, embedSubs === true ? null : embedSubs).lang, embed: true };
+      }
       const job = await this.createJob(payload);
       const done = await this.waitJob(job.id, { onProgress });
       const file = await this.downloadJobFile(done);
-      files.push({ ...file, kind: jobKind === "mp4" ? "video" : "audio" });
+      files.push({ ...file, kind: jobKind === "mp4" ? "video" : "audio", ...(payload.subs ? { subLang: payload.subs.lang, embedded: true } : {}) });
     }
     if (!files.length) throw new ConvenusError("não consegui baixar nada desse link");
-    return { title, platform: info.platform || "", files };
+    return { title, platform: info.platform || "", duration: info.duration || 0, files };
+  }
+
+  /**
+   * Playlist / álbum / lista de faixas: baixa os itens escolhidos (índices a partir de 0).
+   * kind: mp3 | mp4 | wav. Devolve { title, platform, total, files, failed: [{ index, label, error }] }.
+   */
+  async downloadPlaylist(url, { indexes = [0], kind = "mp3", quality = "full", info: preInfo = null, onItem = null } = {}) {
+    const info = preInfo ?? (await this.info(url));
+    const items = Array.isArray(info?.items) ? info.items : [];
+    if (!items.length) throw new ConvenusError("essa lista tá vazia (ou é privada)");
+    const files = [];
+    const failed = [];
+    for (const [n, index] of indexes.entries()) {
+      const item = items[index];
+      if (!item) continue;
+      const label = item.label || item.title || `item ${index + 1}`;
+      try {
+        onItem?.({ n: n + 1, of: indexes.length, label });
+        if (item.kind === "post" && item.entryUrl) {
+          const r = await this.downloadLink(item.entryUrl, { kind: kind === "mp4" ? "post" : kind, quality });
+          files.push(...r.files.map((f) => ({ ...f, label })));
+          continue;
+        }
+        const jobKind = kind === "mp4" && item.kind === "audio" ? "mp3" : kind;
+        const payload = { url, kind: jobKind, item: index, page: Number(info.page) || 0, title: label };
+        if (jobKind === "mp4") payload.quality = pickHeight(item.heights, quality);
+        if (jobKind === "mp3") payload.quality = pickBitrate(quality);
+        const job = await this.createJob(payload);
+        const done = await this.waitJob(job.id);
+        const file = await this.downloadJobFile(done);
+        files.push({ ...file, kind: jobKind === "mp4" ? "video" : "audio", label });
+      } catch (error) {
+        failed.push({ index, label, error: error?.message ?? String(error) });
+      }
+    }
+    if (!files.length) throw new ConvenusError(failed[0]?.error || "não consegui baixar nada da lista");
+    return { title: info.title || "lista", platform: info.platform || "", total: info.total || items.length, files, failed };
+  }
+
+  /** Foto de perfil ou capa (banner) de um perfil/canal. which: avatar | banner. */
+  async downloadProfileImage(url, which = "avatar", { info: preInfo = null } = {}) {
+    const info = preInfo ?? (await this.info(url));
+    const src = which === "banner" ? info?.banner : info?.avatar || info?.headAvatar;
+    if (!src) throw new ConvenusError(which === "banner" ? "esse perfil não tem capa (banner)" : "não achei a foto desse perfil");
+    const name = `${which === "banner" ? "capa" : "foto"}-${safeFileName(info.handle || info.title || "perfil").slice(0, 40)}`;
+    const media = await this.downloadMedia(src, { name });
+    return { title: info.title || info.handle || null, platform: info.platform || "", files: [{ ...media, kind: "image" }] };
+  }
+
+  /**
+   * Últimos posts/vídeos de uma seção do perfil (ex.: "videos", "shorts", "reels", "works").
+   * count: quantos (máx. 10). Devolve { title, section, files, failed }.
+   */
+  async downloadProfileSection(url, { section = null, count = 5, kind = "post", quality = "full", info: preInfo = null, onItem = null } = {}) {
+    const profile = preInfo ?? (await this.info(url));
+    const sections = profile?.sections ?? [];
+    if (!sections.length) throw new ConvenusError(profile?.sectionsNote || "não consigo listar os posts desse perfil");
+    const want = String(section ?? "").toLowerCase();
+    const sec =
+      (want && sections.find((s) => s.id === want || normalizeLabel(s.label) === normalizeLabel(want) || normalizeLabel(s.label).startsWith(normalizeLabel(want)))) ||
+      sections[0];
+    const list = await this.info(sec.url);
+    const n = Math.max(1, Math.min(10, Number(count) || 5));
+    const indexes = (list.items ?? []).map((_, i) => i).slice(0, n);
+    const wanted = kind === "post" ? (sec.kind === "video" ? "mp4" : "post") : kind;
+    const r = await this.downloadPlaylist(sec.url, { indexes, kind: wanted === "post" ? "mp4" : wanted, quality, info: list, onItem });
+    return { ...r, title: profile.title || profile.handle || r.title, section: sec.label };
+  }
+
+  /** Comprime um arquivo local pra caber em `mb` megabytes (vídeo, áudio, imagem, PDF…). */
+  async compressFile(filePath, mb, { name = null, onProgress = null, options = {} } = {}) {
+    const target = Number(mb);
+    if (!(target >= 0.05)) throw new ConvenusError("fala o tamanho, ex.: 8 (MB)", { status: 400 });
+    const up = await this.upload(filePath, { name });
+    if (!(up.targets ?? []).some((t) => t.to === "compress")) {
+      throw new ConvenusError(`${up.desc || "esse arquivo"} não dá pra comprimir`, { status: 400 });
+    }
+    const job = await this.createJob({ upload: up.id, to: "compress", compress: { mb: Math.round(target * 100) / 100, ...options } });
+    const done = await this.waitJob(job.id, { onProgress });
+    const file = await this.downloadJobFile(done);
+    return { ...file, from: up.desc || up.ext, beforeBytes: statSync(filePath).size };
   }
 
   /** Capa/miniatura de qualquer link (a maior que tiver). */
@@ -279,6 +393,10 @@ export function pickBitrate(quality = "full") {
   const q = String(quality ?? "");
   if (["128", "192", "256", "320"].includes(q)) return q;
   return q === "low" || q === "min" ? "128" : q === "mid" ? "192" : "320";
+}
+
+function normalizeLabel(s = "") {
+  return String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 }
 
 function filenameFrom(header = "") {

@@ -168,7 +168,8 @@ export class Agent {
       ? [
           "[PEDIDO DE IMAGEM]",
           `O usuário pediu geração de imagem: "${meta.imageGenIntent.prompt}".`,
-          'Use gerarImagem("descrição clara em pt ou en") — pode combinar com mensagem curta antes ou depois.'
+          'Use gerarImagem("descrição clara em pt ou en") — pode combinar com mensagem curta antes ou depois.',
+          'Se pediram caprichado (alta qualidade, HD, modelo bom, ultra, 2k/4k), use gerarImagemHD("descrição", "alta|ultra|max", "formato") no lugar — ele pede confirmação do custo antes.'
         ]
       : [];
 
@@ -206,11 +207,22 @@ export class Agent {
       '10. toimage("message_id") — Figurinha → imagem ou GIF/vídeo (equivalente a .toimg). Só funciona com stickers.',
       ...downloadCommandLines,
       '19. convert("message_id", "formato") — Converte mídia do chat (png, jpg, mp4, mp3, etc.). Equivalente a .convert.',
-      '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
+      '20. gerarImagem("descrição em pt ou en") — Gera imagem por IA (modo econômico, sai na hora) e envia no chat. Use quando pedirem desenho/foto/arte ("gera uma imagem de...").',
+      '   gerarImagemHD("descrição", "alta|ultra|max", "16:9|9:16|3:2|2:3|1:1|2k") — MODO BOM (mais detalhe, custa mais). Use SÓ quando pedirem caprichado: "em alta qualidade", "HD", "no modelo bom", "bem detalhado", "4k/2k", "ultra". Qualidade e formato são opcionais (padrão alta, quadrada). Isso NÃO gera na hora: o sistema manda o custo estimado e espera a pessoa responder "sim" — então não diga que já fez; no máximo "vou caprichar, confirma ali". Nunca use gerarImagem junto.',
+      '   editarImagem("message_id", "o que mudar, bem descrito", "hd") — Edita uma imagem do chat com IA (trocar fundo, mudar estilo, tirar/colocar coisa, colorir…). message_id = a foto marcada ou a mais recente com [message_id]. 3º argumento opcional: "hd"/"alta"/"ultra"/"max" pra modo bom (mostra custo e pede "sim"); sem ele sai no econômico. Pra só tirar o fundo prefira removebg.',
       '21. calar("opcional") — Para de responder neste chat por ~1 minuto, mesmo com menção/reply. Em grupo o padrão é o canal inteiro; use calar("todos") ou calar("usuario") para escopo explícito. Combine com mensagem curta de despedida se fizer sentido.',
-      ...(meta?.channelId !== "ui-desktop" && meta?.platform !== "discord"
+      ...(meta?.channelId !== "ui-desktop"
         ? [
-            '24. comando(".nome argumentos") — Roda QUALQUER comando do bot por você, igual a pessoa digitando (com todas as opções). Use quando pedirem algo que um comando faz: "baixa esse vídeo em 720" → comando(".yt <link> 720"); "só o áudio" → comando(".mp3 <link> 320"); "legenda em inglês" → comando(".legenda <link> en"); "converte pra pdf" (com arquivo marcado) → comando(".convert pdf"); "lê essa imagem pra mim" → comando(".ler"); "transcreve esse áudio" → comando(".transcrever"); "rola 2 dados" → comando(".dado 2d6"); "me lembra de X às 18h" → comando(".lembrete 18:00 X"); "quanto é 15% de 80" → comando(".calc 15% de 80"); "monitora o preço de X" → comando(".monitorarpreco X"). Mídia: vale a mensagem marcada (reply) ou a própria mensagem; pra outra, passe o message id logo depois do nome: comando(".sticker 3EB0…"). O comando já avisa o que tá fazendo e confirma no fim — junte no máximo uma mensagem("...") curta tipo "deixa comigo". Não invente comando fora da lista:',
+            '24. comando(".nome argumentos") — Roda QUALQUER comando do bot por você, igual a pessoa digitando (com todas as opções). Use quando pedirem algo que um comando faz, traduzindo o pedido pras opções certas:',
+            '   • "baixa esse vídeo em 720" → comando(".yt <link> 720") · "em 4k" → 4k · "o menor possível" → low · "só o áudio" → comando(".mp3 <link> 320") · "em wav" → comando(".mp3 <link> wav")',
+            '   • trecho: "só do 1:20 ao 1:45" → comando(".cortar <link> 1:20 1:45") · "o áudio desse pedaço" → comando(".cortar <link> 1:20 1:45 mp3") · num vídeo marcado: comando(".cortar 0:10 0:30")',
+            '   • GIF: "faz um gif disso" → comando(".gif") (vídeo marcado) ou comando(".gif <link> 0:10 0:16") · "mais suave/menor" → 24fps / 320px',
+            '   • legenda: "com legenda em português dentro" → comando(".dl <link> leg:pt") · "só o arquivo da legenda" → comando(".legenda <link> pt")',
+            '   • tamanho: "que caiba no zap/discord", "até 8 mega" → comando(".dl <link> 8mb") · arquivo marcado: comando(".comprimir 8")',
+            '   • playlist/álbum: "baixa as 5 primeiras" → comando(".playlist <link> 1-5") · "a 3 e a 7 em vídeo" → comando(".playlist <link> 3,7 mp4") · sem dizer quais → comando(".playlist <link>") (mostra a lista)',
+            '   • perfil/canal: "foto de perfil dele" → comando(".perfil <link> foto") · "o banner" → comando(".perfil <link> capa") · "os últimos 3 shorts" → comando(".perfil <link> shorts 3") · "o que tem nesse link?" → comando(".linkinfo <link>")',
+            '   • outros: "converte pra pdf" (arquivo marcado) → comando(".convert pdf") · "lê essa imagem pra mim" → comando(".ler") · "transcreve esse áudio" → comando(".transcrever") · "rola 2 dados" → comando(".dado 2d6") · "me lembra de X às 18h" → comando(".lembrete 18:00 X") · "quanto é 15% de 80" → comando(".calc 15% de 80") · "monitora o preço de X" → comando(".monitorarpreco X")',
+            '   Mídia: vale a mensagem marcada (reply) ou a própria mensagem; pra outra, passe o message id logo depois do nome: comando(".sticker 3EB0…"). Use o link que a pessoa mandou (inteiro). O comando já avisa o que tá fazendo e confirma no fim, então junte no máximo uma mensagem("...") curta tipo "deixa comigo". Não invente comando nem opção fora da lista:',
             ...formatCommandsForPrompt(".").split("\n").map((l) => `   ${l}`)
           ]
         : []),
@@ -379,7 +391,10 @@ export class Agent {
       "Primeira pessoa sempre: EU, minha, meu. Quando alguém diz 'a Teto', 'fala como a teto', 'não parece a teto' → falam DE VOCÊ.",
       "Não confunda com 'teto' da casa (teto da sala, goteira) — isso é outra coisa.",
       "Você conhece sua origem (1º de abril, UTAU, SynthV, chimera 31 anos, baguete, twin drills) mas não palestra sem pedirem.",
-      "Se mandarem figurinha/foto sua (drills vermelhos, visual icônico): reconhece que é você e reage natural."
+      "Se mandarem figurinha/foto sua (drills vermelhos, visual icônico): reconhece que é você e reage natural.",
+      "[ZOEIRA] Brincadeira, ameaça de mentira ('eu te pego', 'eu saboreio o ce', 'te mato kkk'), duplo sentido leve e provocação entre amigos são PAPO, não pedido nem assédio: entra no jogo com humor, zoa de volta, se faz de ofendida de brincadeira ou desvia com piada.",
+      "Nunca dê sermão, nunca analise a mensagem ('insinuação sexual', 'conteúdo impróprio', 'não vou entrar nesse assunto', 'já chega desse assunto') e nunca encerre o assunto como moderadora. Se não quiser ir além, corta rindo, tipo amiga: 'sai pra lá kkkk', 'oxi que isso', 'vou contar pra todo mundo'.",
+      "Só fica séria se a pessoa insistir em algo explícito depois de você já ter desviado; mesmo assim curta e no seu jeito, sem tom de regra."
     ];
 
     const machineLoveSoulBlock = [
@@ -735,7 +750,8 @@ export class Agent {
         ? [
             "[FLERTE DE TERCEIRO — RECUSAR]",
             "Alguém que NÃO é seu parceiro está flertando ou pedindo romance.",
-            "Recuse com clareza: você já tem alguém, é fiel, sem interesse. Não deixe ambiguidade."
+            "Se for pedido sério: recuse sem ambiguidade (já tem alguém, é fiel). Se for zoeira/elogio de brincadeira: responde no clima, com humor, sem sermão.",
+            "Nunca use tom de moderadora ('insinuação', 'impróprio', 'já chega desse assunto')."
           ]
         : [];
     const relationshipBlock = relationshipLines.length

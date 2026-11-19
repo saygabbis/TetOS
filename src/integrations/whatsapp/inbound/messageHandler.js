@@ -39,6 +39,7 @@ import { scoreSleepDisturbance, sleepDisturbanceFloodWindowMs } from "../../../c
 import { applyVisionFields, extractPhone, isWaConnectionError, logThinking } from "./waHandlerUtils.js";
 import { createConversationOrchestrator } from "../conversation/conversationOrchestrator.js";
 import { parsePriceWatchCommand } from "../../../modules/priceWatch/priceWatch.js";
+import { pendingImageKey, takeImageConfirmation } from "../../../core/media/imageCommands.js";
 import { resolveCommand } from "../commands/commandCatalog.js";
 import { formatHelp } from "../commands/commandHelp.js";
 import { GENERAL_COMMANDS, runGeneralCommand } from "../commands/generalCommands.js";
@@ -1098,6 +1099,20 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           await safeSendMessage(remoteJid, { text: reply });
           finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
           continue;
+        }
+
+        // Imagem no modo bom esperando confirmação: "sim" gera, "não" cancela.
+        if (!isFromMe && type !== "append" && !mainObserveOnly && runtime.imageGenerationService?.pending && text) {
+          const imageAnswer = takeImageConfirmation(text, {
+            service: runtime.imageGenerationService,
+            pendingKey: pendingImageKey({ platform: "whatsapp", chatId: remoteJid, userId })
+          });
+          if (imageAnswer) {
+            if (imageAnswer.cancelled) await safeSendMessage(remoteJid, { text: imageAnswer.text });
+            else void mediaCommandService.runConfirmedImagePlan(imageAnswer.plan, remoteJid, userId).catch((error) => console.warn(`${waLogPrefix} imagem modo bom:`, error?.message ?? error));
+            finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+            continue;
+          }
         }
 
         // Monitor de preço (PV ou grupo): .monitorarpreco <produto> → opções; depois "1 3 5"/"todos" escolhe.

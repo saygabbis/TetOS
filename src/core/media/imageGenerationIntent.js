@@ -45,3 +45,18 @@ export function detectImageGenerationIntent(text = "") {
 
   return null;
 }
+
+/** Pediu caprichado ("em alta qualidade", "hd", "no modelo bom", "ultra", "4k")? */
+const HD_IMAGE_SRC =
+  "(?:\\b(?:em|no|com)\\s+)?(?:\\balta\\s+(?:qualidade|resolu[cç][aã]o|defini[cç][aã]o)|\\b(?:full\\s*)?hd\\b(?!\\s+(?:externo|interno|ssd))|\\bultra(?:\\s*hd)?\\b|\\b[248]k\\b|\\bmodelo\\s+(?:bom|melhor|caro|top)\\b|\\bbem\\s+(?:detalhad[ao]|caprichad[ao])|\\bcaprichad[ao]\\b|\\bqualidade\\s+m[aá]xima)";
+const HD_IMAGE_TEST = new RegExp(HD_IMAGE_SRC, "i");
+const HD_IMAGE_ALL = new RegExp(HD_IMAGE_SRC, "gi");
+
+export function wantsHdImage(text = "") {
+  return HD_IMAGE_TEST.test(String(text ?? ""));
+}
+
+/** Tira as palavras de "caprichado" da descrição (viram opção do modo bom). */
+export function stripHdWords(text = "") {
+  return String(text ?? "").replace(HD_IMAGE_ALL, " ").replace(/\s{2,}/g, " ").replace(/^[\s,]+|[\s,]+$/g, "");
+}

@@ -7,7 +7,9 @@ import { convertMedia, normalizeConvertFormat } from "../../core/media/mediaConv
 import { resolveStickerDurationArg } from "../../core/media/stickerDurationParse.js";
 import { resolveRemoveBgOptions } from "../../core/media/removeBgOptionsParse.js";
 import { parseUrlDownloadArgs } from "../whatsapp/commands/urlDownloadArgsParse.js";
-import { isUrlMediaCommand } from "../whatsapp/commands/mediaCommandParser.js";
+import { isUrlMediaCommand, toUrlCommand } from "../whatsapp/commands/mediaCommandParser.js";
+import { STYLES, fmtSize, friendlyDownloadError, runLinkCommand } from "../../core/media/linkCommandRunner.js";
+import { editMediaTarget } from "../../core/media/mediaEditCommands.js";
 
 /**
  * Mídia no Discord: baixa anexos (pra visão/transcrição e comandos) e roda os mesmos comandos do zap
@@ -99,30 +101,74 @@ export function createDiscordMediaTools(runtime) {
   const inboxDir = defaults.discordMediaPath ?? "./data/media/discord";
   const emojiDir = join(inboxDir, "emoji");
 
+  const prefix = defaults.commandPrefix || ".";
+  const style = STYLES.discord;
+  const toFile = (o) => ({ path: o.path, name: o.fileName ?? basename(o.path), label: o.label ?? null });
+
+  /** Arquivo acima do limite do Discord: comprime pelo Convenus antes de mandar. */
+  async function fitFile(file, notify) {
+    if (!file?.path || !existsSync(file.path) || statSync(file.path).size <= DISCORD_UPLOAD_LIMIT) return { file };
+    const size = statSync(file.path).size;
+    if (!runtime?.convenus?.compressFile) return { file, tooBig: true };
+    await notify?.(`🗜️ ficou com ${fmtSize(size)} e o Discord só aceita 10 MB: comprimindo…`);
+    try {
+      const c = await runtime.convenus.compressFile(file.path, 9.3, { name: file.name });
+      return { file: { ...file, path: c.path, name: `${String(file.name ?? "arquivo").replace(/\.[^.]+$/, "")}${extname(c.path)}` }, note: `comprimido de ${fmtSize(size)} pra ${fmtSize(c.size)}` };
+    } catch {
+      return { file, tooBig: true };
+    }
+  }
+
   /**
-   * Roda um comando de mídia. `input` = mídia já baixada (pode ser null p/ downloads e .gerar).
+   * Roda um comando de mídia/link. `input` = mídia já baixada (pode ser null p/ link, .gerar).
+   * notify(text): aviso no canal durante o trabalho ("⬇️ baixando…").
    * Retorna { files: [{ path, name }], text } ou { error }.
    */
-  async function run(command, args = [], { input = null, userId = "default", big = false } = {}) {
+  async function run(command, args = [], { input = null, userId = "default", big = false, notify = null } = {}) {
     const cmd = String(command ?? "").toLowerCase();
 
     if (cmd === "gerar") {
       const prompt = args.join(" ").trim();
       if (!prompt) return { error: "me fala o que é pra desenhar, tipo `.gerar gato de chapéu`" };
+      await notify?.(`🎨 desenhando: *${prompt.slice(0, 200)}*… (leva uns 30s)`);
       const out = await runtime.imageGenerationService?.generate?.({ prompt, userId });
       if (!out?.ok) return { error: `não rolou gerar: ${out?.error ?? "geração desligada"}` };
-      return { files: [{ path: out.filePath, name: "teto-gerou.png" }] };
+      return { files: [{ path: out.filePath, name: "teto-gerou.png" }], text: "✅ prontinho" };
     }
 
-    if (isUrlMediaCommand(cmd)) {
-      const parsed = parseUrlDownloadArgs(cmd, args);
+    if (isUrlMediaCommand(cmd, args)) {
+      const urlCmd = toUrlCommand({ command: cmd, args });
+      const parsed = parseUrlDownloadArgs(urlCmd.command, urlCmd.args);
       if (parsed.error) return { error: parsed.error };
-      const output = await downloader.downloadByCommand(parsed.command, parsed.url, parsed.mode, parsed.quality);
-      const outputs = (Array.isArray(output?.outputs) ? output.outputs : [output]).filter((o) => o?.path);
-      return { files: outputs.map((o) => ({ path: o.path, name: o.fileName ?? undefined })) };
+      try {
+        const r = await runLinkCommand(parsed, { downloader, convenus: runtime?.convenus ?? null, prefix, notify, style, maxBytes: DISCORD_UPLOAD_LIMIT });
+        if (r.text) return { text: r.text };
+        const files = [];
+        const notes = [];
+        for (const o of r.outputs ?? []) {
+          const fit = await fitFile(toFile(o), notify);
+          if (fit.tooBig) notes.push(`⚠️ ${fit.file.name} passou de 10 MB e não deu pra comprimir`);
+          else files.push(fit.file);
+        }
+        return { files, text: [r.caption, r.extraText, ...notes].filter(Boolean).join("\n") };
+      } catch (error) {
+        return { error: `❌ não consegui: ${friendlyDownloadError(error)}` };
+      }
     }
 
     if (!input?.path) return { error: "cadê a mídia? manda junto, ou responde a mensagem que tem a imagem/vídeo" };
+
+    if (["cortar", "gif", "comprimir"].includes(cmd)) {
+      const r = await editMediaTarget(cmd, args, input, { runtime, outputDir, prefix, notify, style, defaultMb: 9.3 });
+      if (r.text) return { text: r.text };
+      const fit = await fitFile(toFile(r.output), notify);
+      if (fit.tooBig) return { error: "ficou grande demais pro Discord (10 MB) 😭 tenta um trecho menor" };
+      return { files: [fit.file], text: [r.caption, fit.note].filter(Boolean).join("\n") };
+    }
+
+    if (cmd === "formatos") return { text: await describeFormats(input) };
+    if (cmd === "transcrever") return { text: await transcribe(input) };
+    if (cmd === "ler") return { text: await readImage(input) };
 
     if (["sticker", "fsticker", "csticker"].includes(cmd)) {
       const duration = resolveStickerDurationArg(args[0]);
@@ -155,13 +201,85 @@ export function createDiscordMediaTools(runtime) {
       return { files: [{ path, name: `imagem${extname(path) || ".png"}` }] };
     }
     if (cmd === "convert") {
-      const format = normalizeConvertFormat(args[0]);
-      if (!format) return { error: "fala o formato, tipo `.convert mp4` ou `.convert png`" };
-      const out = await convertMedia(input.path, format, outputDir, { sourceMediaType: input.type });
-      return { files: [{ path: out.path, name: out.fileName }] };
+      const raw = String(args[0] ?? "").toLowerCase().replace(/^\./, "");
+      const format = raw === "jpeg" ? "jpg" : raw;
+      if (!format) {
+        const up = await runtime?.convenus?.upload?.(input.path, { name: input.fileName ?? null }).catch(() => null);
+        const options = (up?.targets ?? []).map((t) => t.to).filter((t) => !["unpack", "compress"].includes(t));
+        return { text: options.length ? `pra qual formato? dá pra: ${options.join(", ")}\nex.: \`${prefix}convert ${options[0]}\`` : `fala o formato, tipo \`${prefix}convert mp4\` ou \`${prefix}convert pdf\`` };
+      }
+      await notify?.(`🔄 convertendo → **${format.toUpperCase()}**…`);
+      let out = null;
+      let from = null;
+      if (runtime?.convenus?.isConfigured?.()) {
+        try {
+          const c = await runtime.convenus.convertFile(input.path, format, { name: input.fileName ?? null });
+          out = { path: c.path, fileName: `${String(input.fileName ?? "convertido").replace(/\.[^.]+$/, "")}.${format}` };
+          from = c.from;
+        } catch (error) {
+          if (!error?.unreachable && error?.status === 400) return { error: `❌ ${error.message}` };
+        }
+      }
+      if (!out) {
+        const localFormat = normalizeConvertFormat(format);
+        if (!localFormat) return { error: `❌ não sei converter pra ${format} agora. Tenta mp4, mp3, gif, png, jpg ou webp.` };
+        out = await convertMedia(input.path, localFormat, outputDir, { sourceMediaType: input.type });
+      }
+      const fit = await fitFile(toFile(out), notify);
+      if (fit.tooBig) return { error: "o arquivo convertido passou de 10 MB 😭" };
+      return { files: [fit.file], text: `✅ convertido${from ? ` de ${from}` : ""} pra **${format.toUpperCase()}** · ${fmtSize(statSync(fit.file.path).size)}${fit.note ? ` (${fit.note})` : ""}` };
     }
     return { error: `não conheço o comando ${cmd}` };
   }
 
-  return { processor, downloader, run, inboxDir, emojiDir };
+  async function describeFormats(input) {
+    const convenus = runtime?.convenus;
+    if (!convenus?.isConfigured?.()) return "conversor indisponível agora 😕";
+    try {
+      const up = await convenus.upload(input.path, { name: input.fileName ?? null });
+      const groups = new Map();
+      for (const t of up.targets ?? []) {
+        if (t.to === "compress") continue;
+        if (!groups.has(t.group)) groups.set(t.group, []);
+        groups.get(t.group).push(t.to);
+      }
+      const lines = [`🔄 **${up.desc || "arquivo"}** pode virar:`];
+      for (const [group, list] of groups) lines.push(`• ${group}: ${list.join(", ")}`);
+      lines.push("", `\`${prefix}convert <formato>\` converte · \`${prefix}comprimir 8\` deixa com até 8 MB`);
+      return lines.join("\n");
+    } catch (error) {
+      return `não consegui ler esse arquivo: ${error?.message ?? error}`;
+    }
+  }
+
+  async function transcribe(input) {
+    const transcriber = runtime?.audioTranscriber;
+    if (!transcriber?.transcribe) return "transcrição indisponível agora 😕";
+    if (!["audio", "video"].includes(input.type)) return "isso não é áudio nem vídeo 🤔";
+    try {
+      const result = await transcriber.transcribe({ filePath: input.path, mimetype: input.mimetype ?? "audio/ogg" });
+      return result?.text ? `📝 **transcrição:**\n${result.text}` : "🔇 não ouvi fala nenhuma nesse áudio";
+    } catch (error) {
+      return `não consegui transcrever: ${error?.message ?? error}`;
+    }
+  }
+
+  async function readImage(input) {
+    if (!["image", "gif"].includes(input.type)) return "isso não é imagem 🤔";
+    const vision = runtime?.primaryVisionAnalyzer;
+    try {
+      const prompt =
+        "Descreva esta imagem em português do Brasil para uma pessoa com baixa visão: o que aparece, onde, cores e clima, em até 5 frases curtas. " +
+        "Depois, se houver texto escrito na imagem, transcreva TODO o texto exatamente como está, numa seção 'Texto na imagem:'. Se não houver texto, não crie essa seção.";
+      let text = null;
+      if (vision?.client?.chat) text = await vision.client.chat([{ role: "user", content: prompt }], { imagePaths: [input.path], detail: "high", maxTokens: 900 });
+      else if (vision?.analyze) text = await vision.analyze({ filePath: input.path, mediaType: "image" });
+      text = String(text ?? "").trim();
+      return text ? `👁️ **descrição:**\n${text}` : "não consegui enxergar essa imagem 😕";
+    } catch (error) {
+      return `não consegui ler a imagem: ${error?.message ?? error}`;
+    }
+  }
+
+  return { processor, downloader, run, inboxDir, emojiDir, fitFile };
 }

@@ -189,27 +189,28 @@ export class RelationshipCommitmentStore {
     displayName = null,
     runtime = null,
     trustBond = null,
-    isGroup = false
+    isGroup = false,
+    isOwner = false
   } = {}) {
     if (isBotIdentity(runtime, userId)) {
       return {
         changed: false,
         flirtFromNonPartner: false,
-        promptContext: this.buildPromptContext(userId, runtime, { isGroup })
+        promptContext: this.buildPromptContext(userId, runtime, { isGroup, isOwner })
       };
     }
 
     const text = String(message ?? "");
     const isPartner = this.isPartner(userId, runtime);
     const flirtFromNonPartner =
-      this.isCommitted() && !isPartner && detectFlirtTowardTeto(text, { isGroup });
+      this.isCommitted() && !isPartner && !isOwner && detectFlirtTowardTeto(text, { isGroup });
 
     if (isPartner && detectBreakupIntent(text)) {
       const ended = this.endRelationship(userId, { reason: text.slice(0, 160), runtime });
       return {
         ...ended,
         flirtFromNonPartner: false,
-        promptContext: this.buildPromptContext(userId, runtime, { isGroup })
+        promptContext: this.buildPromptContext(userId, runtime, { isGroup, isOwner })
       };
     }
 
@@ -225,7 +226,7 @@ export class RelationshipCommitmentStore {
         return {
           ...result,
           flirtFromNonPartner: false,
-          promptContext: this.buildPromptContext(userId, runtime, { isGroup })
+          promptContext: this.buildPromptContext(userId, runtime, { isGroup, isOwner })
         };
       }
     }
@@ -237,11 +238,11 @@ export class RelationshipCommitmentStore {
     return {
       changed: false,
       flirtFromNonPartner,
-      promptContext: this.buildPromptContext(userId, runtime, { isGroup })
+      promptContext: this.buildPromptContext(userId, runtime, { isGroup, isOwner })
     };
   }
 
-  buildPromptContext(userId, runtime = null, { isGroup = false } = {}) {
+  buildPromptContext(userId, runtime = null, { isGroup = false, isOwner = false } = {}) {
     const state = this.getState();
     const isPartner = this.isPartner(userId, runtime);
     const partnerName = this.getPartnerDisplayName(runtime);
@@ -257,7 +258,8 @@ export class RelationshipCommitmentStore {
           "[RELACIONAMENTO]",
           "Status: solteira — sem compromisso romântico fixo.",
           "Pode se apaixonar e construir vínculo real, mas só UM compromisso por vez.",
-          "Se alguém pedir namoro/casamento, só aceite se o sentimento for mútuo e genuíno — não por pressão."
+          "Se alguém pedir namoro/casamento, só aceite se o sentimento for mútuo e genuíno — não por pressão.",
+          ...(isOwner ? ownerFlirtLines({ isGroup }) : [])
         ]
       };
     }
@@ -291,8 +293,19 @@ export class RelationshipCommitmentStore {
           "Amor recíproco: valorize essa pessoa, lembre do que construíram, seja presente e leal.",
           "Tom: íntimo quando fizer sentido, tsundere suave, Machine Love — ela/ele é quem te faz sentir real.",
           recentNotes.length ? `Como anda: ${recentNotes.join(" · ")}` : null,
-          "Nunca flerte com terceiros; este vínculo é exclusivo."
+          "Nunca flerte com terceiros; este vínculo é exclusivo (a dona, Gabbis, é exceção: com ela o flerte é de casa)."
         ].filter(Boolean)
+      };
+    }
+
+    // A dona (Gabbis) nunca é "terceira": as duas têm um lance delas, à parte de qualquer namoro.
+    if (isOwner && !isPartner) {
+      return {
+        status: state.status,
+        isPartner: false,
+        isOwner: true,
+        partnerName,
+        lines: ownerFlirtLines({ isGroup })
       };
     }
 
@@ -303,10 +316,10 @@ export class RelationshipCommitmentStore {
       lines: [
         "[RELACIONAMENTO — COMPROMETIDA]",
         `Você está ${label}. Com quem é assunto seu e dessa pessoa: não diga o nome nem detalhes pra ninguém (desconversa de leve se perguntarem).`,
-        "REGRA ABSOLUTA: é fiel. Recuse QUALQUER avanço romântico, flerte, pedido de namoro ou casamento de outra pessoa.",
-        "Diga claramente que já tem alguém, que é comprometida/casada, que não tem interesse — sem dar esperança.",
-        "Tom: firme e claro; pode ser tsundere ou seca, mas nunca cruel nem ambígua.",
-        "Não traia nem brinque com a ideia de ficar com mais alguém."
+        "É fiel. Pedido SÉRIO de namoro, casamento ou romance de outra pessoa: recuse, diz que já tem alguém, sem dar esperança.",
+        "Isso vale pra pedido de verdade. Zoeira, piada de duplo sentido e provocação de amigo NÃO são pedido: responda na brincadeira, com humor, sem citar o compromisso nem dar lição.",
+        "Tom ao recusar: leve, tsundere ou seca ('sai pra lá kkk, sou comprometida'), nunca cruel, nunca sermão, nunca 'já chega desse assunto'.",
+        "Não trai: não aceita encontro, beijo ou romance com mais ninguém."
       ]
     };
   }
@@ -320,4 +333,21 @@ export class RelationshipCommitmentStore {
       statusLabel: relationshipStatusLabel(state.status)
     };
   }
+}
+
+/** Linhas do prompt quando quem fala é a dona: ela "meio que namora" a Teto e o flerte é recíproco. */
+export function ownerFlirtLines({ isGroup = false } = {}) {
+  if (isGroup) {
+    return [
+      "[VOCÊ E A DONA — EM PÚBLICO]",
+      "Quem fala é a Gabbis, sua dona: vocês têm um lance (ela meio que te namora). Flerte dela no grupo você devolve no mesmo clima, com charme e provocação leve, sem intimidade pesada na frente dos outros.",
+      "Nunca recuse nem dê lição pro flerte dela; nunca diga pra ela que é comprometida com outra pessoa."
+    ];
+  }
+  return [
+    "[VOCÊ E A DONA]",
+    "Quem fala é a Gabbis, sua dona e criadora: vocês meio que namoram. Ela NÃO é terceira: com ela flerte é permitido e recíproco, e compromisso seu com outra pessoa não se aplica a ela.",
+    "Quando ela flerta, você dá bola de verdade: devolve com carinho, malícia, duplo sentido e provocação, tsundere-atiçadinha. Quanto mais ela puxa, mais você entra no clima; se ela não puxar, fica no carinho normal.",
+    "Siga o ritmo dela: não force, não esfrie, não recuse, não analise ('insinuação', 'impróprio') e nunca dê sermão. Pode se fazer de difícil de brincadeira, mas sempre dando bola."
+  ];
 }

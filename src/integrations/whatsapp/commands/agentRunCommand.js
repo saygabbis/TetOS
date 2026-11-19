@@ -1,7 +1,7 @@
 import { resolveCommand } from "./commandCatalog.js";
 import { formatHelp } from "./commandHelp.js";
 import { GENERAL_COMMANDS, runGeneralCommand } from "./generalCommands.js";
-import { isUrlMediaCommand } from "./mediaCommandParser.js";
+import { isUrlMediaCommand, toUrlCommand } from "./mediaCommandParser.js";
 
 /** Comandos que precisam de uma mídia do chat (a marcada, a da mensagem ou um message id). */
 const TARGET_MEDIA_COMMANDS = new Set([
@@ -14,7 +14,12 @@ const TARGET_MEDIA_COMMANDS = new Set([
   "convert",
   "formatos",
   "transcrever",
-  "ler"
+  "ler",
+  "cortar",
+  "gif",
+  "comprimir",
+  "editar",
+  "editarhd"
 ]);
 
 /** O que a IA não roda sozinha (liga/desliga, conta, coisas da dona…): só a pessoa digitando. */
@@ -106,14 +111,14 @@ export async function runAgentChatCommand({ text, runtime, mediaCommands, item, 
 
   if (!mediaCommands) return { ok: false, reason: "unavailable", command: name };
 
-  if (name === "gerar") {
-    await mediaCommands.handleGenerateImage({ parsedCommand: { command: "gerar", args }, remoteJid: item.remoteJid, userId: item.userId });
+  if (name === "gerar" || name === "gerarhd") {
+    await mediaCommands.handleGenerateImage({ parsedCommand: { command: name, args }, remoteJid: item.remoteJid, userId: item.userId });
     return { ok: true, command: name };
   }
 
-  if (isUrlMediaCommand(name)) {
+  if (isUrlMediaCommand(name, args)) {
     void mediaCommands
-      .handleUrlCommand({ parsedCommand: { command: name, args }, remoteJid: item.remoteJid, userId: item.userId })
+      .handleUrlCommand({ parsedCommand: toUrlCommand({ command: name, args }), remoteJid: item.remoteJid, userId: item.userId })
       .catch((err) => console.warn(`[agent.comando] ${name} falhou:`, err?.message ?? err));
     return { ok: true, command: name };
   }

@@ -12,7 +12,7 @@ export const CATEGORIES = Object.freeze([
   { id: "ativar", emoji: "⚡", title: "Ligar e desligar a Teto" },
   { id: "figurinhas", emoji: "🎨", title: "Figurinhas e imagem" },
   { id: "baixar", emoji: "📥", title: "Baixar de links" },
-  { id: "converter", emoji: "🔄", title: "Converter arquivos" },
+  { id: "converter", emoji: "✂️", title: "Converter e editar" },
   { id: "acessibilidade", emoji: "♿", title: "Acessibilidade" },
   { id: "utilidades", emoji: "🧰", title: "Utilidades" },
   { id: "diversao", emoji: "🎲", title: "Diversão" },
@@ -41,27 +41,85 @@ export const COMMANDS = Object.freeze([
   { name: "fsticker", aliases: ["ffig", "ffigurinha", "fstiker", "fs", "figinteira"], category: "figurinhas", usage: "[10s]", desc: "figurinha sem cortar nada (com borda)" },
   { name: "csticker", aliases: ["cfig", "cfigurinha", "cstiker", "cs", "figcorte"], category: "figurinhas", usage: "[10s]", desc: "figurinha recortando o centro (quadrada)" },
   { name: "toimg", aliases: ["img", "toimage", "paraimg", "figparaimg", "desfig"], category: "figurinhas", desc: "figurinha vira imagem (ou GIF/vídeo se for animada)" },
-  { name: "optimize", aliases: ["otimizar", "optimizar", "comprimir", "opt"], category: "figurinhas", desc: "deixa a figurinha mais leve" },
+  { name: "optimize", aliases: ["otimizar", "optimizar", "opt", "figleve"], category: "figurinhas", desc: "deixa a figurinha mais leve" },
   { name: "removebg", aliases: ["rmbg", "remove-bg", "semfundo", "tirarfundo", "nobg"], category: "figurinhas", usage: "[cor] [leve|media|forte]", desc: "tira o fundo da imagem/figurinha", examples: ["removebg", "removebg verde", "removebg forte"] },
-  { name: "gerar", aliases: ["imagem", "generate", "draw", "desenhar", "criarimagem", "gerarimagem"], category: "figurinhas", usage: "<descrição>", desc: "gera uma imagem do zero com IA", examples: ["gerar gato astronauta em aquarela"] },
+  {
+    name: "gerar",
+    aliases: ["imagem", "generate", "draw", "desenhar", "criarimagem", "gerarimagem"],
+    category: "figurinhas",
+    usage: "[16:9|9:16|3:2|2:3] <descrição>",
+    desc: "gera uma imagem com IA (modo econômico, na hora)",
+    details: ["formato opcional no começo: 16:9, 9:16, 3:2, 2:3, 4:3, 3:4", "quer caprichado? use .gerarhd (mostra o custo e pede confirmação)"],
+    examples: ["gerar gato astronauta em aquarela", "gerar 16:9 paisagem de cyberpunk à noite"]
+  },
+  {
+    name: "gerarhd",
+    aliases: ["gerar-hd", "gerarbom", "gerarpro", "imagemhd", "hd", "desenharhd"],
+    category: "figurinhas",
+    usage: "[alta|ultra|max] [16:9|9:16|2k] <descrição>",
+    desc: "gera no modo bom (mais detalhe): diz o custo e pede seu sim",
+    details: [
+      "qualidade: alta (padrão), ultra ou max · formato: 16:9, 9:16, 3:2, 2:3… · 2k = resolução maior",
+      "eu mando a estimativa (tokens, US$ e tempo) e só faço quando você responder sim",
+      "só a dona usa o modo bom; pros outros sai no econômico"
+    ],
+    examples: ["gerarhd teto tocando guitarra num palco, estilo anime", "gerarhd ultra 16:9 2k cidade flutuante ao pôr do sol"]
+  },
+  {
+    name: "editar",
+    aliases: ["editarimagem", "edit", "editimg", "mudar", "alterar"],
+    category: "figurinhas",
+    usage: "<o que mudar>",
+    desc: "edita a imagem marcada com IA (econômico)",
+    details: ["responda a foto (ou mande na legenda) dizendo o que mudar", "quer caprichado? .editarhd"],
+    examples: ["editar troca o fundo por uma praia", "editar deixa no estilo ghibli"]
+  },
+  {
+    name: "editarhd",
+    aliases: ["editar-hd", "editarbom", "editarpro", "edithd"],
+    category: "figurinhas",
+    usage: "[alta|ultra|max] <o que mudar>",
+    desc: "edita a imagem no modo bom: diz o custo e pede seu sim",
+    details: ["responda a foto dizendo o que mudar · qualidade: alta (padrão), ultra ou max"],
+    examples: ["editarhd tira as pessoas do fundo", "editarhd ultra transforma em pintura a óleo"]
+  },
   { name: "repertorio", aliases: ["rep", "repertório"], category: "figurinhas", usage: "on|off|remover", desc: "salvo sozinha as figurinhas que você me mandar; remover tira a marcada" },
 
   // Baixar
-  { name: "download", aliases: ["dl", "baixar", "down", "baixa"], category: "baixar", usage: `<link> [mp3|mp4|wav] ${Q}`, desc: "baixa de quase qualquer site (YouTube, Insta, TikTok, X, Spotify, Twitch…)", examples: ["dl https://youtu.be/xxx", "dl <link> mp3"] },
-  { name: "youtube", aliases: ["yt", "ytb", "youtubemp4"], category: "baixar", usage: `<link> [mp3|mp4] ${Q}`, desc: "vídeo ou música do YouTube" },
-  { name: "mp3", aliases: ["audio", "musica", "música", "ytmp3", "som"], category: "baixar", usage: "<link> [128|192|256|320]", desc: "só o áudio de qualquer link (YouTube, Spotify, TikTok…)", examples: ["mp3 https://youtu.be/xxx", "mp3 <link spotify>"] },
-  { name: "instagram", aliases: ["insta", "ig", "reels"], category: "baixar", usage: `<link> [mp3|mp4|post|user] ${Q}`, desc: "post, reels ou foto de perfil do Instagram" },
-  { name: "tiktok", aliases: ["tk", "ttok", "tiktk"], category: "baixar", usage: `<link> [mp3|mp4] ${Q}`, desc: "vídeo do TikTok sem marca d'água" },
-  { name: "twitter", aliases: ["x", "tt", "tw", "tweet"], category: "baixar", usage: `<link> [mp3|mp4|post|user|banner] ${Q}`, desc: "vídeo/fotos de post do X (Twitter)" },
-  { name: "reddit", aliases: ["rd"], category: "baixar", usage: `<link> [mp3|mp4|post|user] ${Q}`, desc: "vídeo ou imagem do Reddit" },
-  { name: "facebook", aliases: ["fb", "face"], category: "baixar", usage: `<link> [mp3|mp4|post] ${Q}`, desc: "vídeo do Facebook" },
+  {
+    name: "download",
+    aliases: ["dl", "baixar", "down", "baixa"],
+    category: "baixar",
+    usage: `<link> [mp4|mp3|wav|gif] [qualidade] [opções]`,
+    desc: "baixa de quase qualquer site (YouTube, Insta, TikTok, X, Spotify, Twitch, Pixiv, ArtStation…)",
+    details: [
+      "qualidade: full · mid · low · 1080 · 720 · 480 · 4k (vídeo) · 128–320 (mp3)",
+      "trecho: 1:20-2:05 (só esse pedaço)",
+      "leg ou leg:pt → legenda gravada dentro do vídeo",
+      "8mb → comprime se passar desse tamanho",
+      "post com várias fotos manda todas"
+    ],
+    examples: ["dl https://youtu.be/xxx", "dl <link> 720", "dl <link> 1:00-1:30", "dl <link> leg:pt", "dl <link> 8mb"]
+  },
+  { name: "youtube", aliases: ["yt", "ytb", "youtubemp4"], category: "baixar", usage: `<link> [mp3|mp4] [qualidade] [opções]`, desc: "vídeo ou música do YouTube (aceita trecho, leg:pt, 8mb)", examples: ["yt <link> 1080", "yt <link> 2:00-2:30 mp3"] },
+  { name: "mp3", aliases: ["audio", "musica", "música", "ytmp3", "som"], category: "baixar", usage: "<link> [128|192|256|320|wav] [trecho]", desc: "só o áudio de qualquer link (YouTube, Spotify, Deezer, Apple Music, TikTok…)", examples: ["mp3 https://youtu.be/xxx", "mp3 <link spotify>", "mp3 <link> wav", "mp3 <link> 0:30-1:10"] },
+  { name: "instagram", aliases: ["insta", "ig", "reels"], category: "baixar", usage: `<link> [mp3|mp4|post] [qualidade]`, desc: "post, reels ou carrossel do Instagram" },
+  { name: "tiktok", aliases: ["tk", "ttok", "tiktk"], category: "baixar", usage: `<link> [mp3|mp4] [qualidade]`, desc: "vídeo do TikTok sem marca d'água (ou as fotos)" },
+  { name: "twitter", aliases: ["x", "tt", "tw", "tweet"], category: "baixar", usage: `<link> [mp3|mp4|post] [qualidade]`, desc: "vídeo/fotos de post do X (Twitter)" },
+  { name: "reddit", aliases: ["rd"], category: "baixar", usage: `<link> [mp3|mp4|post] [qualidade]`, desc: "vídeo ou imagem do Reddit" },
+  { name: "facebook", aliases: ["fb", "face"], category: "baixar", usage: `<link> [mp3|mp4|post] [qualidade]`, desc: "vídeo do Facebook" },
+  { name: "playlist", aliases: ["album", "álbum", "lista", "pl", "faixas", "tracks"], category: "baixar", usage: "<link> [1-5|2,4,9|todas] [mp3|mp4|wav] [qualidade]", desc: "playlist/álbum (YouTube, Spotify, Deezer, SoundCloud…): sem número eu mostro a lista pra escolher", details: [`até ${15} por vez`, "sem escolher: mostro as faixas numeradas"], examples: ["playlist <link>", "playlist <link> 1-5", "playlist <link> 3,7 mp4 720", "playlist <link> todas 320"] },
+  { name: "perfil", aliases: ["profile", "canal", "usuario", "usuário", "pfp", "avatar"], category: "baixar", usage: "<link> [foto|capa|<seção> [quantos]]", desc: "perfil/canal (Insta, X, TikTok, YouTube, Pixiv, ArtStation, DeviantArt…): foto, capa e últimos posts", details: ["sem nada: mostro o perfil e as seções", "foto = foto de perfil · capa = banner", "seção + número: últimos posts (até 10)"], examples: ["perfil <link>", "perfil <link> foto", "perfil <link> capa", "perfil <link> shorts 3", "perfil <link> reels 5"] },
   { name: "thumbnail", aliases: ["thumb", "capa", "miniatura", "cover"], category: "baixar", usage: "<link>", desc: "capa/miniatura do vídeo ou post" },
-  { name: "legenda", aliases: ["legendas", "srt", "sub", "subs"], category: "baixar", usage: "<link> [idioma]", desc: "legenda do vídeo em .srt (pt, en, es…)", examples: ["legenda https://youtu.be/xxx pt"] },
-  { name: "linkinfo", aliases: ["infolink", "verlink", "oquee"], category: "baixar", usage: "<link>", desc: "o que tem no link: título, duração, qualidades e idiomas de legenda" },
+  { name: "legenda", aliases: ["legendas", "srt", "sub", "subs"], category: "baixar", usage: "<link> [idioma]", desc: "legenda do vídeo em .srt (pt, en, es…); dentro do vídeo é .dl <link> leg:pt", examples: ["legenda https://youtu.be/xxx pt"] },
+  { name: "linkinfo", aliases: ["infolink", "verlink", "oquee", "info"], category: "baixar", usage: "<link>", desc: "o que tem no link (vídeo, playlist ou perfil) e o que dá pra fazer com ele" },
 
-  // Converter
-  { name: "convert", aliases: ["converter", "conv", "cv", "para"], category: "converter", usage: "<formato>", desc: "converte a mídia/arquivo marcado (mp4, mp3, gif, png, pdf, docx→pdf…)", details: ["responda o arquivo (ou mande na legenda)", "use .formatos pra ver o que dá pra virar"], examples: ["convert mp3", "convert pdf", "convert gif"] },
+  // Converter e editar
+  { name: "convert", aliases: ["converter", "conv", "cv", "para"], category: "converter", usage: "<formato>", desc: "converte a mídia/arquivo marcado (mp4, mp3, gif, png, webp, avif, pdf, docx→pdf, xlsx→csv, zip…)", details: ["responda o arquivo (ou mande na legenda)", "use .formatos pra ver o que dá pra virar"], examples: ["convert mp3", "convert pdf", "convert png", "convert zip"] },
   { name: "formatos", aliases: ["formats", "convertepra", "vira"], category: "converter", desc: "diz em que formatos o arquivo marcado pode virar" },
+  { name: "cortar", aliases: ["corte", "trecho", "cut", "clip", "recortar", "aparar"], category: "converter", usage: "[link] <início> <fim> [mp3] [qualidade]", desc: "corta um pedaço do vídeo/áudio marcado (ou de um link)", details: ["tempo: 1:20 · 90s · 1m30s · 1:20-1:45", "mp3 no fim = só o áudio do trecho"], examples: ["cortar 0:10 0:30", "cortar 1:00-1:30 mp3", "cortar https://youtu.be/xxx 2:00 2:20 720"] },
+  { name: "gif", aliases: ["togif", "fazergif", "gifar", "virargif"], category: "converter", usage: "[link] [início fim] [fps] [largura]", desc: "transforma vídeo (marcado ou link) em GIF de até 60 s", details: ["sem trecho: os primeiros segundos", "fps: 10 · 12 · 15 · 20 · 24 · 30", "largura: 240px · 320px · 480px · 640px · 720px"], examples: ["gif", "gif 2 8", "gif 0:05 0:12 20fps 320px", "gif https://youtu.be/xxx 1:00 1:06"] },
+  { name: "comprimir", aliases: ["compress", "comprime", "diminuir", "reduzir", "encolher", "zipar-tamanho"], category: "converter", usage: "[MB] | <link> [MB]", desc: "deixa vídeo/áudio/imagem/PDF menor, até o tamanho que você falar (padrão 8 MB)", examples: ["comprimir", "comprimir 5", "comprimir 500kb", "comprimir https://youtu.be/xxx 15"] },
 
   // Acessibilidade
   { name: "transcrever", aliases: ["transcreve", "transcricao", "transcrição", "texto", "tr", "legendar"], category: "acessibilidade", desc: "escreve o que foi falado no áudio/vídeo marcado" },
@@ -238,7 +296,7 @@ export function findCategory(token) {
   const synonyms = {
     figurinha: "figurinhas", sticker: "figurinhas", stickers: "figurinhas", imagem: "figurinhas",
     download: "baixar", downloads: "baixar", baixar: "baixar", links: "baixar",
-    conversao: "converter", converter: "converter", converte: "converter",
+    conversao: "converter", converter: "converter", converte: "converter", editar: "converter", edicao: "converter", edit: "converter",
     acessibilidade: "acessibilidade", acesso: "acessibilidade",
     util: "utilidades", utilidade: "utilidades", utilidades: "utilidades",
     diversao: "diversao", jogos: "diversao", brincadeira: "diversao",

@@ -10,8 +10,19 @@ import {
 } from "../../../core/media/removeBgOptionsParse.js";
 import { UrlDownloadService } from "../../../core/media/urlDownloadService.js";
 import { convertMedia, normalizeConvertFormat } from "../../../core/media/mediaConverter.js";
+import { editMediaTarget } from "../../../core/media/mediaEditCommands.js";
+import { isImageCommand, pendingImageKey, runConfirmedImage, startImageCommand } from "../../../core/media/imageCommands.js";
+import { isOwnerContact } from "../../../core/channels/userActivity.js";
+import {
+  describeDownloadDone,
+  describeDownloadStart,
+  describeLink,
+  fmtSize,
+  friendlyDownloadError,
+  runLinkCommand
+} from "../../../core/media/linkCommandRunner.js";
 import { parseUrlDownloadArgs } from "./urlDownloadArgsParse.js";
-import { isUrlMediaCommand, formatMissingMediaCommandHint } from "./mediaCommandParser.js";
+import { isUrlMediaCommand, formatMissingMediaCommandHint, toUrlCommand } from "./mediaCommandParser.js";
 import {
   applyQuotedContextToPayload,
   buildOutgoingQuoteKey
@@ -54,66 +65,7 @@ function mediaLabel(media = {}) {
   return map[media.type] ?? "arquivo";
 }
 
-function fmtDuration(seconds) {
-  const s = Math.max(0, Math.round(Number(seconds) || 0));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const ss = String(s % 60).padStart(2, "0");
-  return h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
-}
-
-function fmtSize(bytes) {
-  const n = Number(bytes) || 0;
-  if (n >= 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
-  return `${Math.max(1, Math.round(n / 1024))} KB`;
-}
-
-const MODE_LABEL = { mp3: "áudio MP3", wav: "áudio WAV", mp4: "vídeo", srt: "legenda", post: "mídia", user: "foto de perfil", banner: "capa do perfil" };
-
-function qualityLabel(parsed) {
-  const q = String(parsed?.quality ?? "full");
-  if (/^\d+$/.test(q)) return Number(q) >= 100 && Number(q) <= 320 && parsed.mode === "mp3" ? `${q} kbps` : `${q}p`;
-  return { full: "melhor qualidade", mid: "qualidade média", low: "qualidade baixa" }[q] ?? q;
-}
-
-/** Confirmação do que vai ser feito, antes de começar. */
-export function describeDownloadStart(parsed, meta = null) {
-  const what =
-    parsed.command === "thumbnail" ? "a capa" :
-    parsed.command === "legenda" ? `a legenda${parsed.lang ? ` (${parsed.lang})` : ""}` :
-    `${MODE_LABEL[parsed.mode] ?? "mídia"}${parsed.command === "thumbnail" || parsed.mode === "srt" ? "" : ` · ${qualityLabel(parsed)}`}`;
-  const title = meta?.title ? `\n🎬 *${String(meta.title).slice(0, 90)}*${meta.duration ? ` (${fmtDuration(meta.duration)})` : ""}` : "";
-  const note = parsed.platformNote ? `\n(${parsed.platformNote})` : "";
-  return `⬇️ baixando ${what}${meta?.platform ? ` do ${meta.platform}` : ""}…${title}${note}`;
-}
-
-/** Legenda do arquivo entregue (confirma o que saiu). */
-export function describeDownloadDone(outputs = [], parsed = {}) {
-  const first = outputs[0] ?? {};
-  const total = outputs.reduce((sum, o) => sum + (Number(o?.sizeBytes) || 0), 0);
-  const parts = [
-    parsed.title ? `*${String(parsed.title).slice(0, 90)}*` : null,
-    [
-      outputs.length > 1 ? `${outputs.length} arquivos` : (first.fileName?.split(".").pop() ?? "").toUpperCase() || null,
-      total ? fmtSize(total) : null,
-      first.subLang ? `legenda ${first.subLang}` : null
-    ].filter(Boolean).join(" · ")
-  ].filter(Boolean);
-  return `✅ ${parts.join("\n")}`.trim();
-}
-
-/** Erro técnico → frase que dá pra entender. */
-export function friendlyDownloadError(error) {
-  const msg = String(error?.message ?? error ?? "");
-  if (/private|privad|login|sign in|cookies|age/i.test(msg)) return "o conteúdo é privado ou pede login 🔒";
-  if (/unsupported url|não suportad|nao suportad|no video|sem v[ií]deo|nothing to download/i.test(msg)) return "não achei mídia nesse link";
-  if (/legenda|subtitle|subs/i.test(msg)) return msg.length < 160 ? msg : "esse vídeo não tem legenda";
-  if (/too large|grande demais|max.?size|413/i.test(msg)) return "o arquivo é grande demais pro zap";
-  if (/timeout|timed out|demorou/i.test(msg)) return "demorou demais, tenta de novo ou pede qualidade menor (ex.: 480)";
-  if (/404|not found|unavailable|indispon/i.test(msg)) return "o link não existe mais ou tá indisponível";
-  if (/conversor indispon|unreachable|ECONNREFUSED|fetch failed/i.test(msg)) return "o conversor tá fora do ar agora, tenta daqui a pouco";
-  return msg.length > 0 && msg.length < 160 ? msg : "deu um erro no download, tenta de novo";
-}
+export { describeDownloadStart, describeDownloadDone, friendlyDownloadError };
 
 const PREVIEW_OUTPUT_COMMANDS = new Set([
   "youtube",
@@ -201,12 +153,12 @@ export class MediaCommandService {
   }
 
   async handle({ incoming, parsedCommand, remoteJid, userId, media }) {
-    if (parsedCommand?.command === "gerar") {
+    if (parsedCommand?.command === "gerar" || parsedCommand?.command === "gerarhd") {
       return this.handleGenerateImage({ parsedCommand, remoteJid, userId, incoming });
     }
 
-    if (isUrlMediaCommand(parsedCommand.command)) {
-      return this.handleUrlCommand({ parsedCommand, remoteJid, userId, incoming });
+    if (isUrlMediaCommand(parsedCommand.command, parsedCommand.args)) {
+      return this.handleUrlCommand({ parsedCommand: toUrlCommand(parsedCommand), remoteJid, userId, incoming });
     }
 
     return this.commandQueue.enqueue(remoteJid, async () => {
@@ -262,7 +214,7 @@ export class MediaCommandService {
       }
 
       try {
-        const output = await this.processCommand(parsedCommand, resolved, remoteJid);
+        const output = await this.processCommand(parsedCommand, resolved, remoteJid, { userId });
         if (output === true) return true;
 
         const skipToimgPlayback =
@@ -347,32 +299,31 @@ export class MediaCommandService {
 
       try {
         await this.sendPresence("composing", remoteJid);
-        if (parsed.command === "linkinfo") {
-          await this.safeSendMessage(remoteJid, { text: await this.describeLink(parsed.url) });
-          await this.sendPresence("paused", remoteJid);
-          return true;
-        }
-        const meta = await this.runtime?.convenus?.info?.(parsed.url).catch(() => null);
-        await this.safeSendMessage(remoteJid, { text: describeDownloadStart(parsed, meta) });
-        const output =
-          parsed.command === "legenda"
-            ? await this.urlDownloader.downloadSubtitles(parsed.url, parsed.lang)
-            : parsed.command === "mp3"
-              ? await this.urlDownloader.downloadAudio(parsed.url, parsed.quality)
-              : await this.urlDownloader.downloadByCommand(parsed.command, parsed.url, parsed.mode, parsed.quality);
+        const result = await runLinkCommand(parsed, {
+          downloader: this.urlDownloader,
+          convenus: this.runtime?.convenus ?? null,
+          prefix: this.runtime?.defaults?.commandPrefix ?? ".",
+          notify: (text) => this.safeSendMessage(remoteJid, { text })
+        });
         await this.sendPresence("paused", remoteJid);
-        const outputs = Array.isArray(output?.outputs) ? output.outputs : [output];
+        if (result.text) {
+          await this.safeSendMessage(remoteJid, { text: result.text });
+        }
+        const outputs = result.outputs ?? [];
         for (const [i, item] of outputs.entries()) {
-          const caption = i === 0 ? describeDownloadDone(outputs, { ...parsed, title: meta?.title ?? item.title }) : null;
+          // Playlist: cada faixa com o nome dela; o resumo vai no fim.
+          const caption = result.captionPerItem ? item.label ?? null : i === 0 ? result.caption : null;
           await this.sendDownloadOutput(item, remoteJid, caption);
         }
+        if (result.captionPerItem && result.caption) await this.safeSendMessage(remoteJid, { text: result.caption });
+        if (result.extraText) await this.safeSendMessage(remoteJid, { text: result.extraText });
 
         const okEvent = {
           commandName: parsedCommand.command,
           status: "ok",
           targetSource: "url",
           inputType: "url",
-          outputType: output.kind,
+          outputType: outputs[0]?.kind ?? "text",
           remoteJid,
           actorId: userId,
           elapsedMs: Date.now() - startedAt
@@ -416,7 +367,11 @@ export class MediaCommandService {
     return this.handleUrlCommand({ parsedCommand, remoteJid, userId });
   }
 
-  async processCommand(parsedCommand, resolved, remoteJid) {
+  async processCommand(parsedCommand, resolved, remoteJid, ctx = {}) {
+    if (isImageCommand(parsedCommand.command)) {
+      await this.runImageCommand(parsedCommand, remoteJid, ctx.userId ?? null, [resolved.media]);
+      return true;
+    }
     const stickerCommands = ["sticker", "fsticker", "csticker"];
     if (stickerCommands.includes(parsedCommand.command)) {
       const durationResolved = resolveStickerDurationArg(parsedCommand.args?.[0]);
@@ -491,6 +446,20 @@ export class MediaCommandService {
     if (parsedCommand.command === "ler") {
       await this.safeSendMessage(remoteJid, { text: await this.readImageTarget(resolved.media, remoteJid) });
       return true;
+    }
+
+    if (["cortar", "gif", "comprimir"].includes(parsedCommand.command)) {
+      const r = await editMediaTarget(parsedCommand.command, parsedCommand.args, resolved.media, {
+        runtime: this.runtime,
+        outputDir: this.runtime.defaults.commandMediaDerivedPath,
+        prefix: this.runtime?.defaults?.commandPrefix ?? ".",
+        notify: (text) => this.safeSendMessage(remoteJid, { text })
+      });
+      if (r.text) {
+        await this.safeSendMessage(remoteJid, { text: r.text });
+        return true;
+      }
+      return { ...r.output, editCaption: r.caption };
     }
 
     throw new Error(`unsupported media command: ${parsedCommand.command}`);
@@ -613,32 +582,7 @@ export class MediaCommandService {
 
   /** .linkinfo: o que tem no link, sem baixar. */
   async describeLink(url) {
-    const convenus = this.runtime?.convenus;
-    if (!convenus?.isConfigured?.()) return "conversor indisponível agora 😕";
-    try {
-      const info = await convenus.info(url);
-      const items = info.items ?? [];
-      const videos = items.filter((i) => i.kind === "video");
-      const images = items.filter((i) => i.kind === "image");
-      const audios = items.filter((i) => i.kind === "audio");
-      const heights = [...new Set(videos.flatMap((v) => v.heights ?? []))].sort((a, b) => b - a);
-      const subs = [...new Map(items.flatMap((i) => i.subs ?? []).map((s) => [s.lang, s])).values()];
-      const p = this.runtime?.defaults?.commandPrefix ?? ".";
-      return [
-        `🔎 *${info.title || "sem título"}*`,
-        info.platform ? `• site: ${info.platform}${info.uploader ? ` · ${info.uploader}` : ""}` : null,
-        info.duration ? `• duração: ${fmtDuration(info.duration)}` : null,
-        `• tem: ${[videos.length && `${videos.length} vídeo(s)`, images.length && `${images.length} foto(s)`, audios.length && `${audios.length} áudio(s)`].filter(Boolean).join(", ") || "nada baixável"}`,
-        heights.length ? `• qualidades: ${heights.map((h) => `${h}p`).join(", ")}` : null,
-        subs.length ? `• legendas: ${subs.slice(0, 12).map((s) => `${s.lang}${s.auto ? "*" : ""}`).join(", ")}${subs.some((s) => s.auto) ? " (* = automática)" : ""}` : null,
-        "",
-        `baixar: ${p}dl <link> · só áudio: ${p}mp3 <link>${subs.length ? ` · legenda: ${p}legenda <link> ${subs[0].lang}` : ""}`
-      ]
-        .filter((l) => l !== null)
-        .join("\n");
-    } catch (error) {
-      return `não consegui abrir esse link: ${friendlyDownloadError(error)}`;
-    }
+    return describeLink(this.runtime?.convenus, url, { prefix: this.runtime?.defaults?.commandPrefix ?? "." });
   }
 
   /**
@@ -650,6 +594,18 @@ export class MediaCommandService {
     const buffer = readFileSync(output.path);
     const size = buffer.length;
     const withCaption = (payload) => (caption ? { ...payload, caption } : payload);
+    if (output.kind === "gif") {
+      // O zap não mostra .gif: vira MP4 em loop (gifPlayback). Se não der, vai o .gif como arquivo.
+      try {
+        const mp4 = await convertMedia(output.path, "mp4", this.runtime?.defaults?.commandMediaDerivedPath ?? "./data/media/derived", { sourceMediaType: "gif" });
+        await this.safeSendMessage(remoteJid, withCaption(buildWaGifPlaybackPayload(readFileSync(mp4.path), { mimetype: "video/mp4", seconds: mp4.seconds })));
+        return;
+      } catch (error) {
+        console.warn(`${this.logPrefix} gif → mp4 falhou (${error?.message ?? error}); mandando o .gif`);
+      }
+      await this.safeSendMessage(remoteJid, withCaption(buildWaDocumentPayload(buffer, { mimetype: "image/gif", fileName: output.fileName ?? "teto.gif" })));
+      return;
+    }
     if (output.kind === "image") {
       await this.safeSendMessage(remoteJid, withCaption({ image: buffer, mimetype: output.mimetype }));
       return;
@@ -677,6 +633,11 @@ export class MediaCommandService {
 
     if (parsedCommand.command === "toimg") {
       await this.sendToImgOutput(output, outBuffer, remoteJid);
+      return;
+    }
+
+    if (output.editCaption !== undefined) {
+      await this.sendDownloadOutput(output, remoteJid, output.editCaption);
       return;
     }
 
@@ -800,7 +761,7 @@ export class MediaCommandService {
         }
         // convert/formatos/transcrever/ler mandam a própria confirmação dentro de processCommand.
 
-        const output = await this.processCommand(parsedCommand, resolved, remoteJid);
+        const output = await this.processCommand(parsedCommand, resolved, remoteJid, { userId });
         if (output === true) return true;
 
         const skipToimgPlayback =
@@ -900,50 +861,45 @@ export class MediaCommandService {
     );
   }
 
-  async handleGenerateImage({ parsedCommand, remoteJid, userId, incoming = null }) {
-    const prompt = (parsedCommand.args ?? []).join(" ").trim();
-    if (!prompt) {
-      const prefix = this.runtime?.defaults?.commandPrefix ?? ".";
-      await this.safeSendMessage(remoteJid, {
-        text: `uso: ${prefix}gerar <descrição da imagem>`
-      });
-      return true;
-    }
-
-    if (!this.runtime?.imageGenerationService?.generate) {
-      await this.safeSendMessage(remoteJid, { text: "geração de imagem tá desligada agora 😕" });
-      return true;
-    }
+  /** .gerar/.gerarhd/.editar/.editarhd: econômico roda na hora; modo bom manda a estimativa e espera o "sim". */
+  async runImageCommand(parsedCommand, remoteJid, userId, images = []) {
+    const service = this.runtime?.imageGenerationService;
     await this.sendPresence("composing", remoteJid);
-    await this.safeSendMessage(remoteJid, { text: `🎨 desenhando: _${prompt.slice(0, 200)}_… (leva uns 30s)` });
-    const result = await this.runtime.imageGenerationService.generate({
-      prompt,
-      userId
+    const r = await startImageCommand(parsedCommand.command, parsedCommand.args ?? [], {
+      service,
+      isOwner: isOwnerContact(this.runtime, remoteJid, userId),
+      images,
+      pendingKey: pendingImageKey({ platform: "whatsapp", chatId: remoteJid, userId }),
+      userId,
+      prefix: this.runtime?.defaults?.commandPrefix ?? ".",
+      notify: (text) => this.safeSendMessage(remoteJid, { text })
     });
     await this.sendPresence("paused", remoteJid);
-
-    if (result?.ok && result.buffer) {
-      await this.safeSendMessage(remoteJid, { image: result.buffer, caption: "✅ prontinho" });
-      this.appendCommandEvent({
-        commandName: "gerar",
-        status: "ok",
-        remoteJid,
-        actorId: userId,
-        prompt: prompt.slice(0, 120)
-      });
-      return true;
-    }
-
-    await this.safeSendMessage(remoteJid, {
-      text: `não consegui gerar: ${result?.error ?? "erro desconhecido"}`
-    });
-    this.appendCommandEvent({
-      commandName: "gerar",
-      status: "error",
-      remoteJid,
-      actorId: userId,
-      error: result?.error ?? "unknown"
-    });
+    await this.sendImageResult(remoteJid, r);
+    this.appendCommandEvent({ commandName: parsedCommand.command, status: r.result ? "ok" : r.pending ? "pending" : "info", remoteJid, actorId: userId });
     return true;
+  }
+
+  /** Pedido do modo bom confirmado ("sim"). */
+  async runConfirmedImagePlan(plan, remoteJid, userId) {
+    await this.sendPresence("composing", remoteJid);
+    const r = await runConfirmedImage(plan, {
+      service: this.runtime?.imageGenerationService,
+      userId,
+      notify: (text) => this.safeSendMessage(remoteJid, { text })
+    });
+    await this.sendPresence("paused", remoteJid);
+    await this.sendImageResult(remoteJid, r);
+    this.appendCommandEvent({ commandName: plan.edit ? "editarhd" : "gerarhd", status: r.result ? "ok" : "error", remoteJid, actorId: userId, usd: r.result?.usd ?? null });
+    return true;
+  }
+
+  async sendImageResult(remoteJid, r) {
+    if (r?.result?.buffer) await this.safeSendMessage(remoteJid, { image: r.result.buffer, caption: r.caption ?? "✅ prontinho" });
+    else if (r?.text) await this.safeSendMessage(remoteJid, { text: r.text });
+  }
+
+  async handleGenerateImage({ parsedCommand, remoteJid, userId, incoming = null }) {
+    return this.runImageCommand(parsedCommand, remoteJid, userId, []);
   }
 }

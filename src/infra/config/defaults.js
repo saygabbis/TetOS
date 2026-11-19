@@ -113,9 +113,16 @@ export const DEFAULTS = {
     process.env.TETOS_OPENAI_TTS_INSTRUCTIONS ||
       "Fale em português do Brasil, com voz jovem, animada e fofa, num tom casual de áudio de WhatsApp."
   ).trim(),
-  openaiImageModel: String(process.env.TETOS_OPENAI_IMAGE_MODEL || "gpt-image-1-mini").trim(),
-  /** low | medium | high — low custa centavos por imagem. */
+  /** Modo econômico (padrão): rápido e barato (~US$ 0,025 por 1024² em low). */
+  openaiImageModel: String(process.env.TETOS_OPENAI_IMAGE_MODEL || "gpt-image-2.6-flare").trim(),
+  /** low | medium | high */
   openaiImageQuality: String(process.env.TETOS_OPENAI_IMAGE_QUALITY || "low").trim().toLowerCase(),
+  /** Modo bom (.gerarhd / .editarhd): mostra a estimativa e pede "sim" antes (~US$ 0,05 por 1024² em high). */
+  openaiImageHdModel: String(process.env.TETOS_OPENAI_IMAGE_HD_MODEL || "gpt-image-2.6-sunburst").trim(),
+  /** high | xhigh | max */
+  openaiImageHdQuality: String(process.env.TETOS_OPENAI_IMAGE_HD_QUALITY || "high").trim().toLowerCase(),
+  /** Modo bom só pra dona (gasta o saldo dela). */
+  openaiImageHdOwnerOnly: String(process.env.TETOS_OPENAI_IMAGE_HD_OWNER_ONLY ?? "true").toLowerCase() !== "false",
   openaiSttModel: String(process.env.TETOS_OPENAI_STT_MODEL || "gpt-4o-mini-transcribe").trim(),
   minimaxApiKey,
   minimaxBaseUrl,
@@ -401,6 +408,7 @@ export const DEFAULTS = {
   hfToken: String(process.env.TETOS_HF_TOKEN ?? "").trim(),
   imageGenMaxPer10Min: Number(process.env.TETOS_IMAGE_GEN_MAX_PER_10MIN ?? 3),
   imageGenOutputDir: process.env.TETOS_IMAGE_GEN_OUTPUT_DIR ?? "./data/media/generated",
+  imageGenStatsPath: process.env.TETOS_IMAGE_GEN_STATS_PATH ?? "./data/imageCostStats.json",
   videoAdapter: process.env.TETOS_VIDEO_ADAPTER ?? "ffmpeg_frames",
   webReaderEnabled: String(process.env.TETOS_WEB_READER_ENABLED ?? "true").toLowerCase() === "true",
   /** false = responde a qualquer contato (comportamento atual); true = só /teto-ativar e /teto-grupo-ativar */

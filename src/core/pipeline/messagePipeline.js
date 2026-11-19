@@ -933,7 +933,8 @@ export async function runMessagePipeline(runtime, payload = {}) {
         brainTurn?.snapshot?.trustBond ??
         runtime.brainOrchestrator?.trust?.getBond?.(safeUserId, channelScope) ??
         null,
-      isGroup
+      isGroup,
+      isOwner: Boolean(isOwner)
     });
     relationshipMeta = {
       relationshipContext: relTurn.promptContext,

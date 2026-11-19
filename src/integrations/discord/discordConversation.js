@@ -19,6 +19,7 @@ import { formatDuration, formatRate, parseHushRequest, polishDiscordActions, rol
 import { createDiscordLog } from "./discordLog.js";
 import { parseTetosCommand } from "../whatsapp/commands/tetosCommand.js";
 import { parsePriceWatchCommand } from "../../modules/priceWatch/priceWatch.js";
+import { findChannelMedia, handleDiscordImageConfirmation, resolveDiscordAgentCommand, runDiscordCommand } from "./discordCommandRunner.js";
 
 /**
  * Conversa no Discord: quando ela responde (modo do canal, marcação, reply, nome, .tetos), quando segura
@@ -141,6 +142,12 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     const mode = isDM ? "padrao" : state.modeOf(channelId);
     record(message, { text: text || (items.length ? `[${items.map((i) => i.name).join(", ")}]` : "") });
     if (isDM || mode !== "off") dlog.chat(place, who, text || `[${items.map((i) => i.name).join(", ")}]`);
+
+    // Imagem no modo bom esperando confirmação: "sim" gera, "não" cancela.
+    if (text && (await handleDiscordImageConfirmation({ runtime, channel: message.channel, authorId: message.author.id, userId: identityOf(message.author).userId, text }))) {
+      dlog.decision(place, who, "imagem modo bom", text.slice(0, 40));
+      return;
+    }
 
     // Monitor de preço (igual ao zap): .monitorarpreco <produto>, depois os números das opções.
     if (runtime.priceWatch && text) {
@@ -616,6 +623,26 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
           else store?.disable?.(last.userId);
         } else if (action.type === "silence") {
           if (!last.isDM) state.mute(last.channelId, 60_000);
+        } else if (action.type === "run_command" && action.text) {
+          // A IA pediu um comando conversando (comando(".mp3 <link>"), comando(".cortar 1:20 1:45")…):
+          // roda pelo mesmo caminho de quando a pessoa digita, com os mesmos avisos.
+          const resolved = resolveDiscordAgentCommand(action.text, runtime.defaults.commandPrefix);
+          if (!resolved) continue;
+          const author = (await client.users.fetch(last.authorId).catch(() => null)) ?? { id: last.authorId, username: last.speakerName };
+          const explicitId = /^\d{15,}$/.test(String(resolved.args?.[0] ?? "")) ? resolved.args[0] : null;
+          const cmdResolved = explicitId ? { ...resolved, args: resolved.args.slice(1), rest: resolved.args.slice(1).join(" ") } : resolved;
+          const send = (payload) => channel.send({ ...payload, allowedMentions: { parse: [] } });
+          const out = await runDiscordCommand(cmdResolved, { runtime, media, isOwnerId, identityOf }, {
+            author,
+            channel,
+            isDM: last.isDM,
+            send,
+            fromAgent: true,
+            quotedText: last.quoted?.text ?? "",
+            findMedia: () => findChannelMedia({ channel, messageIds: [explicitId, last.quoted?.id, last.messageId], inboxDir: media.inboxDir })
+          });
+          dlog.decision(last.place ?? placeLabel(channel), last.speakerName ?? "?", "rodou comando", `${action.text}${out?.ok === false ? ` (${out.reason ?? "falhou"})` : ""}`);
+          replyTo = null;
         }
       } catch (error) {
         log.warn?.(`[discord] ação ${action.type} falhou: ${error?.message ?? error}`);

@@ -292,12 +292,23 @@ export class UrlDownloadService {
     const outputs = [];
     for (const file of result.files ?? []) {
       let finalPath = file.path;
-      if (file.kind !== "document") {
+      // WAV pedido e GIF já vêm no formato certo (o normalize transformaria WAV em MP3).
+      if (file.kind !== "document" && ![".wav", ".gif"].includes(extOf(file.path))) {
         finalPath = await normalizeDownloadFile(file.path, this.outputDir, file.kind === "audio" ? "mp3" : mode);
       }
       if (!existsSync(finalPath) || statSync(finalPath).size < 1) continue;
-      const out = buildOutput(finalPath, niceName(result.title, finalPath, file));
-      outputs.push({ ...out, title: result.title ?? null, platform: result.platform ?? "", sizeBytes: statSync(finalPath).size, subLang: file.subLang ?? null });
+      const out = buildOutput(finalPath, niceName(file.label ?? result.title, finalPath, file));
+      outputs.push({
+        ...out,
+        ...(file.kind === "gif" ? { kind: "gif", mimetype: "image/gif" } : {}),
+        title: result.title ?? null,
+        platform: result.platform ?? "",
+        sizeBytes: statSync(finalPath).size,
+        subLang: file.subLang ?? null,
+        embeddedSubs: Boolean(file.embedded),
+        clip: file.clip ?? null,
+        label: file.label ?? null
+      });
     }
     if (!outputs.length) throw new Error("download gerou arquivo vazio ou invalido");
     if (outputs.length === 1) return outputs[0];
@@ -324,6 +335,16 @@ export class UrlDownloadService {
       if (extra.kind === "srt") throw error;
       return null;
     }
+  }
+
+  /**
+   * Trecho, GIF e legenda gravada no vídeo: só o Convenus faz (o yt-dlp local não corta nem faz GIF).
+   * opts: { kind: mp4|mp3|wav|gif|post, quality, clip: {start,end}, gif: {fps,width}, embedSubs }
+   */
+  async downloadAdvanced(url, opts = {}) {
+    if (!this.convenus?.isConfigured?.()) throw new Error("conversor indisponível (preciso dele pra cortar/GIF/legenda)");
+    const result = await this.convenus.downloadLink(url, opts);
+    return this._fromConvenus(result, opts.kind === "mp3" || opts.kind === "wav" ? "mp3" : "mp4");
   }
 
   /** Legenda (.srt) de um vídeo — só pelo Convenus. */

@@ -8,20 +8,23 @@ import {
 } from "discord.js";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { detectPlatform } from "../../core/media/urlPlatformDetect.js";
-import { parseWhatsAppCommand } from "../whatsapp/commands/mediaCommandParser.js";
+import { findCommand, resolveCommand } from "../whatsapp/commands/commandCatalog.js";
 import { downloadMediaItem, mediaItemsOf } from "./discordMedia.js";
 import { placeLabel, readableContent } from "./discordText.js";
 import { MODE_LABEL, formatRate, polishDiscordActions } from "./discordPolicy.js";
+import { TETO_COLOR, discordHelpMessages, findChannelMedia, formatDiscordHelpSections, runDiscordCommand } from "./discordCommandRunner.js";
 
 /**
- * Comandos da Teto no Discord: os do zap portados (figurinha, remover fundo, downloads, gerar imagem,
- * converter, pergunta pontual) + os que só fazem sentido aqui (conversa livre no canal, vincular conta,
- * status, memória, lembretes, falar, clima). Também aceita os comandos de ponto do zap (.sticker etc.).
+ * Comandos da Teto no Discord: os do zap portados (figurinha, remover fundo, downloads, cortar, gif,
+ * comprimir, converter, playlist, perfil, gerar imagem, pergunta pontual) + os que só fazem sentido aqui
+ * (conversa livre no canal, vincular conta, status, memória, lembretes). Os comandos de ponto do zap
+ * (.sticker, .yt, .cortar…) valem igual, pelo mesmo catálogo (apelidos e correção de digitação).
  */
 
-const TETO_COLOR = 0xd9304f;
-
 const attachmentOpt = (o, desc = "imagem, gif ou vídeo") => o.setName("arquivo").setDescription(desc).setRequired(true);
+const optionalFile = (o, desc) => o.setName("arquivo").setDescription(desc);
+const optionalLink = (o, desc = "Link (ou mande um arquivo)") => o.setName("link").setDescription(desc);
+const timeOpt = (o, name, desc, required = false) => o.setName(name).setDescription(desc).setRequired(required).setMaxLength(12);
 
 export function buildCommandDefinitions() {
   const cmds = [
@@ -101,27 +104,140 @@ export function buildCommandDefinitions() {
       .addAttachmentOption((o) => attachmentOpt(o, "a figurinha")),
     new SlashCommandBuilder()
       .setName("converter")
-      .setDescription("Converte um arquivo de mídia")
+      .setDescription("Converte um arquivo (vídeo, áudio, imagem, documento…) pra outro formato")
       .addAttachmentOption((o) => attachmentOpt(o, "o arquivo"))
-      .addStringOption((o) => o.setName("formato").setDescription("png, jpg, webp, gif, mp4, mp3…").setRequired(true)),
+      .addStringOption((o) => o.setName("formato").setDescription("mp3, mp4, png, jpg, webp, gif, pdf, wav, flac… (vazio = te digo as opções)")),
     new SlashCommandBuilder()
       .setName("baixar")
-      .setDescription("Baixa vídeo/áudio/foto de um link (YouTube, X, Insta, TikTok, Reddit…)")
+      .setDescription("Baixa vídeo, áudio ou fotos de um link (YouTube, X, Insta, TikTok, Reddit, Twitch…)")
       .addStringOption((o) => o.setName("link").setDescription("O link").setRequired(true))
       .addStringOption((o) =>
-        o.setName("formato").setDescription("O que baixar").addChoices({ name: "vídeo (mp4)", value: "mp4" }, { name: "áudio (mp3)", value: "mp3" }, { name: "post/fotos", value: "post" })
+        o
+          .setName("formato")
+          .setDescription("O que baixar (padrão: vídeo)")
+          .addChoices(
+            { name: "vídeo (mp4)", value: "mp4" },
+            { name: "áudio (mp3)", value: "mp3" },
+            { name: "áudio sem perda (wav)", value: "wav" },
+            { name: "gif", value: "gif" },
+            { name: "post/fotos", value: "post" }
+          )
       )
       .addStringOption((o) =>
-        o.setName("qualidade").setDescription("Qualidade").addChoices({ name: "máxima", value: "full" }, { name: "média", value: "mid" }, { name: "baixa (arquivo menor)", value: "low" })
+        o
+          .setName("qualidade")
+          .setDescription("Qualidade (padrão: máxima)")
+          .addChoices(
+            { name: "máxima", value: "full" },
+            { name: "1080p", value: "1080" },
+            { name: "720p", value: "720" },
+            { name: "480p", value: "480" },
+            { name: "360p", value: "360" },
+            { name: "baixa (arquivo menor)", value: "low" }
+          )
+      )
+      .addStringOption((o) => timeOpt(o, "inicio", "Só um trecho: começa em (ex.: 1:20)"))
+      .addStringOption((o) => timeOpt(o, "fim", "Só um trecho: termina em (ex.: 1:45)"))
+      .addStringOption((o) => o.setName("legenda").setDescription("Grava a legenda no vídeo, nesse idioma (ex.: pt, en)").setMaxLength(8))
+      .addNumberOption((o) => o.setName("tamanho").setDescription("Tamanho máximo em MB (comprime se passar)").setMinValue(1).setMaxValue(500)),
+    new SlashCommandBuilder()
+      .setName("cortar")
+      .setDescription("Corta um trecho de vídeo/áudio (de um link ou de um arquivo)")
+      .addStringOption((o) => timeOpt(o, "inicio", "Começa em (ex.: 1:20 ou 80s)", true))
+      .addStringOption((o) => timeOpt(o, "fim", "Termina em (ex.: 1:45)", true))
+      .addStringOption((o) => optionalLink(o))
+      .addAttachmentOption((o) => optionalFile(o, "Vídeo ou áudio (ou use um link)"))
+      .addStringOption((o) => o.setName("formato").setDescription("Sai como").addChoices({ name: "vídeo (mp4)", value: "mp4" }, { name: "áudio (mp3)", value: "mp3" })),
+    new SlashCommandBuilder()
+      .setName("gif")
+      .setDescription("Faz um GIF de um trecho de vídeo (link ou arquivo)")
+      .addStringOption((o) => optionalLink(o))
+      .addAttachmentOption((o) => optionalFile(o, "Vídeo (ou use um link)"))
+      .addStringOption((o) => timeOpt(o, "inicio", "Começa em (padrão: 0:00)"))
+      .addStringOption((o) => timeOpt(o, "fim", "Termina em (padrão: alguns segundos depois; máx. 60s)"))
+      .addIntegerOption((o) => o.setName("fps").setDescription("Quadros por segundo").addChoices({ name: "10", value: 10 }, { name: "15 (padrão)", value: 15 }, { name: "24", value: 24 }))
+      .addIntegerOption((o) =>
+        o.setName("largura").setDescription("Largura em px").addChoices({ name: "320", value: 320 }, { name: "480 (padrão)", value: 480 }, { name: "640", value: 640 })
       ),
     new SlashCommandBuilder()
+      .setName("comprimir")
+      .setDescription("Deixa um vídeo/áudio/imagem/PDF menor (até X MB)")
+      .addAttachmentOption((o) => optionalFile(o, "O arquivo (ou use um link)"))
+      .addStringOption((o) => optionalLink(o, "Link de vídeo pra baixar já comprimido"))
+      .addNumberOption((o) => o.setName("mb").setDescription("Tamanho alvo em MB (padrão: cabe no Discord)").setMinValue(0.1).setMaxValue(500)),
+    new SlashCommandBuilder()
+      .setName("playlist")
+      .setDescription("Lista ou baixa faixas de uma playlist/álbum")
+      .addStringOption((o) => o.setName("link").setDescription("Link da playlist/álbum").setRequired(true))
+      .addStringOption((o) => o.setName("itens").setDescription("Quais: 1-5, 2,4,7 ou todas (vazio = só lista)").setMaxLength(60))
+      .addStringOption((o) => o.setName("formato").setDescription("Padrão: mp3").addChoices({ name: "áudio (mp3)", value: "mp3" }, { name: "vídeo (mp4)", value: "mp4" })),
+    new SlashCommandBuilder()
+      .setName("perfil")
+      .setDescription("Perfil/canal de um link: resumo, foto, capa ou os últimos posts")
+      .addStringOption((o) => o.setName("link").setDescription("Link do perfil/canal").setRequired(true))
+      .addStringOption((o) =>
+        o
+          .setName("pegar")
+          .setDescription("O que pegar (padrão: resumo)")
+          .addChoices({ name: "resumo", value: "info" }, { name: "foto de perfil", value: "foto" }, { name: "capa/banner", value: "capa" })
+      )
+      .addStringOption((o) => o.setName("secao").setDescription("Baixa posts de uma seção (ex.: videos, shorts, posts)").setMaxLength(30))
+      .addIntegerOption((o) => o.setName("quantidade").setDescription("Quantos posts (até 10)").setMinValue(1).setMaxValue(10)),
+    new SlashCommandBuilder()
+      .setName("linkinfo")
+      .setDescription("O que tem num link (título, duração, qualidades, legendas) sem baixar")
+      .addStringOption((o) => o.setName("link").setDescription("O link").setRequired(true)),
+    new SlashCommandBuilder()
+      .setName("legenda")
+      .setDescription("Baixa a legenda (.srt) de um vídeo")
+      .addStringOption((o) => o.setName("link").setDescription("O link").setRequired(true))
+      .addStringOption((o) => o.setName("idioma").setDescription("pt, en, es… (padrão: pt)").setMaxLength(8)),
+    new SlashCommandBuilder()
+      .setName("transcrever")
+      .setDescription("Passa um áudio/vídeo pra texto")
+      .addAttachmentOption((o) => attachmentOpt(o, "o áudio ou vídeo")),
+    new SlashCommandBuilder()
+      .setName("ler")
+      .setDescription("Descreve uma imagem e lê o texto dela")
+      .addAttachmentOption((o) => attachmentOpt(o, "a imagem")),
+    new SlashCommandBuilder()
       .setName("thumb")
-      .setDescription("Pega a capa (thumbnail) de um vídeo do YouTube")
-      .addStringOption((o) => o.setName("link").setDescription("Link do YouTube").setRequired(true)),
+      .setDescription("Pega a capa (thumbnail) de um vídeo")
+      .addStringOption((o) => o.setName("link").setDescription("Link do vídeo").setRequired(true)),
     new SlashCommandBuilder()
       .setName("gerar")
-      .setDescription("A Teto gera uma imagem por IA")
-      .addStringOption((o) => o.setName("descricao").setDescription("O que desenhar").setRequired(true).setMaxLength(500)),
+      .setDescription("A Teto gera uma imagem por IA (econômico na hora; modo bom mostra o custo e pede sim)")
+      .addStringOption((o) => o.setName("descricao").setDescription("O que desenhar").setRequired(true).setMaxLength(1500))
+      .addStringOption((o) =>
+        o
+          .setName("modo")
+          .setDescription("econômico (padrão) ou bom (GPT Image 2.6 Sunburst, pede confirmação)")
+          .addChoices({ name: "econômico", value: "eco" }, { name: "bom (alta)", value: "alta" }, { name: "bom (ultra)", value: "ultra" }, { name: "bom (máxima)", value: "max" })
+      )
+      .addStringOption((o) =>
+        o
+          .setName("formato")
+          .setDescription("Proporção (padrão: quadrada)")
+          .addChoices(
+            { name: "quadrada 1:1", value: "1:1" },
+            { name: "paisagem 3:2", value: "3:2" },
+            { name: "retrato 2:3", value: "2:3" },
+            { name: "wide 16:9", value: "16:9" },
+            { name: "celular 9:16", value: "9:16" }
+          )
+      )
+      .addBooleanOption((o) => o.setName("2k").setDescription("Resolução maior (só no modo bom)")),
+    new SlashCommandBuilder()
+      .setName("editar")
+      .setDescription("Edita uma imagem com IA (trocar fundo, estilo, tirar/colocar coisas…)")
+      .addStringOption((o) => o.setName("pedido").setDescription("O que mudar").setRequired(true).setMaxLength(1500))
+      .addAttachmentOption((o) => optionalFile(o, "A imagem (vazio = a última imagem do canal)"))
+      .addStringOption((o) =>
+        o
+          .setName("modo")
+          .setDescription("econômico (padrão) ou bom (pede confirmação)")
+          .addChoices({ name: "econômico", value: "eco" }, { name: "bom (alta)", value: "alta" }, { name: "bom (ultra)", value: "ultra" }, { name: "bom (máxima)", value: "max" })
+      ),
     new SlashCommandBuilder()
       .setName("falar")
       .setDescription("A Teto fala o texto num áudio")
@@ -130,7 +246,10 @@ export function buildCommandDefinitions() {
       .setName("clima")
       .setDescription("Previsão do tempo")
       .addStringOption((o) => o.setName("cidade").setDescription("Cidade (padrão: São Paulo)")),
-    new SlashCommandBuilder().setName("ajuda").setDescription("Tudo que a Teto faz por aqui"),
+    new SlashCommandBuilder()
+      .setName("ajuda")
+      .setDescription("Tudo que a Teto faz por aqui")
+      .addStringOption((o) => o.setName("comando").setDescription("Explica um comando ou categoria (ex.: cortar, baixar)").setMaxLength(30)),
     new ContextMenuCommandBuilder().setName("Fazer figurinha").setType(ApplicationCommandType.Message),
     new ContextMenuCommandBuilder().setName("Remover fundo").setType(ApplicationCommandType.Message),
     new ContextMenuCommandBuilder().setName("Perguntar pra Teto").setType(ApplicationCommandType.Message)
@@ -138,28 +257,96 @@ export function buildCommandDefinitions() {
   return cmds.map((c) => c.toJSON());
 }
 
-export function formatDiscordHelp(prefix = ".") {
-  return [
-    "**Conversar comigo**",
-    "• me marca (@Teto), responde uma mensagem minha ou me chama pelo nome — no privado é só falar. se eu tiver ocupada, respondo quando der",
-    `• \`${prefix}tetos <mensagem>\` ou \`/perguntar\` me chama na hora, mesmo ocupada (e por 30 s sigo o papo contigo)`,
-    "• modos do canal: `/teto conversar` (livre: entro no papo sozinha) · `/teto padrao` (marcação/reply/nome) · `/teto desligar` (só comando)",
-    "• `/configurar respostas:1 mensagem:10` = no modo livre, 10% de chance de eu entrar no papo em cada mensagem",
-    "• `/configurar respostas:1 marcação:2` = 50% de chance de eu responder quando me marcam/dão reply/me chamam · `reset:True` volta pro padrão",
-    "• \"fica quieta por 1h\" / \"some do discord por 12 horas\" eu respeito · `/teto calar` · `/teto voltar` · `/teto status`",
-    "",
-    "**Conta**",
-    "• `/vincular` liga teu discord ao teu zap (lembro de você nos dois) · `/desvincular`",
-    "• `/memoria` o que eu lembro de você · `/lembretes` teus lembretes (pede no papo: \"me lembra às 15h de…\")",
-    "",
-    "**Mídia**",
-    "• `/figurinha` · `/removerfundo` · `/paraimagem` · `/converter` · `/gerar` · `/falar`",
-    "• `/baixar` link do YouTube, X, Insta, TikTok, Reddit, Facebook… · `/thumb`",
-    "• clique direito numa mensagem → Apps → **Fazer figurinha** / **Remover fundo** / **Perguntar pra Teto**",
-    `• os comandos do zap também valem: \`${prefix}sticker\`, \`${prefix}removebg\`, \`${prefix}toimg\`, \`${prefix}yt <link> mp3\`… (com anexo ou em reply)`,
-    "",
-    `**Outros** · \`/clima\` · \`${prefix}monitorarpreco <produto>\` monitoro preço em vários sites e aviso aqui quando muda (\`${prefix}monitorarpreco ajuda\`)`
-  ].join("\n");
+/** Help do Discord em texto corrido (gerado do catálogo). */
+export function formatDiscordHelp(prefix = ".", opts = {}) {
+  return formatDiscordHelpSections(prefix, opts)
+    .map((s) => `**${s.title}**\n${s.description}`)
+    .join("\n\n");
+}
+
+/** Slash → comando de ponto equivalente ({ command, args }), pra rodar pelo mesmo caminho. */
+export function slashToCommand(name, opt) {
+  const s = (key) => opt.getString?.(key) ?? null;
+  const n = (key) => opt.getNumber?.(key) ?? opt.getInteger?.(key) ?? null;
+  const range = (a, b) => (a && b ? [a, b] : a ? [a] : b ? ["0:00", b] : []);
+  const list = (...xs) => xs.flat().filter((x) => x != null && String(x).trim() !== "").map(String);
+  switch (name) {
+    case "figurinha":
+      return { command: s("modo") ?? "sticker", args: list(s("duracao"), s("tamanho") === "grande" ? "grande" : null) };
+    case "removerfundo":
+      return { command: "removebg", args: list(s("cor"), s("forca")) };
+    case "paraimagem":
+      return { command: "toimg", args: [] };
+    case "converter":
+      return { command: "convert", args: list(s("formato")) };
+    case "gerar": {
+      const modo = s("modo");
+      const hd = Boolean(modo) && modo !== "eco";
+      const big = hd && opt.getBoolean?.("2k") ? "2k" : null;
+      return { command: hd ? "gerarhd" : "gerar", args: list(hd ? modo : null, s("formato"), big, s("descricao")) };
+    }
+    case "editar": {
+      const modo = s("modo");
+      const hd = Boolean(modo) && modo !== "eco";
+      return { command: hd ? "editarhd" : "editar", args: list(hd ? modo : null, s("pedido")) };
+    }
+    case "baixar": {
+      const link = s("link");
+      const formato = s("formato");
+      const platform = detectPlatform(link);
+      const command = formato === "gif" ? "gif" : platform && platform !== "generic" && findCommand(platform) ? platform : "download";
+      return {
+        command,
+        args: list(link, formato === "gif" ? null : formato, s("qualidade"), range(s("inicio"), s("fim")), s("legenda") ? `leg:${s("legenda")}` : null, n("tamanho") ? `${n("tamanho")}mb` : null)
+      };
+    }
+    case "thumb":
+      return { command: "thumbnail", args: list(s("link")) };
+    case "cortar":
+      return { command: "cortar", args: list(s("link"), s("inicio"), s("fim"), s("formato")) };
+    case "gif":
+      return { command: "gif", args: list(s("link"), range(s("inicio"), s("fim")), n("fps") ? `${n("fps")}fps` : null, n("largura") ? `${n("largura")}px` : null) };
+    case "comprimir": {
+      const mb = n("mb");
+      return { command: "comprimir", args: list(s("link"), mb ? `${mb}mb` : null) };
+    }
+    case "playlist":
+      return { command: "playlist", args: list(s("link"), s("itens")?.split(/\s+/), s("formato")) };
+    case "perfil":
+      return { command: "perfil", args: list(s("link"), s("pegar") && s("pegar") !== "info" ? s("pegar") : null, s("secao"), n("quantidade")) };
+    case "linkinfo":
+      return { command: "linkinfo", args: list(s("link")) };
+    case "legenda":
+      return { command: "legenda", args: list(s("link"), s("idioma")) };
+    case "transcrever":
+      return { command: "transcrever", args: [] };
+    case "ler":
+      return { command: "ler", args: [] };
+    default:
+      return null;
+  }
+}
+
+/** Envio pela interação: a 1ª mensagem edita o "pensando…", as outras vão como follow-up. */
+function interactionSender(interaction) {
+  let sent = 0;
+  const send = async (payload) => {
+    const p = { ...payload, allowedMentions: { parse: [] } };
+    sent += 1;
+    return sent === 1 ? interaction.editReply(p) : interaction.followUp(p);
+  };
+  send.count = () => sent;
+  return send;
+}
+
+/** Envio por mensagem: a 1ª responde quem pediu, as outras vão soltas no canal. */
+export function messageSender(message) {
+  let sent = 0;
+  return async (payload) => {
+    const p = { ...payload, allowedMentions: { parse: [], repliedUser: false } };
+    sent += 1;
+    return sent === 1 ? message.reply(p) : message.channel.send(p);
+  };
 }
 
 /** Resumo da configuração do canal (resposta do /configurar). */
@@ -251,7 +438,10 @@ export async function handleInteraction(interaction, ctx) {
   const eph = { flags: MessageFlags.Ephemeral };
 
   if (name === "ajuda") {
-    return interaction.reply({ embeds: [new EmbedBuilder().setColor(TETO_COLOR).setTitle("o que eu faço por aqui").setDescription(formatDiscordHelp(runtime.defaults.commandPrefix))], ...eph });
+    const [first, ...more] = discordHelpMessages([opt.getString("comando")].filter(Boolean), runtime.defaults.commandPrefix, { isOwner: ctx.isOwnerId(interaction.user.id) });
+    await interaction.reply({ ...first, ...eph });
+    for (const payload of more) await interaction.followUp({ ...payload, ...eph });
+    return;
   }
 
   if (name === "teto") {
@@ -398,66 +588,63 @@ export async function handleInteraction(interaction, ctx) {
     return interaction.editReply({ files: [{ attachment: note.audio, name: "teto.ogg" }] });
   }
 
-  const userId = interaction.user.id;
-  if (name === "gerar") {
-    await interaction.deferReply();
-    return sendResult(interaction, await media.run("gerar", [opt.getString("descricao", true)], { userId }));
+  // Mídia, links e edição: vira o comando de ponto equivalente e roda pelo mesmo caminho do .comando.
+  const mapped = slashToCommand(name, opt);
+  const cmd = mapped ? findCommand(mapped.command) : null;
+  if (!cmd) return;
+  await interaction.deferReply();
+  const attachment = opt.getAttachment?.("arquivo") ?? null;
+  const send = interactionSender(interaction);
+  const findMedia = async () =>
+    attachment
+      ? downloadMediaItem({ id: attachment.id, url: attachment.url, name: attachment.name, contentType: attachment.contentType, size: attachment.size }, media.inboxDir)
+      : findChannelMedia({ channel: interaction.channel, inboxDir: media.inboxDir });
+  try {
+    await runDiscordCommand({ kind: "known", cmd, args: mapped.args, rest: mapped.args.join(" ") }, ctx, {
+      author: interaction.user,
+      channel: interaction.channel,
+      isDM: !interaction.guildId,
+      send,
+      findMedia
+    });
+  } catch (error) {
+    await send({ content: `deu ruim: ${error?.message ?? error}` }).catch(() => {});
   }
-  if (name === "baixar" || name === "thumb") {
-    await interaction.deferReply();
-    const link = opt.getString("link", true);
-    const platform = detectPlatform(link);
-    const command = name === "thumb" ? "thumbnail" : platform === "generic" ? "download" : platform;
-    const args = [link, opt.getString("formato"), opt.getString("qualidade")].filter(Boolean);
-    return sendResult(interaction, await media.run(command, args, { userId }));
-  }
-
-  const attachment = opt.getAttachment?.("arquivo");
-  if (attachment) {
-    await interaction.deferReply();
-    const input = await downloadMediaItem({ id: attachment.id, url: attachment.url, name: attachment.name, contentType: attachment.contentType, size: attachment.size }, media.inboxDir);
-    if (name === "figurinha") {
-      return sendResult(interaction, await media.run(opt.getString("modo") ?? "sticker", [opt.getString("duracao")].filter(Boolean), { input, userId, big: opt.getString("tamanho") === "grande" }));
-    }
-    if (name === "removerfundo") {
-      return sendResult(interaction, await media.run("removebg", [opt.getString("cor"), opt.getString("forca")].filter(Boolean), { input, userId }));
-    }
-    if (name === "paraimagem") return sendResult(interaction, await media.run("toimg", [], { input, userId }));
-    if (name === "converter") return sendResult(interaction, await media.run("convert", [opt.getString("formato", true)], { input, userId }));
-  }
+  if (!send.count()) await interaction.editReply({ content: "pronto" }).catch(() => {});
 }
 
-/** Comandos de ponto do zap (.sticker, .removebg, .yt …) numa mensagem do Discord. true = tratou. */
+/**
+ * Comandos de ponto (.sticker, .yt, .cortar, .dado…) numa mensagem do Discord, pelo catálogo do zap:
+ * apelidos e erro de digitação valem, e "quis dizer…?" quando não dá pra ter certeza. true = tratou.
+ */
 export async function handlePrefixCommand(message, ctx) {
   const { runtime, media } = ctx;
   const prefix = runtime.defaults.commandPrefix || ".";
   const text = readableContent(message, { botId: message.client.user.id });
-  const parsed = parseWhatsAppCommand(text, prefix);
-  if (!parsed) return false;
-  if (parsed.command === "help") {
-    await message.reply({ embeds: [new EmbedBuilder().setColor(TETO_COLOR).setTitle("o que eu faço por aqui").setDescription(formatDiscordHelp(prefix))], allowedMentions: { repliedUser: false } });
+  const resolved = resolveCommand(text, prefix);
+  if (!resolved || resolved.viaSlash) return false;
+  const isDM = !message.guildId;
+  const send = messageSender(message);
+  if (resolved.kind === "suggest") {
+    await send({ content: `hm, não conheço \`${prefix}${resolved.token}\` 🤔 quis dizer \`${prefix}${resolved.suggestion.name}\`? (\`${prefix}help\` mostra tudo)` });
     return true;
   }
-  if (parsed.command === "repertorio") return false;
-  await message.channel.sendTyping().catch(() => {});
-  let input = null;
-  const needsMedia = !["gerar", "youtube", "twitter", "instagram", "reddit", "tiktok", "facebook", "download", "thumbnail"].includes(parsed.command);
-  if (needsMedia) {
-    let item = mediaItemsOf(message)[0];
-    if (!item && message.reference?.messageId) {
-      const ref = await message.fetchReference().catch(() => null);
-      item = ref ? mediaItemsOf(ref)[0] : null;
-    }
-    if (!item) {
-      // Igual ao zap: sem anexo nem reply, pega a última mídia do canal.
-      const recent = await message.channel.messages.fetch({ limit: 15 }).catch(() => null);
-      item = [...(recent?.values() ?? [])].map((m) => mediaItemsOf(m)[0]).find(Boolean) ?? null;
-    }
-    input = item ? await downloadMediaItem(item, media.inboxDir) : null;
+  if (resolved.kind === "unknown") {
+    if (!isDM) return false;
+    await send({ content: `não conheço \`${prefix}${resolved.token}\` 🤔 manda \`${prefix}help\` pra ver tudo que eu sei fazer` });
+    return true;
   }
-  const result = await media.run(parsed.command, parsed.args, { input, userId: message.author.id }).catch((error) => ({ error: `deu ruim: ${error?.message ?? error}` }));
-  const reply = (payload) => message.reply({ ...payload, allowedMentions: { repliedUser: false } });
-  if (result.files?.length) await reply({ files: result.files.map((f) => ({ attachment: f.path, name: f.name })) }).catch(async (error) => reply({ content: `não consegui mandar o arquivo (${error?.message ?? error})` }));
-  else await reply({ content: result.error ?? result.text ?? "pronto" });
-  return true;
+  const quoted = message.reference?.messageId ? await message.fetchReference().catch(() => null) : null;
+  const out = await runDiscordCommand(resolved, ctx, {
+    author: message.author,
+    channel: message.channel,
+    isDM,
+    send,
+    quotedText: quoted ? readableContent(quoted, { botId: message.client.user.id }) : "",
+    findMedia: () => findChannelMedia({ message, inboxDir: media.inboxDir })
+  }).catch(async (error) => {
+    await send({ content: `deu ruim: ${error?.message ?? error}` }).catch(() => {});
+    return { handled: true };
+  });
+  return Boolean(out?.handled);
 }

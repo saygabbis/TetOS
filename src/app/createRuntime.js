@@ -303,13 +303,17 @@ export function createRuntime() {
       ? {
           apiKey: DEFAULTS.openaiApiKey,
           baseUrl: DEFAULTS.openaiBaseUrl,
-          model: DEFAULTS.openaiImageModel,
-          quality: DEFAULTS.openaiImageQuality,
+          ecoModel: DEFAULTS.openaiImageModel,
+          ecoQuality: DEFAULTS.openaiImageQuality,
+          hdModel: DEFAULTS.openaiImageHdModel,
+          hdQuality: DEFAULTS.openaiImageHdQuality,
           usage: sharedOpenAIUsage()
         }
       : null,
     outputDir: DEFAULTS.imageGenOutputDir,
-    maxPer10Min: DEFAULTS.imageGenMaxPer10Min
+    maxPer10Min: DEFAULTS.imageGenMaxPer10Min,
+    statsPath: DEFAULTS.imageGenStatsPath,
+    hdOwnerOnly: DEFAULTS.openaiImageHdOwnerOnly
   });
   const reminderScheduler = new ReminderScheduler({
     reminders,
