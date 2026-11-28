@@ -312,7 +312,7 @@ async function reassembleTransparentGif(framesDir, frames, outputPath, fps) {
   const inputPattern = join(framesDir, "frame_%04d.png");
   const palettePath = join(framesDir, "_palette.png");
   const vfChain =
-    `${REMOVEBG_FRAME_VF},split[s0][s1];[s0]palettegen=reserve_transparent=1:stats_mode=full[p];[s1][p]paletteuse=alpha`;
+    `${REMOVEBG_FRAME_VF},split[s0][s1];[s0]palettegen=reserve_transparent=1:stats_mode=full[p];[s1][p]paletteuse=alpha_threshold=128`;
 
   try {
     await runFfmpeg(
@@ -346,7 +346,7 @@ async function reassembleTransparentGif(framesDir, frames, outputPath, fps) {
       .input(palettePath)
       .complexFilter([
         `[0:v]${REMOVEBG_FRAME_VF}[fg]`,
-        "[fg][1:v]paletteuse=alpha[out]"
+        "[fg][1:v]paletteuse=alpha_threshold=128[out]"
       ])
       .outputOptions(["-an", "-map", "[out]", "-loop", "0"])
       .save(outputPath)

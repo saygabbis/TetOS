@@ -648,7 +648,7 @@ async function staticStickerToImage(inputPath, outputDir) {
 }
 
 const REMOVEBG_GIF_VF =
-  "fps=12,scale=512:512:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen=reserve_transparent=1:stats_mode=single[p];[s1][p]paletteuse=alpha";
+  "fps=12,scale=512:512:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen=reserve_transparent=1:stats_mode=single[p];[s1][p]paletteuse=alpha_threshold=128";
 
 /** GIF com alpha para .removebg — evita MP4 sem transparência do .toimg. */
 async function animatedStickerToGifForRemoveBg(inputPath, outputDir) {
