@@ -196,7 +196,25 @@ export function parseActionCommands(rawText) {
       }
     }
   }
-  return actions;
+  return dedupeActions(actions);
+}
+
+/**
+ * O modelo às vezes "gagueja" e repete a mesma linha várias vezes (mandou 5 áudios iguais de uma vez).
+ * Ação idêntica repetida sai uma vez só, e áudio é no máximo um por resposta (custa crédito).
+ */
+export function dedupeActions(actions = []) {
+  const seen = new Set();
+  let voices = 0;
+  const out = [];
+  for (const a of actions) {
+    const key = `${a?.type}|${String(a?.text ?? a?.key ?? a?.emoji ?? a?.query ?? a?.name ?? "").trim().toLowerCase()}|${JSON.stringify(a?.args ?? null)}`;
+    if (a?.type !== "feel" && seen.has(key)) continue;
+    seen.add(key);
+    if (a?.type === "voice" && ++voices > 1) continue;
+    out.push(a);
+  }
+  return out;
 }
 
 function returnWithActions(actions) {

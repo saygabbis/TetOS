@@ -24,6 +24,12 @@ export class VoiceCreditError extends Error {
 }
 export const isVoiceCreditError = (error) => error?.code === "voice_no_credit";
 
+/** Chaves do Fish: TETOS_FISH_API_KEY e/ou TETOS_FISH_API_KEYS (vírgula, ponto-e-vírgula ou espaço). */
+export function parseFishKeys(env = process.env) {
+  const raw = [env.TETOS_FISH_API_KEY, env.TETOS_FISH_API_KEYS].filter(Boolean).join(",");
+  return [...new Set(raw.split(/[,;\s]+/).map((k) => k.replace(/^["']|["']$/g, "").trim()).filter(Boolean))];
+}
+
 const MAX_CHARS = 400;
 const RATE_LIMIT_MS = 10 * 60_000;
 
@@ -66,17 +72,22 @@ export class VoiceNotes {
     provider = "edge",
     openai = null,
     fish = {
-      apiKey: process.env.TETOS_FISH_API_KEY ?? "",
+      keys: parseFishKeys(),
       voiceId: process.env.TETOS_FISH_VOICE_ID || FISH_TETO_VOICE_ID,
       model: process.env.TETOS_FISH_MODEL || "s2.1-pro",
-      language: process.env.TETOS_FISH_LANGUAGE || "",
+      // Fala em português do Brasil (sem isso o modelo puxa o sotaque da voz de referência).
+      language: process.env.TETOS_FISH_LANGUAGE ?? "pt-BR",
       lowCredit: Number(process.env.TETOS_FISH_LOW_CREDIT ?? 1),
       baseUrl: "https://api.fish.audio"
     },
     fallbackEdge = process.env.TETOS_TTS_FALLBACK === "edge",
     fetchImpl = (...a) => fetch(...a)
   } = {}) {
-    this.fish = fish?.apiKey ? fish : null;
+    const keys = [...new Set([...(fish?.keys ?? []), ...(fish?.apiKey ? [fish.apiKey] : [])])];
+    this.fish = keys.length ? { ...fish, keys } : null;
+    // Uma por vez; acabou o crédito de uma, passa pra próxima (igual o removebg).
+    this.fishKeys = keys.map((key) => ({ key, credit: null, deadAt: 0 }));
+    this.fishIdx = 0;
     this.fetch = fetchImpl;
     this.fallbackEdge = fallbackEdge;
     this.credit = { value: null, checkedAt: 0, out: false, outSince: 0, lowWarnedDay: null };
@@ -95,14 +106,26 @@ export class VoiceNotes {
   /** Áudio espontâneo é raro; quando pedem ("manda áudio"), libera. */
   canSend(chatId, { requested = false } = {}) {
     if (!this.enabled) return false;
-    if (requested) return true;
     const last = this.lastByChat.get(chatId);
+    // Pedido libera, mas nunca rajada: no mínimo 15 s entre um áudio e outro no mesmo chat.
+    if (requested) return last == null || this.now() - last >= 15_000;
     return last == null || this.now() - last >= RATE_LIMIT_MS;
   }
 
   async synthesize(text) {
     const spoken = prepareSpokenText(text);
     if (!spoken || !/[\p{L}\p{N}]/u.test(spoken)) throw new Error("nada para falar");
+    // Mesma fala de novo (repetição do modelo, reenvio): reaproveita o áudio, não gasta crédito.
+    this.cache ??= new Map();
+    const hit = this.cache.get(spoken);
+    if (hit && this.now() - hit.at < 10 * 60_000) return hit.note;
+    const note = await this.synthesizeNow(spoken);
+    this.cache.set(spoken, { at: this.now(), note });
+    if (this.cache.size > 30) this.cache.delete(this.cache.keys().next().value);
+    return note;
+  }
+
+  async synthesizeNow(spoken) {
     const dir = mkdtempSync(join(tmpdir(), "tetos-voz-"));
     try {
       let audioFilePath = null;
@@ -166,61 +189,90 @@ export class VoiceNotes {
       await this.refreshCredit();
       if (this.credit.out) throw new VoiceCreditError();
     }
-    const res = await this.fetch(`${f.baseUrl ?? "https://api.fish.audio"}/v1/tts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${f.apiKey}`, model: f.model || "s2.1-pro" },
-      body: JSON.stringify({
-        text: spoken,
-        reference_id: f.voiceId || FISH_TETO_VOICE_ID,
-        format: "mp3",
-        mp3_bitrate: 64,
-        latency: "balanced",
-        normalize: true,
-        ...(f.language ? { language: f.language } : {})
-      }),
-      signal: AbortSignal.timeout(60_000)
-    });
-    if (res.status === 402) {
-      this.markOutOfCredit();
-      throw new VoiceCreditError();
+    const n = this.fishKeys.length;
+    for (let step = 0; step < n; step += 1) {
+      const i = (this.fishIdx + step) % n;
+      const k = this.fishKeys[i];
+      // Chave sem crédito: só tenta de novo depois de um tempo (pode ter sido recarregada).
+      if (k.deadAt && this.now() - k.deadAt < OUT_RECHECK_MS) continue;
+      const res = await this.fetch(`${f.baseUrl ?? "https://api.fish.audio"}/v1/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${k.key}`, model: f.model || "s2.1-pro" },
+        body: JSON.stringify({
+          text: spoken,
+          reference_id: f.voiceId || FISH_TETO_VOICE_ID,
+          format: "mp3",
+          mp3_bitrate: 64,
+          latency: "balanced",
+          normalize: true,
+          ...(f.language ? { language: f.language } : {})
+        }),
+        signal: AbortSignal.timeout(60_000)
+      });
+      if (res.status === 402 || res.status === 401) {
+        k.deadAt = this.now();
+        k.credit = res.status === 402 ? 0 : k.credit;
+        console.warn(`[voz] chave ${i + 1}/${n} do Fish ${res.status === 402 ? "sem crédito" : "recusada"}; ${n > 1 ? "tentando a próxima" : "sem outra chave"}`);
+        continue;
+      }
+      if (!res.ok) throw new Error(`Fish TTS ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      this.fishIdx = i;
+      k.deadAt = 0;
+      const file = join(dir, "voz.mp3");
+      writeFileSync(file, Buffer.from(await res.arrayBuffer()));
+      if (this.credit.out) this.credit.out = false;
+      if (this.now() - this.credit.checkedAt > CREDIT_CHECK_MS) this.refreshCredit().catch(() => {});
+      return file;
     }
-    if (!res.ok) throw new Error(`Fish TTS ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const file = join(dir, "voz.mp3");
-    writeFileSync(file, Buffer.from(await res.arrayBuffer()));
-    if (this.credit.out) this.credit.out = false;
-    if (this.now() - this.credit.checkedAt > CREDIT_CHECK_MS) this.refreshCredit().catch(() => {});
-    return file;
+    this.markOutOfCredit();
+    throw new VoiceCreditError();
   }
 
   markOutOfCredit() {
     if (!this.credit.out) this.credit.outSince = this.now();
     this.credit.out = true;
     this.credit.checkedAt = this.now();
-    console.warn("[voz] Fish Audio sem crédito: voz desligada até recarregar");
+    console.warn("[voz] Fish Audio sem crédito em todas as chaves: voz desligada até recarregar");
   }
 
-  /** Saldo do Fish (US$). Atualiza `credit.value` e liga/desliga o "sem crédito". */
+  /** Saldo do Fish (US$, soma das chaves). Atualiza `credit.value` e liga/desliga o "sem crédito". */
   async refreshCredit() {
     if (!this.fish) return null;
     this.credit.checkedAt = this.now();
-    try {
-      const res = await this.fetch(`${this.fish.baseUrl ?? "https://api.fish.audio"}/wallet/self/api-credit`, {
-        headers: { Authorization: `Bearer ${this.fish.apiKey}` },
-        signal: AbortSignal.timeout(15_000)
-      });
-      if (!res.ok) return this.credit.value;
-      const json = await res.json();
-      const value = Number(json?.credit);
-      if (Number.isFinite(value)) {
-        this.credit.value = value;
-        if (value <= 0) this.markOutOfCredit();
-        else if (this.credit.out) {
-          this.credit.out = false;
-          this.noCreditAsks.clear();
-          console.log(`[voz] crédito do Fish voltou (US$ ${value.toFixed(2)})`);
+    let total = 0;
+    let known = 0;
+    for (const k of this.fishKeys) {
+      try {
+        const res = await this.fetch(`${this.fish.baseUrl ?? "https://api.fish.audio"}/wallet/self/api-credit`, {
+          headers: { Authorization: `Bearer ${k.key}` },
+          signal: AbortSignal.timeout(15_000)
+        });
+        if (!res.ok) {
+          if (res.status === 401) k.deadAt = this.now();
+          continue;
         }
-      }
-    } catch {}
+        const value = Number((await res.json())?.credit);
+        if (!Number.isFinite(value)) continue;
+        // Saldo é só informação: chave com 0 aqui ainda pode ter crédito grátis. Quem marca "sem
+        // crédito" é o Fish recusando gerar (402); saldo positivo de novo = recarregaram.
+        k.credit = value;
+        if (value > 0) k.deadAt = 0;
+        total += Math.max(0, value);
+        known += 1;
+      } catch {}
+    }
+    if (!known) return this.credit.value;
+    this.credit.value = total;
+    // Começa pela chave com crédito (a atual, se ainda tiver).
+    if (this.fishKeys[this.fishIdx]?.deadAt) {
+      const alive = this.fishKeys.findIndex((k) => !k.deadAt);
+      if (alive >= 0) this.fishIdx = alive;
+    }
+    if (total > 0 && this.credit.out) {
+      this.credit.out = false;
+      this.noCreditAsks.clear();
+      console.log(`[voz] crédito do Fish voltou (US$ ${total.toFixed(2)})`);
+    }
     return this.credit.value;
   }
 

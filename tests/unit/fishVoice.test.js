@@ -69,6 +69,29 @@ describe("voz da Teto (Fish Audio)", () => {
     expect(v.status().out).toBe(false);
   });
 
+  it("várias chaves: acabou o crédito de uma, passa pra próxima; fala em pt-BR", async () => {
+    const used = [];
+    const fetchImpl = async (url, init = {}) => {
+      const key = init.headers?.Authorization?.slice(7);
+      if (url.includes("/wallet/")) return new Response(JSON.stringify({ credit: key === "k1" ? "0" : "3" }), { status: 200 });
+      used.push({ key, lang: JSON.parse(init.body).language });
+      return key === "k1" ? new Response("{}", { status: 402 }) : new Response(silentMp3(), { status: 200 });
+    };
+    const v = new VoiceNotes({ fish: fish({ apiKey: undefined, keys: ["k1", "k2"], language: "pt-BR" }), fetchImpl });
+    const note = await v.synthesize("oi");
+    expect(note.audio.length).toBeGreaterThan(0);
+    expect(used.map((u) => u.key)).toEqual(["k1", "k2"]);
+    expect(used[1].lang).toBe("pt-BR");
+    expect(v.status().out).toBe(false);
+    await v.synthesize("de novo outra frase");
+    expect(used.at(-1).key).toBe("k2"); // não volta a bater na que acabou
+  });
+
+  it("lê chaves do .env em lista", async () => {
+    const { parseFishKeys } = await import("../../src/modules/voice/voiceNotes.js");
+    expect(parseFishKeys({ TETOS_FISH_API_KEY: "a", TETOS_FISH_API_KEYS: "b, c;a" })).toEqual(["a", "b", "c"]);
+  });
+
   it("crédito baixo: avisa uma vez por dia", async () => {
     const v = new VoiceNotes({ fish: fish(), fetchImpl: fakeFetch({ credit: "0.40" }) });
     await v.refreshCredit();
