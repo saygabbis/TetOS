@@ -119,7 +119,7 @@ describe("repertório de figurinhas", () => {
 
 describe("entrar no papo do grupo (decisão dinâmica)", () => {
   it("na conversa com ela tende a seguir; risada solta raramente puxa resposta", () => {
-    expect(groupJoinChance({ inWindow: true }).chance).toBeGreaterThan(0.7);
+    expect(groupJoinChance({ inWindow: true, mood: false }).chance).toBeGreaterThan(0.7);
     expect(groupJoinChance({ inWindow: true, lowSignal: true }).chance).toBeLessThan(0.25);
     expect(groupJoinChance({ inWindow: true, lowSignal: true }).chance).toBeGreaterThan(0);
   });

@@ -8,6 +8,8 @@
  *   que não era com ela.
  */
 
+import { HABITS, temperament } from "../mind/temperament.js";
+
 const clamp = (n, min = 0, max = 1) => Math.max(min, Math.min(max, n));
 
 /**
@@ -21,7 +23,8 @@ export function groupJoinChance({
   isOwner = false,
   recentBotTurns = 0,
   msSinceBotTurn = Infinity,
-  liveMessages = 0
+  liveMessages = 0,
+  mood = null
 } = {}) {
   const mode = inWindow && !addressedToSomeoneElse ? "window" : "bystander";
   let chance;
@@ -38,6 +41,8 @@ export function groupJoinChance({
   // Cansaço: quanto mais ela falou no grupo nos últimos minutos, menos vontade de falar de novo.
   chance *= 0.62 ** recentBotTurns;
   if (msSinceBotTurn < 20_000) chance *= 0.45;
+  // Vontade de papo do momento: tem hora que ela tá tagarela, tem hora que tá na dela.
+  if (mood !== false) chance *= temperament.factor(mode === "window" ? "group_follow" : "group_join", HABITS.group_join);
   return { mode, chance: clamp(chance, 0, 0.95) };
 }
 

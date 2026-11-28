@@ -1970,7 +1970,7 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
             phase: "activation_blocked",
             userId,
             remoteJid,
-            detail: `grupo nao ativado — ${formatTetoActivationCommand("teto-grupo-ativar", runtime.defaults.commandPrefix)}`
+            detail: `grupo nao ativado — ${formatTetoActivationCommand("teto-ativar", runtime.defaults.commandPrefix)}`
           });
           continue;
         }
@@ -2226,12 +2226,28 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         if (isTetosCommand && !isGroup && !isFromMe) runtime.summons?.summon?.(summonKey);
         const summoned = !isGroup && !isFromMe && !isTetosCommand && !parsedCommand && Boolean(runtime.summons?.touch?.(summonKey));
 
+        // .tetos responde na hora, mesmo dormindo — mas aí ela foi ACORDADA, e isso tem consequência.
+        if ((isTetosCommand || summoned) && !isFromMe && !mainObserveOnly && life?.forceWake) {
+          const woke = life.forceWake({
+            chatId: remoteJid,
+            by: userId,
+            byName: pushName || null,
+            isOwner,
+            how: isTetosCommand ? "te chamando direto (.tetos)" : "te chamando"
+          });
+          if (woke) {
+            sleepDisturbedWake = true;
+            logThinking(runtime, { phase: "sleep_disturbed_wake", userId, remoteJid, detail: `acordada pelo .tetos (${woke.nth}ª vez na noite)` });
+          }
+        }
+
         if (life?.availability && !summoned && !parsedCommand && !isTetosCommand && !isFromMe && !mainObserveOnly) {
           const flood = trackSleepDisturbanceFlood(sessionId, effectiveMessage);
           const urgency = scoreSleepDisturbance(effectiveMessage, { floodCount: flood.count });
           let avail = life.availability({ chatId: remoteJid, isOwner, urgency });
-          if (avail.mode === "asleep" && !isGroup) {
-            const woke = life.tryWake({ chatId: remoteJid, score: urgency, floodCount: flood.count, isOwner });
+          // Grupo também acorda, mas só chamando ela de verdade (nome/CAPS/"acorda" + insistência).
+          if (avail.mode === "asleep" && (!isGroup || urgency >= 0.3)) {
+            const woke = life.tryWake({ chatId: remoteJid, score: isGroup ? urgency - 0.1 : urgency, floodCount: isGroup ? Math.floor(flood.count / 2) : flood.count, isOwner, by: userId, byName: pushName || null });
             if (woke) {
               sleepDisturbedWake = true;
               clearSleepDisturbanceFlood(sessionId);
@@ -2242,6 +2258,19 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 remoteJid,
                 detail: `acordou com o celular (urgência ${urgency.toFixed(2)}, ${flood.count} msgs)`
               });
+            }
+          }
+          // Insistiram enquanto ela tava ocupada/na rua (não dormindo): ela vem antes, e isso mexe com ela.
+          if (avail.mode !== "asleep" && avail.mode !== "online" && flood.count >= (isOwner ? 3 : 4) && urgency >= 0.35) {
+            const pester = runtime.mind?.feelings ?? runtime.brainOrchestrator?.feelings;
+            const who = isOwner ? "a Gabbis" : pushName || "alguém";
+            const lastKey = `pester:${remoteJid}`;
+            runtime._pesterAt ??= new Map();
+            if (pester && Date.now() - (runtime._pesterAt.get(lastKey) ?? 0) > 20 * 60_000) {
+              runtime._pesterAt.set(lastKey, Date.now());
+              const ctx = { cause: `${who} ficou me chamando sem parar enquanto eu tava ${avail.activity ?? "ocupada"}`, who, userId, chat: remoteJid, platform: "whatsapp", private: !isGroup };
+              pester.feel("irritacao", isOwner ? 0.15 : 0.25, ctx);
+              if (isOwner) pester.feel("carinho", 0.08, { ...ctx, cause: "a Gabbis tava com saudade/precisando de mim" });
             }
           }
           // No meio de um papo no Discord: sai de lá e vem pro zap, mas leva uns segundos pra trocar de app.

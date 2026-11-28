@@ -5,9 +5,24 @@ import { join } from "node:path";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 
 /**
- * Mensagem de voz da Teto: texto → fala (TTS neural do Edge, grátis) → ogg/opus de "áudio de zap".
- * Voz e tom configuráveis (TETOS_TTS_VOICE / TETOS_TTS_PITCH / TETOS_TTS_RATE).
+ * Mensagem de voz da Teto: texto → fala → ogg/opus de "áudio de zap" (e da call do Discord).
+ *  - fish: a voz DELA (modelo "Kasane Teto" do Fish Audio). Sem crédito ela não troca de voz: avisa e
+ *    fica no texto até o crédito voltar (confere sozinha de tempos em tempos).
+ *  - edge (grátis) / openai: vozes genéricas, só quando não tem Fish (ou TETOS_TTS_FALLBACK=edge).
  */
+
+export const FISH_TETO_VOICE_ID = "78fd23c95bc1465ea6bb421530f49afa";
+const CREDIT_CHECK_MS = 30 * 60_000;
+const OUT_RECHECK_MS = 10 * 60_000;
+
+/** Erro de "acabou o crédito da voz": quem chama decide o aviso (voiceNotes.creditNotice). */
+export class VoiceCreditError extends Error {
+  constructor(message = "sem crédito de voz") {
+    super(message);
+    this.code = "voice_no_credit";
+  }
+}
+export const isVoiceCreditError = (error) => error?.code === "voice_no_credit";
 
 const MAX_CHARS = 400;
 const RATE_LIMIT_MS = 10 * 60_000;
@@ -49,9 +64,24 @@ export class VoiceNotes {
     now = () => Date.now(),
     /** edge (grátis) | openai (gpt-4o-mini-tts; se falhar, cai pro Edge). */
     provider = "edge",
-    openai = null
+    openai = null,
+    fish = {
+      apiKey: process.env.TETOS_FISH_API_KEY ?? "",
+      voiceId: process.env.TETOS_FISH_VOICE_ID || FISH_TETO_VOICE_ID,
+      model: process.env.TETOS_FISH_MODEL || "s2.1-pro",
+      language: process.env.TETOS_FISH_LANGUAGE || "",
+      lowCredit: Number(process.env.TETOS_FISH_LOW_CREDIT ?? 1),
+      baseUrl: "https://api.fish.audio"
+    },
+    fallbackEdge = process.env.TETOS_TTS_FALLBACK === "edge",
+    fetchImpl = (...a) => fetch(...a)
   } = {}) {
-    this.provider = provider === "openai" && openai?.apiKey ? "openai" : "edge";
+    this.fish = fish?.apiKey ? fish : null;
+    this.fetch = fetchImpl;
+    this.fallbackEdge = fallbackEdge;
+    this.credit = { value: null, checkedAt: 0, out: false, outSince: 0, lowWarnedDay: null };
+    this.noCreditAsks = new Map();
+    this.provider = this.fish ? "fish" : provider === "openai" && openai?.apiKey ? "openai" : "edge";
     this.openai = openai;
     this.enabled = enabled;
     this.voice = voice;
@@ -76,7 +106,15 @@ export class VoiceNotes {
     const dir = mkdtempSync(join(tmpdir(), "tetos-voz-"));
     try {
       let audioFilePath = null;
-      if (this.provider === "openai") {
+      if (this.provider === "fish") {
+        try {
+          audioFilePath = await this.synthesizeFish(spoken, dir);
+        } catch (error) {
+          // A voz dela ou nada: só cai pra voz genérica se a dona pediu (TETOS_TTS_FALLBACK=edge).
+          if (!this.fallbackEdge) throw error;
+          console.warn(`[voz] Fish falhou, usando Edge: ${error?.message ?? error}`);
+        }
+      } else if (this.provider === "openai") {
         try {
           audioFilePath = await this.synthesizeOpenAI(spoken, dir);
         } catch (error) {
@@ -119,6 +157,113 @@ export class VoiceNotes {
     // ~US$ 0,015 por minuto de fala; ~13 caracteres por segundo.
     o.usage?.add((spoken.length / 13 / 60) * 0.015, "voz");
     return file;
+  }
+
+  async synthesizeFish(spoken, dir) {
+    const f = this.fish;
+    if (this.credit.out && this.now() - this.credit.checkedAt < OUT_RECHECK_MS) throw new VoiceCreditError();
+    if (this.credit.out) {
+      await this.refreshCredit();
+      if (this.credit.out) throw new VoiceCreditError();
+    }
+    const res = await this.fetch(`${f.baseUrl ?? "https://api.fish.audio"}/v1/tts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${f.apiKey}`, model: f.model || "s2.1-pro" },
+      body: JSON.stringify({
+        text: spoken,
+        reference_id: f.voiceId || FISH_TETO_VOICE_ID,
+        format: "mp3",
+        mp3_bitrate: 64,
+        latency: "balanced",
+        normalize: true,
+        ...(f.language ? { language: f.language } : {})
+      }),
+      signal: AbortSignal.timeout(60_000)
+    });
+    if (res.status === 402) {
+      this.markOutOfCredit();
+      throw new VoiceCreditError();
+    }
+    if (!res.ok) throw new Error(`Fish TTS ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const file = join(dir, "voz.mp3");
+    writeFileSync(file, Buffer.from(await res.arrayBuffer()));
+    if (this.credit.out) this.credit.out = false;
+    if (this.now() - this.credit.checkedAt > CREDIT_CHECK_MS) this.refreshCredit().catch(() => {});
+    return file;
+  }
+
+  markOutOfCredit() {
+    if (!this.credit.out) this.credit.outSince = this.now();
+    this.credit.out = true;
+    this.credit.checkedAt = this.now();
+    console.warn("[voz] Fish Audio sem crédito: voz desligada até recarregar");
+  }
+
+  /** Saldo do Fish (US$). Atualiza `credit.value` e liga/desliga o "sem crédito". */
+  async refreshCredit() {
+    if (!this.fish) return null;
+    this.credit.checkedAt = this.now();
+    try {
+      const res = await this.fetch(`${this.fish.baseUrl ?? "https://api.fish.audio"}/wallet/self/api-credit`, {
+        headers: { Authorization: `Bearer ${this.fish.apiKey}` },
+        signal: AbortSignal.timeout(15_000)
+      });
+      if (!res.ok) return this.credit.value;
+      const json = await res.json();
+      const value = Number(json?.credit);
+      if (Number.isFinite(value)) {
+        this.credit.value = value;
+        if (value <= 0) this.markOutOfCredit();
+        else if (this.credit.out) {
+          this.credit.out = false;
+          this.noCreditAsks.clear();
+          console.log(`[voz] crédito do Fish voltou (US$ ${value.toFixed(2)})`);
+        }
+      }
+    } catch {}
+    return this.credit.value;
+  }
+
+  /** Estado pra o resto do bot (prompt, call, status). */
+  status() {
+    const low = this.fish && this.credit.value != null && this.credit.value > 0 && this.credit.value < (this.fish.lowCredit ?? 1);
+    return {
+      provider: this.provider,
+      realVoice: this.provider === "fish",
+      out: this.provider === "fish" && this.credit.out,
+      low: Boolean(low),
+      credit: this.credit.value
+    };
+  }
+
+  /**
+   * Aviso no jeito dela quando a voz acabou (ou tá acabando). Insistiu = aviso diferente, dizendo quando volta.
+   * @returns {string | null}
+   */
+  creditNotice(chatId, { kind = "out", isOwner = false } = {}) {
+    if (kind === "low") {
+      const day = new Date(this.now()).toISOString().slice(0, 10);
+      if (this.credit.lowWarnedDay === day) return null;
+      this.credit.lowWarnedDay = day;
+      const v = this.credit.value != null ? ` (sobrou uns US$ ${this.credit.value.toFixed(2)})` : "";
+      return isOwner
+        ? `ei, meu crédito de voz tá acabando${v}... se quiser que eu continue falando com a minha voz, recarrega lá no Fish 🥺`
+        : `aviso: minha voz tá quase sem crédito${v}, daqui a pouco eu fico só no texto`;
+    }
+    const n = (this.noCreditAsks.get(chatId) ?? 0) + 1;
+    this.noCreditAsks.set(chatId, n);
+    const mins = Math.max(1, Math.ceil((OUT_RECHECK_MS - (this.now() - this.credit.checkedAt)) / 60_000));
+    if (n === 1) {
+      return isOwner
+        ? "acabou meu crédito de voz 😭 sem ele eu não consigo falar com a minha voz, então fico no texto até você recarregar lá no Fish"
+        : "acabou meu crédito de voz 😭 por enquanto só consigo te responder escrevendo";
+    }
+    if (n === 2) {
+      return isOwner
+        ? `ainda sem crédito... minha voz volta assim que você colocar crédito no Fish Audio, eu confiro sozinha (próxima olhada em uns ${mins} min)`
+        : "minha voz só volta quando a Gabbis recarregar o crédito, aí eu volto a mandar áudio, prometo";
+    }
+    return n % 3 === 0 ? "JÁ FALEI que tô sem voz 😤 quando o crédito voltar eu falo, até lá é texto" : null;
   }
 
   markSent(chatId) {

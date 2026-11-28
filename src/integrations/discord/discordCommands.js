@@ -583,8 +583,9 @@ export async function handleInteraction(interaction, ctx) {
 
   if (name === "falar") {
     await interaction.deferReply();
-    const note = await runtime.voiceNotes.synthesize(opt.getString("texto", true)).catch(() => null);
-    if (!note) return interaction.editReply("não consegui gravar agora 😭");
+    let noCredit = false;
+    const note = await runtime.voiceNotes.synthesize(opt.getString("texto", true)).catch((e) => ((noCredit = e?.code === "voice_no_credit"), null));
+    if (!note) return interaction.editReply(noCredit ? runtime.voiceNotes.creditNotice(`discord:${interaction.channelId}`) ?? "tô sem crédito de voz 😭" : "não consegui gravar agora 😭");
     return interaction.editReply({ files: [{ attachment: note.audio, name: "teto.ogg" }] });
   }
 

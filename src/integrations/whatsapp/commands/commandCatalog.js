@@ -31,20 +31,18 @@ export const COMMANDS = Object.freeze([
   { name: "sobre", aliases: ["about", "quemsoueu", "teto"], category: "basico", desc: "quem eu sou e como falar comigo" },
 
   // Ativar
-  { name: "teto-ativar", aliases: ["ativar", "teto-on", "ligar", "acordar"], category: "ativar", desc: "me liga no seu PV (no grupo, liga o grupo)" },
-  { name: "teto-desativar", aliases: ["desativar", "teto-off", "desligar"], category: "ativar", desc: "me desliga no seu PV (no grupo, desliga o grupo)" },
-  { name: "teto-grupo-ativar", aliases: ["grupo-ativar", "ativar-grupo"], category: "ativar", desc: "me liga no grupo (respondo com @ ou reply)" },
-  { name: "teto-grupo-desativar", aliases: ["grupo-desativar", "desativar-grupo"], category: "ativar", desc: "me desliga no grupo" },
+  { name: "teto-ativar", aliases: ["ativar", "teto-on", "ligar", "acordar", "teto-grupo-ativar", "grupo-ativar", "ativar-grupo"], category: "ativar", desc: "me liga aqui: no PV liga seu PV, no grupo liga o grupo" },
+  { name: "teto-desativar", aliases: ["desativar", "teto-off", "desligar", "teto-grupo-desativar", "grupo-desativar", "desativar-grupo"], category: "ativar", desc: "me desliga aqui (PV ou grupo, onde mandar)" },
 
   // Figurinhas
   { name: "sticker", aliases: ["s", "fig", "figu", "figurinha", "stiker", "stick", "f"], category: "figurinhas", usage: "[10s]", desc: "foto/vídeo/GIF vira figurinha (estica pra caber)", details: ["responda a mídia ou mande na legenda", "vídeo: .sticker 5s corta nos 5 primeiros segundos"], examples: ["sticker", "sticker 5s"] },
   { name: "fsticker", aliases: ["ffig", "ffigurinha", "fstiker", "fs", "figinteira"], category: "figurinhas", usage: "[10s]", desc: "figurinha sem cortar nada (com borda)" },
   { name: "csticker", aliases: ["cfig", "cfigurinha", "cstiker", "cs", "figcorte"], category: "figurinhas", usage: "[10s]", desc: "figurinha recortando o centro (quadrada)" },
-  { name: "ssticker", aliases: ["sfig", "figsom", "figcomsom", "stickersom", "sstiker", "ss"], category: "figurinhas", usage: "[10s]", desc: "🔊 figurinha COM SOM a partir de vídeo com áudio (estica)", details: ["igual o .sticker, mas leva o áudio do vídeo (até 10s)", "quem ainda não tem o recurso no zap vê sem som"], examples: ["ssticker", "ssticker 8s"] },
-  { name: "sfsticker", aliases: ["sffig", "sfs", "sfstiker", "figinteirasom"], category: "figurinhas", usage: "[10s]", desc: "🔊 figurinha com som, sem cortar nada" },
-  { name: "scsticker", aliases: ["scfig", "scs", "scstiker", "figcortesom"], category: "figurinhas", usage: "[10s]", desc: "🔊 figurinha com som, recortando o centro" },
-  { name: "stickerinserir", aliases: ["inserirsom", "stickersominserir", "colocarsom", "figinserir", "addsom"], category: "figurinhas", desc: "🔊 põe um áudio numa figurinha que já existe", details: ["responda a figurinha com .stickerinserir", "eu peço o áudio: manda um áudio respondendo a minha mensagem", "serve áudio, vídeo ou arquivo de som (até 10s)"], examples: ["stickerinserir"] },
-  { name: "toimg", aliases: ["img", "toimage", "paraimg", "figparaimg", "desfig"], category: "figurinhas", desc: "figurinha vira imagem (ou vídeo se for animada; com som vira MP4 com áudio)" },
+  { name: "ssticker", aliases: ["sfig", "figsom", "figcomsom", "stickersom", "sstiker", "ss"], category: "figurinhas", usage: "[tempo]", desc: "🔊 figurinha COM SOM a partir de vídeo com áudio (estica)", details: ["igual o .sticker, mas leva o áudio do vídeo", "sem tempo faz 10s; com tempo (14s, 5000ms) faz o que pedir, até 30s", "quem ainda não tem o recurso no zap vê sem som"], examples: ["ssticker", "ssticker 14s", "ssticker 5000ms"] },
+  { name: "sfsticker", aliases: ["sffig", "sfs", "sfstiker", "figinteirasom"], category: "figurinhas", usage: "[tempo]", desc: "🔊 figurinha com som, sem cortar nada" },
+  { name: "scsticker", aliases: ["scfig", "scs", "scstiker", "figcortesom"], category: "figurinhas", usage: "[tempo]", desc: "🔊 figurinha com som, recortando o centro" },
+  { name: "stickerinserir", aliases: ["inserirsom", "stickersominserir", "colocarsom", "figinserir", "addsom"], category: "figurinhas", usage: "[tempo]", desc: "🔊 põe um áudio numa figurinha que já existe", details: ["responda a figurinha com .stickerinserir", "eu peço o áudio: manda um áudio respondendo a minha mensagem", "serve áudio, vídeo ou arquivo de som (10s, ou o tempo que pôr, até 30s)"], examples: ["stickerinserir", "stickerinserir 14s"] },
+  { name: "toimg", aliases: ["img", "toimage", "paraimg", "figparaimg", "desfig"], category: "figurinhas", desc: "figurinha vira imagem (ou vídeo se for animada; com som vira sempre MP4 com áudio)" },
   { name: "optimize", aliases: ["otimizar", "optimizar", "opt", "figleve"], category: "figurinhas", desc: "deixa a figurinha mais leve" },
   { name: "removebg", aliases: ["rmbg", "remove-bg", "semfundo", "tirarfundo", "nobg"], category: "figurinhas", usage: "[cor] [leve|media|forte]", desc: "tira o fundo da imagem/figurinha", examples: ["removebg", "removebg verde", "removebg forte"] },
   {
@@ -65,7 +63,7 @@ export const COMMANDS = Object.freeze([
     details: [
       "qualidade: alta (padrão), ultra ou max · formato: 16:9, 9:16, 3:2, 2:3… · 2k = resolução maior",
       "eu mando a estimativa (tokens, US$ e tempo) e só faço quando você responder sim",
-      "só a dona usa o modo bom; pros outros sai no econômico"
+      "exclusivo da dona (Gabbis): pros outros o comando é recusado"
     ],
     examples: ["gerarhd teto tocando guitarra num palco, estilo anime", "gerarhd ultra 16:9 2k cidade flutuante ao pôr do sol"]
   },

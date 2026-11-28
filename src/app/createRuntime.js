@@ -52,12 +52,13 @@ import { VisualAnalysisStore } from "../modules/vision/visualAnalysisStore.js";
 import { VisualAnalyzer } from "../modules/vision/visualAnalyzer.js";
 import { SemanticVisionAnalyzer } from "../modules/vision/semanticVisionAnalyzer.js";
 import { OllamaVisionAnalyzer } from "../modules/vision/ollamaVisionAnalyzer.js";
-import { LinkReader } from "../modules/web/linkReader.js";
+import { LinkReader, searchYoutube } from "../modules/web/linkReader.js";
 import { WeatherService } from "../modules/web/weather.js";
 import { AutomateApiClient } from "../integrations/automate/automateApiClient.js";
 import { PeopleMemory } from "../core/memory/peopleMemory.js";
 import { InitiativeState } from "../core/autonomy/initiative.js";
 import { VoiceNotes } from "../modules/voice/voiceNotes.js";
+import { temperament } from "../core/mind/temperament.js";
 import { Logger } from "../infra/observability/logger.js";
 import { MetricsStore } from "../infra/observability/metricsStore.js";
 import { loadCharacter, loadPersonality } from "../core/personality/index.js";
@@ -568,6 +569,8 @@ export function createRuntime() {
     const r = await runtime.convenus.downloadLink(url, { kind: "mp3", quality: "low" });
     return r?.files?.[0]?.path ?? null;
   };
+  if (runtime.chatService) runtime.chatService.voiceNotes = runtime.voiceNotes;
+  if (runtime.voiceNotes?.fish) runtime.voiceNotes.refreshCredit().catch(() => {});
   linkReader.transcribeAudio = async (path) => (await runtime.audioTranscriber?.transcribe?.({ filePath: path, mimetype: "audio/mpeg" }))?.text ?? null;
 
   return runtime;
@@ -636,13 +639,30 @@ function createMind(runtime, { searchAdapter, linkReader }) {
     evolution,
     life: runtime.brainOrchestrator?.life ?? null,
     notifyOwner,
-    limits: { studyPerDay: DEFAULTS.mindStudyPerDay, lookupsPerDay: DEFAULTS.mindLookupsPerDay }
+    limits: { studyPerDay: DEFAULTS.mindStudyPerDay, lookupsPerDay: DEFAULTS.mindLookupsPerDay },
+    searchYoutube
   });
   if (evolution) {
     evolution.journal = mind.journal;
     evolution.feel = (feeling, delta, cause) => mind.feelings.feel(feeling, delta, { cause });
   }
   if (runtime.brainOrchestrator) runtime.brainOrchestrator.feelings = mind.feelings;
+  if (runtime.chatService) runtime.chatService.feelings = mind.feelings;
+  temperament.connect({ feelings: mind.feelings, life: runtime.brainOrchestrator?.life ?? null });
+  // Acordaram ela à força: raiva na hora (passa rápido), emburrada e com sono por horas.
+  const life = runtime.brainOrchestrator?.life;
+  if (life) {
+    life.onWake = (w) => {
+      const who = w.isOwner ? "a Gabbis" : w.byName || "alguém";
+      const when = new Date(w.at).toLocaleTimeString("pt-BR", { timeZone: life.timeZone ?? "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+      const cause = `${who} me acordou às ${when} ${w.how}${w.nth > 1 ? ` (${w.nth}ª vez na noite)` : ""}`;
+      const ctx = { cause, who, userId: w.by ?? null, chat: w.chat ?? null, platform: "whatsapp" };
+      const hard = (w.deep ? 1 : 0.6) * (1 + 0.35 * (w.nth - 1));
+      mind.feelings.feel("irritacao", Math.min(0.8, 0.45 * hard), ctx);
+      mind.feelings.feel("emburrada", Math.min(0.7, 0.35 * hard), ctx);
+      mind.feelings.feel("sono", Math.min(0.9, 0.55 * hard), ctx);
+    };
+  }
   return mind;
 }
 

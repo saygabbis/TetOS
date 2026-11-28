@@ -1,5 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { PermissionFlagsBits } from "discord.js";
+import { discordSendElsewhere, runDiscordAction } from "./discordPowers.js";
+import { CALL_JOIN_RE, CALL_LEAVE_RE, createDiscordVoiceCalls } from "./discordVoiceCall.js";
 import { handleIncomingMessage } from "../../app/createRuntime.js";
 import { withGenerationSlot } from "../../infra/concurrency/generationSlot.js";
 import { resolveOutgoingActions, sanitizeOutgoingActions } from "../../modules/chat/chatService.js";
@@ -73,6 +75,62 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
       ownerFallbackUserId: resolveOwnerActorId(runtime)
     });
     return { userId, linked, isOwner };
+  }
+
+  // Call de voz: cada fala ouvida vai pro mesmo cérebro do chat, com o canal de texto como contexto.
+  const calls = createDiscordVoiceCalls({
+    runtime,
+    client,
+    identityOf,
+    log,
+    respondInCall: async ({ session, people }) => {
+      const first = people[0];
+      const multi = new Set(people.map((p) => p.userId)).size > 1;
+      const chatKey = keyOf(session.textChannel?.id ?? session.channel.id);
+      const out = await withGenerationSlot(() =>
+        handleIncomingMessage(runtime, {
+          message: multi ? people.map((p) => `[${p.name}]: ${p.text}`).join("\n") : people.map((p) => p.text).join("\n"),
+          userId: first.userId,
+          sessionId: `discord-call:${session.guildId}:${first.userId}`,
+          channelId: chatKey,
+          isGroup: true,
+          participants: [...new Set(people.map((p) => p.userId))],
+          isDirectMention: true,
+          groupEngagementActive: true,
+          pushName: first.name,
+          participantId: first.userId,
+          segmentSpeakers: multi ? [...new Set(people.map((p) => p.name))] : null,
+          segmentMultiSpeaker: multi,
+          isOwner: !multi && first.isOwner,
+          closeDecision: "open",
+          platform: "discord",
+          platformPlace: `call ${session.channel.name}`,
+          platformNote:
+            "Você está numa CALL DE VOZ no Discord: o que você responder vai ser FALADO com a sua voz. Fale como em ligação: 1 ou 2 frases curtas, natural, sem emoji, sem link, sem formatação, sem figurinha. Reaja ao que ouviu como gente em call (risada falada, \"ahn?\", \"pera\"). O texto que você recebe é transcrição automática: pode vir com erro, entenda pelo contexto."
+        })
+      );
+      const replies = out?.replies ?? [];
+      return Array.isArray(replies.actions) ? replies.actions : replies.map((text) => ({ type: "message", text }));
+    }
+  });
+
+  async function voiceCallAction(op, { channel, last }) {
+    const guild = last.guildId ? await client.guilds.fetch(last.guildId).catch(() => null) : null;
+    if (!guild) return channel.send({ content: "call só dá em servidor 😅", allowedMentions: { parse: [] } });
+    if (op === "leave") {
+      const left = await calls.leave(guild.id, "pediram no chat");
+      if (!left) await channel.send({ content: "eu nem tô em call 🤨", allowedMentions: { parse: [] } });
+      return;
+    }
+    const member = await guild.members.fetch(last.authorId).catch(() => null);
+    const vc = member?.voice?.channel;
+    if (!vc) return channel.send({ content: "entra num canal de voz primeiro que eu vou atrás 😤", allowedMentions: { parse: [] } });
+    const r = await calls.join({ guild, voiceChannel: vc, textChannel: channel, requesterId: last.authorId, isOwner: last.isOwner === true });
+    if (!r.ok) {
+      if (r.note) await channel.send({ content: r.note, allowedMentions: { parse: [] } });
+      return;
+    }
+    if (!r.already) await calls.say(r.session, last.isOwner ? "cheguei! oi Gabbis" : `cheguei! oi ${last.speakerName ?? "gente"}`);
   }
 
   function record(message, { text = null, isFromBot = false } = {}) {
@@ -550,6 +608,7 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     let replyTo = autoReplyTo;
     const people = mentionPeople(channel, chatKey);
     const sentTexts = [];
+    let callHandled = false;
     for (const [i, action] of actions.entries()) {
       if (i > 0) await sleep(between(700, 1400));
       try {
@@ -581,6 +640,23 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
             dlog.chat(last.place ?? placeLabel(channel), "Teto", `[figurinha ${asset.key}]`);
           }
           replyTo = null;
+        } else if (action.type === "voice_call") {
+          callHandled = true;
+          await voiceCallAction(action.op, { channel, last }).catch((error) => console.warn(`[discord] call falhou: ${error?.message ?? error}`));
+          replyTo = null;
+        } else if (action.type === "app_action" || action.type === "send_elsewhere") {
+          try {
+            const r =
+              action.type === "send_elsewhere"
+                ? await discordSendElsewhere({ runtime, client, last, target: action.target, text: action.text })
+                : await runDiscordAction({ runtime, client, channel, last, action: action.name, args: action.args ?? [] });
+            dlog.chat(last.place ?? placeLabel(channel), "Teto", `[${action.name ?? `enviar → ${action.target}`}: ${r.ok ? "ok" : r.note}]`);
+            if (!r.ok && r.note) await channel.send({ content: r.note, allowedMentions: { parse: [] } });
+          } catch (error) {
+            await channel.send({ content: "eita, o Discord não deixou eu fazer isso 😕", allowedMentions: { parse: [] } }).catch(() => {});
+            console.warn(`[discord] ${action.type} falhou: ${error?.message ?? error}`);
+          }
+          replyTo = null;
         } else if (action.type === "gif" && action.query) {
           const found = await findGif(action.query).catch(() => null);
           if (found?.url) {
@@ -592,9 +668,14 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
           const requested = /(?<!\p{L})([aá]udio|voz|fala comigo|grava)(?!\p{L})/iu.test(last.text ?? "");
           const voice = runtime.voiceNotes;
           if (voice?.canSend(chatKey, { requested }) && (last.isDM || requested)) {
-            const note = await voice.synthesize(action.text);
-            await channel.send({ files: [{ attachment: note.audio, name: "teto.ogg" }], allowedMentions: { repliedUser: false } });
-            voice.markSent(chatKey);
+            try {
+              const note = await voice.synthesize(action.text);
+              await channel.send({ files: [{ attachment: note.audio, name: "teto.ogg" }], allowedMentions: { repliedUser: false } });
+              voice.markSent(chatKey);
+            } catch (error) {
+              const notice = error?.code === "voice_no_credit" && requested ? voice.creditNotice(chatKey, { isOwner: last.isOwner === true }) : null;
+              await channel.send({ content: [action.text, notice].filter(Boolean).join("\n"), allowedMentions: { parse: [] } });
+            }
           } else {
             await channel.send({ content: action.text, allowedMentions: { parse: [] } });
           }
@@ -660,6 +741,14 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
         }
       } catch (error) {
         log.warn?.(`[discord] ação ${action.type} falhou: ${error?.message ?? error}`);
+      }
+    }
+    // Pediram call com todas as letras e o modelo esqueceu do call(): entra/sai mesmo assim.
+    if (!callHandled && !last.isDM && (last.mentioned || last.isReplyToBot || last.tetosCommand || /teto/i.test(String(last.text ?? "")))) {
+      const t = String(last.text ?? "");
+      const op = CALL_LEAVE_RE.test(t) ? "leave" : CALL_JOIN_RE.test(t) ? "join" : null;
+      if (op === "join" || (op === "leave" && calls.sessionOf(last.guildId))) {
+        await voiceCallAction(op, { channel, last }).catch((error) => log.warn?.(`[discord] call falhou: ${error?.message ?? error}`));
       }
     }
   }

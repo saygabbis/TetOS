@@ -6,7 +6,9 @@ import { spawnSync } from "node:child_process";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { proto } from "baileys";
 import { findLengthField, installSoundStickerProto } from "../../src/integrations/whatsapp/media/soundSticker.js";
-import { extractStickerAudio, muxAudioIntoMp4, probeMedia, staticWebpToAnimated } from "../../src/core/media/soundStickerMedia.js";
+import sharp from "sharp";
+sharp.cache(false);
+import { extractStickerAudio, muxAudioIntoMp4, probeMedia, soundStickerToMp4, staticWebpToAnimated } from "../../src/core/media/soundStickerMedia.js";
 
 const SB = Symbol.for("tetos.soundStickerBytes");
 function varint(n) {
@@ -58,7 +60,7 @@ describe("figurinha com som — protobuf", () => {
 });
 
 describe("figurinha com som — ffmpeg", () => {
-  it("extrai áudio, anima figurinha estática e faz mp4 com som", () => {
+  it("extrai áudio, anima figurinha estática e faz mp4 com som", async () => {
     const dir = mkdtempSync(join(tmpdir(), "ss-"));
     try {
       const video = join(dir, "v.mp4");
@@ -66,17 +68,58 @@ describe("figurinha com som — ffmpeg", () => {
       const ff = (args) => spawnSync(ffmpegInstaller.path, ["-y", "-hide_banner", "-loglevel", "error", ...args]);
       ff(["-f", "lavfi", "-i", "testsrc=s=320x240:d=3", "-f", "lavfi", "-i", "sine=f=440:d=3", "-shortest", "-pix_fmt", "yuv420p", video]);
       ff(["-f", "lavfi", "-i", "color=c=red:s=512x512:d=1", "-frames:v", "1", webp]);
-      const audio = extractStickerAudio(video, dir);
+      const audio = await extractStickerAudio(video, dir);
       expect(audio?.path && existsSync(audio.path)).toBe(true);
       expect(audio.seconds).toBeGreaterThan(2);
-      const anim = staticWebpToAnimated(webp, dir, 2);
+      const anim = await staticWebpToAnimated(webp, dir, 2);
       expect(anim && existsSync(anim)).toBe(true);
-      const mp4 = muxAudioIntoMp4(video, audio.path, dir);
-      expect(probeMedia(mp4).hasAudio).toBe(true);
+      const mp4 = await muxAudioIntoMp4(video, audio.path, dir);
+      expect((await probeMedia(mp4)).hasAudio).toBe(true);
       // vídeo sem áudio → null
       const mute = join(dir, "m.mp4");
       ff(["-f", "lavfi", "-i", "testsrc=s=320x240:d=1", "-pix_fmt", "yuv420p", mute]);
-      expect(extractStickerAudio(mute, dir)).toBeNull();
+      expect(await extractStickerAudio(mute, dir)).toBeNull();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it("respeita tempo custom acima de 10s (até o máximo)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ss-"));
+    try {
+      const video = join(dir, "v14.mp4");
+      spawnSync(ffmpegInstaller.path, ["-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=s=160x120:d=14", "-f", "lavfi", "-i", "sine=f=440:d=14", "-shortest", "-pix_fmt", "yuv420p", video]);
+      expect((await extractStickerAudio(video, dir)).seconds).toBe(10);
+      const a14 = await extractStickerAudio(video, dir, { maxSeconds: 14 });
+      expect(a14.seconds).toBeGreaterThan(13.5);
+      expect((await extractStickerAudio(video, dir, { maxSeconds: 99 })).seconds).toBeLessThanOrEqual(30);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it("figurinha animada com som vira MP4 direto (estática também)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ss-"));
+    try {
+      const frames = await Promise.all(
+        ["#ff0000", "#00ff00", "#0000ff", "#ffff00"].map((c) =>
+          sharp({ create: { width: 256, height: 256, channels: 4, background: c } }).png().toBuffer()
+        )
+      );
+      const animated = join(dir, "anim.webp");
+      await sharp(frames, { join: { animated: true } }).webp({ loop: 0, delay: [100, 100, 100, 100] }).toFile(animated);
+      const still = join(dir, "still.webp");
+      await sharp(frames[0]).webp().toFile(still);
+      const audioSrc = join(dir, "a.mp4");
+      spawnSync(ffmpegInstaller.path, ["-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "sine=f=440:d=2", audioSrc]);
+      const audio = await extractStickerAudio(audioSrc, dir);
+      for (const sticker of [animated, still]) {
+        const mp4 = await soundStickerToMp4(sticker, audio.path, dir);
+        expect(mp4 && existsSync(mp4)).toBe(true);
+        const info = await probeMedia(mp4);
+        expect(info.hasAudio).toBe(true);
+        expect(info.seconds).toBeGreaterThan(1.5);
+      }
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

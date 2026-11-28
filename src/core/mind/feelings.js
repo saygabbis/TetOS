@@ -20,6 +20,9 @@ export const FEELINGS = {
   curiosidade: { label: "curiosa", valence: 0.4, halfLifeMin: 90 },
   vergonha: { label: "envergonhada", valence: -0.3, halfLifeMin: 30 },
   irritacao: { label: "irritada", valence: -0.7, halfLifeMin: 40 },
+  // Acordada à força: a raiva da hora passa rápido, o emburramento e o sono ficam pro dia.
+  emburrada: { label: "emburrada", valence: -0.5, halfLifeMin: 150 },
+  sono: { label: "morrendo de sono", valence: -0.25, halfLifeMin: 300 },
   frustracao: { label: "frustrada", valence: -0.6, halfLifeMin: 90 },
   magoa: { label: "magoada", valence: -0.8, halfLifeMin: 180 },
   tristeza: { label: "triste", valence: -0.9, halfLifeMin: 180 },
@@ -209,11 +212,12 @@ export class FeelingEngine {
   tickIdle({ lastActivityAt = 0, asleep = false } = {}) {
     if (asleep) return;
     const now = this.now();
-    if (lastActivityAt && now - lastActivityAt > 3 * 60 * MIN && this.level("tedio") < 0.5) {
+    // Só re-sente quando o tédio já baixou (antes anotava a cada 14 min e apagava o resto do histórico).
+    if (lastActivityAt && now - lastActivityAt > 3 * 60 * MIN && this.level("tedio") < 0.25) {
       this.feel("tedio", 0.12, { cause: "faz horas que ninguém fala comigo" });
     }
     const ownerAt = Date.parse(this.data.lastOwnerAt ?? "") || 0;
-    if (ownerAt && now - ownerAt > 12 * 60 * MIN && this.level("saudade") < 0.6) {
+    if (ownerAt && now - ownerAt > 12 * 60 * MIN && this.level("saudade") < 0.3) {
       this.feel("saudade", 0.1, { cause: "faz tempo que a Gabbis não fala comigo" });
     }
     this.checkMood();

@@ -67,7 +67,10 @@ export class DailyLife {
     this.timeZone = timeZone;
     this.now = now;
     this.bus = bus;
-    this.state = readJson(statePath, { tempAwake: null, disturbances: {}, lastWokeAt: null });
+    this.state = readJson(statePath, { tempAwake: null, disturbances: {}, lastWokeAt: null, wakeIns: [] });
+    this.state.wakeIns ??= [];
+    /** Chamado quando alguém a acorda (o runtime liga nos sentimentos). */
+    this.onWake = null;
     this.plans = new Map();
     this._wasAvailable = null;
     const self = this;
@@ -174,7 +177,7 @@ export class DailyLife {
   }
 
   /** Tentativa de acordá-la (muita mensagem, "acorda", urgência). Até 2 vezes por noite. */
-  tryWake({ chatId, score = 0, floodCount = 0, isOwner = false, date = this.now() } = {}) {
+  tryWake({ chatId, score = 0, floodCount = 0, isOwner = false, by = null, byName = null, date = this.now() } = {}) {
     if (!this.isAsleep(date)) return null;
     const night = this.locate(date).day.date;
     const count = this.state.disturbances[night] ?? 0;
@@ -182,10 +185,60 @@ export class DailyLife {
     const threshold = isOwner ? 0.55 : 0.8;
     const floodNeeded = isOwner ? 4 : 7;
     if (score < threshold && floodCount < floodNeeded) return null;
-    this.state.disturbances = { ...Object.fromEntries(Object.entries(this.state.disturbances).slice(-6)), [night]: count + 1 };
+    return this._wake({ chatId, by, byName, isOwner, how: floodCount >= floodNeeded ? "de tanto mandar mensagem" : "chamando com urgência", date });
+  }
+
+  /**
+   * Chamaram ela direto (.tetos, invocação) enquanto dormia: ela acorda de qualquer jeito — e isso
+   * tem consequência (irritação, sono, dia seguinte pior). Já acordada pra esse chat: só estende.
+   */
+  forceWake({ chatId, by = null, byName = null, isOwner = false, how = "te chamou direto", date = this.now() } = {}) {
+    if (!this.isAsleep(date)) return null;
+    if (this.tempAwakeFor(chatId, date)) {
+      this.extendWake(chatId, date);
+      return null;
+    }
+    return this._wake({ chatId, by, byName, isOwner, how, date });
+  }
+
+  _wake({ chatId, by, byName, isOwner, how, date }) {
+    const loc = this.locate(date);
+    const night = loc.day.date;
+    const count = (this.state.disturbances[night] ?? 0) + 1;
+    this.state.disturbances = { ...Object.fromEntries(Object.entries(this.state.disturbances).slice(-6)), [night]: count };
     this.state.tempAwake = { chat: chatId, until: new Date(date.getTime() + 10 * MIN).toISOString(), startedAt: date.toISOString(), extensions: 0 };
+    // Quanto do sono já tinha dormido: acordar logo depois de deitar ou perto da hora irrita menos.
+    const slept = Math.max(0, (date.getTime() - (loc.bedAt?.getTime() ?? date.getTime())) / MIN);
+    const left = Math.max(0, ((loc.wakeAt?.getTime() ?? date.getTime()) - date.getTime()) / MIN);
+    const deep = slept > 60 && left > 90;
+    const entry = { at: date.toISOString(), night, nth: count, by, byName, chat: chatId, isOwner, how, deep, minutesLeft: Math.round(left) };
+    this.state.wakeIns = [...(this.state.wakeIns ?? []), entry].slice(-12);
+    this.state.lastWokeAt = entry.at;
     this.save();
-    return { woke: true, groggy: true, chat: chatId, night };
+    try {
+      this.onWake?.(entry);
+    } catch {
+      /* sentimento é extra */
+    }
+    return { woke: true, groggy: true, chat: chatId, night, nth: count };
+  }
+
+  /** Última vez que acordaram ela à força (nas últimas `withinH` horas). */
+  lastWakeIn(date = this.now(), withinH = 20) {
+    const last = (this.state.wakeIns ?? []).at(-1);
+    if (!last) return null;
+    const agoMin = (date.getTime() - Date.parse(last.at)) / MIN;
+    return agoMin >= 0 && agoMin <= withinH * 60 ? { ...last, agoMin } : null;
+  }
+
+  /** O quanto ainda está grogue de ter sido acordada (0–1): forte nos primeiros minutos, vai passando. */
+  grogginess(date = this.now()) {
+    const ta = this.state.tempAwake;
+    if (!ta || !this.isAsleep(date) || Date.parse(ta.until) <= date.getTime()) return 0;
+    const awakeMin = (date.getTime() - Date.parse(ta.startedAt)) / MIN;
+    // Acorda zonza (0.95), clareia um pouco em ~10 min, e volta a pesar se o papo arrasta.
+    const base = awakeMin < 3 ? 0.95 : awakeMin < 10 ? 0.8 : 0.7;
+    return Math.min(1, base + (ta.extensions ?? 0) * 0.03);
   }
 
   extendWake(chatId, date = this.now()) {
@@ -208,12 +261,18 @@ export class DailyLife {
   /** Humor e energia do momento: acontecimentos do dia + sono + hora. */
   mood(date = this.now()) {
     const loc = this.locate(date);
-    if (loc.block.kind === "sleep") return { mood: "dormindo", energy: 0.1, valence: 0.5, social: 0.2 };
+    if (loc.block.kind === "sleep") {
+      return this.tempAwakeFor(null, date)
+        ? { mood: "acordada no susto, zonza", energy: 0.1, valence: 0.32, social: 0.15 }
+        : { mood: "dormindo", energy: 0.1, valence: 0.5, social: 0.2 };
+    }
     const awakeMin = loc.minute - loc.day.wake;
     const toBed = loc.day.bed - loc.minute;
     let energy = awakeMin < 30 ? 0.35 : awakeMin < 120 ? 0.6 : 0.8;
     if (toBed < 90) energy = Math.min(energy, 0.4);
-    if ((this.state.disturbances[shiftYmd(loc.day.date, -1)] ?? 0) > 0) energy -= 0.15;
+    // Noite mal dormida pesa no dia: mais vezes acordada, mais cansada (passa com as horas acordada).
+    const brokenNights = this.state.disturbances[shiftYmd(loc.day.date, -1)] ?? 0;
+    if (brokenNights > 0) energy -= Math.min(0.3, 0.12 + 0.08 * brokenNights) * (awakeMin < 360 ? 1 : 0.5);
     const events = loc.day.events.filter((e) => e.at <= loc.minute);
     const valence = clamp01(0.58 + events.reduce((sum, e) => sum + e.mood * Math.exp(-(loc.minute - e.at) / 240), 0));
     energy = clamp01(energy);
@@ -231,13 +290,44 @@ export class DailyLife {
     const header = `[SUA VIDA AGORA — ${WEEKDAYS[parts.weekday]}, ${fmtClock(parts.minutes)}]`;
     const m = this.mood(date);
     if (block.kind === "sleep") {
-      return [header, "Agora: você estava dormindo. Se está respondendo, é porque acordou com o celular — sono, frases curtas, meio grogue."];
+      const w = this.lastWakeIn(date, 1);
+      if (!this.tempAwakeFor(null, date) || !w) {
+        return [header, "Agora: você estava dormindo. Se está respondendo, é porque acordou com o celular — sono, frases curtas, meio grogue."];
+      }
+      const who = isGroup ? "alguém" : w.isOwner ? "a Gabbis" : w.byName || "alguém";
+      const g = this.grogginess(date);
+      return [
+        header,
+        `Agora: você tava DORMINDO e ${who} te acordou ${w.how} (${fmtClock(localParts(new Date(w.at), this.timeZone).minutes)}, faltavam ~${Math.round(w.minutesLeft / 60)}h pra você acordar)${w.nth > 1 ? ` — e não é a primeira vez essa noite (${w.nth}ª)` : ""}.`,
+        "Você NÃO acordou de boa nem 'agora há pouco por conta própria': acordou no susto, com o celular, no escuro.",
+        g >= 0.8
+          ? "Zonza de sono: frases curtas e meio desconexas, entende as coisas pela metade, erra letra e nem corrige, pode bocejar ('aaaah', 'hmm'), pode perguntar 'que horas são' ou 'oq foi'."
+          : "Ainda com muito sono: devagar, curta, erra palavra às vezes, perde o fio.",
+        w.deep
+          ? `Irritada de ter sido acordada no meio do sono: reclama (\"sério?\", \"são ${fmtClock(parts.minutes)}...\", \"me acordou pra isso?\"), seca/ranzinza com ${who} — mas se for urgente ou importante de verdade, ajuda mesmo assim.`
+          : `Meio irritada de ter sido acordada: resmunga um pouco com ${who}, mas sem drama.`,
+        "Quer voltar a dormir: se o papo não for importante, encerra logo ('vou voltar a dormir', 'amanhã a gente fala')."
+      ];
     }
     const lines = [header];
     const now = block.kind === "break" ? `${block.label} (no meio de: ${block.during})` : block.label;
     // Pausa: o "até" que importa é quando volta pro que estava fazendo.
     lines.push(`Agora: ${now} (desde ${fmtClock(block.start)}${block.end - minute > 5 || block.kind === "break" ? `, até ~${fmtClock(block.end)}` : ""}) — ${AVAIL_LABEL[block.availability]}.`);
     lines.push(`Humor: ${m.mood}${m.energy < 0.4 ? " (energia baixa)" : m.energy > 0.7 ? " (com energia)" : ""}.`);
+    // Acordaram ela de madrugada: o dia seguinte sente (e a raiva vai passando aos poucos).
+    const woke = this.lastWakeIn(date, 18);
+    if (woke && Date.parse(woke.at) < zonedDate(day.date, day.wake, this.timeZone).getTime() + 5 * MIN) {
+      const who = isGroup ? "alguém" : woke.isOwner ? "a Gabbis" : woke.byName || "alguém";
+      const hours = woke.agoMin / 60;
+      const when = fmtClock(localParts(new Date(woke.at), this.timeZone).minutes);
+      lines.push(
+        hours < 4
+          ? `Dormiu mal: ${who} te acordou às ${when} ${woke.how}. Ainda com sono e paciência curta; se ${who} aparecer, pode alfinetar ("me acordou de madrugada, lembra?").`
+          : hours < 10
+            ? `Dormiu mal (${who} te acordou às ${when}). Mais cansada que o normal e meio ranzinza — já tá passando, mas pode comentar se o assunto for sono/cansaço ou se ${who} vier falar.`
+            : `Noite passada ${who} te acordou às ${when}. Já passou a raiva, só um cansaço leve; pode lembrar disso rindo se vier ao caso.`
+      );
+    }
     if (!isGroup) {
       // Blocos partidos por pausas aparecem uma vez só.
       const unique = (list) => [...new Set(list)];

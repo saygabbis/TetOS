@@ -86,12 +86,12 @@ describe("confirmação do modo bom", () => {
     expect(answer.plan).toMatchObject({ tier: "hd", model: "gpt-image-2.6-sunburst", quality: "xhigh", prompt: "gato" });
   });
 
-  it("quem não é a dona cai no econômico", async () => {
+  it(".gerarhd é exclusivo da dona: os outros são recusados (sem gastar nada)", async () => {
     const svc = service();
     vi.spyOn(svc, "generate").mockResolvedValue({ ok: true, buffer: Buffer.from("x"), filePath: "/tmp/x.png" });
     const out = await startImageCommand("gerarhd", ["gato"], { service: svc, isOwner: false, pendingKey: "k" });
-    expect(svc.generate).toHaveBeenCalled();
-    expect(out.caption).toMatch(/econômico/);
+    expect(svc.generate).not.toHaveBeenCalled();
+    expect(out.text).toMatch(/exclusivo/);
     expect(svc.pending.peek("k")).toBeNull();
   });
 

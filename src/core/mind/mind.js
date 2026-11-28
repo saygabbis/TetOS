@@ -10,6 +10,8 @@ import { appraise, FeelingEngine } from "./feelings.js";
 import { stackFiles } from "../evolution/codePatcher.js";
 import { isEditablePath } from "../evolution/safety.js";
 import { readJson, writeJsonDeferred } from "../../infra/utils/fileStore.js";
+import { MusicBook } from "../music/musicBook.js";
+import { temperament } from "./temperament.js";
 
 const NOTICE_LEVELS = { tudo: "tudo", todos: "tudo", on: "tudo", ligar: "tudo", importante: "importante", importantes: "importante", nada: "nada", off: "nada", desligar: "nada" };
 
@@ -34,8 +36,10 @@ export class Mind {
     persona = "Kasane Teto: cantora virtual (UTAU/SynthV), travessa, tsundere leve, carinhosa do jeito dela, ama pão/baguete e música",
     notifyOwner = async () => {},
     limits = {},
+    searchYoutube = null,
     now = () => Date.now()
   } = {}) {
+    this.searchYoutube = searchYoutube;
     this.dir = dir;
     this.llm = llm;
     this.search = search; // (q) => [{title, url, snippet}]
@@ -60,9 +64,10 @@ export class Mind {
     this.journal = new MindJournal(p("journal.ndjson"), { now });
     this.turns = new TurnLog(p("turns.json"), { now });
     this.feelings = new FeelingEngine(p("feelings.json"), { now, baseMood: () => life?.mood?.() ?? null });
+    this.music = new MusicBook(p("music.json"), { now });
     this.senders = {};
     this.lastActivityAt = 0;
-    this.last = { study: 0, reflect: 0, evolve: 0, decay: 0, interests: 0 };
+    this.last = { study: 0, reflect: 0, evolve: 0, decay: 0, interests: 0, music: 0 };
     this.lookups = { day: "", count: 0, perChat: new Map() };
     this.errors = new Map();
     this.busy = false;
@@ -132,6 +137,7 @@ export class Mind {
     lines.push(...this.feelings.promptLines({ viewerUserId: userId }));
     lines.push(...this.lessons.promptLines({ platform, isGroup }));
     lines.push(...this.knowledge.promptLines(text));
+    lines.push(...this.music.promptLines(text, { chatId }));
 
     // Habilidades que ela criou (rodam isoladas; não seguram a resposta mais que ~9 s).
     if (this.evolution?.skills) {
@@ -211,6 +217,8 @@ export class Mind {
   recordTurn({ chatId, platform, isGroup, who, input, replies = [], actions = [], toneRead = null } = {}) {
     const stickers = (actions ?? []).filter((a) => a?.type === "sticker").length;
     this.turns.record({ chat: chatId, platform, isGroup, who, input, replies, stickers, tone: toneRead });
+    const said = [...(replies ?? []), ...(actions ?? []).map((a) => a?.text ?? "")].join(" ");
+    if (/youtu|tiktok|instagram|spotify/i.test(said)) this.music.noteSentText(said, chatId);
     if (replies.length || stickers) this.lastActivityAt = this.now();
   }
 
@@ -247,7 +255,13 @@ export class Mind {
       const asleep = this.isAsleep();
       this.feelings.tickIdle({ lastActivityAt: this.lastActivityAt, asleep });
       // Estudar: acordada, no ritmo e dentro do orçamento do dia.
-      if (!asleep && now - this.last.study >= this.limits.studyEveryMs && this.agenda.doneToday("estudar") < this.limits.studyPerDay) {
+      // Música: de tempos em tempos ela ouve (e aprende) uma música dela, ou cata uma nova com a voz dela.
+      // O ritmo respira com a energia/humor (tem dia que ela fica ouvindo tudo, tem dia que nem lembra).
+      const musicEvery = temperament.value("music_listen", 2.5 * HOUR, { energy: -0.8, valence: -0.6 }, { min: 50 * MIN, max: 8 * HOUR });
+      if (!asleep && this.llm && this.reader && now - this.last.music >= musicEvery && now - this.lastActivityAt > 4 * MIN) {
+        this.last.music = now;
+        await this.listenToMusic();
+      } else if (!asleep && now - this.last.study >= this.limits.studyEveryMs && this.agenda.doneToday("estudar") < this.limits.studyPerDay) {
         this.last.study = now;
         await this.studyNext();
       } else if (now - this.last.reflect >= this.limits.reflectEveryMs && this.turns.since(this.last.reflect || now - 12 * HOUR).length >= 15) {
@@ -266,6 +280,24 @@ export class Mind {
     } finally {
       this.busy = false;
     }
+  }
+
+  /** Ouve uma música dela pra conhecer (ou descobre uma nova) e registra no diário. */
+  async listenToMusic() {
+    if (Math.random() < 0.35) {
+      const topics = (this.knowledge.recent?.(6) ?? []).map((e) => e.topic);
+      const video = await this.music.discoverVideo({ searchYoutube: this.searchYoutube, topics }).catch(() => null);
+      if (video) this.journal.write("video", `achei um vídeo pra mostrar pro pessoal: "${video.title}"`, { url: video.url });
+      return video;
+    }
+    let song = this.music.pickToLearn();
+    if (!song && Math.random() < 0.6) song = await this.music.discover({ searchYoutube: this.searchYoutube }).catch(() => null);
+    if (!song) return null;
+    const learned = await this.music.learn(song, { llm: this.llm, reader: this.reader, searchYoutube: this.searchYoutube, persona: this.persona });
+    if (!learned) return null;
+    this.journal.write("musica", `ouvi "${learned.title}": ${clip(learned.opinion || learned.about, 160)}`, { url: learned.url });
+    this.feelings.feel(learned.source === "descoberta" ? "curiosidade" : "alegria", 0.15, { cause: `ouvi ${learned.title}` });
+    return learned;
   }
 
   /** Estuda o próximo tema da agenda (ou escolhe um interesse dela se a agenda estiver vazia). */

@@ -99,7 +99,10 @@ export async function runPresence(runtime, socket) {
           followUps: runtime.peopleMemory?.followUps?.(userId, "direct") ?? [],
           name
         },
-        row: state.user(userId)
+        row: state.user(userId),
+        share: runtime.mind?.music
+          ? { song: runtime.mind.music.shareCandidate(remoteJid), video: runtime.mind.music.videoCandidate(remoteJid) }
+          : null
       });
       if (!decision) continue;
 
@@ -130,6 +133,9 @@ export async function runPresence(runtime, socket) {
         : await sendDirect(socket, remoteJid, texts);
       if (!sent) continue;
       state.noteSent(userId, decision.reasonKey);
+      try {
+        runtime.mind?.music?.noteSentText?.(texts.join(" "), remoteJid);
+      } catch {}
       runtime.timeStore?.markAssistantMessage?.(userId, Date.now(), sessionId);
       for (const text of texts) runtime.peopleMemory?.record?.({ userId, scope: "direct", role: "teto", text });
       if (decision.reasonKey.startsWith("fu:")) runtime.peopleMemory?.markFollowedUp?.(userId, "direct", decision.reasonKey.slice(3));

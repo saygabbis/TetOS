@@ -1,3 +1,4 @@
+import { HABITS, temperament } from "../mind/temperament.js";
 import { readJson, writeJsonDeferred } from "../../infra/utils/fileStore.js";
 import { seededRandom } from "../life/dayPlanner.js";
 
@@ -64,6 +65,7 @@ export function chooseInitiative({
   dayInfo = {},
   person = {},
   row = { lastAt: 0, unanswered: 0, dayCount: 0, done: [] },
+  share = null,
   rng = seededRandom(`ini:${person.userId}:${Math.floor(now / EVAL_EVERY_MS)}`)
 } = {}) {
   const { isOwner = false, isPartner = false, intimacy = 0, gapSinceUserMs = 0, gapSinceAnyMs = 0, followUps = [], name = null } = person;
@@ -75,8 +77,11 @@ export function chooseInitiative({
 
   // Nunca manda outra sem a pessoa responder a anterior (a dona, só depois de um dia inteiro).
   if (row.unanswered >= 1 && !(isOwner && row.unanswered < 2 && gapSinceUserMs > 24 * HOUR)) return null;
-  if (row.dayCount >= (isOwner || isPartner ? 2 : 1)) return null;
-  if (now - (row.lastAt ?? 0) < 3 * HOUR) return null;
+  // Limites também respiram: tem dia que ela tá mais grudenta, tem dia que tá mais na dela.
+  const urge = temperament.factor("initiative", HABITS.initiative, { at: now });
+  const perDay = Math.max(1, Math.min(isOwner || isPartner ? 3 : 2, Math.round((isOwner || isPartner ? 2 : 1) * urge)));
+  if (row.dayCount >= perDay) return null;
+  if (now - (row.lastAt ?? 0) < (3 / Math.min(1.5, Math.max(0.7, urge))) * HOUR) return null;
   // Conversa rolando (ou acabou de rolar): não atropela.
   if (gapSinceAnyMs < (isOwner || isPartner ? 2 : 4) * HOUR) return null;
 
@@ -110,8 +115,28 @@ export function chooseInitiative({
     options.push({ p: 0.012, reasonKey: `share:${today}`, mode: "compartilhar", impulse: `Você está ${availability.activity} e lembrou de ${who}. Mande algo sobre isso (comentário, pergunta, besteira) — como amiga que manda mensagem do nada.` });
   }
 
+  // Música dela / vídeo que achou: manda o link com um comentário (como quem manda "olha isso").
+  if (share?.song && !done.has(`song:${share.song.url}`)) {
+    const s = share.song;
+    options.push({
+      p: isOwner || isPartner ? 0.04 : 0.015,
+      reasonKey: `song:${s.url}`,
+      mode: "mostrar música",
+      impulse: `Você ${s.source === "descoberta" ? "achou uma música nova com a sua voz" : "tava ouvindo uma música sua"}: "${s.title}" (${s.artist ?? "?"})${s.opinion ? ` — você acha: ${s.opinion}` : ""}. Mande pra ${who} com o link ${s.url} e um comentário seu, querendo saber o que acham (sem parecer propaganda).`
+    });
+  }
+  if (share?.video && !done.has(`vid:${share.video.url}`)) {
+    const v = share.video;
+    options.push({
+      p: isOwner || isPartner ? 0.035 : 0.01,
+      reasonKey: `vid:${v.url}`,
+      mode: "mostrar vídeo",
+      impulse: `Você viu um vídeo e lembrou de ${who}: "${v.title}"${v.about && v.about !== "coisa sua" ? ` (sobre ${v.about}, que vocês já falaram)` : ""}. Mande o link ${v.url} com um comentário curto seu, tipo amiga que manda "olha isso kkk".`
+    });
+  }
+
   for (const opt of options) {
-    if (!done.has(opt.reasonKey) && rng.chance(opt.p)) return { reasonKey: opt.reasonKey, mode: opt.mode, impulse: opt.impulse };
+    if (!done.has(opt.reasonKey) && rng.chance(Math.min(0.95, opt.p * urge))) return { reasonKey: opt.reasonKey, mode: opt.mode, impulse: opt.impulse };
   }
   return null;
 }

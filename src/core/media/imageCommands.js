@@ -40,6 +40,10 @@ export async function startImageCommand(command, args = [], { service, isOwner =
 
   let tier = cmd.endsWith("hd") || HD_QUALITIES.has(opts.quality) ? "hd" : "eco";
   let note = "";
+  // .gerarhd/.editarhd são só da dona (gastam os créditos dela): os outros nem caem no econômico.
+  if (cmd.endsWith("hd") && !isOwner) {
+    return { text: `o ${p}${cmd} é exclusivo da Gabbis 😤 usa o ${p}${edit ? "editar" : "gerar"} que é liberado pra todo mundo` };
+  }
   if (tier === "hd" && !service.canUseHd?.({ isOwner })) {
     if (!service.canUseOpenAI?.()) return { text: "o modo bom precisa da OpenAI, que tá desligada agora 😕" };
     tier = "eco";

@@ -23,10 +23,11 @@ import { probeStickerIsAnimated, isLikelyStaticRaster } from "./stickerAnimation
 import { STICKER_DURATION_MAX_MS } from "./stickerDurationParse.js";
 import { readFileHead } from "./fileHead.js";
 import {
+  SOUND_STICKER_HARD_MAX_SECONDS,
   SOUND_STICKER_MAX_SECONDS,
   extractStickerAudio,
-  muxAudioIntoMp4,
   probeMedia,
+  soundStickerToMp4,
   staticWebpToAnimated
 } from "./soundStickerMedia.js";
 
@@ -1089,9 +1090,10 @@ export class MediaProcessor {
    * `noAudio: true` quando não tem som pra pôr.
    */
   async toSoundSticker(input, mode = "stretch", { maxDurationMs, audioPath = null } = {}) {
-    const capMs = Math.min(Number(maxDurationMs) || SOUND_STICKER_MAX_SECONDS * 1000, SOUND_STICKER_MAX_SECONDS * 1000);
+    // Sem tempo no comando: 10s. Com tempo (".scsticker 14s"): o que pediu, até o máximo das figurinhas.
+    const capMs = Math.min(Number(maxDurationMs) || SOUND_STICKER_MAX_SECONDS * 1000, SOUND_STICKER_HARD_MAX_SECONDS * 1000);
     const audioSrc = audioPath ?? input?.soundAudioPath ?? input?.path;
-    const audio = audioSrc ? extractStickerAudio(audioSrc, this.outputDir, { maxSeconds: capMs / 1000 }) : null;
+    const audio = audioSrc ? await extractStickerAudio(audioSrc, this.outputDir, { maxSeconds: capMs / 1000 }) : null;
     // Figurinha que já existe (stickerinserir) não precisa ser refeita.
     let sticker =
       input.type === "sticker" && audioPath
@@ -1100,36 +1102,23 @@ export class MediaProcessor {
     if (!audio) return { ...sticker, noAudio: true };
     const animated = await probeStickerIsAnimated(sticker.path, { isAnimatedHint: input.isAnimated });
     if (!animated) {
-      const anim = staticWebpToAnimated(sticker.path, this.outputDir, Math.ceil(audio.seconds));
+      const anim = await staticWebpToAnimated(sticker.path, this.outputDir, Math.ceil(audio.seconds));
       if (anim) sticker = { ...sticker, path: anim };
     }
     return { kind: "soundSticker", path: sticker.path, audioPath: audio.path, seconds: audio.seconds };
   }
 
-  /** .toimg de figurinha com som: MP4 com o áudio dela. */
+  /** .toimg de figurinha com som: sempre MP4 com o áudio (nunca GIF), num passo só. */
   async toVideoFromSoundSticker(input) {
-    const base = await this.toMediaFromSticker(input);
-    if (!input?.soundAudioPath || !existsSync(input.soundAudioPath)) return base;
-    let videoPath = base.kind === "video" ? base.path : null;
-    if (!videoPath && base.path) {
-      // figurinha estática: imagem parada pelo tempo do som
-      const secs = Math.ceil(probeMedia(input.soundAudioPath).seconds ?? 3);
-      const still = outPath(this.outputDir, input.path, "still", "mp4");
-      await runFfmpeg(
-        ffmpeg(base.path)
-          .inputOptions(["-loop 1"])
-          .outputOptions([`-t ${secs}`, "-vf scale=trunc(iw/2)*2:trunc(ih/2)*2", "-pix_fmt yuv420p", "-c:v libx264"])
-          .save(still)
-      );
-      videoPath = still;
-    }
-    const withSound = videoPath ? muxAudioIntoMp4(videoPath, input.soundAudioPath, this.outputDir) : null;
-    if (!withSound) return base;
+    if (!input?.soundAudioPath || !existsSync(input.soundAudioPath)) return this.toMediaFromSticker(input);
+    ensureDir(this.outputDir);
+    const mp4 = await soundStickerToMp4(input.path, input.soundAudioPath, this.outputDir);
+    if (!mp4) throw new Error("não consegui transformar a figurinha com som em vídeo");
     return {
       kind: "video",
-      path: withSound,
+      path: mp4,
       toimgPlaybackMime: "video/mp4",
-      toimgPlaybackSeconds: Math.ceil(probeMedia(withSound).seconds ?? 0) || undefined,
+      toimgPlaybackSeconds: Math.ceil((await probeMedia(mp4)).seconds ?? 0) || undefined,
       withSound: true
     };
   }

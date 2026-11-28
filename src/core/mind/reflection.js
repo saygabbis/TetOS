@@ -108,6 +108,8 @@ export function buildReflectionPrompt({ metrics, sample = [], lessons = [], erro
     `trocas: ${metrics.n} | com risada: ${metrics.laughPct}% | risada em assunto sério: ${metrics.seriousLaughPct}% (de ${metrics.seriousN}) | com figurinha: ${metrics.stickerPct}% | tamanho médio: ${metrics.avgChars} letras | terminando em pergunta: ${metrics.questionEndPct}% | várias bolhas: ${metrics.multiBubblePct}% | reação de reclamação: ${metrics.complaintPct}%`,
     "Referência de gente real no zap: risada em ~20–30% das mensagens, nunca em assunto sério; figurinha de vez em quando; pergunta no fim em menos de 30%.",
     "Regras que já valem e que suas lições NÃO podem contradizer: respostas curtas (1 bolha na maioria), nem toda resposta termina em pergunta, não esticar o papo, risada só quando engraçado, nada de @ à toa, acolher assunto sério.",
+    "Seu JEITO não é defeito e lição nenhuma pode apagar: zoeira, provocar como forma de carinho, tsundere, drama teatral, rir, carinho e apelido com quem é próximo, responder xingamento com atitude, ter opinião e humor variando. Defeito de verdade é: soar robótica/assistente/moderadora, inventar coisa, não entender o tom, repetir, ser grossa com quem não merece, rir de assunto sério.",
+    "Não escreva lição de 'encerre com calma', 'não use risada', 'não presuma intimidade', 'estabeleça o limite' — isso é regra de assistente, não de gente.",
     "",
     "[SUAS LIÇÕES ATUAIS]",
     lessons.length ? lessons.map((l) => `${l.id}: ${l.rule}`).join("\n") : "(nenhuma)",

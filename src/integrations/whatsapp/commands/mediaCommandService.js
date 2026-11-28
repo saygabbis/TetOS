@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { existsSync, readFileSync } from "node:fs";
 import { downloadContentFromMessage } from "baileys";
 import { persistMedia } from "../media/mediaStore.js";
@@ -103,10 +104,14 @@ export class MediaCommandService {
     this.mediaHistoryStore = mediaHistoryStore;
     this.mediaProcessor = mediaProcessor;
     this._rawSend = safeSendMessage;
-    this.safeSendMessage = safeSendMessage;
+    /**
+     * Contexto POR comando (qual mensagem responder). Antes era um campo único na instância, e dois
+     * comandos rodando juntos trocavam o reply um do outro; agora cada um carrega o seu.
+     */
+    this._cmdCtx = new AsyncLocalStorage();
+    this.safeSendMessage = (jid, payload) => this.sendWithActiveQuote(jid, payload);
     this.chatMessageIndex = chatMessageIndex;
     this.logPrefix = logPrefix;
-    this._commandQuoteContext = null;
     this.agentMediaInFlight = new Map();
     this.urlDownloader = new UrlDownloadService({
       outputDir: runtime?.defaults?.commandMediaDerivedPath ?? "./data/media/derived",
@@ -152,7 +157,7 @@ export class MediaCommandService {
   }
 
   async sendWithActiveQuote(remoteJid, payload) {
-    const ctx = this._commandQuoteContext;
+    const ctx = this._cmdCtx.getStore();
     if (ctx?.incoming && ctx.remoteJid === remoteJid) {
       return this.sendCommandReply(remoteJid, ctx.incoming, payload);
     }
@@ -168,15 +173,8 @@ export class MediaCommandService {
       return this.handleUrlCommand({ parsedCommand: toUrlCommand(parsedCommand), remoteJid, userId, incoming });
     }
 
-    return this.commandQueue.enqueue(remoteJid, async () => {
-      this._commandQuoteContext = { remoteJid, incoming };
-      const send = (arg1, arg2) => {
-        const payload = arg2 !== undefined ? arg2 : arg1;
-        return this.sendWithActiveQuote(remoteJid, payload);
-      };
-      const prevSend = this.safeSendMessage;
-      this.safeSendMessage = send;
-      try {
+    return this.commandQueue.enqueue(remoteJid, () => this._cmdCtx.run({ remoteJid, incoming }, async () => {
+      {
       const startedAt = Date.now();
       const resolved = await resolveCommandTarget({
         incoming,
@@ -273,23 +271,13 @@ export class MediaCommandService {
         this.audit(errorEvent);
         return true;
       }
-      } finally {
-        this.safeSendMessage = prevSend;
-        this._commandQuoteContext = null;
       }
-    });
+    }));
   }
 
   async handleUrlCommand({ parsedCommand, remoteJid, userId, incoming = null }) {
-    return this.commandQueue.enqueue(remoteJid, async () => {
-      this._commandQuoteContext = incoming ? { remoteJid, incoming } : null;
-      const send = (arg1, arg2) => {
-        const payload = arg2 !== undefined ? arg2 : arg1;
-        return this.sendWithActiveQuote(remoteJid, payload);
-      };
-      const prevSend = this.safeSendMessage;
-      this.safeSendMessage = send;
-      try {
+    return this.commandQueue.enqueue(remoteJid, () => this._cmdCtx.run(incoming ? { remoteJid, incoming } : null, async () => {
+      {
       const startedAt = Date.now();
       const parsed = parseUrlDownloadArgs(parsedCommand.command, parsedCommand.args);
       if (parsed.error) {
@@ -353,11 +341,8 @@ export class MediaCommandService {
         });
         return true;
       }
-      } finally {
-        this.safeSendMessage = prevSend;
-        this._commandQuoteContext = null;
       }
-    });
+    }));
   }
 
   async runUrlDownloadCommand({
@@ -405,7 +390,7 @@ export class MediaCommandService {
     }
 
     if (parsedCommand.command === "stickerinserir") {
-      return this.startStickerInsert(resolved, remoteJid, ctx);
+      return this.startStickerInsert(resolved, remoteJid, { ...ctx, args: parsedCommand.args });
     }
 
     if (parsedCommand.command === "optimize") {
@@ -522,14 +507,21 @@ export class MediaCommandService {
       await this.safeSendMessage(remoteJid, { text: "responde uma figurinha com .stickerinserir 🙏" });
       return true;
     }
+    const durationResolved = resolveStickerDurationArg(ctx.args?.[0]);
+    if (durationResolved.error) {
+      await this.safeSendMessage(remoteJid, { text: durationResolved.error });
+      return true;
+    }
+    const secs = durationResolved.maxDurationMs ? Math.round(durationResolved.maxDurationMs / 100) / 10 : 10;
     const sent = await this.safeSendMessage(remoteJid, {
-      text: "manda o áudio agora *respondendo essa mensagem* 🎤 (até 10s; serve áudio, vídeo ou arquivo de som)"
+      text: `manda o áudio agora *respondendo essa mensagem* 🎤 (até ${secs}s; serve áudio, vídeo ou arquivo de som)`
     });
     this.pendingStickerInserts ??= new Map();
     this.pendingStickerInserts.set(remoteJid, {
       media: resolved.media,
       userId: ctx.userId ?? null,
       promptId: sent?.key?.id ?? null,
+      maxDurationMs: durationResolved.maxDurationMs,
       expiresAt: Date.now() + STICKER_INSERT_TTL_MS
     });
     return true;
@@ -557,8 +549,7 @@ export class MediaCommandService {
     // Pediu reply na mensagem dela; reply em outra coisa não conta.
     if (pending.promptId && ctxInfo?.stanzaId && ctxInfo.stanzaId !== pending.promptId) return false;
     this.pendingStickerInserts.delete(remoteJid);
-    return this.commandQueue.enqueue(remoteJid, async () => {
-      this._commandQuoteContext = { remoteJid, incoming };
+    return this.commandQueue.enqueue(remoteJid, () => this._cmdCtx.run({ remoteJid, incoming }, async () => {
       try {
         // Só a mídia da própria mensagem (sem cair no reply, que é o texto dela).
         const id = incoming?.key?.id;
@@ -575,7 +566,10 @@ export class MediaCommandService {
         });
         if (!audioPath) throw new Error("não consegui baixar o áudio");
         await this.sendPresence("composing", remoteJid);
-        const output = await this.mediaProcessor.toSoundSticker(pending.media, "stretch", { audioPath });
+        const output = await this.mediaProcessor.toSoundSticker(pending.media, "stretch", {
+          audioPath,
+          maxDurationMs: pending.maxDurationMs
+        });
         await this.sendPresence("paused", remoteJid);
         if (output.noAudio) {
           await this.sendWithActiveQuote(remoteJid, { text: "esse áudio veio mudo 😕 tenta outro" });
@@ -589,11 +583,9 @@ export class MediaCommandService {
         if (!isWaConnectionError(error)) {
           await this.sendWithActiveQuote(remoteJid, { text: `não deu pra pôr o som: ${error.message}` });
         }
-      } finally {
-        this._commandQuoteContext = null;
       }
       return true;
-    });
+    }));
   }
 
   /** .convert <formato>: pelo Convenus (aceita muito mais formato); ffmpeg local de reserva. */
@@ -882,7 +874,7 @@ export class MediaCommandService {
 
     const parsedCommand = { command: cmd, args: args ?? [] };
 
-    return this.commandQueue.enqueue(remoteJid, async () => {
+    return this.commandQueue.enqueue(remoteJid, () => this._cmdCtx.run(null, async () => {
       const startedAt = Date.now();
       const resolved = { media, source: targetSource };
       try {
@@ -958,7 +950,7 @@ export class MediaCommandService {
         });
         return false;
       }
-    });
+    }));
   }
 
   /** @deprecated use runAgentMediaCommand */

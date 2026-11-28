@@ -17,6 +17,7 @@ import { resolveMediaByMessageId } from "../commands/agentMediaResolver.js";
 import { runAgentChatCommand } from "../commands/agentRunCommand.js";
 import { saveStickerToRepertoireWithVision, logRepertoireVision } from "../media/stickerRepertoire.js";
 import { buildGroupRoster } from "../../../core/channels/groupRoster.js";
+import { runZapAction, sendElsewhere } from "../actions/zapPowers.js";
 import { translateAtMentions } from "../inbound/mentionResolver.js";
 import { isGroupPriorityEntry } from "./groupTurnPlanner.js";
 import { compactGroupQueueSegments, planFloodAwareGroupSegments, takeNextGroupTurn } from "./groupFloodCoordinator.js";
@@ -898,12 +899,16 @@ export function createConversationOrchestrator(
                     );
                     await waSocket().sendPresenceUpdate?.("paused", item.remoteJid);
                     voice.markSent(item.remoteJid);
+                    const low = voice.status?.().low ? voice.creditNotice(item.remoteJid, { kind: "low", isOwner: item.isOwner === true }) : null;
+                    if (low) await sendReplies(item.remoteJid, item.userId, item.sessionId, [low], token, { allowReply, groupRoster: item.groupRoster ?? null });
                     outputKind = RESPONSE_OUTPUTS.TEXT;
                     runtime.metrics?.increment?.("whatsapp.voice.sent");
                     console.log(`${logPrefix} áudio de voz enviado (${note.seconds}s): ${note.spoken.slice(0, 80)}`);
                   } catch (error) {
+                    await waSocket().sendPresenceUpdate?.("paused", item.remoteJid).catch?.(() => {});
                     console.warn(`${logPrefix} áudio de voz falhou, mandando texto: ${error?.message ?? error}`);
-                    await sendReplies(item.remoteJid, item.userId, item.sessionId, [action.text], token, { allowReply, groupRoster: item.groupRoster ?? null });
+                    const notice = error?.code === "voice_no_credit" && requested ? voice.creditNotice(item.remoteJid, { isOwner: item.isOwner === true }) : null;
+                    await sendReplies(item.remoteJid, item.userId, item.sessionId, [action.text, ...(notice ? [notice] : [])], token, { allowReply, groupRoster: item.groupRoster ?? null });
                   }
                 }
               } else if (action.type === "sticker") {
@@ -926,6 +931,20 @@ export function createConversationOrchestrator(
                   );
                   outputKind = RESPONSE_OUTPUTS.STICKER;
                   runtime.metrics?.increment?.("whatsapp.sticker.sent");
+                }
+              } else if (action.type === "app_action" || action.type === "send_elsewhere") {
+                // Recursos do app (grupo, enquete, evento…) e falar em outro chat. A segurança fica no módulo.
+                try {
+                  const roster = item.groupRoster?.members ?? [];
+                  const r =
+                    action.type === "send_elsewhere"
+                      ? await sendElsewhere({ runtime, socket: waSocket(), item, target: action.target, text: action.text })
+                      : await runZapAction({ runtime, socket: waSocket(), item, action: action.name, args: action.args ?? [], roster });
+                  console.log(`${logPrefix} executing action ${action.type}: ${action.name ?? action.target} → ${r.ok ? "ok" : `não (${r.note})`}`);
+                  if (!r.ok && r.note) await sendReplies(item.remoteJid, item.userId, item.sessionId, [r.note], token, { allowReply, groupRoster: item.groupRoster ?? null });
+                } catch (error) {
+                  console.warn(`${logPrefix} ${action.type} falhou: ${error?.message ?? error}`);
+                  await sendReplies(item.remoteJid, item.userId, item.sessionId, ["eita, o zap não deixou eu fazer isso agora 😕"], token, { allowReply, groupRoster: item.groupRoster ?? null });
                 }
               } else if (action.type === "gif") {
                 const found = await findGif(action.query).catch(() => null);

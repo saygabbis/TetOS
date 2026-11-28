@@ -704,7 +704,15 @@ export async function runMessagePipeline(runtime, payload = {}) {
     if (linkText) {
       try {
         const summary = wantsSummary(input);
-        const items = await runtime.linkReader.readAll(linkText, summary ? { max: 2, full: true, budgetMs: 180_000 } : { max: 2 });
+        // Reels/TikTok/Shorts (ou "assiste isso"): ela assiste de verdade (ouve a fala/música), leva um tempinho como gente.
+        const watch =
+          !summary &&
+          (/tiktok\.com|instagram\.com\/(reels?|tv)\/|youtube\.com\/shorts\//i.test(linkText) ||
+            /(?<!\p{L})(assiste|assista|v[eê] (esse|esse v[ií]deo|isso)|olha (esse|isso)|escuta|ouve)(?!\p{L})/iu.test(input));
+        const items = await runtime.linkReader.readAll(linkText, summary ? { max: 2, full: true, budgetMs: 180_000 } : watch ? { max: 2, watch: true, budgetMs: 75_000 } : { max: 2 });
+        try {
+          runtime.mind?.music?.noteFromLinks?.(items, { who: pushName || null, chatId: safeChannelId });
+        } catch {}
         const linkContext = formatLinksForPrompt(items, { summary });
         if (linkContext) {
           linkMeta = {
@@ -1103,11 +1111,20 @@ export async function runMessagePipeline(runtime, payload = {}) {
       toneRead,
       allowThinking: toneRead.kind === "serio" || (isDirectQuestion && String(input).length > 90),
       mindLines: mindTurn?.lines ?? [],
-      peopleMemoryLines:
-        runtime.peopleMemory?.promptLines?.(isGroup ? `group:${safeChannelId}` : safeUserId ?? "default", channelScope, {
+      peopleMemoryLines: [
+        ...(runtime.peopleMemory?.promptLines?.(isGroup ? `group:${safeChannelId}` : safeUserId ?? "default", channelScope, {
           name: isGroup ? null : partnerDisplayName,
           isGroup
-        }) ?? [],
+        }) ?? []),
+        // Ela é a mesma em todo lugar: lembra de quem fala (e de quem é citado) de outras conversas, com selo.
+        ...(runtime.peopleMemory?.crossLines?.({
+          userId: safeUserId ?? null,
+          name: partnerDisplayName ?? pushName ?? null,
+          scope: channelScope,
+          text: input,
+          speakerIds: isGroup && Array.isArray(segmentParts) ? segmentParts.map((p) => p?.userId).filter(Boolean) : []
+        }) ?? [])
+      ],
       ...operationMeta
     },
     normalizedHistory,

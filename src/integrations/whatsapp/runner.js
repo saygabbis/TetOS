@@ -11,6 +11,7 @@ import { jidNormalizedUser } from "baileys";
 import { scheduleAuxiliaryLoops } from "./loops/auxiliaryLoops.js";
 import { startConnectionProbe } from "./connection/connectionProbe.js";
 import { startDiscordBot } from "../discord/discordBot.js";
+import { attachWhatsAppCallHandler } from "./actions/waCalls.js";
 
 /** Reconecta após queda — retenta até voltar, sem múltiplos loops paralelos. */
 function formatSocketJid(socket) {
@@ -263,6 +264,7 @@ async function runSingleWhatsApp(runtime) {
     runtime.whatsappSockets ??= {};
     runtime.whatsappSockets.full = socket;
     registerMessageHandler({ socket, runtime, role: "full" });
+    attachWhatsAppCallHandler(socket, runtime);
   };
 
   await connect();
@@ -385,6 +387,7 @@ async function runDualWhatsApp(runtime) {
     runtime.whatsappSockets ??= {};
     runtime.whatsappSockets.main = mainSocket;
     registerMessageHandler({ socket: mainSocket, runtime, role: "main" });
+    attachWhatsAppCallHandler(mainSocket, runtime);
   };
 
   const connectMedia = async () => {

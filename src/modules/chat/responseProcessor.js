@@ -1,3 +1,4 @@
+import { HABITS, temperament } from "../../core/mind/temperament.js";
 import { isMessyLaughterMessage } from "../../core/memory/extractor.js";
 import {
   collapseForShortUserPrompt,
@@ -527,6 +528,23 @@ function mutateWord(word) {
   return null;
 }
 
+/** Palavra boa pra errar numa frase (nem a primeira, nem curta, nem inglês, nem risada). */
+function pickTypoWord(text = "") {
+  const words = String(text).split(/\s+/);
+  if (words.length < 2) return null;
+  const candidates = words
+    .map((w, i) => ({ w, i }))
+    .filter(({ w, i }) => i > 0 && w.length >= 4 && /[\p{L}]/u.test(w) && !/[@:/#*_~`]/.test(w) && !isEnglishLikeWord(w) && !/^(kk+|rs+|oi+|oie+|eae+|opa|mds|poxa|ah+|uff?|ufa|hm+|hmm+)$/i.test(w));
+  if (!candidates.length) return null;
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  const clean = pick.w.replace(/[!?.,;:…]+$/, "");
+  const tail = pick.w.slice(clean.length);
+  const mutated = mutateWord(clean);
+  if (!mutated) return null;
+  words[pick.i] = mutated + tail;
+  return { text: words.join(" "), word: clean };
+}
+
 function injectDynamicTypo(parts) {
   const arr = Array.isArray(parts) ? [...parts] : [];
   if (!arr.length) return arr;
@@ -582,7 +600,8 @@ function mergeTinyFragments(parts) {
 
 function isSensitiveMessage(text) {
   const t = String(text ?? "").toLowerCase();
-  return /\b(ansiedade|depress|luto|morte|suic|trauma|abuso|doen[çc]a|hospital|urgente|socorro)\b/.test(t);
+  return /\b(ansiedade|depress|luto|morte|suic|trauma|abuso|doen[çc]a|hospital|urgente|socorro)\b/.test(t) ||
+    /\b(me\s+matar|me\s+machucar|me\s+cortar|quero\s+morrer|acabar\s+com\s+tudo|crise|chorando|desesperad)/.test(t);
 }
 
 function stripUserEchoParts(parts, userMessage = "") {
@@ -803,7 +822,7 @@ function polishBubbleList(finalParts, context = {}, processor = null) {
   }
   parts = filterInvalidCorrectionBubbles(parts);
   if (!shouldSkipTypoPlay(context)) {
-    if (processor?.canInjectImperfection?.({ tone, userMessage }) && Math.random() < 0.05) {
+    if (processor?.canInjectImperfection?.({ tone, userMessage }) && Math.random() < temperament.chance("typo", 0.05, HABITS.typo, { max: 0.2 })) {
       parts = injectDynamicTypo(parts);
       processor.imperfectionEvents.push(Date.now());
       processor.imperfectionCooldown = 10;
@@ -1042,6 +1061,44 @@ export class ResponseProcessor {
       (timestamp) => now - timestamp < this.imperfectionWindowMs
     );
     return this.imperfectionEvents.length < this.maxImperfectionsPerWindow;
+  }
+
+  /**
+   * Erro de digitação nas respostas em ações (mensagem(...)). Normal: de vez em quando, às vezes
+   * corrigindo com "palavra*". Com sono (`sleepy` 0–1): bem mais, às vezes 2 erros, e quase nunca corrige.
+   */
+  imperfectActions(actions = [], { tone = null, userMessage = "", styleHint = null, sleepy = 0 } = {}) {
+    const list = Array.isArray(actions) ? [...actions] : [];
+    if (isSensitiveMessage(userMessage) || tone === "calm") return list;
+    const idxs = list
+      .map((a, i) => ({ a, i }))
+      .filter(({ a }) => a.type === "message" && typeof a.text === "string" && a.text.length <= 240 && !/https?:|```|\n\s*[-•\d]/.test(a.text) && !/\*\s*$/.test(a.text))
+      .map(({ i }) => i);
+    if (!idxs.length) return list;
+    if (!sleepy) {
+      if (!this.canInjectImperfection({ tone, userMessage })) return list;
+      if (Math.random() >= temperament.chance("typo", 0.08, HABITS.typo, { max: 0.3 })) return list;
+    } else if (Math.random() >= 0.3 + 0.55 * sleepy) {
+      return list;
+    }
+    const targets = sleepy >= 0.7 && idxs.length > 1 && Math.random() < 0.5 ? idxs.slice(0, 2) : [idxs[Math.floor(Math.random() * idxs.length)]];
+    let offset = 0;
+    for (const at of targets) {
+      const i = at + offset;
+      const typo = pickTypoWord(list[i].text);
+      if (!typo) continue;
+      list[i] = { ...list[i], text: typo.text };
+      const correct = styleHint?.userSkipTypoCorrection
+        ? false
+        : Math.random() < temperament.chance("typo_fix", sleepy ? 0.2 : 0.65, HABITS.typo_fix, { max: 0.9 });
+      if (correct) {
+        list.splice(i + 1, 0, { type: "message", text: `${typo.word}*`, quoteId: null });
+        offset += 1;
+      }
+    }
+    this.imperfectionEvents.push(Date.now());
+    if (!sleepy) this.imperfectionCooldown = 8;
+    return list;
   }
 
   applyCalibratedImperfection(parts, context = {}) {

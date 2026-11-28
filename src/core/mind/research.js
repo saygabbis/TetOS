@@ -37,13 +37,40 @@ export function lookupQuery(text = "") {
     .slice(0, 140);
 }
 
+/** Nomes de artigo da Wikipédia (pt e en) que cobrem o tema — busca por título acha; frase não. */
+export async function wikiTerms(llm, topic) {
+  const raw = await askModel(
+    llm,
+    [
+      `Tema: ${topic}`,
+      'Quais artigos da Wikipédia explicam isso? Responda só com JSON: {"pt":["título 1","título 2"],"en":["title 1"]} — títulos curtos de artigo (ex.: "Suplemento pré-treino", "Paralaxe", "Chiptune"), nada de frase.'
+    ].join("\n"),
+    { timeoutMs: 30_000 }
+  );
+  const json = parseJsonLoose(raw);
+  const list = [...(Array.isArray(json?.pt) ? json.pt : []), ...(Array.isArray(json?.en) ? json.en : [])];
+  return list.map((t) => clip(String(t ?? "").trim(), 60)).filter((t) => t.length >= 3).slice(0, 3);
+}
+
 /**
  * Estuda um tema: busca, abre até 2 páginas e pede ao modelo um resumo com fatos e fonte.
  * @returns {{ topic, summary, facts, keywords, sources, opinion, confidence } | null}
  */
 export async function studyTopic({ topic, why = "", search, reader = null, llm, persona = "", timeoutMs = 120_000 }) {
   const query = clip(topic, 140);
-  const results = (await search(query).catch(() => [])) ?? [];
+  // A busca grátis da VPS é a Wikipédia, que não entende frase longa ("Como o pré-treino afeta…"):
+  // pede ao modelo os nomes dos artigos certos e busca por eles primeiro.
+  const terms = await wikiTerms(llm, query).catch(() => []);
+  const results = [];
+  const seen = new Set();
+  for (const q of [...terms, query]) {
+    for (const r of (await search(q).catch(() => [])) ?? []) {
+      if (!r?.url || seen.has(r.url)) continue;
+      seen.add(r.url);
+      results.push(r);
+    }
+    if (results.length >= 6) break;
+  }
   if (!results.length) return null;
   const pages = [];
   if (reader?.read) {

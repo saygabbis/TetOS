@@ -8,6 +8,10 @@ import { DiscordStateStore } from "../src/integrations/discord/discordState.js";
 import { createDiscordConversation } from "../src/integrations/discord/discordConversation.js";
 import sharp from "sharp";
 import { assert, ok } from "./test-helpers.js";
+import { temperament } from "../src/core/mind/temperament.js";
+
+// Este teste confere o sorteio exato da taxa configurada: sem a oscilação do temperamento.
+temperament.frozen = true;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /** Espera ela mandar a n-ésima mensagem (ela "pensa" uns segundos antes). */

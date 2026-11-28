@@ -5,7 +5,12 @@ import { readJson, writeJsonDeferred } from "../../infra/utils/fileStore.js";
  * quando a conversa esfria — como quem repassa o dia de cabeça. Guarda o que importa (fatos, planos
  * com data, aniversários, como a pessoa anda) e esquece o miúdo com o tempo.
  *
- * Escopo é sagrado: o caderno do PV só aparece no PV daquela pessoa; o do grupo só naquele grupo.
+ * Memória compartilhada com selo: ela é UMA pessoa só em todo lugar (PVs, grupos, Discord, call), então
+ * lembra das pessoas de uma conversa na outra. Cada fato tem sigilo:
+ *  - publico: qualquer um podia saber (gosto, trabalho, coisa dita em grupo) → pode comentar em qualquer lugar;
+ *  - pessoal: contado no privado → ela sabe, mas na frente dos outros só se a própria pessoa puxar;
+ *  - secreto: saúde, briga, segredo, intimidade → nunca sai de onde foi contado.
+ * Sobre terceiros, só o público chega; o resto fica selado (ela sabe que existe, não o conteúdo).
  */
 
 const IDLE_BEFORE_CONSOLIDATE_MS = 12 * 60_000;
@@ -18,6 +23,13 @@ const DAY = 24 * 60 * 60 * 1000;
 /** Quanto tempo um fato vive sem ser lembrado de novo, por importância (1–5). */
 const FACT_TTL_DAYS = { 1: 21, 2: 45, 3: 120, 4: 365, 5: 3650 };
 const KINDS = new Set(["gosto", "rotina", "trabalho", "estudo", "saude", "relacao", "familia", "plano", "outro"]);
+const SEALS = new Set(["publico", "pessoal", "secreto"]);
+/** Sigilo do fato (fatos antigos sem marca: PV = pessoal, grupo = público; saúde/relação = no mínimo pessoal). */
+export function sealOf(fact, scope = "direct") {
+  if (SEALS.has(fact?.s)) return fact.s;
+  if (fact?.k === "saude") return "secreto";
+  return String(scope).startsWith("group:") ? "publico" : "pessoal";
+}
 
 const clip = (s, n) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, n);
 const norm = (s) => clip(s, 300).toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[^\p{L}\p{N} ]/gu, "").trim();
@@ -44,7 +56,7 @@ function emptyNotebook(userId, scope, name) {
 }
 
 /** Aplica a resposta do modelo ao caderno (pura — testável sem LLM). */
-export function applyConsolidation(notebook, update, { now = Date.now() } = {}) {
+export function applyConsolidation(notebook, update, { now = Date.now(), scope = notebook?.scope ?? "direct" } = {}) {
   const nb = structuredClone(notebook);
   if (!update || typeof update !== "object") return nb;
   const iso = new Date(now).toISOString();
@@ -58,12 +70,18 @@ export function applyConsolidation(notebook, update, { now = Date.now() } = {}) 
     if (!t) continue;
     const imp = Math.min(5, Math.max(1, Math.round(Number(f?.importancia) || 2)));
     const k = KINDS.has(f?.tipo) ? f.tipo : "outro";
+    const isGroup = String(scope).startsWith("group:");
+    let s = SEALS.has(f?.sigilo) ? f.sigilo : isGroup ? "publico" : "pessoal";
+    if (k === "saude" && s === "publico" && !isGroup) s = "pessoal";
     const same = nb.facts.find((x) => norm(x.t) === norm(t));
     if (same) {
       same.seen = iso;
       same.imp = Math.max(same.imp, imp);
+      // Sigilo só aumenta sozinho (o que virou segredo não volta a ser público por engano).
+      const rank = { publico: 0, pessoal: 1, secreto: 2 };
+      if (rank[s] > rank[sealOf(same, scope)]) same.s = s;
     } else {
-      nb.facts.push({ t, k, imp, at: iso, seen: iso });
+      nb.facts.push({ t, k, imp, s, at: iso, seen: iso });
     }
   }
 
@@ -122,7 +140,8 @@ function buildConsolidationPrompt(nb, lines, { isGroup, today }) {
     convo,
     "",
     "Responda SÓ com um JSON neste formato:",
-    '{"resumo":"2 frases: como a pessoa (ou o grupo) anda e como está a relação com a Teto","humor":"como estava","fatos_novos":[{"texto":"fato curto em 3ª pessoa","tipo":"gosto|rotina|trabalho|estudo|saude|relacao|familia|plano|outro","importancia":1}],"fatos_errados":["fato do caderno que ficou errado"],"pendencias":[{"texto":"coisa que vai acontecer e vale perguntar depois","quando":"AAAA-MM-DD ou null"}],"pendencias_resolvidas":["pendência do caderno que já aconteceu"],"datas":[{"texto":"aniversário","dia":"MM-DD"}]}',
+    '{"resumo":"2 frases: como a pessoa (ou o grupo) anda e como está a relação com a Teto","humor":"como estava","fatos_novos":[{"texto":"fato curto em 3ª pessoa","tipo":"gosto|rotina|trabalho|estudo|saude|relacao|familia|plano|outro","importancia":1,"sigilo":"publico|pessoal|secreto"}],"fatos_errados":["fato do caderno que ficou errado"],"pendencias":[{"texto":"coisa que vai acontecer e vale perguntar depois","quando":"AAAA-MM-DD ou null"}],"pendencias_resolvidas":["pendência do caderno que já aconteceu"],"datas":[{"texto":"aniversário","dia":"MM-DD"}]}',
+    "Sigilo: publico = coisa que qualquer um pode saber (gosto, hobby, trabalho, o que foi dito em grupo); pessoal = contado em particular, a pessoa talvez não queira espalhado; secreto = saúde, crise, briga, família, relacionamento, dinheiro, segredo, intimidade ou qualquer coisa dita 'não conta pra ninguém'. Na dúvida, o mais fechado.",
     "Regras: só registre o que foi DITO (nada inventado); importância 1 = detalhe bobo, 5 = coisa que uma amiga nunca esqueceria; ignore conversa fiada e piada passageira; nada sobre a própria Teto; datas relativas (amanhã, sexta) viram AAAA-MM-DD.",
     isGroup ? "É um grupo: escreva os fatos com o nome de quem disse (ex.: 'Bia ama gatos'). Não registre segredos." : ""
   ].filter(Boolean).join("\n");
@@ -205,7 +224,7 @@ export class PeopleMemory {
       return false;
     }
     if (!update) return false;
-    this.data.notebooks[key] = applyConsolidation(nb, update, { now: this.now() });
+    this.data.notebooks[key] = applyConsolidation(nb, update, { now: this.now(), scope: buf.scope });
     // Só tira do buffer o que foi consolidado (pode ter chegado fala nova durante a chamada).
     buf.lines.splice(0, lines.length);
     if (!buf.lines.length) delete this.data.buffers[key];
@@ -235,6 +254,67 @@ export class PeopleMemory {
       "Use como quem lembra de verdade: só quando encaixar no papo, sem listar nem anunciar 'eu lembro que'. Pendência vencida = pode perguntar como foi, uma vez."
     );
     return lines;
+  }
+
+  /**
+   * O que ela sabe de outras conversas, respeitando o selo:
+   *  - de quem está falando (de outros lugares): público normal; pessoal/secreto marcados com 🔒;
+   *  - de quem foi citado no papo: só o público (e que existe coisa selada, sem o conteúdo).
+   */
+  crossLines({ userId = null, name = null, scope = "direct", text = "", speakerIds = [] } = {}) {
+    const isGroup = String(scope).startsWith("group:");
+    const out = [];
+    const tokenOf = (n) => norm(String(n ?? "").split(/\s+/)[0]);
+    const mentionsName = (factText, n) => {
+      const tok = tokenOf(n);
+      return tok.length >= 3 && new RegExp(`(^| )${tok}( |$)`).test(norm(factText));
+    };
+
+    // 1) Quem está falando: o PV dela(e) quando estamos fora dele + o que se disse dela(e) em outros grupos.
+    const selfIds = [...new Set([userId, ...speakerIds].filter(Boolean))].slice(0, 4);
+    for (const id of selfIds) {
+      const pv = isGroup ? this.notebook(id, "direct") : null;
+      const who = pv?.name ?? (id === userId ? name : null);
+      const pub = [];
+      const sealed = [];
+      for (const f of pv?.facts ?? []) (sealOf(f, "direct") === "publico" ? pub : sealed).push(f);
+      const fromGroups = who
+        ? Object.values(this.data.notebooks)
+            .filter((nb) => String(nb.scope).startsWith("group:") && nb.scope !== scope)
+            .flatMap((nb) => nb.facts.filter((f) => mentionsName(f.t, who) && sealOf(f, nb.scope) === "publico"))
+            .slice(0, 3)
+        : [];
+      if (!pub.length && !sealed.length && !fromGroups.length) continue;
+      out.push(`[${who ?? "essa pessoa"} — o que você sabe de outras conversas (você é a mesma em todo lugar)]`);
+      for (const f of [...pub.slice(0, 4), ...fromGroups]) out.push(`- ${f.t}`);
+      for (const f of sealed.slice(0, 4)) {
+        out.push(`- 🔒 ${f.t} (${sealOf(f, "direct") === "secreto" ? "SEGREDO dela(e): nunca toque nisso aqui" : "contou só pra você: aqui na frente dos outros só se a própria pessoa puxar, com tato"})`);
+      }
+    }
+
+    // 2) Gente citada no papo: só o público; o resto fica selado.
+    const said = norm(text);
+    if (said.length >= 3) {
+      const seen = new Set(selfIds);
+      for (const nb of Object.values(this.data.notebooks)) {
+        if (nb.scope !== "direct" || !nb.name || seen.has(nb.userId)) continue;
+        const tok = tokenOf(nb.name);
+        if (tok.length < 3 || !new RegExp(`(^| )${tok}( |$)`).test(said)) continue;
+        seen.add(nb.userId);
+        const pub = nb.facts.filter((f) => sealOf(f, "direct") === "publico").slice(0, 3);
+        const sealedCount = nb.facts.length - nb.facts.filter((f) => sealOf(f, "direct") === "publico").length;
+        if (!pub.length && !sealedCount) continue;
+        out.push(`[${nb.name} — citada(o) agora; você também conversa com ela(e)]`);
+        for (const f of pub) out.push(`- ${f.t}`);
+        if (sealedCount) out.push(`- 🔒 ${nb.name} já te contou coisas em particular: isso é dela(e), não conte nem dê dica (nem pra Gabbis). Se perguntarem, desconversa ("pergunta pra ela(e)").`);
+        if (out.length > 24) break;
+      }
+    }
+    if (!out.length) return [];
+    return [
+      ...out,
+      "Selo: 🔒 é coisa que te contaram em confiança. Você sabe (e pode ser mais sensível por causa disso), mas não espalha: julga como amiga de verdade se e onde cabe falar. O resto (sem cadeado) pode comentar natural, sem anunciar 'eu lembro que'."
+    ];
   }
 
   /** Pendências vencidas/de hoje e datas especiais — combustível para ela puxar assunto. */

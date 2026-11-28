@@ -190,8 +190,8 @@ describe("Discord: modos, ritmo, silêncio e acabamento", () => {
     expect(rateChance(1, 10)).toBe(0.1);
     expect(rateChance(3, 2)).toBe(1);
     const cfg = { replies: 1, every: 10, tagReplies: 1, tagEvery: 2 };
-    expect(rollRate(cfg, "mensagem", () => 0.05)).toBe(true);
-    expect(rollRate(cfg, "mensagem", () => 0.2)).toBe(false);
+    expect(rollRate(cfg, "mensagem", () => 0.05, { dynamic: false })).toBe(true);
+    expect(rollRate(cfg, "mensagem", () => 0.2, { dynamic: false })).toBe(false);
     expect(rollRate(cfg, "marcacao", () => 0.4)).toBe(true);
     expect(rollRate(cfg, "marcacao", () => 0.6)).toBe(false);
     expect(rollRate({}, "marcacao", () => 0.999)).toBe(true);
@@ -199,7 +199,7 @@ describe("Discord: modos, ritmo, silêncio e acabamento", () => {
     // Em média dá a proporção configurada.
     let seed = 7;
     const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    const hits = Array.from({ length: 20000 }, () => rollRate(cfg, "mensagem", rnd)).filter(Boolean).length;
+    const hits = Array.from({ length: 20000 }, () => rollRate(cfg, "mensagem", rnd, { dynamic: false })).filter(Boolean).length;
     expect(hits / 20000).toBeGreaterThan(0.09);
     expect(hits / 20000).toBeLessThan(0.11);
   });

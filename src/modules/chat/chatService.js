@@ -37,7 +37,7 @@ import { PROJECT_COMMANDS } from "../../integrations/automate-hub/hubProjects.js
 
 /** Comandos cujo texto é livre (pode ter Markdown, parênteses e apóstrofos): lidos com o leitor robusto. */
 // pensar("…") é rascunho interno: o texto é pulado inteiro (nada dentro dele vira comando) e não gera ação.
-const FREE_TEXT_COMMANDS = new Set(["comando", "executar", "mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", "pensar", "pensamento", "think", ...Object.keys(ORGANIZER_COMMANDS), ...Object.keys(PROJECT_COMMANDS)]);
+const FREE_TEXT_COMMANDS = new Set(["enviar", "mandar", "zap", "comando", "executar", "mensagem", "message", "responder", "reply", "quote", "computador", "automate", "automatizar", "audio", "voz", "falar", "pensar", "pensamento", "think", ...Object.keys(ORGANIZER_COMMANDS), ...Object.keys(PROJECT_COMMANDS)]);
 
 function normalizeActionCommandText(rawText = "") {
   return String(rawText ?? "")
@@ -45,6 +45,30 @@ function normalizeActionCommandText(rawText = "") {
     .replace(/[\u2018\u2019\u201a\u201b\u2032\u2035]/g, "'")
     .replace(/^```[\w]*\n?|\n?```$/g, "")
     .trim();
+}
+
+const FEELING_ALIASES = {
+  alegria: "alegria", feliz: "alegria", felicidade: "alegria", contente: "alegria",
+  carinho: "carinho", carinhosa: "carinho", amor: "carinho", afeto: "carinho",
+  diversao: "diversao", divertida: "diversao", graca: "diversao", zoeira: "diversao",
+  orgulho: "orgulho", orgulhosa: "orgulho",
+  gratidao: "gratidao", grata: "gratidao",
+  curiosidade: "curiosidade", curiosa: "curiosidade", interesse: "curiosidade",
+  vergonha: "vergonha", envergonhada: "vergonha", timidez: "vergonha", "sem graca": "vergonha",
+  irritacao: "irritacao", irritada: "irritacao", raiva: "irritacao", brava: "irritacao", estresse: "irritacao",
+  emburrada: "emburrada", birra: "emburrada", ranzinza: "emburrada", ressentimento: "emburrada",
+  frustracao: "frustracao", frustrada: "frustracao",
+  magoa: "magoa", magoada: "magoa", ofendida: "magoa",
+  tristeza: "tristeza", triste: "tristeza",
+  preocupacao: "preocupacao", preocupada: "preocupacao", medo: "preocupacao", ansiedade: "preocupacao",
+  saudade: "saudade",
+  tedio: "tedio", entediada: "tedio",
+  sono: "sono", cansaco: "sono", cansada: "sono", sonolenta: "sono"
+};
+
+function normalizeFeelingName(raw = "") {
+  const k = String(raw).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  return FEELING_ALIASES[k] ?? null;
 }
 
 export function parseActionCommands(rawText) {
@@ -90,6 +114,24 @@ export function parseActionCommands(rawText) {
       }
     } else if (cmd === "gif") {
       if (args[0]) actions.push({ type: "gif", query: args[0], quoteId: args[1] || null });
+    } else if (cmd === "call" || cmd === "chamada" || cmd === "ligacao") {
+      // call("entrar") / call("sair"): call de voz (Discord).
+      const op = /^(sair|desligar|leave|sai)$/i.test(String(args[0] ?? "").trim()) ? "leave" : "join";
+      actions.push({ type: "voice_call", op });
+    } else if (cmd === "zap" || cmd === "grupo" || cmd === "app") {
+      // Recurso do app: zap("enquete", ...), zap("remover", "@fulano"), zap("evento", ...)…
+      if (args[0]) actions.push({ type: "app_action", name: args[0], args: args.slice(1) });
+    } else if (cmd === "enviar" || cmd === "mandar") {
+      // enviar("destino", "texto"): fala em outro PV/grupo/canal.
+      if (args[0] && args[1]) actions.push({ type: "send_elsewhere", target: args[0], text: args.slice(1).join(" ") });
+    } else if (cmd === "sentir" || cmd === "sinto" || cmd === "sentimento") {
+      // Invisível: o que a conversa fez ela sentir (vai pro motor de sentimentos, não pro chat).
+      if (args[0]) {
+        // O leitor de args às vezes perde número sem aspas: acha a intensidade e o motivo onde estiverem.
+        const rest = args.slice(1).map((x) => String(x ?? "").trim()).filter(Boolean);
+        const num = rest.find((x) => /^\d+(?:[.,]\d+)?%?$/.test(x)) ?? null;
+        actions.push({ type: "feel", feeling: args[0], intensity: num, cause: rest.find((x) => x !== num) ?? null });
+      }
     } else if (cmd === "sticker" || cmd === "figurinha") {
       if (!args[0]) continue;
       if (isPresetStickerKey(args[0])) {
@@ -170,7 +212,7 @@ function returnWithActions(actions) {
 
 /** Expande ações cujo text ainda contém comando cru (fallback do processor). */
 const EMBEDDED_COMMAND_RE = new RegExp(
-  `^(comando|executar|mensagem|message|reagir|react|sticker|figurinha|gif|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|${Object.keys(PROJECT_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
+  `^(call|zap|enviar|comando|executar|mensagem|message|reagir|react|sticker|figurinha|gif|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|${Object.keys(PROJECT_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
   "i"
 );
 
@@ -334,6 +376,9 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
       a.type === "message" ||
       a.type === "sticker" ||
       a.type === "gif" ||
+      a.type === "app_action" ||
+      a.type === "voice_call" ||
+      a.type === "send_elsewhere" ||
       a.type === "media" ||
       a.type === "toimage" ||
       a.type === "url_download" ||
@@ -705,6 +750,27 @@ export class ChatService {
   }
 
 
+  /** sentir("emoção", intensidade, "motivo") vindo da resposta dela → motor de sentimentos. */
+  applyFeelings(feels = [], meta = {}) {
+    const engine = this.feelings;
+    if (!engine?.feel) return;
+    for (const f of feels.slice(0, 3)) {
+      const name = normalizeFeelingName(f.feeling);
+      if (!name) continue;
+      const raw = Number(String(f.intensity ?? "").replace(",", "."));
+      const delta = Math.max(0.05, Math.min(0.6, Number.isFinite(raw) && raw > 0 ? (raw > 1 ? raw / 100 : raw) : 0.2));
+      const who = meta?.isOwner ? "a Gabbis" : meta?.pushName || meta?.speakerName || null;
+      engine.feel(name, delta, {
+        cause: String(f.cause ?? "").trim() || `conversa com ${who ?? "alguém"}`,
+        who,
+        userId: meta?.userId ?? null,
+        chat: meta?.channelId ?? meta?.chatId ?? null,
+        platform: meta?.platform ?? null,
+        private: !meta?.isGroup
+      });
+    }
+  }
+
   async sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -735,9 +801,11 @@ export class ChatService {
       return [];
     }
 
+    const voiceStatus = meta?.voiceStatus ?? this.voiceNotes?.status?.() ?? null;
+    const metaWithVoice = voiceStatus ? { ...meta, voiceStatus } : meta;
     const metaWithFallback = ChatService.isConfusionSignal(trimmed)
-      ? { ...meta, fallback: "ground" }
-      : meta;
+      ? { ...metaWithVoice, fallback: "ground" }
+      : metaWithVoice;
 
     let raw = await this.agent.respond(message, metaWithFallback, history, tone);
     const rawTrimmed = String(raw ?? "").trim();
@@ -773,15 +841,30 @@ export class ChatService {
     }
 
 
+    const parsedAll = parseActionCommands(raw);
+    const feels = parsedAll.filter((a) => a.type === "feel");
+    if (feels.length) this.applyFeelings(feels, meta);
     let actions = enrichParsedActions(
       applyDefaultQuoteToActions(
-        sanitizeOutgoingActions(parseActionCommands(raw), meta),
+        sanitizeOutgoingActions(parsedAll.filter((a) => a.type !== "feel"), meta),
         buildDefaultQuoteId(meta, trimmed)
       ),
       trimmed,
       meta
     );
+    // Só sentiu e não falou nada: fica quieta (não vaza o comando como texto).
+    if (!actions.length && feels.length) return [];
     if (actions.length > 0) {
+      // Erro de digitação de gente (com sono, bem mais). Antes só existia no caminho sem ações.
+      const proc = this.getProcessor(meta);
+      if (proc?.imperfectActions) {
+        actions = proc.imperfectActions(actions, {
+          tone,
+          userMessage: message,
+          styleHint: meta?.styleHint ?? null,
+          sleepy: meta?.sleepDisturbedWake ? 0.95 : meta?.sleepTemporarilyAwake ? Math.max(0.7, meta?.tempWakeGrogginess ?? 0) : meta?.sleepGroggy ? 0.3 : 0
+        });
+      }
       if (this.internalState?.updateAfter) {
         const preview = actions
           .filter((a) => a.type === "message")

@@ -29,6 +29,7 @@ export async function startDiscordBot(runtime, { log = console } = {}) {
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.GuildMessageReactions,
+      GatewayIntentBits.GuildVoiceStates,
       GatewayIntentBits.MessageContent,
       GatewayIntentBits.DirectMessages
     ],

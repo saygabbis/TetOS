@@ -1,3 +1,4 @@
+import { HABITS, temperament } from "../../core/mind/temperament.js";
 import { detectHushRequest } from "../../core/channels/hushRequest.js";
 
 /**
@@ -29,10 +30,13 @@ export function rateChance(replies = 1, every = 1) {
 }
 
 /** Sorteio de uma mensagem: `kind` "mensagem" (conversa livre) ou "marcacao". */
-export function rollRate(cfg = {}, kind = "mensagem", random = Math.random) {
+export function rollRate(cfg = {}, kind = "mensagem", random = Math.random, { dynamic = true } = {}) {
   const c = { ...DEFAULT_RATE, ...cfg };
-  const chance = kind === "marcacao" ? rateChance(c.tagReplies, c.tagEvery) : rateChance(c.replies, c.every);
-  return chance >= 1 || random() < chance;
+  const base = kind === "marcacao" ? rateChance(c.tagReplies, c.tagEvery) : rateChance(c.replies, c.every);
+  if (base >= 1) return true;
+  // A taxa do /configurar é o jeito normal dela no canal; o momento puxa pra mais ou pra menos.
+  const chance = kind === "marcacao" || !dynamic ? base : temperament.chance("discord_free", base, HABITS.group_join, { max: Math.min(0.95, base * 2.5) });
+  return random() < chance;
 }
 
 /** "1 a cada 10 (10%)". */

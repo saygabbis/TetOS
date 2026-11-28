@@ -120,6 +120,37 @@ function ytDlpJson(url, { timeoutMs = 15000 } = {}) {
   });
 }
 
+/**
+ * Busca no YouTube pelo yt-dlp (sem API key). `recent` ordena por data.
+ * @returns {Promise<Array<{ id: string, url: string, title: string, channel: string|null, duration: number|null, views: number|null }>>}
+ */
+export function searchYoutube(query, { n = 5, recent = false, timeoutMs = 20000 } = {}) {
+  const q = String(query ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+  if (!q) return Promise.resolve([]);
+  return new Promise((resolvePromise) => {
+    const child = spawn(resolveYtDlpBinary(), ["--flat-playlist", "--dump-json", "--no-warnings", `${recent ? "ytsearchdate" : "ytsearch"}${Math.min(10, n)}:${q}`], {
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+    let out = "";
+    const timer = setTimeout(() => child.kill("SIGKILL"), timeoutMs);
+    child.stdout.on("data", (c) => (out += c));
+    child.on("error", () => resolvePromise([]));
+    child.on("close", () => {
+      clearTimeout(timer);
+      const rows = [];
+      for (const line of out.split("\n")) {
+        try {
+          const j = JSON.parse(line);
+          if (!j?.id) continue;
+          rows.push({ id: j.id, url: `https://www.youtube.com/watch?v=${j.id}`, title: clean(j.title, 200), channel: j.channel ?? j.uploader ?? null, duration: j.duration ?? null, views: j.view_count ?? null });
+        } catch {}
+      }
+      resolvePromise(rows);
+    });
+  });
+}
+
 /** Legenda (manual > automática; pt > en) em texto corrido. */
 async function youtubeCaptionText(info, maxChars = 1800) {
   const pick = (tracks = {}) => {
@@ -170,25 +201,30 @@ export class LinkReader {
   }
 
   /** Lê até `max` links do texto dentro do orçamento de tempo; links que não abrem ficam como { failed: true }. */
-  async readAll(text, { max = 2, budgetMs = this.timeoutMs, full = false } = {}) {
+  async readAll(text, { max = 2, budgetMs = this.timeoutMs, full = false, watch = false } = {}) {
     const urls = extractLinks(text).slice(0, max);
     if (!urls.length) return [];
+    const attempt = (url, opts, ms) =>
+      Promise.race([
+        this.read(url, opts).catch(() => ({ url, failed: true })),
+        new Promise((r) => setTimeout(() => r({ url, failed: true, slow: true }), ms))
+      ]);
     const settled = await Promise.all(
-      urls.map((url) =>
-        Promise.race([
-          this.read(url, { full }).catch(() => ({ url, failed: true })),
-          new Promise((r) => setTimeout(() => r({ url, failed: true, slow: true }), budgetMs))
-        ])
-      )
+      urls.map(async (url) => {
+        const got = await attempt(url, { full, watch }, budgetMs);
+        // Não deu pra "assistir" a tempo: pelo menos lê título/descrição (o áudio fica pra próxima, no cache).
+        if (watch && got?.failed) return attempt(url, {}, this.timeoutMs);
+        return got;
+      })
     );
     return settled.filter(Boolean);
   }
 
-  async read(url, { full = false } = {}) {
-    const key = full ? `full:${url}` : url;
+  async read(url, { full = false, watch = false } = {}) {
+    const key = full ? `full:${url}` : watch ? `watch:${url}` : url;
     const hit = this.cache.get(key);
     if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value;
-    const value = await this.readUncached(url, { full });
+    const value = await this.readUncached(url, { full, watch });
     if (value) {
       this.cache.set(key, { at: Date.now(), value });
       if (this.cache.size > this.cacheSize) this.cache.delete(this.cache.keys().next().value);
@@ -196,13 +232,13 @@ export class LinkReader {
     return value;
   }
 
-  async readUncached(url, { full = false } = {}) {
+  async readUncached(url, { full = false, watch = false } = {}) {
     const platform = /open\.spotify\.com/i.test(url) ? "spotify" : detectPlatform(url);
     try {
-      if (platform === "youtube") return await this.readYoutube(url, { full });
+      if (platform === "youtube") return await this.readYoutube(url, { full, watch });
       if (platform === "twitter") return await this.readTweet(url);
-      if (platform === "tiktok") return await this.readTiktok(url);
-      if (platform === "instagram") return await this.readInstagram(url);
+      if (platform === "tiktok") return await this.readTiktok(url, { watch });
+      if (platform === "instagram") return await this.readInstagram(url, { watch });
       if (platform === "spotify") return await this.readSpotify(url);
     } catch {
       /* cai na leitura genérica */
@@ -227,10 +263,11 @@ export class LinkReader {
     }
   }
 
-  async readYoutube(url, { full = false } = {}) {
+  async readYoutube(url, { full = false, watch = false } = {}) {
     try {
       const info = await ytDlpJson(url);
       let transcript = await youtubeCaptionText(info, full ? 40_000 : 1800);
+      if (!transcript && watch && !full) transcript = await this.watchAudio(url, info.duration);
       // Pediram resumo e o vídeo não tem legenda: baixa o áudio e transcreve (até 40 min).
       if (full && !transcript && this.fetchAudio && this.transcribeAudio && (!info.duration || info.duration <= 2400)) {
         try {
@@ -253,6 +290,7 @@ export class LinkReader {
           info.upload_date && `postado em ${info.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$3/$2/$1")}`
         ].filter(Boolean),
         text: clean(info.description, full ? 3000 : 500) || null,
+        music: info.track ? clean(`${info.track}${info.artist ? ` — ${info.artist}` : ""}`, 120) : null,
         transcript
       };
     } catch {
@@ -287,9 +325,23 @@ export class LinkReader {
     };
   }
 
-  async readTiktok(url) {
+  /** "Assistir" clipe curto: baixa o áudio e transcreve (fala/letra). Só até 4 min. */
+  async watchAudio(url, duration) {
+    if (!this.fetchAudio || !this.transcribeAudio || (duration && duration > 240)) return null;
+    try {
+      const audioPath = await this.fetchAudio(url);
+      const text = audioPath ? await this.transcribeAudio(audioPath) : null;
+      return text ? clean(String(text), 2500) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async readTiktok(url, { watch = false } = {}) {
     const info = await ytDlpJson(url, { timeoutMs: 12000 });
     return {
+      music: info.track ? clean(`${info.track}${info.artist ? ` — ${info.artist}` : ""}`, 120) : null,
+      transcript: watch ? await this.watchAudio(url, info.duration) : null,
       url,
       site: "TikTok",
       kind: "vídeo",
@@ -300,7 +352,13 @@ export class LinkReader {
     };
   }
 
-  async readInstagram(url) {
+  async readInstagram(url, { watch = false } = {}) {
+    const base = await this.readInstagramInfo(url);
+    if (watch && base && /reel|vídeo/i.test(base.kind ?? "") && !base.transcript) base.transcript = await this.watchAudio(url, null);
+    return base;
+  }
+
+  async readInstagramInfo(url) {
     const m = url.match(/instagram\.com\/(?:[^/]+\/)?(p|reel|reels|tv)\/([\w-]+)/i);
     if (m) {
       const { body } = await fetchText(`https://www.instagram.com/${m[1] === "reels" ? "reel" : m[1]}/${m[2]}/embed/captioned/`);
@@ -372,7 +430,8 @@ export function formatLinksForPrompt(items = [], { summary = false } = {}) {
     if (i.text) lines.push(`  Texto: ${i.text}`);
     if (i.quote) lines.push(`  Citando: ${i.quote}`);
     if (i.imageDescription) lines.push(`  Imagem: ${i.imageDescription}`);
-    if (i.transcript) lines.push(`  O que falam no vídeo (legenda): ${i.transcript}`);
+    if (i.music) lines.push(`  Música que toca: ${i.music}`);
+    if (i.transcript) lines.push(`  O que se ouve no vídeo (fala/letra): ${i.transcript}`);
     if (i.body) lines.push(`  Conteúdo: ${i.body}`);
   }
   if (!lines.length && !failed.length) return null;

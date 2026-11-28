@@ -42,6 +42,10 @@ export async function handleTetoSlashCommand({
   const act = (name) => formatTetoActivationCommand(name, commandPrefix);
 
   let reply = null;
+  // Um comando só: .teto-ativar/.teto-desativar ligam o PV ou o grupo, conforme onde foram mandados
+  // (os nomes antigos com "grupo" continuam valendo).
+  if (action === "activate_dm" || action === "activate_group") action = isGroup ? "activate_group" : "activate_dm";
+  if (action === "deactivate_dm" || action === "deactivate_group") action = isGroup ? "deactivate_group" : "deactivate_dm";
   switch (action) {
     case "activate_dm":
       if (isGroup) {

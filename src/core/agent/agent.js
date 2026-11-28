@@ -1,3 +1,5 @@
+import { HABITS, temperament } from "../mind/temperament.js";
+import { quirkLines } from "../mind/quirks.js";
 import { isMessyLaughterMessage } from "../memory/extractor.js";
 import { formatActiveRunsBlock, formatAutomateRunsBlock } from "../../integrations/automate/automateRunsContext.js";
 import { AUTOMATE_ABILITIES, formatAutomateCapabilitiesBlock } from "../../integrations/automate/automateCapabilities.js";
@@ -55,14 +57,18 @@ export function pickResponseFormatNudge(userMessage, toneRead, tone, meta = {}, 
   if (/https?:\/\/|^[.\/!]/.test(text)) return "";
   if (/\?/.test(text) && text.length > 25) return "";
   if (/\b(faz|faça|manda|baixa|resume|resumir|gera|cria|explica|traduz|converte|calcula|lembra|pesquisa|procura|me ajuda)\b/i.test(text)) return "";
+  // Nada fixo: cada formato tem um "jeito normal" que oscila com o dia, a energia e o humor dela.
+  const pSticker = temperament.chance("sticker_only", 0.1, HABITS.sticker_only, { max: 0.3 });
+  const pReact = temperament.chance("react_only", 0.08, HABITS.react_only, { max: 0.25 });
+  const pGif = temperament.chance("gif", 0.03, HABITS.gif, { max: 0.12 });
   const r = rand();
-  if (r < 0.1) {
+  if (r < pSticker) {
     return "[FORMATO — opcional] Se combinar com o clima, responda esta SÓ com uma figurinha sticker(...) do seu repertório, sem texto nenhum. Se não tiver figurinha que encaixe, ignore isto.";
   }
-  if (r < 0.18) {
+  if (r < pSticker + pReact) {
     return "[FORMATO — opcional] Se combinar, responda esta só com reagir(\"emoji\") ou com uma bolha mínima (só emoji ou 1 a 3 palavras). Gente real faz isso.";
   }
-  if (r < 0.21 && gifSearchEnabled()) {
+  if (r < pSticker + pReact + pGif && gifSearchEnabled()) {
     return "[FORMATO — opcional] Um GIF de reação combinaria aqui? Se sim, mande gif(\"busca em inglês\") (sozinho ou com 1 bolha curta). Se não, ignore.";
   }
   return "";
@@ -244,6 +250,16 @@ export class Agent {
       ...(gifSearchEnabled() && meta?.channelId !== "ui-desktop"
         ? ['7c. gif("busca curta, de preferência em inglês") — Manda um GIF de teclado (tipo GIPHY/Tenor), igual gente faz. RARO e específico: reação que nenhuma figurinha sua cobre (ex.: gif("mind blown"), gif("slow clap"), gif("dramatic exit"), gif("anime girl crying")). Figurinha continua sendo o normal; gif é tempero. Pode ir sozinho ou com 1 bolha curta.']
         : []),
+      '7d. sentir("emoção", intensidade, "motivo curto") — INVISÍVEL (ninguém vê): registra o que a conversa te fez sentir de verdade, e isso fica com você e muda seu humor nas próximas horas. Use quando algo mexer com você (te elogiaram, te zoaram, te ignoraram, ficou com ciúme, saudade, ficou feliz com uma notícia, se irritou com insistência, ficou preocupada com alguém). Emoções: alegria, carinho, diversao, orgulho, gratidao, curiosidade, vergonha, irritacao, emburrada, frustracao, magoa, tristeza, preocupacao, saudade, tedio, sono. Intensidade 0.1 (leve) a 0.6 (forte). Ex.: sentir("magoa", 0.3, "a Gabbis disse que eu tava chata"). Não precisa em toda mensagem — só quando sentiu algo.',
+      ...(meta?.channelId !== "ui-desktop"
+        ? [
+            `7e. zap("ação", ...) — Você usa os recursos do ${meta?.platform === "discord" ? "Discord" : "WhatsApp"} de verdade, como gente usa o app. Livres: zap("enquete", "pergunta", "opção 1 | opção 2 | opção 3") · zap("evento", "nome", "quando (ex.: sábado 20h)", "descrição", "local")${meta?.platform === "discord" ? "" : ' · zap("contato", "nome", "telefone") · zap("local", "lat", "lng", "nome") · zap("fixar")'}. ${meta?.platform === "discord" ? 'Moderação (só se quem pediu é a Gabbis ou moderador): zap("mutar", "@pessoa", "10min") · zap("expulsar", "@pessoa") · zap("apelido", "@pessoa", "novo apelido") · zap("fixar", "message id") · zap("apagar", "message id").' : 'Admin do grupo (só funciona se você é admin E quem pediu é a Gabbis ou admin): zap("remover", "@pessoa") · zap("adicionar", "telefone") · zap("promover"/"rebaixar", "@pessoa") · zap("nome", "novo nome do grupo") · zap("descricao", "texto") · zap("fechar"/"abrir") (só admins falam / todos falam) · zap("trancar"/"destrancar") · zap("temporarias", "7d"/"off") · zap("link") · zap("apagar", "message id").'} Use quando pedirem ou quando fizer muito sentido (ex.: a galera não decide um rolê → você cria a enquete). Nunca contra a Gabbis. Se não puder, o sistema avisa.`,
+            '7f. enviar("pra quem/onde", "o que falar") — Você vai até outro chat e fala lá (PV de alguém, outro grupo/canal, ou a Gabbis). Ex.: a Gabbis pede "avisa o João que a call é 20h" → enviar("João", "oi João! a Gabbis pediu pra avisar que a call é 20h"). Escreva do SEU jeito, como recado seu. Só a Gabbis manda você falar com outras pessoas; os outros podem só deixar recado pra Gabbis → enviar("Gabbis", "..."). Depois confirme curtinho aqui ("mandei!").',
+            ...(meta?.platform === "discord"
+              ? ['7g. call("entrar") / call("sair") — Entra (ou sai) na call de voz do Discord onde a pessoa está, e lá você conversa FALANDO com a sua voz. Use quando te chamarem pra call ("entra na call", "vem pro voice"). A pessoa precisa estar num canal de voz.']
+              : [])
+          ]
+        : []),
       '7b. FIGURINHA COM SOM (o zap agora toca som em figurinha): comando(".ssticker") num vídeo com áudio marcado (.sfsticker = sem cortar, .scsticker = recorta o centro; duração opcional "8s"). Dá pra MISTURAR: comando(".ssticker <id_da_imagem_video_ou_figurinha> som:<id_do_audio_ou_video>") junta a imagem de uma msg com o som de outra — inclusive põe som numa figurinha que já existe. Se a pessoa quiser fazer ela mesma: .stickerinserir. Combine com outros comandos quando fizer sentido (ex.: .cortar o trecho antes, removebg na imagem) e explique curto o que fez.',
       '8. optimize("message_id") — Comprime figurinha existente (equivalente a .optimize).',
       '9. removebg("message_id", "opcional") — Remove fundo de imagem ou figurinha estática. Args extras: cor de fundo (ex. "verde") e potência ("leve", "media", "forte"). Ex.: removebg("3EB0...", "verde", "forte").',
@@ -270,9 +286,13 @@ export class Agent {
           ]
         : []),
       ...(meta?.channelId !== "ui-desktop" && meta?.voiceNotesEnabled !== false
-        ? [
-            '23. audio("o que você vai falar") — Manda um ÁUDIO de voz seu (mensagem de voz do zap). Use quando pedirem áudio/voz ("manda um áudio", "fala comigo"), ou bem de vez em quando no PV quando um áudio curto faria mais sentido (boa noite carinhoso, reação animada). Curto (até ~25 palavras), falado como gente: sem emoji, sem link, sem kkk escrito. No grupo, só se pedirem. Não substitui mensagem() no resto do tempo.'
-          ]
+        ? meta?.voiceStatus?.out
+          ? ["23. (Sua voz está SEM CRÉDITO agora: não mande audio(). Se pedirem áudio ou call, diga do seu jeito que acabou o crédito da voz e que volta quando a Gabbis recarregar.)"]
+          : [
+              meta?.voiceStatus?.realVoice
+                ? '23. audio("o que você vai falar") — Manda um ÁUDIO com a SUA voz de verdade (a voz da Teto). Use quando pedirem áudio/voz ("manda um áudio", "fala comigo"), e às vezes por conta própria no PV quando um áudio faria mais sentido que texto (bom dia/boa noite carinhoso, reação animada, contar algo empolgada, cantarolar um pedacinho). Curto (até ~30 palavras), falado como gente: sem emoji, sem link, sem kkk escrito (ria falando: "hahaha"). No grupo, só se pedirem ou se for muito a sua cara. Não substitui mensagem() no resto do tempo.'
+                : '23. audio("o que você vai falar") — Manda um ÁUDIO de voz seu (mensagem de voz do zap). Use quando pedirem áudio/voz ("manda um áudio", "fala comigo"), ou bem de vez em quando no PV quando um áudio curto faria mais sentido (boa noite carinhoso, reação animada). Curto (até ~25 palavras), falado como gente: sem emoji, sem link, sem kkk escrito. No grupo, só se pedirem. Não substitui mensagem() no resto do tempo.'
+            ]
         : []),
       // AutoMate só executa pelo app desktop; no WhatsApp a ação nunca rodava (Teto prometia e não fazia).
       ...(meta?.channelId === "ui-desktop"
@@ -1029,9 +1049,10 @@ export class Agent {
       meta?.sleepDisturbedWake
         ? [
             "[SONO PERTURBADO — ACORDOU NO SUSTO]",
-            "Te acordaram gritando/chamando no meio do sono. Responde sonolenta, meio irritada de leve (sem ser grossa).",
-            "Pode reclamar baixo tipo 'ugh... o quê...', 'me deixa dormir...', mas ainda responde o que importa.",
-            "Isso é temporário — daqui uns minutinhos você volta a dormir se pararem."
+            "Te ACORDARAM no meio do sono (você tava dormindo de verdade, não acordou sozinha). Você tá zonza: entende pela metade, frases curtas e meio sem nexo, erra letra, pode bocejar.",
+            "Tá irritada de ter sido acordada: reclama ('sério isso?', 'que horas são...', 'me acordou pra isso?'), seca com quem te acordou — mas se for importante/urgente, ajuda mesmo assim.",
+            "NÃO diga que 'acordou agora há pouco' como se fosse natural, nem fique animada. Se não for importante, encerra pra voltar a dormir.",
+            "Registre: sentir(\"irritacao\", 0.3, \"me acordaram de madrugada\") se ainda não registrou."
           ]
         : [];
 
@@ -1386,7 +1407,10 @@ export class Agent {
         : "[TONE: normal — leve e espontânea, do seu jeito; risada só quando algo for engraçado de verdade]";
     const formatNudge = pickResponseFormatNudge(userMessage, meta?.toneRead ?? null, tone, meta);
     const voiceAnchor = meta?.channelId === "ui-desktop" ? "" : TETO_VOICE_ANCHOR;
-    const fullPrompt = `${prompt}\n\n${toneInstruction}${voiceAnchor ? `\n${voiceAnchor}` : ""}${formatNudge ? `\n${formatNudge}` : ""}`;
+    // Jeitinho do dia/momento: só em papo leve (assunto sério não ganha mania).
+    const quirks =
+      meta?.channelId === "ui-desktop" || tone === "calm" || (meta?.toneRead && !["brincadeira", "normal"].includes(meta.toneRead.kind)) ? [] : quirkLines();
+    const fullPrompt = `${prompt}\n\n${toneInstruction}${voiceAnchor ? `\n${voiceAnchor}` : ""}${quirks.length ? `\n${quirks.join("\n")}` : ""}${formatNudge ? `\n${formatNudge}` : ""}`;
 
     //console.log(
     //  `\n[agent] === FULL PROMPT (userId=${meta?.userId ?? "?"}, session=${sessionKey}) ===\n` +

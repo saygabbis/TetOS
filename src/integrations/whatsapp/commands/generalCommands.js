@@ -89,7 +89,7 @@ function statusText(ctx) {
   const lines = ["📊 *status da Teto*", `• online há ${h ? `${h}h ` : ""}${m}min`];
   if (ctx.isGroup) {
     const active = rt.tetoActivation?.isGroupActive?.(ctx.chatId);
-    if (active != null) lines.push(`• neste grupo: ${active ? "ligada ✅" : "desligada (manda .teto-grupo-ativar)"}`);
+    if (active != null) lines.push(`• neste grupo: ${active ? "ligada ✅" : "desligada (manda .teto-ativar aqui)"}`);
   } else {
     const active = rt.tetoActivation?.isDmActive?.(ctx.userId);
     if (active != null) lines.push(`• no seu PV: ${active ? "ligada ✅" : "desligada (manda .teto-ativar)"}`);
@@ -299,6 +299,7 @@ async function speak(text, ctx) {
     const out = await voice.synthesize(clean);
     return { voice: out };
   } catch (error) {
+    if (error?.code === "voice_no_credit") return { text: voice.creditNotice?.(ctx.chatId ?? "cmd", { isOwner: ctx.isOwner === true }) ?? "tô sem crédito de voz agora 😭" };
     return { text: `não consegui gravar o áudio (${error?.message ?? error})` };
   }
 }
