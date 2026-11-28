@@ -121,7 +121,7 @@ function ytDlpJson(url, { timeoutMs = 15000 } = {}) {
 }
 
 /** Legenda (manual > automática; pt > en) em texto corrido. */
-async function youtubeCaptionText(info) {
+async function youtubeCaptionText(info, maxChars = 1800) {
   const pick = (tracks = {}) => {
     for (const lang of ["pt-BR", "pt", "pt-PT", "en", "en-US", "en-orig"]) {
       const f = (tracks[lang] ?? []).find((t) => t.ext === "json3");
@@ -134,7 +134,7 @@ async function youtubeCaptionText(info) {
   try {
     const json = await fetchJson(url, { timeoutMs: 6000 });
     const text = (json?.events ?? []).map((e) => (e.segs ?? []).map((s) => s.utf8 ?? "").join("")).join(" ");
-    return clean(text.replace(/\[(música|music|aplausos|applause)\]/gi, " "), 1800) || null;
+    return clean(text.replace(/\[(música|music|aplausos|applause)\]/gi, " "), maxChars) || null;
   } catch {
     return null;
   }
@@ -159,21 +159,24 @@ const fmtDuration = (sec) => {
 };
 
 export class LinkReader {
-  constructor({ describeImageFile = null, timeoutMs = 12_000, cacheSize = 200 } = {}) {
+  constructor({ describeImageFile = null, timeoutMs = 12_000, cacheSize = 200, fetchAudio = null, transcribeAudio = null } = {}) {
     this.describeImageFile = describeImageFile;
+    /** Modo resumo, vídeo sem legenda: baixa o áudio (url → caminho) e transcreve (caminho → texto). */
+    this.fetchAudio = fetchAudio;
+    this.transcribeAudio = transcribeAudio;
     this.timeoutMs = timeoutMs;
     this.cacheSize = cacheSize;
     this.cache = new Map();
   }
 
   /** Lê até `max` links do texto dentro do orçamento de tempo; links que não abrem ficam como { failed: true }. */
-  async readAll(text, { max = 2, budgetMs = this.timeoutMs } = {}) {
+  async readAll(text, { max = 2, budgetMs = this.timeoutMs, full = false } = {}) {
     const urls = extractLinks(text).slice(0, max);
     if (!urls.length) return [];
     const settled = await Promise.all(
       urls.map((url) =>
         Promise.race([
-          this.read(url).catch(() => ({ url, failed: true })),
+          this.read(url, { full }).catch(() => ({ url, failed: true })),
           new Promise((r) => setTimeout(() => r({ url, failed: true, slow: true }), budgetMs))
         ])
       )
@@ -181,21 +184,22 @@ export class LinkReader {
     return settled.filter(Boolean);
   }
 
-  async read(url) {
-    const hit = this.cache.get(url);
+  async read(url, { full = false } = {}) {
+    const key = full ? `full:${url}` : url;
+    const hit = this.cache.get(key);
     if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value;
-    const value = await this.readUncached(url);
+    const value = await this.readUncached(url, { full });
     if (value) {
-      this.cache.set(url, { at: Date.now(), value });
+      this.cache.set(key, { at: Date.now(), value });
       if (this.cache.size > this.cacheSize) this.cache.delete(this.cache.keys().next().value);
     }
     return value;
   }
 
-  async readUncached(url) {
+  async readUncached(url, { full = false } = {}) {
     const platform = /open\.spotify\.com/i.test(url) ? "spotify" : detectPlatform(url);
     try {
-      if (platform === "youtube") return await this.readYoutube(url);
+      if (platform === "youtube") return await this.readYoutube(url, { full });
       if (platform === "twitter") return await this.readTweet(url);
       if (platform === "tiktok") return await this.readTiktok(url);
       if (platform === "instagram") return await this.readInstagram(url);
@@ -223,10 +227,20 @@ export class LinkReader {
     }
   }
 
-  async readYoutube(url) {
+  async readYoutube(url, { full = false } = {}) {
     try {
       const info = await ytDlpJson(url);
-      const transcript = await youtubeCaptionText(info);
+      let transcript = await youtubeCaptionText(info, full ? 40_000 : 1800);
+      // Pediram resumo e o vídeo não tem legenda: baixa o áudio e transcreve (até 40 min).
+      if (full && !transcript && this.fetchAudio && this.transcribeAudio && (!info.duration || info.duration <= 2400)) {
+        try {
+          const audioPath = await this.fetchAudio(url);
+          const text = audioPath ? await this.transcribeAudio(audioPath) : null;
+          if (text) transcript = clean(String(text), 40_000);
+        } catch {
+          /* fica só com título/descrição */
+        }
+      }
       return {
         url,
         site: "YouTube",
@@ -238,7 +252,7 @@ export class LinkReader {
           fmtCount(info.view_count) && `${fmtCount(info.view_count)} views`,
           info.upload_date && `postado em ${info.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, "$3/$2/$1")}`
         ].filter(Boolean),
-        text: clean(info.description, 500) || null,
+        text: clean(info.description, full ? 3000 : 500) || null,
         transcript
       };
     } catch {
@@ -348,7 +362,7 @@ export class LinkReader {
 }
 
 /** Bloco do prompt com o que ela "viu" em cada link. */
-export function formatLinksForPrompt(items = []) {
+export function formatLinksForPrompt(items = [], { summary = false } = {}) {
   const ok = items.filter((i) => i && !i.failed);
   const failed = items.filter((i) => i?.failed);
   const lines = [];
@@ -366,6 +380,8 @@ export function formatLinksForPrompt(items = []) {
     "[LINK — você abriu e viu]",
     ...lines,
     ...(failed.length ? [`(${failed.length === 1 ? "um link não abriu" : "alguns links não abriram"} agora — se for o caso, diga natural que não carregou, sem inventar o conteúdo)`] : []),
-    "Comente como amiga que abriu o link: reaja ao conteúdo (o que achou, o que chamou atenção), sem resumir tudo nem listar dados. Não diga 'acessei o link' nem fale de legenda/metadados. Só baixe/mande arquivo se pedirem."
+    summary
+      ? "Pediram RESUMO: resuma o conteúdo de verdade (os pontos principais, com base SÓ no que está acima), em bolhas curtas do seu jeito — pode usar 1 bolha um pouco maior com tópicos se for vídeo/texto longo. Não peça pra mandarem o texto: você já tem. Se o conteúdo acima for só título/descrição (sem legenda), diga que só conseguiu ver isso."
+      : "Comente como amiga que abriu o link: reaja ao conteúdo (o que achou, o que chamou atenção), sem resumir tudo nem listar dados. Não diga 'acessei o link' nem fale de legenda/metadados. Só baixe/mande arquivo se pedirem."
   ].join("\n");
 }

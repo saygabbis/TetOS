@@ -3,6 +3,17 @@ import { probeStickerIsAnimated } from "../../../core/media/stickerAnimation.js"
 import { fileExtFromDocumentMessage } from "../media/mediaStore.js";
 import { findMediaOnDisk } from "./agentMediaResolver.js";
 import { extractContextInfo } from "../inbound/messageContext.js";
+import { existingStickerSound, persistStickerSound } from "../media/soundSticker.js";
+
+/** Figurinha com som: baixa o áudio junto (falha aqui nunca derruba o comando). */
+async function withStickerSound(media, stickerMessage, downloadContentFromMessage) {
+  if (!media?.path || media.type !== "sticker") return media;
+  let soundAudioPath = existingStickerSound(media.path);
+  if (!soundAudioPath && stickerMessage) {
+    soundAudioPath = await persistStickerSound({ stickerMessage, stickerPath: media.path, downloadContentFromMessage }).catch(() => null);
+  }
+  return soundAudioPath ? { ...media, soundAudioPath } : media;
+}
 
 function unwrapMessage(message = {}) {
   const extracted = extractMessageContent(message);
@@ -92,11 +103,7 @@ async function persistProtoMedia({
       ? await probeStickerIsAnimated(path, { isAnimatedHint })
       : Boolean(isAnimatedHint);
 
-  return {
-    type: mediaType,
-    path,
-    isAnimated
-  };
+  return withStickerSound({ type: mediaType, path, isAnimated }, unwrapped.stickerMessage, downloadContentFromMessage);
 }
 
 async function finalizeSelfMedia(media) {
@@ -105,7 +112,8 @@ async function finalizeSelfMedia(media) {
     const isAnimated = await probeStickerIsAnimated(media.path, {
       isAnimatedHint: media.isAnimated
     });
-    return { ...media, isAnimated };
+    const soundAudioPath = media.soundAudioPath ?? existingStickerSound(media.path);
+    return { ...media, isAnimated, ...(soundAudioPath ? { soundAudioPath } : {}) };
   }
   return media;
 }
@@ -128,7 +136,11 @@ export async function resolveCommandTarget({
 
   if (incomingId && detectMediaType(incomingRoot) && basePath) {
     const fromDisk = findMediaOnDisk(basePath, incomingId);
-    const diskMedia = await finalizeSelfMedia(fromDisk);
+    const diskMedia = await withStickerSound(
+      await finalizeSelfMedia(fromDisk),
+      unwrapMessage(incomingRoot)?.stickerMessage,
+      downloadContentFromMessage
+    );
     if (diskMedia) return { source: "self", media: diskMedia };
   }
 
@@ -190,11 +202,11 @@ export async function resolveCommandTarget({
       });
       return {
         source: "reply",
-        media: {
-          type: quotedType,
-          path,
-          isAnimated: isStickerAnim
-        }
+        media: await withStickerSound(
+          { type: quotedType, path, isAnimated: isStickerAnim },
+          stickerMsg,
+          downloadContentFromMessage
+        )
       };
     } catch {
       // sem reply válido

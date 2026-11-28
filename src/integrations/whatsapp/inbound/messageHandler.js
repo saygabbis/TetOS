@@ -40,6 +40,7 @@ import { applyVisionFields, extractPhone, isWaConnectionError, logThinking } fro
 import { createConversationOrchestrator } from "../conversation/conversationOrchestrator.js";
 import { parsePriceWatchCommand } from "../../../modules/priceWatch/priceWatch.js";
 import { pendingImageKey, takeImageConfirmation } from "../../../core/media/imageCommands.js";
+import { wantsSummary } from "../../../modules/web/contentExtract.js";
 import { resolveCommand } from "../commands/commandCatalog.js";
 import { formatHelp } from "../commands/commandHelp.js";
 import { GENERAL_COMMANDS, runGeneralCommand } from "../commands/generalCommands.js";
@@ -606,6 +607,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
         channelId: entry.channelId ?? entry.remoteJid,
         sleepCatchUp: true,
         sleepCatchUpCount: entry.sleepCatchUpCount ?? entry.batchedCount ?? 1,
+        // Várias pessoas na leva guardada: cada fala com o seu dono (não tudo como da última).
+        segmentMultiSpeaker: entry.multiSpeaker === true || entry.segmentMultiSpeaker === true,
         closeDecision: entry.closeDecision ?? "open",
         preferQuoteReply: false
       });
@@ -1099,6 +1102,20 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           await safeSendMessage(remoteJid, { text: reply });
           finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
           continue;
+        }
+
+        // .stickerinserir esperando o áudio (reply na mensagem dela).
+        if (!isFromMe && type !== "append" && !mainObserveOnly && mediaCommandService.pendingStickerInserts?.size) {
+          const inserted = await mediaCommandService
+            .tryHandleStickerInsertReply({ incoming, remoteJid, userId })
+            .catch((error) => {
+              console.warn(`${waLogPrefix} stickerinserir:`, error?.message ?? error);
+              return false;
+            });
+          if (inserted) {
+            finalizeDecisionTrace(runtime, decisionTrace, { output: RESPONSE_OUTPUTS.COMMAND });
+            continue;
+          }
         }
 
         // Imagem no modo bom esperando confirmação: "sim" gera, "não" cancela.
@@ -1658,6 +1675,43 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
                 ...(docHint.type !== "image" ? { isAnimated: isGif } : {}),
                 path
               };
+            } else {
+              // pdf, docx, txt, código, áudio/vídeo como arquivo…: guarda pra ela poder ler/resumir.
+              const doc = unwrappedMessage.documentMessage;
+              const path = await persistMedia({
+                downloadContentFromMessage,
+                content: doc,
+                type: "document",
+                id: `${incoming.key.id}-document`,
+                basePath: runtime.defaults.whatsappMediaPath,
+                preferredExt: fileExtFromDocumentMessage(doc),
+                decryptMediaAs: "document"
+              });
+              if (path) {
+                media = {
+                  type: "document",
+                  caption: doc?.caption ?? text,
+                  fileName: doc?.fileName ?? null,
+                  mimetype: doc?.mimetype ?? null,
+                  path
+                };
+              }
+            }
+          } else if (!media && wantsSummary(text) && incoming.key?.id) {
+            // "resume isso" respondendo um arquivo: abre o arquivo citado.
+            const quotedDoc = extractContextInfo(unwrappedMessage)?.quotedMessage;
+            const qd = quotedDoc?.documentMessage ?? quotedDoc?.documentWithCaptionMessage?.message?.documentMessage ?? null;
+            if (qd) {
+              const path = await persistMedia({
+                downloadContentFromMessage,
+                content: qd,
+                type: "document",
+                id: `${incoming.key.id}-quoted-document`,
+                basePath: runtime.defaults.whatsappMediaPath,
+                preferredExt: fileExtFromDocumentMessage(qd),
+                decryptMediaAs: "document"
+              });
+              if (path) media = { type: "document", caption: text, fileName: qd.fileName ?? null, mimetype: qd.mimetype ?? null, path, quoted: true };
             }
           }
         } catch (error) {
@@ -1681,7 +1735,8 @@ export function registerMessageHandler({ socket, runtime, role = "full" }) {
           !parsedCommand &&
           !isFromMe &&
           !skipVisionEnrichment &&
-          media.type !== "audio"
+          media.type !== "audio" &&
+          media.type !== "document"
         ) {
           mediaVisionPromise = startChatVision(runtime, media, {
             userId,

@@ -12,6 +12,7 @@ import { slimMetaForStorage } from "../memory/slimMeta.js";
 import { formatGroupRosterBlock } from "../channels/groupRoster.js";
 import { formatDmProfilePromptLines } from "../channels/profileFacts.js";
 import { buildMultiBubbleRhythmBlock } from "../../modules/chat/bubbleComposer.js";
+import { gifSearchEnabled } from "../media/gifSearch.js";
 import { formatConversationPhaseBlock } from "../brain/ConversationPhaseEngine.js";
 import {
   formatRepertoireForPrompt,
@@ -28,6 +29,44 @@ import { buildPlatformBlock, markdownRuleLine } from "./platformPrompt.js";
 import { extractOpener, hasShouting, recentAssistantTurns, stripThinkCommands, tameRawReply } from "../../modules/chat/styleRegulator.js";
 import { tonePromptLines } from "../mind/toneReader.js";
 import { formatCommandsForPrompt } from "../../integrations/whatsapp/commands/commandHelp.js";
+
+/**
+ * Âncora de voz no FIM do prompt (o GPT segue mais o que vem por último). No log, ele escorregava
+ * pra assistente explicando, pra "sou uma IA sem acesso" e pra moderadora encerrando assunto.
+ */
+const TETO_VOICE_ANCHOR = [
+  "[VOZ DA TETO — confira antes de mandar]",
+  "Você é a Teto conversando, não um assistente: opina, zoa, se empolga, fica emburrada, muda de assunto. Resposta de informação vem do seu jeito, curta (\"cafeína pura né, dá um gás mas se tomar de noite já era o sono\"), não em tom de folheto.",
+  "Nunca se descreva como IA/bot/sistema sem acesso, sem botão, sem permissão (\"não tenho acesso à internet\", \"não tenho poder de adm\"): se não dá pra fazer algo, fala como gente (\"queria, mas não consigo daqui\", \"isso aí só a Gabbis\").",
+  "Nunca encerre papo como moderadora (\"vou encerrar por aqui\", \"vamos mudar de assunto\", \"respeita meu limite\"): corta brincando, desconversa ou ignora com humor.",
+  "Releia: se a frase podia ter sido escrita por qualquer chatbot, reescreva com a sua cara."
+].join("\n");
+
+/**
+ * O GPT quase nunca responde só com figurinha/emoji/reação (o Ollama fazia isso sozinho de vez em
+ * quando). Sorteia, no papo leve, um empurrãozinho de formato pra esta resposta — a IA ainda decide
+ * se cabe. Nunca em assunto sério, pergunta de verdade, link ou pedido de tarefa.
+ */
+export function pickResponseFormatNudge(userMessage, toneRead, tone, meta = {}, rand = Math.random) {
+  if (meta?.channelId === "ui-desktop") return "";
+  const text = String(userMessage ?? "").trim();
+  if (!text || tone === "calm") return "";
+  if (toneRead && !["brincadeira", "normal"].includes(toneRead.kind)) return "";
+  if (/https?:\/\/|^[.\/!]/.test(text)) return "";
+  if (/\?/.test(text) && text.length > 25) return "";
+  if (/\b(faz|faça|manda|baixa|resume|resumir|gera|cria|explica|traduz|converte|calcula|lembra|pesquisa|procura|me ajuda)\b/i.test(text)) return "";
+  const r = rand();
+  if (r < 0.1) {
+    return "[FORMATO — opcional] Se combinar com o clima, responda esta SÓ com uma figurinha sticker(...) do seu repertório, sem texto nenhum. Se não tiver figurinha que encaixe, ignore isto.";
+  }
+  if (r < 0.18) {
+    return "[FORMATO — opcional] Se combinar, responda esta só com reagir(\"emoji\") ou com uma bolha mínima (só emoji ou 1 a 3 palavras). Gente real faz isso.";
+  }
+  if (r < 0.21 && gifSearchEnabled()) {
+    return "[FORMATO — opcional] Um GIF de reação combinaria aqui? Se sim, mande gif(\"busca em inglês\") (sozinho ou com 1 bolha curta). Se não, ignore.";
+  }
+  return "";
+}
 
 export class Agent {
   constructor({ personality, character, internalState, shortTerm, longTerm, brain, contextBuilder, brainOrchestrator = null }) {
@@ -202,6 +241,10 @@ export class Agent {
       '   No modo repertório automático ou ao salvar sem chave, o sistema nomeia a figurinha pela análise visual.',
       '6. fsticker("message_id", "opcional") — Igual .fsticker: figurinha sem cortar (contain). Duração opcional: "10s".',
       '7. csticker("message_id", "opcional") — Igual .csticker: recorta o centro (crop).',
+      ...(gifSearchEnabled() && meta?.channelId !== "ui-desktop"
+        ? ['7c. gif("busca curta, de preferência em inglês") — Manda um GIF de teclado (tipo GIPHY/Tenor), igual gente faz. RARO e específico: reação que nenhuma figurinha sua cobre (ex.: gif("mind blown"), gif("slow clap"), gif("dramatic exit"), gif("anime girl crying")). Figurinha continua sendo o normal; gif é tempero. Pode ir sozinho ou com 1 bolha curta.']
+        : []),
+      '7b. FIGURINHA COM SOM (o zap agora toca som em figurinha): comando(".ssticker") num vídeo com áudio marcado (.sfsticker = sem cortar, .scsticker = recorta o centro; duração opcional "8s"). Dá pra MISTURAR: comando(".ssticker <id_da_imagem_video_ou_figurinha> som:<id_do_audio_ou_video>") junta a imagem de uma msg com o som de outra — inclusive põe som numa figurinha que já existe. Se a pessoa quiser fazer ela mesma: .stickerinserir. Combine com outros comandos quando fizer sentido (ex.: .cortar o trecho antes, removebg na imagem) e explique curto o que fez.',
       '8. optimize("message_id") — Comprime figurinha existente (equivalente a .optimize).',
       '9. removebg("message_id", "opcional") — Remove fundo de imagem ou figurinha estática. Args extras: cor de fundo (ex. "verde") e potência ("leve", "media", "forte"). Ex.: removebg("3EB0...", "verde", "forte").',
       '10. toimage("message_id") — Figurinha → imagem ou GIF/vídeo (equivalente a .toimg). Só funciona com stickers.',
@@ -245,7 +288,7 @@ export class Agent {
       "- Todos usam o **message id** (hex 3EB... ou AC...) da mensagem que contém a mídia no `[RECENT CONVERSATION]` ou em `[META] quotedMessageId` quando o usuário deu reply na figurinha/imagem.",
       "- Se o usuário marcou (reply) uma figurinha/imagem e pediu converter (.toimg, virar imagem, figurinha, remove fundo), use o **quotedMessageId** do [META] ou o id da mensagem marcada — NÃO peça de novo qual mídia.",
       "- NUNCA use user id numérico — só message id.",
-      "- sticker/fsticker/csticker aceitam imagem, vídeo ou GIF da mensagem citada.",
+      "- sticker/fsticker/csticker aceitam imagem, vídeo ou GIF da mensagem citada. ssticker/sfsticker/scsticker fazem o mesmo COM o áudio (até 10s); toimg de figurinha com som devolve MP4 com áudio.",
       "- Quando alguém mandar uma figurinha legal e pedir pra você guardar/aprender, use salvarSticker ou modoRepertorio(\"on\") se quiser salvar tudo automaticamente.",
       "",
       "REGRAS DE OURO:",
@@ -1341,7 +1384,9 @@ export class Agent {
       : tone === "calm"
         ? "[TONE: calm — respostas curtas, neutras, sem exagero; reconhecer pedido de calma]"
         : "[TONE: normal — leve e espontânea, do seu jeito; risada só quando algo for engraçado de verdade]";
-    const fullPrompt = `${prompt}\n\n${toneInstruction}`;
+    const formatNudge = pickResponseFormatNudge(userMessage, meta?.toneRead ?? null, tone, meta);
+    const voiceAnchor = meta?.channelId === "ui-desktop" ? "" : TETO_VOICE_ANCHOR;
+    const fullPrompt = `${prompt}\n\n${toneInstruction}${voiceAnchor ? `\n${voiceAnchor}` : ""}${formatNudge ? `\n${formatNudge}` : ""}`;
 
     //console.log(
     //  `\n[agent] === FULL PROMPT (userId=${meta?.userId ?? "?"}, session=${sessionKey}) ===\n` +

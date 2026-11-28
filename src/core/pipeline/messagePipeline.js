@@ -34,6 +34,7 @@ import {
 } from "../channels/channelTimeline.js";
 import { buildGroupRoster } from "../channels/groupRoster.js";
 import { extractLinks, formatLinksForPrompt } from "../../modules/web/linkReader.js";
+import { extractFileText, formatFileContextBlock, wantsSummary } from "../../modules/web/contentExtract.js";
 import { formatSearchResults } from "../../modules/web/searchAdapter.js";
 import { detectWeatherQuestion, formatWeatherForPrompt } from "../../modules/web/weather.js";
 import {
@@ -702,8 +703,9 @@ export async function runMessagePipeline(runtime, payload = {}) {
     const linkText = extractLinks(input).length ? input : quotedLinkAsked ? quotedMessage : "";
     if (linkText) {
       try {
-        const items = await runtime.linkReader.readAll(linkText, { max: 2 });
-        const linkContext = formatLinksForPrompt(items);
+        const summary = wantsSummary(input);
+        const items = await runtime.linkReader.readAll(linkText, summary ? { max: 2, full: true, budgetMs: 180_000 } : { max: 2 });
+        const linkContext = formatLinksForPrompt(items, { summary });
         if (linkContext) {
           linkMeta = {
             linkContext,
@@ -769,7 +771,23 @@ export async function runMessagePipeline(runtime, payload = {}) {
     runtime.metrics?.increment?.(`documents.intent.${documentIntent.type}`);
   }
   const documentPayload = buildDocumentContextPayload(documentIntent, runtime.documentModule);
-  const documentContext = documentPayload?.text ?? null;
+  let documentContext = documentPayload?.text ?? null;
+  // Arquivo mandado no chat (pdf, docx, txt, código, áudio/vídeo longo…): ela abre e lê sozinha.
+  if (!documentContext && media?.type === "document" && media.path) {
+    try {
+      const file = await extractFileText(media.path, {
+        name: media.fileName ?? "",
+        mime: media.mimetype ?? "",
+        convenus: runtime.convenus ?? null,
+        transcribe: async (p) => (await runtime.audioTranscriber?.transcribe?.({ filePath: p, mimetype: media.mimetype ?? "audio/ogg" }))?.text ?? null
+      });
+      documentContext = file
+        ? formatFileContextBlock({ name: media.fileName ?? "", text: file.text, kind: file.kind, summary: wantsSummary(input) })
+        : `[ARQUIVO QUE TE MANDARAM${media.fileName ? ` — ${media.fileName}` : ""}] não consegui abrir esse formato — diga isso natural, sem inventar o conteúdo.`;
+    } catch (error) {
+      console.warn(`[arquivo] leitura falhou: ${error?.message ?? error}`);
+    }
+  }
 
   const reminderTz = runtime.defaults.dailyReportTz ?? "America/Sao_Paulo";
   const reminderIntent = detectReminderIntent(input, { timeZone: reminderTz });

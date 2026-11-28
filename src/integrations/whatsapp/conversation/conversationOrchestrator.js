@@ -25,6 +25,7 @@ import { applyVisionFields, extractPhone, isWaConnectionError, logThinking, slee
 import { TypingTracker } from "../inbound/typingTracker.js";
 import { DEFAULTS } from "../../../infra/config/defaults.js";
 import { recentAssistantTurns, regulateBubbles, regulateMessageActions } from "../../../modules/chat/styleRegulator.js";
+import { findGif } from "../../../core/media/gifSearch.js";
 
 /** Máximo que a Teto espera antes de mandar a resposta se a pessoa voltou a digitar. */
 const PRE_SEND_TYPING_WAIT_MS = 12_000;
@@ -925,6 +926,22 @@ export function createConversationOrchestrator(
                   );
                   outputKind = RESPONSE_OUTPUTS.STICKER;
                   runtime.metrics?.increment?.("whatsapp.sticker.sent");
+                }
+              } else if (action.type === "gif") {
+                const found = await findGif(action.query).catch(() => null);
+                if (found?.buffer) {
+                  console.log(`${logPrefix} executing action gif: ${action.query} (${found.id})`);
+                  const quote = resolveActionQuoteKey(action.quoteId, item);
+                  const quotedWa = resolveQuotedWaMessage(quote, item.remoteJid);
+                  await waSocket().sendMessage(
+                    item.remoteJid,
+                    { video: found.buffer, gifPlayback: true, mimetype: "video/mp4" },
+                    quotedWa ? { quoted: quotedWa } : undefined
+                  );
+                  outputKind = RESPONSE_OUTPUTS.STICKER;
+                  runtime.metrics?.increment?.("whatsapp.gif.sent");
+                } else {
+                  console.log(`${logPrefix} gif "${action.query}" sem resultado/sem chave — pulando`);
                 }
               } else if (action.type === "save_sticker") {
                 const targetId =

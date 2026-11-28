@@ -5,6 +5,9 @@ export const AGENT_MEDIA_COMMANDS = Object.freeze([
   "sticker",
   "fsticker",
   "csticker",
+  "ssticker",
+  "sfsticker",
+  "scsticker",
   "optimize",
   "removebg",
   "toimg",
@@ -36,6 +39,11 @@ const AGENT_MEDIA_COMMAND_ALIASES = Object.freeze({
   ffigurinha: "fsticker",
   cfig: "csticker",
   cfigurinha: "csticker",
+  sfig: "ssticker",
+  figsom: "ssticker",
+  stickersom: "ssticker",
+  sffig: "sfsticker",
+  scfig: "scsticker",
   img: "toimg",
   imagem: "toimg",
   toimage: "toimg",
@@ -101,7 +109,7 @@ export function buildMediaAction(command, messageId, extraArgs = []) {
 }
 
 export const AGENT_MEDIA_COMMAND_PATTERN =
-  "sticker|figurinizar|fsticker|ffigurinha|csticker|cfigurinha|optimize|otimizar|optimizar|removebg|rmbg|toimage|toimg|toimagem|convert|converter";
+  "sticker|figurinizar|fsticker|ffigurinha|csticker|cfigurinha|ssticker|sfsticker|scsticker|figsom|optimize|otimizar|optimizar|removebg|rmbg|toimage|toimg|toimagem|convert|converter";
 
 export const SAVE_STICKER_COMMAND_PATTERN =
   "salvarsticker|salvarrepertorio|adicionarrepertorio|adicionarsticker|guardarsticker|savesticker|salvarepertorio";

@@ -7,7 +7,8 @@ import { readJson, writeJsonDeferred } from "../../../infra/utils/fileStore.js";
 
 const MAX_PER_SESSION = 15;
 
-const speakerLabel = (e = {}) => e.pushName || e.userId || "alguém";
+// Discord guarda o nome em speakerName; WhatsApp em pushName. Nunca rotula pelo id cru.
+const speakerLabel = (e = {}) => e.pushName || e.speakerName || "alguém";
 
 /** Só o que dá pra salvar em JSON (promessas e buffers ficam de fora). */
 function serializable(entry = {}) {
@@ -90,9 +91,19 @@ export class DeferredInbox {
       ? list.map((e) => String(e.message ?? "").trim()).filter(Boolean).join("\n")
       : list.map((e) => `[${speakerLabel(e)}]: ${String(e.message ?? "").trim()}`).join("\n");
     const heldMs = Math.max(0, this.now() - (list[0].ts ?? row.heldAt ?? this.now()));
+    const speakers = [...new Set(list.map(speakerLabel))];
     return {
       ...last,
       message,
+      // Várias pessoas na mesma leva: a resposta não pode tratar tudo como fala da última.
+      ...(singleSpeaker
+        ? {}
+        : {
+            multiSpeaker: true,
+            isOwner: false,
+            segmentSpeakers: speakers,
+            segmentParts: list.map((e) => ({ userId: e.userId, speakerName: speakerLabel(e), message: String(e.message ?? "").trim() }))
+          }),
       batchedCount: list.length,
       sleepCatchUp: row.reason === "asleep",
       sleepCatchUpCount: list.length,

@@ -40,7 +40,11 @@ export const COMMANDS = Object.freeze([
   { name: "sticker", aliases: ["s", "fig", "figu", "figurinha", "stiker", "stick", "f"], category: "figurinhas", usage: "[10s]", desc: "foto/vídeo/GIF vira figurinha (estica pra caber)", details: ["responda a mídia ou mande na legenda", "vídeo: .sticker 5s corta nos 5 primeiros segundos"], examples: ["sticker", "sticker 5s"] },
   { name: "fsticker", aliases: ["ffig", "ffigurinha", "fstiker", "fs", "figinteira"], category: "figurinhas", usage: "[10s]", desc: "figurinha sem cortar nada (com borda)" },
   { name: "csticker", aliases: ["cfig", "cfigurinha", "cstiker", "cs", "figcorte"], category: "figurinhas", usage: "[10s]", desc: "figurinha recortando o centro (quadrada)" },
-  { name: "toimg", aliases: ["img", "toimage", "paraimg", "figparaimg", "desfig"], category: "figurinhas", desc: "figurinha vira imagem (ou GIF/vídeo se for animada)" },
+  { name: "ssticker", aliases: ["sfig", "figsom", "figcomsom", "stickersom", "sstiker", "ss"], category: "figurinhas", usage: "[10s]", desc: "🔊 figurinha COM SOM a partir de vídeo com áudio (estica)", details: ["igual o .sticker, mas leva o áudio do vídeo (até 10s)", "quem ainda não tem o recurso no zap vê sem som"], examples: ["ssticker", "ssticker 8s"] },
+  { name: "sfsticker", aliases: ["sffig", "sfs", "sfstiker", "figinteirasom"], category: "figurinhas", usage: "[10s]", desc: "🔊 figurinha com som, sem cortar nada" },
+  { name: "scsticker", aliases: ["scfig", "scs", "scstiker", "figcortesom"], category: "figurinhas", usage: "[10s]", desc: "🔊 figurinha com som, recortando o centro" },
+  { name: "stickerinserir", aliases: ["inserirsom", "stickersominserir", "colocarsom", "figinserir", "addsom"], category: "figurinhas", desc: "🔊 põe um áudio numa figurinha que já existe", details: ["responda a figurinha com .stickerinserir", "eu peço o áudio: manda um áudio respondendo a minha mensagem", "serve áudio, vídeo ou arquivo de som (até 10s)"], examples: ["stickerinserir"] },
+  { name: "toimg", aliases: ["img", "toimage", "paraimg", "figparaimg", "desfig"], category: "figurinhas", desc: "figurinha vira imagem (ou vídeo se for animada; com som vira MP4 com áudio)" },
   { name: "optimize", aliases: ["otimizar", "optimizar", "opt", "figleve"], category: "figurinhas", desc: "deixa a figurinha mais leve" },
   { name: "removebg", aliases: ["rmbg", "remove-bg", "semfundo", "tirarfundo", "nobg"], category: "figurinhas", usage: "[cor] [leve|media|forte]", desc: "tira o fundo da imagem/figurinha", examples: ["removebg", "removebg verde", "removebg forte"] },
   {

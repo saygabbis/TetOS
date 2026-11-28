@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { downloadContentFromMessage } from "baileys";
 import { persistMedia } from "../media/mediaStore.js";
 import { resolveCommandTarget } from "./commandTargetResolver.js";
+import { findMediaOnDisk } from "./agentMediaResolver.js";
 import { isAnimatedRemoveBgTarget } from "../../../core/media/mediaProcessor.js";
 import { resolveStickerDurationArg } from "../../../core/media/stickerDurationParse.js";
 import {
@@ -32,6 +33,12 @@ import {
   buildWaGifPlaybackPayload,
   buildWaMediaPayload
 } from "../media/waMediaPayload.js";
+
+/** .ssticker/.sfsticker/.scsticker → modo de recorte da figurinha com som. */
+const SOUND_STICKER_MODES = Object.freeze({ ssticker: "stretch", sfsticker: "contain", scsticker: "crop" });
+/** .stickerinserir: espera o áudio por 3 min. */
+const STICKER_INSERT_TTL_MS = 3 * 60 * 1000;
+const AUDIO_ID_ARG_RE = /^(?:som|audio|áudio|s):([0-9A-F]{12,40})$/i;
 
 function isWaConnectionError(error) {
   const msg = String(error?.message ?? error ?? "");
@@ -393,6 +400,14 @@ export class MediaCommandService {
       return output;
     }
 
+    if (SOUND_STICKER_MODES[parsedCommand.command]) {
+      return this.makeSoundSticker(parsedCommand, resolved, remoteJid);
+    }
+
+    if (parsedCommand.command === "stickerinserir") {
+      return this.startStickerInsert(resolved, remoteJid, ctx);
+    }
+
     if (parsedCommand.command === "optimize") {
       if (resolved.media.type !== "sticker") {
         await this.safeSendMessage(remoteJid, {
@@ -426,6 +441,7 @@ export class MediaCommandService {
     }
 
     if (parsedCommand.command === "toimg") {
+      if (resolved.media.soundAudioPath) return this.mediaProcessor.toVideoFromSoundSticker(resolved.media);
       return this.mediaProcessor.toMediaFromSticker(resolved.media);
     }
 
@@ -463,6 +479,121 @@ export class MediaCommandService {
     }
 
     throw new Error(`unsupported media command: ${parsedCommand.command}`);
+  }
+
+  /** Figurinha com som. Args: duração ("8s") e/ou som:<message id> com o áudio de outra mensagem. */
+  async makeSoundSticker(parsedCommand, resolved, remoteJid) {
+    const args = parsedCommand.args ?? [];
+    let audioPath = null;
+    const audioArg = args.map((a) => String(a).match(AUDIO_ID_ARG_RE)).find(Boolean);
+    if (audioArg) {
+      const found = findMediaOnDisk(this.runtime.defaults.whatsappMediaPath, audioArg[1]);
+      audioPath = found?.soundAudioPath ?? found?.path ?? null;
+      if (!audioPath) {
+        await this.safeSendMessage(remoteJid, { text: "não achei o áudio dessa mensagem 😕 manda ele de novo?" });
+        return true;
+      }
+    }
+    const durArg = args.find((a) => !AUDIO_ID_ARG_RE.test(String(a)));
+    const durationResolved = resolveStickerDurationArg(durArg);
+    if (durationResolved.error) {
+      await this.safeSendMessage(remoteJid, { text: durationResolved.error });
+      return true;
+    }
+    if (!audioPath && ["image", "sticker", "document"].includes(resolved.media.type) && !resolved.media.soundAudioPath) {
+      const p = this.runtime?.defaults?.commandPrefix ?? ".";
+      await this.safeSendMessage(remoteJid, {
+        text: `imagem não tem som né 😅 pra pôr um áudio: responde ela com ${p}stickerinserir que eu peço o áudio`
+      });
+      return true;
+    }
+    await this.sendPresence("composing", remoteJid);
+    const output = await this.mediaProcessor.toSoundSticker(resolved.media, SOUND_STICKER_MODES[parsedCommand.command], {
+      maxDurationMs: durationResolved.maxDurationMs,
+      audioPath
+    });
+    await this.sendPresence("paused", remoteJid);
+    return output;
+  }
+
+  /** .stickerinserir: guarda a figurinha e pede o áudio (reply na mensagem dela). */
+  async startStickerInsert(resolved, remoteJid, ctx = {}) {
+    if (!["sticker", "image", "video", "gif"].includes(resolved.media.type)) {
+      await this.safeSendMessage(remoteJid, { text: "responde uma figurinha com .stickerinserir 🙏" });
+      return true;
+    }
+    const sent = await this.safeSendMessage(remoteJid, {
+      text: "manda o áudio agora *respondendo essa mensagem* 🎤 (até 10s; serve áudio, vídeo ou arquivo de som)"
+    });
+    this.pendingStickerInserts ??= new Map();
+    this.pendingStickerInserts.set(remoteJid, {
+      media: resolved.media,
+      userId: ctx.userId ?? null,
+      promptId: sent?.key?.id ?? null,
+      expiresAt: Date.now() + STICKER_INSERT_TTL_MS
+    });
+    return true;
+  }
+
+  /**
+   * Chamado pra toda mensagem que chega: se for o áudio pedido pelo .stickerinserir, faz a figurinha
+   * com som e retorna true (a mensagem não segue pro papo).
+   */
+  async tryHandleStickerInsertReply({ incoming, remoteJid, userId }) {
+    const pending = this.pendingStickerInserts?.get(remoteJid);
+    if (!pending) return false;
+    if (Date.now() > pending.expiresAt) {
+      this.pendingStickerInserts.delete(remoteJid);
+      return false;
+    }
+    if (pending.userId && userId && pending.userId !== userId) return false;
+    const root = incoming?.message ?? {};
+    const inner =
+      root.ephemeralMessage?.message ?? root.viewOnceMessage?.message ?? root.viewOnceMessageV2?.message ?? root;
+    const doc = inner.documentMessage;
+    const hasSound = inner.audioMessage || inner.videoMessage || /^(audio|video)\//i.test(String(doc?.mimetype ?? ""));
+    if (!hasSound) return false;
+    const ctxInfo = inner.audioMessage?.contextInfo ?? inner.videoMessage?.contextInfo ?? doc?.contextInfo ?? null;
+    // Pediu reply na mensagem dela; reply em outra coisa não conta.
+    if (pending.promptId && ctxInfo?.stanzaId && ctxInfo.stanzaId !== pending.promptId) return false;
+    this.pendingStickerInserts.delete(remoteJid);
+    return this.commandQueue.enqueue(remoteJid, async () => {
+      this._commandQuoteContext = { remoteJid, incoming };
+      try {
+        // Só a mídia da própria mensagem (sem cair no reply, que é o texto dela).
+        const id = incoming?.key?.id;
+        const type = inner.audioMessage ? "audio" : inner.videoMessage ? "video" : "document";
+        const content = inner.audioMessage ?? inner.videoMessage ?? doc;
+        const audioPath = await persistMedia({
+          downloadContentFromMessage,
+          content,
+          type,
+          id: `${id}-insert-${type}`,
+          basePath: this.runtime.defaults.whatsappMediaPath,
+          preferredExt: null,
+          decryptMediaAs: type
+        });
+        if (!audioPath) throw new Error("não consegui baixar o áudio");
+        await this.sendPresence("composing", remoteJid);
+        const output = await this.mediaProcessor.toSoundSticker(pending.media, "stretch", { audioPath });
+        await this.sendPresence("paused", remoteJid);
+        if (output.noAudio) {
+          await this.sendWithActiveQuote(remoteJid, { text: "esse áudio veio mudo 😕 tenta outro" });
+          return true;
+        }
+        await this.sendWithActiveQuote(remoteJid, {
+          soundSticker: { sticker: readFileSync(output.path), audio: readFileSync(output.audioPath), seconds: output.seconds }
+        });
+        this.appendCommandEvent({ commandName: "stickerinserir", status: "ok", remoteJid, actorId: userId });
+      } catch (error) {
+        if (!isWaConnectionError(error)) {
+          await this.sendWithActiveQuote(remoteJid, { text: `não deu pra pôr o som: ${error.message}` });
+        }
+      } finally {
+        this._commandQuoteContext = null;
+      }
+      return true;
+    });
   }
 
   /** .convert <formato>: pelo Convenus (aceita muito mais formato); ffmpeg local de reserva. */
@@ -628,6 +759,24 @@ export class MediaCommandService {
           fileName: output.fileName ?? "sem-fundo.png"
         })
       );
+      return;
+    }
+
+    if (output.kind === "soundSticker") {
+      await this.safeSendMessage(remoteJid, {
+        soundSticker: { sticker: outBuffer, audio: readFileSync(output.audioPath), seconds: output.seconds }
+      });
+      return;
+    }
+
+    if (output.noAudio && SOUND_STICKER_MODES[parsedCommand.command]) {
+      await this.safeSendMessage(remoteJid, { sticker: outBuffer });
+      await this.safeSendMessage(remoteJid, { text: "esse aí não tem áudio 🤔 fiz sem som. pra pôr um som: .stickerinserir respondendo a figurinha" });
+      return;
+    }
+
+    if (parsedCommand.command === "toimg" && output.withSound) {
+      await this.safeSendMessage(remoteJid, { video: outBuffer, mimetype: "video/mp4" });
       return;
     }
 

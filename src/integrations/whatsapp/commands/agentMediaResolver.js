@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import { normalizeMessageContent } from "baileys";
 import { probeStickerIsAnimated } from "../../../core/media/stickerAnimation.js";
 import { fileExtFromDocumentMessage, persistMedia } from "../media/mediaStore.js";
+import { existingStickerSound } from "../media/soundSticker.js";
 import { extractContextInfo } from "../inbound/messageContext.js";
 
 function normAgentMessageId(id) {
@@ -137,7 +138,8 @@ export function findMediaOnDisk(basePath, messageId) {
     if (!type) continue;
     const path = join(basePath, file);
     if (!existsSync(path)) continue;
-    return { type, path, isAnimated: type === "sticker" ? undefined : false };
+    const soundAudioPath = type === "sticker" ? existingStickerSound(path) : null;
+    return { type, path, isAnimated: type === "sticker" ? undefined : false, ...(soundAudioPath ? { soundAudioPath } : {}) };
   }
   return null;
 }

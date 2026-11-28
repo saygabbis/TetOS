@@ -20,6 +20,7 @@ import { createDiscordLog } from "./discordLog.js";
 import { parseTetosCommand } from "../whatsapp/commands/tetosCommand.js";
 import { parsePriceWatchCommand } from "../../modules/priceWatch/priceWatch.js";
 import { findChannelMedia, handleDiscordImageConfirmation, resolveDiscordAgentCommand, runDiscordCommand } from "./discordCommandRunner.js";
+import { findGif } from "../../core/media/gifSearch.js";
 
 /**
  * Conversa no Discord: quando ela responde (modo do canal, marcação, reply, nome, .tetos), quando segura
@@ -387,9 +388,11 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
     const mediaEntry = [...entries].reverse().find((e) => e.mediaItems?.length);
     const mediaObj = mediaEntry ? await prepareMedia(mediaEntry) : null;
     const speakers = [...new Set(entries.map((e) => e.authorId))];
-    const multi = !last.isDM && speakers.length > 1;
+    // Leva guardada (ela estava ocupada) com várias pessoas chega como UMA entrada multiSpeaker.
+    const heldMulti = entries.length === 1 && last.multiSpeaker === true;
+    const multi = !last.isDM && (speakers.length > 1 || heldMulti);
     const textOf = (e) => (e === mediaEntry && mediaObj ? formatMediaInputText({ text: e.text, media: mediaObj }) : e.text || "[anexo]");
-    const message = multi ? entries.map((e) => `[${e.speakerName}]: ${textOf(e)}`).join("\n") : entries.map(textOf).join("\n");
+    const message = multi && !heldMulti ? entries.map((e) => `[${e.speakerName}]: ${textOf(e)}`).join("\n") : entries.map(textOf).join("\n");
     if (mediaEntry && mediaObj) index()?.append?.({ channelId: keyOf(mediaEntry.channelId), messageId: mediaEntry.messageId, actorId: mediaEntry.authorId, speakerName: mediaEntry.speakerName, text: textOf(mediaEntry) });
 
     const chatKey = keyOf(last.channelId);
@@ -433,9 +436,13 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
                 media: mediaObj,
                 pushName: last.speakerName,
                 participantId: last.isDM ? null : last.userId,
-                segmentSpeakers: multi ? [...new Set(entries.map((e) => e.speakerName))] : null,
+                segmentSpeakers: heldMulti ? last.segmentSpeakers ?? null : multi ? [...new Set(entries.map((e) => e.speakerName))] : null,
                 segmentMultiSpeaker: multi,
-                segmentParts: multi ? entries.map((e) => ({ userId: e.userId, speakerName: e.speakerName, message: textOf(e) })) : null,
+                segmentParts: heldMulti
+                  ? last.segmentParts ?? null
+                  : multi
+                    ? entries.map((e) => ({ userId: e.userId, speakerName: e.speakerName, message: textOf(e) }))
+                    : null,
                 isOwner: !multi && last.isOwner,
                 batchedCount: extra.batchedCount ?? entries.length,
                 sleepCatchUp: extra.sleepCatchUp === true,
@@ -572,6 +579,13 @@ export function createDiscordConversation({ runtime, client, state, media, inbox
             await sendFile(channel, small.path, `${asset.key}.${small.ext}`, replyTo);
             lastStickerAt.set(last.channelId, Date.now());
             dlog.chat(last.place ?? placeLabel(channel), "Teto", `[figurinha ${asset.key}]`);
+          }
+          replyTo = null;
+        } else if (action.type === "gif" && action.query) {
+          const found = await findGif(action.query).catch(() => null);
+          if (found?.url) {
+            await channel.send({ content: found.url, allowedMentions: { parse: [] } });
+            dlog.chat(last.place ?? placeLabel(channel), "Teto", `[gif ${action.query}]`);
           }
           replyTo = null;
         } else if (action.type === "voice" && action.text) {

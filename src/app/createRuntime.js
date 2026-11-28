@@ -562,6 +562,14 @@ export function createRuntime() {
   viewOnceMirror.runtime = runtime;
   // Mente/autoevolução só usam busca grátis: era ela que gastava a maior parte da API.
   runtime.mind = DEFAULTS.mindEnabled ? createMind(runtime, { searchAdapter: searchAdapter.freeOnly(), linkReader }) : null;
+  // Resumo de vídeo sem legenda: baixa o áudio pelo Convenus e transcreve.
+  linkReader.fetchAudio = async (url) => {
+    if (!runtime.convenus) return null;
+    const r = await runtime.convenus.downloadLink(url, { kind: "mp3", quality: "low" });
+    return r?.files?.[0]?.path ?? null;
+  };
+  linkReader.transcribeAudio = async (path) => (await runtime.audioTranscriber?.transcribe?.({ filePath: path, mimetype: "audio/mpeg" }))?.text ?? null;
+
   return runtime;
 }
 

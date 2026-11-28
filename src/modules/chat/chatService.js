@@ -88,6 +88,8 @@ export function parseActionCommands(rawText) {
       if (args[0]) {
         actions.push({ type: "react", emoji: args[0] });
       }
+    } else if (cmd === "gif") {
+      if (args[0]) actions.push({ type: "gif", query: args[0], quoteId: args[1] || null });
     } else if (cmd === "sticker" || cmd === "figurinha") {
       if (!args[0]) continue;
       if (isPresetStickerKey(args[0])) {
@@ -168,7 +170,7 @@ function returnWithActions(actions) {
 
 /** Expande ações cujo text ainda contém comando cru (fallback do processor). */
 const EMBEDDED_COMMAND_RE = new RegExp(
-  `^(comando|executar|mensagem|message|reagir|react|sticker|figurinha|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|${Object.keys(PROJECT_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
+  `^(comando|executar|mensagem|message|reagir|react|sticker|figurinha|gif|computador|automate|automatizar|${Object.keys(ORGANIZER_COMMANDS).join("|")}|${Object.keys(PROJECT_COMMANDS).join("|")}|calar|silenciar|responder|reply|quote|audio|voz|falar|${AGENT_MEDIA_COMMAND_PATTERN}|${AGENT_URL_DOWNLOAD_COMMAND_PATTERN}|${SAVE_STICKER_COMMAND_PATTERN}|${REPERTOIRE_MODE_COMMAND_PATTERN})\\s*\\(`,
   "i"
 );
 
@@ -331,6 +333,7 @@ export function sanitizeOutgoingActions(actions = [], meta = {}) {
     (a) =>
       a.type === "message" ||
       a.type === "sticker" ||
+      a.type === "gif" ||
       a.type === "media" ||
       a.type === "toimage" ||
       a.type === "url_download" ||

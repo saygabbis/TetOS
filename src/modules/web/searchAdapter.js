@@ -46,6 +46,19 @@ export function parseSearchHtml(html = "", max = 5) {
     .filter((r) => r.url && r.title);
 }
 
+const KEYWORD_STOP = new Set(
+  "como que qual quais quando onde porque por para pra pro com sem sobre entre afeta afetam funciona funcionam criam cria fazer faz são ser está estão tem têm uma umas uns dos das nos nas num numa pelo pela pelos pelas seus suas meu minha isso essa esse este esta mais menos muito muita the and how what why does with from that this into".split(" ")
+);
+
+/** Palavras-chave de uma pergunta/tema (até 4), pra busca que não entende frase. */
+export function searchKeywords(q = "") {
+  const words = String(q)
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !KEYWORD_STOP.has(w.toLowerCase()));
+  return words.slice(0, 4).join(" ");
+}
+
 export class SearchAdapter {
   /**
    * backend: duckduckgo (grátis) | openai (web_search da OpenAI, pago) | auto (grátis primeiro:
@@ -99,11 +112,19 @@ export class SearchAdapter {
     } catch {
       /* cai pra Wikipédia */
     }
-    try {
-      return await this.searchWikipedia(q);
-    } catch {
-      return [];
+    // Wikipédia não acha frase longa ("Como jogos de Minecraft criam mundos…"): tenta a frase, depois
+    // só as palavras-chave, em português e em inglês.
+    const kw = searchKeywords(q);
+    const tries = [[q, "pt"], ...(kw && kw !== q ? [[kw, "pt"], [kw, "en"]] : [[q, "en"]])];
+    for (const [query, lang] of tries) {
+      try {
+        const results = await this.searchWikipedia(query, { lang });
+        if (results.length) return results;
+      } catch {
+        /* próxima tentativa */
+      }
     }
+    return [];
   }
 
   async searchWikipedia(query, { lang = "pt" } = {}) {

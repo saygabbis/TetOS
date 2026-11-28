@@ -92,6 +92,55 @@ export function tamePunctuation(text) {
     .replace(/([?!])([?!]){2,}/g, "$1$2");
 }
 
+/**
+ * Bolha comprida vira 2–3 bolhas curtas, do jeito do zap. O GPT tende a juntar tudo numa frase
+ * longa cheia de vírgula (o Ollama já picava sozinho). Corta em fim de frase, depois em "mas"/"aí"/
+ * "então", e só por último na vírgula do meio. Lista, link, código e quebra de linha ficam inteiros.
+ */
+const SPLIT_MIN_PIECE = 14;
+export function splitLongBubble(text, maxPieces = 3) {
+  const t = String(text ?? "").trim();
+  if (maxPieces < 2 || t.length < 75) return [t];
+  if (/\n|https?:\/\/|```|^\s*[-•\d]+[.)]?\s/m.test(t)) return [t];
+  const cutAt = (str) => {
+    const len = str.length;
+    if (len < 75) return null;
+    const best = (re, minLen = SPLIT_MIN_PIECE) => {
+      let pick = null;
+      for (const m of str.matchAll(re)) {
+        const head = m.index + m[1].length;
+        const left = str.slice(0, head).trim().replace(/[,;]$/, "");
+        const right = str.slice(m.index + m[0].length).trim();
+        if (left.length < minLen || right.length < minLen) continue;
+        const score = Math.abs(head - len / 2);
+        if (!pick || score < pick.score) pick = { left, right, score };
+      }
+      return pick;
+    };
+    return (
+      best(/([.!?…]+|\p{Extended_Pictographic}+)\s+(?=\S)/gu) ||
+      best(/(,?)\s+(?=(?:mas|só que|aí|ai|então|entao|tipo|porque|pq|e tipo|até porque)\s)/gi, 20) ||
+      (len >= 110 ? best(/(,)\s+/g, 25) : null)
+    );
+  };
+  const pieces = [t];
+  while (pieces.length < maxPieces) {
+    let idx = -1;
+    let longest = 0;
+    pieces.forEach((pc, i) => {
+      if (pc.length > longest) {
+        longest = pc.length;
+        idx = i;
+      }
+    });
+    const cut = idx >= 0 ? cutAt(pieces[idx]) : null;
+    if (!cut) break;
+    pieces.splice(idx, 1, cut.left, cut.right);
+  }
+  // zap não termina bolha com ponto final (reticências e ?! ficam)
+  return pieces.map((pc) => pc.replace(/(?<![.])\.$/, "").trim()).filter(Boolean);
+}
+
 /** Abertura (interjeição) da bolha, normalizada — ou null. */
 export function extractOpener(text) {
   const m = String(text ?? "").trim().match(OPENER_RE);
@@ -188,6 +237,19 @@ export function regulateBubbles(texts = [], { isGroup = false, recentTurns = [],
     if (kept.length) rows = kept;
   }
 
+  // 1b) Bolha comprida → bolhas curtas (só até o limite de bolhas do canal).
+  const capForSplit = Math.max(1, Math.min(isGroup ? GROUP_MAX_BUBBLES : DM_MAX_BUBBLES, maxParts || Infinity));
+  if (structural && rows.length < capForSplit) {
+    const next = [];
+    let room = capForSplit - rows.length;
+    for (const r of rows) {
+      const pieces = room > 0 ? splitLongBubble(r.text, room + 1) : [r.text];
+      room -= pieces.length - 1;
+      pieces.forEach((text) => next.push({ text, from: r.from }));
+    }
+    rows = next;
+  }
+
   // 2) Mesma interjeição abrindo várias respostas seguidas vira tique: tira daqui.
   const recentOpeners = recentTurns.slice(0, 3).map((t) => extractOpener(t[0] ?? "")).filter(Boolean);
   const opener = extractOpener(rows[0].text);
@@ -251,23 +313,34 @@ export function regulateMessageActions(actions = [], ctx = {}) {
   if (!messageIdx.length) return actions;
   const original = messageIdx.map((i) => actions[i]);
   const { texts, mergedFrom } = regulateBubbles(original.map((a) => a.text), ctx);
+  const usedSources = new Set();
   const rebuilt = texts.map((text, i) => {
-    const sources = (mergedFrom.get(i) ?? []).map((j) => original[j]);
+    const from = mergedFrom.get(i) ?? [];
+    const sources = from.map((j) => original[j]);
     const base = sources[0] ?? original[0];
-    const quoteId = sources.find((s) => s?.quoteId)?.quoteId ?? base.quoteId ?? null;
+    // Bolha que nasceu da divisão de outra: só o primeiro pedaço cita.
+    const continuation = from.length > 0 && from.every((j) => usedSources.has(j));
+    from.forEach((j) => usedSources.add(j));
+    const quoteId = continuation ? null : sources.find((s) => s?.quoteId)?.quoteId ?? base.quoteId ?? null;
     return { ...base, text, quoteId };
   });
   // As bolhas que sobraram ocupam os primeiros lugares de mensagem; os demais somem.
   const out = [];
   let slot = 0;
+  let lastMsgPos = -1;
   for (const a of actions) {
     if (a?.type === "message" && String(a.text ?? "").trim()) {
-      if (slot < rebuilt.length) out.push(rebuilt[slot]);
+      if (slot < rebuilt.length) {
+        out.push(rebuilt[slot]);
+        lastMsgPos = out.length - 1;
+      }
       slot += 1;
     } else {
       out.push(a);
     }
   }
+  // Bolhas a mais (da divisão de uma bolha comprida) entram logo depois da última mensagem.
+  if (slot < rebuilt.length) out.splice(lastMsgPos + 1, 0, ...rebuilt.slice(slot));
   return out;
 }
 

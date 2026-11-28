@@ -6,6 +6,9 @@ import makeWASocket, {
   fetchLatestBaileysVersion,
   useMultiFileAuthState
 } from "baileys";
+import { installSoundStickerProto, wrapSocketForSoundStickers } from "../media/soundSticker.js";
+
+installSoundStickerProto();
 
 /**
  * Últimas mensagens que ELA enviou (id → proto). Quando o aparelho de alguém não consegue ler uma
@@ -98,6 +101,7 @@ export async function createBaileysClient({
     getMessage: async (key) => sentMessages.get(key?.id) ?? undefined
   });
 
+  wrapSocketForSoundStickers(socket, { onSent: (m) => rememberSent([m]) });
   socket.ev.on("creds.update", saveCreds);
   socket.ev.on("messages.upsert", ({ messages }) => rememberSent(messages));
 

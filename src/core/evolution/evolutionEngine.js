@@ -141,7 +141,10 @@ export class EvolutionEngine {
     if (this.store.manifest.paused) return { ok: false, error: "evolução pausada pela dona" };
     if (this.codeChangesToday() >= this.maxCodePerDay) return { ok: false, error: "limite de mudanças de hoje" };
 
-    const fromStack = stackFiles(task.detail ?? "", this.root).filter((f) => isEditablePath(f.rel, this.store.currentContent(f.rel) ?? "").approvable);
+    const fromStack = stackFiles(task.detail ?? "", this.root).filter((f) => {
+      const content = this.store.currentContent(f.rel);
+      return Boolean(content) && isEditablePath(f.rel, content).approvable;
+    });
     let targets = fromStack.slice(0, 2).map((f) => f.rel);
     const focus = Object.fromEntries(fromStack.map((f) => [f.rel, [f.line]]));
     let plan = "";
@@ -167,8 +170,18 @@ export class EvolutionEngine {
     let explanation = "";
     for (let attempt = 0; attempt < 2 && !applied; attempt += 1) {
       const detail = [task.detail, problems.length ? `Tentativa anterior rejeitada: ${problems.join("; ")}` : ""].filter(Boolean).join("\n");
-      const proposal = await proposePatch(this.llm, { goal: task.title, detail, plan, files: before, focus }).catch((e) => ({ blocks: [], explanation: e.message }));
+      const proposal = await proposePatch(this.llm, {
+        goal: task.title,
+        detail,
+        plan,
+        files: before,
+        focus,
+        root: this.root,
+        readFile: (rel) => this.store.currentContent(rel) ?? null
+      }).catch((e) => ({ blocks: [], explanation: e.message }));
       explanation = proposal.explanation;
+      // Arquivos que ela pediu pra ver também podem ser editados (as regras de segurança valem igual).
+      for (const [rel, content] of Object.entries(proposal.extraFiles ?? {})) if (!(rel in before)) before[rel] = content;
       if (!proposal.blocks.length) {
         problems = [proposal.explanation || "sem patch"];
         continue;
