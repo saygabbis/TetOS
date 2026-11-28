@@ -95,7 +95,7 @@ export const DEFAULTS = {
   openaiWorkerModel: String(process.env.TETOS_OPENAI_WORKER_MODEL || openaiModel).trim(),
   openaiBaseUrl: String(process.env.TETOS_OPENAI_BASE_URL || "https://api.openai.com/v1").trim().replace(/\/$/, ""),
   /** none | low | medium | high: quanto o modelo "pensa" antes de responder (mais = mais caro e lento). */
-  openaiReasoning: String(process.env.TETOS_OPENAI_REASONING || "none").trim().toLowerCase(),
+  openaiReasoning: String(process.env.TETOS_OPENAI_REASONING || "auto").trim().toLowerCase(),
   openaiWorkerReasoning: String(process.env.TETOS_OPENAI_WORKER_REASONING || "none").trim().toLowerCase(),
   openaiCodeReasoning: String(process.env.TETOS_OPENAI_CODE_REASONING || "medium").trim().toLowerCase(),
   /** flex = metade do preço nas tarefas de fundo (mais lento); vazio = normal. */

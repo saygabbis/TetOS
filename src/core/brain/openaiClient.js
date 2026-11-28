@@ -30,6 +30,24 @@ export class OpenAIBudgetError extends Error {
   }
 }
 
+/**
+ * Raciocínio dinâmico (TETOS_OPENAI_REASONING=auto): olha só o turno atual ([INPUT]) e o que veio
+ * junto (arquivo, link). Conversa leve → "none"; pergunta de verdade, pedido, conteúdo pra ler → "low".
+ */
+export function pickAutoEffort(prompt = "") {
+  const text = String(prompt);
+  const at = text.lastIndexOf("[INPUT]");
+  const turn = (at >= 0 ? text.slice(at) : text.slice(-1500)).replace(/\[OUTPUT\][\s\S]*$/, "");
+  const said = turn.replace(/^\[INPUT\]\s*/, "").replace(/^User[^:]*:\s*/, "").trim();
+  if (/\[DOCUMENT CONTEXT\]|\[LINK — você abriu|\[PESQUISA|\[SEARCH/.test(text)) return "low";
+  if (said.length > 180) return "low";
+  if (/https?:\/\//.test(said)) return "low";
+  if (/\?/.test(said) && said.length > 45) return "low";
+  if (/\d+\s*[-+*/x%^]\s*\d+/.test(said)) return "low";
+  if (/(?<!\p{L})(por ?qu[eê]|como (é|eu|faço|funciona|fa[cz])|qual|quais|quanto|quando foi|explica|resum\p{L}*|calcula|traduz|compara|diferen[cç]a|c[oó]digo|programa|erro|bug|ajuda|baixa|gera|cria|converte|comando|pesquisa|procura|lembra|planeja|organiza|escreve|corrige|melhora)(?!\p{L})/iu.test(said)) return "low";
+  return "none";
+}
+
 export class OpenAIClient {
   constructor({
     baseUrl = "https://api.openai.com/v1",
@@ -61,7 +79,7 @@ export class OpenAIClient {
     this.critical = Boolean(critical);
     this.purpose = purpose;
     /** Alguns modelos recusam temperature: descobre na 1ª vez e para de mandar. */
-    this._noTemperature = this.reasoningEffort !== "none";
+    this._noTemperature = !["none", "auto"].includes(this.reasoningEffort);
   }
 
   _headers() {
@@ -93,13 +111,15 @@ export class OpenAIClient {
       prompt_cache_key: `tetos-${this.purpose}`,
       ...(stream ? { stream: true } : {})
     };
-    if (this.reasoningEffort && this.reasoningEffort !== "default") {
-      body.reasoning = { effort: this.reasoningEffort };
+    // "auto": papo solto sem raciocínio (mais solta, com temperatura); pergunta/tarefa com "low".
+    const effort = this.reasoningEffort === "auto" ? pickAutoEffort(typeof input === "string" ? input : "") : this.reasoningEffort;
+    if (effort && effort !== "default") {
+      body.reasoning = { effort };
     }
     if (maxTokens != null) {
-      body.max_output_tokens = maxTokens + (REASONING_HEADROOM[this.reasoningEffort] ?? 1200);
+      body.max_output_tokens = maxTokens + (REASONING_HEADROOM[effort] ?? 1200);
     }
-    if (!this._noTemperature) body.temperature = this.temperature;
+    if (!this._noTemperature && effort === "none") body.temperature = this.temperature;
     if (this.serviceTier) body.service_tier = this.serviceTier;
     if (tools) body.tools = tools;
     return body;
